@@ -3,7 +3,7 @@ import { debounce } from "./utils.js";
 const datasetState = {
   entries: [],
   analytics: null,
-  datasetLabel: "default chat",
+  datasetLabel: "sample chat",
   currentRange: "all",
   customRange: null,
 };
@@ -69,7 +69,7 @@ export function setDatasetAnalytics(analytics) {
 }
 
 export function setDatasetLabel(label) {
-  datasetState.datasetLabel = label ?? "default chat";
+  datasetState.datasetLabel = label ?? "sample chat";
 }
 
 export function setCurrentRange(range) {

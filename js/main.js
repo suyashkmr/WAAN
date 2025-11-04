@@ -366,13 +366,13 @@ function buildParticipantDetail(entry) {
   })();
   const rawTopHour = entry.top_hour
     ? `${String(entry.top_hour.hour).padStart(2, "0")}:00 (${formatNumber(entry.top_hour.count)} msgs)`
-    : "No hourly data";
+    : "No hourly data yet";
   const weekdayName = entry.top_weekday
     ? WEEKDAY_LONG[entry.top_weekday.dayIndex] ?? `Day ${entry.top_weekday.dayIndex + 1}`
     : null;
   const rawTopWeekday = weekdayName
     ? `${weekdayName} (${formatNumber(entry.top_weekday.count)} msgs)`
-    : "No weekday data";
+    : "No weekday data yet";
   const topHourText = sanitizeText(rawTopHour);
   const topWeekdayText = sanitizeText(rawTopWeekday);
 
@@ -451,7 +451,7 @@ function attachEventHandlers() {
       const start = customStartInput?.value;
       const end = customEndInput?.value;
       if (!start || !end) {
-        updateStatus("Select both start and end dates for the custom range.", "warning");
+        updateStatus("Please pick both a start and end date.", "warning");
         return;
       }
       await applyCustomRange(start, end);
@@ -626,36 +626,36 @@ function attachEventHandlers() {
 
 async function loadDefaultChat() {
   try {
-    updateStatus("Loading default chat…", "info");
+    updateStatus("Loading the sample chat…", "info");
     const response = await fetch("chat.json");
     if (!response.ok) {
-      updateStatus("Default chat not found. Upload a chat export to get started.", "warning");
+      updateStatus("We couldn't find the sample chat. Upload your chat file to begin.", "warning");
       return;
     }
     const text = await response.text();
-    await processChatText(text, "default chat");
+    await processChatText(text, "sample chat");
   } catch (error) {
     console.error(error);
-    updateStatus("Failed to load default chat. Please upload a chat export.", "error");
+    updateStatus("We couldn't open the sample chat. Please upload your chat file.", "error");
   }
 }
 
 async function handleFileUpload(event) {
   if (snapshotMode) {
-    updateStatus("Uploads are disabled when viewing a shared snapshot.", "warning");
+    updateStatus("Uploads are turned off while you're viewing a shared link.", "warning");
     return;
   }
   const file = event.target.files && event.target.files[0];
   if (!file) return;
 
   if (!file.name.toLowerCase().endsWith(".txt")) {
-    updateStatus("Unsupported file type. Please upload the WhatsApp .txt export.", "error");
+    updateStatus("That file type isn't supported. Please upload the WhatsApp .txt export.", "error");
     event.target.value = "";
     return;
   }
 
   if (file.size > 10 * 1024 * 1024) {
-    updateStatus("File is larger than 10MB. Please split the export.", "warning");
+    updateStatus("This file is over 10MB. Please split the export and try again.", "warning");
     event.target.value = "";
     return;
   }
@@ -666,7 +666,7 @@ async function handleFileUpload(event) {
     await processChatText(text, file.name);
   } catch (error) {
     console.error(error);
-    updateStatus("Unable to parse the selected file.", "error");
+    updateStatus("We couldn't read that file.", "error");
   } finally {
     event.target.value = "";
   }
@@ -676,7 +676,7 @@ async function processChatText(rawText, label) {
   try {
     const entries = parseChatText(rawText);
     if (!entries.length) {
-      updateStatus("No recognisable messages were found in the file.", "warning");
+      updateStatus("We couldn't find any messages in that file.", "warning");
       return;
     }
 
@@ -702,12 +702,12 @@ async function processChatText(rawText, label) {
     updateCustomRangeBounds();
 
     updateStatus(
-      `Loaded ${formatNumber(entries.length)} entries from ${label}. Showing ${formatNumber(analytics.total_messages)} messages (entire history).`,
+      `Loaded ${formatNumber(entries.length)} chat lines from ${label}. Showing the full message history (${formatNumber(analytics.total_messages)} messages).`,
       "info",
     );
   } catch (error) {
     console.error(error);
-    updateStatus("Failed to process the uploaded chat export.", "error");
+    updateStatus("We couldn't process that chat file.", "error");
   }
 }
 
@@ -792,7 +792,7 @@ function renderSummaryCards(analytics, label) {
     {
       title: "Total Messages",
       value: formatNumber(analytics.total_messages),
-      hint: `${formatNumber(analytics.total_entries)} entries inc. system logs`,
+      hint: `${formatNumber(analytics.total_entries)} chat lines including system messages`,
     },
     {
       title: "Active Participants",
@@ -829,13 +829,13 @@ function renderParticipants(analytics) {
   participantsBody.innerHTML = "";
   participantView = [];
   if (participantsNote) {
-    participantsNote.textContent = "All members ranked by number of messages sent to the group.";
+    participantsNote.textContent = "Everyone listed by how many messages they have sent.";
   }
 
   if (!analytics || !analytics.top_senders.length) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
-      <td colspan="5" class="empty-state">Load a chat export to view participant insights.</td>
+      <td colspan="5" class="empty-state">Upload a chat file to see participant details.</td>
     `;
     participantsBody.appendChild(emptyRow);
     return;
@@ -930,7 +930,7 @@ function renderMessageTypes(messageTypes) {
   if (!summary.length) {
     const empty = document.createElement("p");
     empty.className = "empty-state";
-    empty.textContent = "No message categories found for this range.";
+    empty.textContent = "No message categories for this range.";
     messageTypeSummaryEl.appendChild(empty);
     if (messageTypeNoteEl) messageTypeNoteEl.textContent = "";
     return;
@@ -1027,7 +1027,7 @@ function renderSentiment(sentiment) {
 
   if (!summaryData.length) {
     sentimentSummaryEl.innerHTML = `
-      <p class="empty-state">No sentiment data available for this period.</p>
+      <p class="empty-state">No sentiment data for this range.</p>
     `;
   } else {
     sentimentSummaryEl.innerHTML = summaryData
@@ -1051,7 +1051,7 @@ function renderSentiment(sentiment) {
   const activeDays = (sentiment?.daily || []).filter(item => (item?.count || 0) > 0);
   if (sentimentTrendNote) {
     if (!activeDays.length) {
-      sentimentTrendNote.textContent = "No scored messages for the selected period.";
+      sentimentTrendNote.textContent = "No scored messages for this range.";
     } else {
       const start = activeDays[0].date;
       const end = activeDays[activeDays.length - 1].date;
@@ -1072,7 +1072,7 @@ function renderSentimentTrend(dailyData) {
   if (!dailyData || !dailyData.length) {
     const empty = document.createElement("p");
     empty.className = "empty-state";
-    empty.textContent = "No scored messages to plot.";
+    empty.textContent = "No scored messages to show.";
     sentimentDailyChart.appendChild(empty);
     return;
   }
@@ -1095,6 +1095,16 @@ function renderSentimentTrend(dailyData) {
     const y = height - ((Number(item.average) || 0) - minVal) / range * height;
     return { x, y, item };
   });
+
+  const chartHeader = document.createElement("div");
+  chartHeader.className = "sentiment-chart-header";
+  const yAxisLabel = document.createElement("span");
+  yAxisLabel.textContent = "Mood score (avg per day)";
+  const baselineLabel = document.createElement("span");
+  baselineLabel.className = "sentiment-baseline-label";
+  baselineLabel.textContent = "Baseline 0 = neutral";
+  chartHeader.append(yAxisLabel, baselineLabel);
+  sentimentDailyChart.appendChild(chartHeader);
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.classList.add("sentiment-sparkline");
@@ -1146,6 +1156,25 @@ function renderSentimentTrend(dailyData) {
 
   svg.append(areaPath, baseline, linePath, nodes);
   sentimentDailyChart.appendChild(svg);
+
+  const axisRow = document.createElement("div");
+  axisRow.className = "sentiment-axis";
+  const axisStart = formatDisplayDate(dailyData[0].date);
+  const axisEnd = formatDisplayDate(dailyData[dailyData.length - 1].date);
+  axisRow.innerHTML = `<span>${axisStart}</span><span>Date</span><span>${axisEnd}</span>`;
+
+  const legend = document.createElement("div");
+  legend.className = "sentiment-legend";
+  legend.innerHTML = `
+    <span><span class="legend-swatch legend-swatch-line"></span>Average score</span>
+    <span><span class="legend-swatch legend-swatch-area"></span>Area fill</span>
+    <span><span class="legend-swatch legend-swatch-baseline"></span>Baseline 0</span>
+  `;
+
+  const chartFooter = document.createElement("div");
+  chartFooter.className = "sentiment-chart-footer";
+  chartFooter.append(axisRow, legend);
+  sentimentDailyChart.appendChild(chartFooter);
 }
 
 function renderSentimentParticipants(participants) {
@@ -1422,21 +1451,21 @@ function renderComparisonSummary(primaryId, secondaryId) {
     },
     {
       key: "averageWords",
-      label: "Avg Words / Msg",
+      label: "Avg words per message",
       get: snapshot => snapshot.averageWords,
       diff: true,
       digits: 1,
     },
     {
       key: "averageChars",
-      label: "Avg Chars / Msg",
+      label: "Avg characters per message",
       get: snapshot => snapshot.averageChars,
       diff: true,
       digits: 1,
     },
     {
       key: "weeklyAverage",
-      label: "Avg / Week",
+      label: "Avg per week",
       get: snapshot => snapshot.weeklyAverage,
       diff: true,
       digits: 1,
@@ -1530,7 +1559,7 @@ function renderComparisonSummary(primaryId, secondaryId) {
       .join("");
     return `
       <div class="compare-column">
-        <h3>Δ (B – A)</h3>
+        <h3>Difference (B - A)</h3>
         <ul class="compare-metrics">
           ${rows}
         </ul>
@@ -1540,8 +1569,8 @@ function renderComparisonSummary(primaryId, secondaryId) {
 
   compareSummaryEl.innerHTML = `
     <div class="compare-summary-grid">
-      ${renderColumn("View A", primaryView, primarySnapshot)}
-      ${renderColumn("View B", secondaryView, secondarySnapshot)}
+      ${renderColumn("Setup A", primaryView, primarySnapshot)}
+      ${renderColumn("Setup B", secondaryView, secondarySnapshot)}
       ${renderDiffColumn(metrics, primarySnapshot, secondarySnapshot)}
     </div>
   `;
@@ -1549,42 +1578,42 @@ function renderComparisonSummary(primaryId, secondaryId) {
 
 function handleSaveView() {
   if (snapshotMode) {
-    updateStatus("Saved views are unavailable in shared snapshot view.", "warning");
+    updateStatus("Saved setups aren't available in shared link view.", "warning");
     return;
   }
   const entries = getDatasetEntries();
   if (!entries.length) {
-    updateStatus("Load a chat export before saving a view.", "warning");
+    updateStatus("Load a chat file before saving a setup.", "warning");
     return;
   }
   const rawName = savedViewNameInput?.value.trim();
-  const fallbackName = `View ${getSavedViews().length + 1}`;
+  const fallbackName = `Setup ${getSavedViews().length + 1}`;
   const name = rawName || fallbackName;
   const view = captureCurrentView(name);
   if (!view) {
-    updateStatus("Unable to capture the current view. Try again after loading data.", "error");
+    updateStatus("Couldn't save the current setup. Try again after the data loads.", "error");
     return;
   }
   const record = addSavedView(view);
   refreshSavedViewsUI();
   if (savedViewList) savedViewList.value = record.id;
   if (savedViewNameInput) savedViewNameInput.value = "";
-  updateStatus(`Saved view "${name}".`, "success");
+  updateStatus(`Saved setup "${name}".`, "success");
 }
 
 async function handleApplySavedView() {
   if (snapshotMode) {
-    updateStatus("Saved views are unavailable in shared snapshot view.", "warning");
+    updateStatus("Saved setups aren't available in shared link view.", "warning");
     return;
   }
   const id = savedViewList?.value;
   if (!id) {
-    updateStatus("Select a saved view to apply.", "warning");
+    updateStatus("Choose a saved setup to use.", "warning");
     return;
   }
   const view = getSavedViewById(id);
   if (!view) {
-    updateStatus("Saved view no longer exists.", "error");
+    updateStatus("That saved setup is missing.", "error");
     refreshSavedViewsUI();
     return;
   }
@@ -1621,43 +1650,43 @@ async function applySavedView(view) {
   syncWeekdayControlsWithState();
 
   await applyRangeAndRender(rangeValue);
-  updateStatus(`Applied saved view "${view.name}".`, "success");
+  updateStatus(`Applied saved setup "${view.name}".`, "success");
 }
 
 function handleDeleteSavedView() {
   if (snapshotMode) {
-    updateStatus("Saved views are unavailable in shared snapshot view.", "warning");
+    updateStatus("Saved setups aren't available in shared link view.", "warning");
     return;
   }
   const id = savedViewList?.value;
   if (!id) {
-    updateStatus("Select a saved view to delete.", "warning");
+    updateStatus("Choose a saved setup to remove.", "warning");
     return;
   }
   const removed = removeSavedView(id);
   if (!removed) {
-    updateStatus("Could not delete the selected view.", "error");
+    updateStatus("Couldn't remove that saved setup.", "error");
     return;
   }
   refreshSavedViewsUI();
   renderComparisonSummary();
   if (savedViewList) savedViewList.value = "";
-  updateStatus("Saved view removed.", "success");
+  updateStatus("Saved setup removed.", "success");
 }
 
 function handleCompareViews() {
   if (snapshotMode) {
-    updateStatus("Comparison is unavailable in shared snapshot view.", "warning");
+    updateStatus("Comparisons aren't available in shared link view.", "warning");
     return;
   }
   const primaryId = compareViewASelect?.value;
   const secondaryId = compareViewBSelect?.value;
   if (!primaryId || !secondaryId) {
-    updateStatus("Pick two saved views to compare.", "warning");
+    updateStatus("Pick two saved setups to compare.", "warning");
     return;
   }
   if (primaryId === secondaryId) {
-    updateStatus("Choose two different views for comparison.", "warning");
+    updateStatus("Pick two different setups to compare.", "warning");
     return;
   }
   setCompareSelection(primaryId, secondaryId);
@@ -1671,8 +1700,8 @@ function buildSentimentList(listEl, entries, tone) {
     const empty = document.createElement("li");
     empty.className = "empty-state inline";
     empty.textContent = tone === "positive"
-      ? "No clearly positive participants."
-      : "No clearly negative participants.";
+      ? "No clearly positive members."
+      : "No clearly negative members.";
     listEl.appendChild(empty);
     return;
   }
@@ -1752,7 +1781,7 @@ function populateSearchParticipants() {
 function handleSearchSubmit(event) {
   event.preventDefault();
   if (snapshotMode) {
-    updateStatus("Search is unavailable in shared snapshot view.", "warning");
+    updateStatus("Search isn't available in shared link view.", "warning");
     return;
   }
   const query = {
@@ -1763,12 +1792,12 @@ function handleSearchSubmit(event) {
   };
 
   if (!query.text && !query.participant && !query.start && !query.end) {
-    updateStatus("Add at least one filter before searching.", "warning");
+    updateStatus("Add at least one filter before you search.", "warning");
     return;
   }
 
   if (query.start && query.end && query.start > query.end) {
-    updateStatus("Search start date must be on or before the end date.", "error");
+    updateStatus("The start date must come before the end date.", "error");
     return;
   }
 
@@ -1777,7 +1806,7 @@ function handleSearchSubmit(event) {
 
 function handleSearchReset() {
   if (snapshotMode) {
-    updateStatus("Search is unavailable in shared snapshot view.", "warning");
+    updateStatus("Search isn't available in shared link view.", "warning");
     return;
   }
   resetSearchState();
@@ -1786,17 +1815,17 @@ function handleSearchReset() {
   if (searchStartInput) searchStartInput.value = "";
   if (searchEndInput) searchEndInput.value = "";
   renderSearchResults();
-  updateStatus("Cleared search filters.", "info");
+  updateStatus("Search filters cleared.", "info");
 }
 
 async function handleShareSnapshot() {
   if (snapshotMode) {
-    updateStatus("You are already viewing a shared snapshot. Share the current URL directly.", "info");
+    updateStatus("You're already viewing a shared link. Share this page's address instead.", "info");
     return;
   }
   const analytics = getDatasetAnalytics();
   if (!analytics) {
-    updateStatus("Load analytics before sharing a snapshot.", "warning");
+    updateStatus("Load the chat summary before sharing a link.", "warning");
     return;
   }
 
@@ -1815,11 +1844,11 @@ async function handleShareSnapshot() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: snapshot.label || "Chat analytics snapshot",
-          text: "WhatsApp chat analytics snapshot",
+          title: snapshot.label || "Chat summary",
+          text: "WhatsApp chat summary",
           url: shareUrl,
         });
-        updateStatus("Shared snapshot via native dialog.", "success");
+        updateStatus("Shared the view using the device menu.", "success");
         return;
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -1831,17 +1860,17 @@ async function handleShareSnapshot() {
     }
 
     await copyTextToClipboard(shareUrl);
-    updateStatus("Snapshot link copied to clipboard.", "success");
+    updateStatus("Copied the share link.", "success");
   } catch (error) {
     console.error(error);
-    updateStatus("Unable to generate snapshot link.", "error");
+    updateStatus("Couldn't make a share link.", "error");
   }
 }
 
 function runAdvancedSearch(query) {
   const entries = getDatasetEntries();
   if (!entries.length) {
-    updateStatus("Load a chat export before running a search.", "warning");
+    updateStatus("Load a chat file before searching.", "warning");
     return;
   }
 
@@ -1858,11 +1887,11 @@ function runAdvancedSearch(query) {
   const startDate = parseDateInput(query.start, false);
   const endDate = parseDateInput(query.end, true);
   if (query.start && !startDate) {
-    updateStatus("Invalid start date for search.", "error");
+    updateStatus("The search start date isn't valid.", "error");
     return;
   }
   if (query.end && !endDate) {
-    updateStatus("Invalid end date for search.", "error");
+    updateStatus("The search end date isn't valid.", "error");
     return;
   }
 
@@ -1901,10 +1930,10 @@ function runAdvancedSearch(query) {
   renderSearchResults();
 
   if (!totalMatches) {
-    updateStatus("No messages matched your search filters.", "info");
+    updateStatus("No messages matched those filters.", "info");
   } else if (totalMatches > SEARCH_RESULT_LIMIT) {
     updateStatus(
-      `Showing first ${SEARCH_RESULT_LIMIT} matches out of ${formatNumber(totalMatches)}. Refine your filters for more precise results.`,
+      `Showing the first ${SEARCH_RESULT_LIMIT} matches out of ${formatNumber(totalMatches)}. Narrow your filters for a closer look.`,
       "info",
     );
   } else {
@@ -1922,11 +1951,11 @@ function renderSearchResults() {
   const hasFilters = Boolean(query.text || query.participant || query.start || query.end);
 
   if (!hasFilters) {
-    searchResultsSummary.textContent = "Enter filters to search messages.";
+    searchResultsSummary.textContent = "Add filters to search messages.";
   } else if (!total) {
-    searchResultsSummary.textContent = "No messages matched your filters. Adjust and search again.";
+    searchResultsSummary.textContent = "No messages matched these filters. Try different options.";
   } else if (total > results.length) {
-    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (limit ${SEARCH_RESULT_LIMIT}).`;
+    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (limit ${SEARCH_RESULT_LIMIT} shown).`;
   } else {
     searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} matching message${results.length === 1 ? "" : "s"}.`;
   }
@@ -1937,8 +1966,8 @@ function renderSearchResults() {
     const empty = document.createElement("div");
     empty.className = "search-results-empty";
     empty.textContent = hasFilters
-      ? "No matching messages. Try a different participant, keyword, or time window."
-      : "Set filters above to search the chat history.";
+      ? "No matching messages. Try other names, words, or dates."
+      : "Add filters above to search the chat history.";
     searchResultsList.appendChild(empty);
     return;
   }
@@ -1960,7 +1989,7 @@ function renderSearchResults() {
   if (total > results.length) {
     const note = document.createElement("div");
     note.className = "search-results-empty";
-    note.textContent = "Refine your filters to explore additional matches.";
+    note.textContent = "Narrow your filters to see more matches.";
     searchResultsList.appendChild(note);
   }
 }
@@ -2043,7 +2072,7 @@ function renderHighlights(highlights) {
   if (!Array.isArray(highlights) || !highlights.length) {
     const empty = document.createElement("p");
     empty.className = "search-results-empty";
-    empty.textContent = "Highlights will appear here once analytics are available.";
+    empty.textContent = "Highlights will show up after the chat loads.";
     highlightList.appendChild(empty);
     return;
   }
@@ -2106,82 +2135,89 @@ function buildMarkdownReport(analytics) {
   const nowIso = new Date().toISOString();
   const title = getDatasetLabel() || "WhatsApp Chat";
   const range = analytics.date_range || {};
-  const highlightLines = (analytics.highlights || [])
-    .map(item => `- **${item.label}:** ${item.value}${item.descriptor ? ` — ${item.descriptor}` : ""}`);
+  const highlights = analytics.highlights || [];
   const topSenders = (analytics.top_senders || []).slice(0, 10);
   const messageTypeSummary = analytics.message_types?.summary || [];
   const systemSummary = analytics.system_summary || {};
   const weeklySummary = analytics.weekly_summary || {};
 
   const lines = [];
-  lines.push(`# ${title} – Chat Analytics Report`);
-  lines.push(`*Generated ${nowIso}*`);
+  lines.push(`# ${title} – Chat summary`);
+  lines.push(`*Created ${nowIso}*`);
   lines.push("");
-  lines.push("## Overview");
-  lines.push(`- **Total messages:** ${formatNumber(analytics.total_messages)}`);
-  lines.push(`- **System events:** ${formatNumber(systemSummary.count || 0)}`);
-  lines.push(`- **Active participants:** ${formatNumber(analytics.unique_senders)}`);
+  lines.push("## Quick glance");
+  lines.push(`- **Messages in total:** ${formatNumber(analytics.total_messages)}`);
+  lines.push(`- **System notices:** ${formatNumber(systemSummary.count || 0)}`);
+  lines.push(`- **People who spoke:** ${formatNumber(analytics.unique_senders)}`);
   if (range.start && range.end) {
-    lines.push(`- **Date range:** ${formatDisplayDate(range.start)} → ${formatDisplayDate(range.end)}`);
+    lines.push(`- **Covers:** ${formatDisplayDate(range.start)} → ${formatDisplayDate(range.end)}`);
   }
   lines.push("");
 
   lines.push("## Highlights");
-  if (highlightLines.length) {
-    lines.push(...highlightLines);
+  if (highlights.length) {
+    highlights.forEach(item => {
+      lines.push(`- **${item.label}:** ${item.value}${item.descriptor ? ` — ${item.descriptor}` : ""}`);
+    });
   } else {
-    lines.push("- Key patterns will appear here once enough data is available.");
+    lines.push("- Highlights will show up once there's enough data.");
   }
   lines.push("");
 
-  lines.push("## Key Metrics");
-  lines.push(`- **Avg messages per day:** ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)}`);
-  lines.push(`- **Avg messages per week:** ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)}`);
-  lines.push(`- **Top hour:** ${analytics.hourly_summary?.topHour ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00` : "—"}`);
-  lines.push("- **Join requests:** " + formatNumber(systemSummary.join_requests || 0));
+  lines.push("## Everyday numbers");
+  lines.push(`- **Average per day:** ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`);
+  lines.push(`- **Average per week:** ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`);
+  lines.push(`- **Busiest hour:** ${
+    analytics.hourly_summary?.topHour
+      ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
+      : "—"
+  }`);
+  lines.push(`- **Join requests logged:** ${formatNumber(systemSummary.join_requests || 0)}`);
   lines.push("");
 
-  lines.push("## Top Participants");
+  lines.push("## Frequent voices");
   if (topSenders.length) {
-    lines.push("| Rank | Participant | Messages | Share | Avg Words | Avg Chars |");
+    lines.push("| Rank | Participant | Messages | Share | Avg words | Avg chars |");
     lines.push("| --- | --- | ---: | ---: | ---: | ---: |");
     topSenders.forEach((entry, index) => {
-      lines.push(`| ${index + 1} | ${entry.sender} | ${formatNumber(entry.count)} | ${entry.share ? formatFloat(entry.share * 100, 1) + "%" : "—"} | ${entry.avg_words ? formatFloat(entry.avg_words, 1) : "—"} | ${entry.avg_chars ? formatFloat(entry.avg_chars, 1) : "—"} |`);
+      lines.push(`| ${index + 1} | ${entry.sender} | ${formatNumber(entry.count)} | ${
+        entry.share ? `${formatFloat(entry.share * 100, 1)}%` : "—"
+      } | ${entry.avg_words ? formatFloat(entry.avg_words, 1) : "—"} | ${entry.avg_chars ? formatFloat(entry.avg_chars, 1) : "—"} |`);
     });
   } else {
-    lines.push("No participant activity captured.");
+    lines.push("No participant activity recorded.");
   }
   lines.push("");
 
-  lines.push("## Message Types");
+  lines.push("## Message types");
   if (messageTypeSummary.length) {
     messageTypeSummary.forEach(item => {
-      lines.push(`- **${item.label}:** ${formatNumber(item.count)} (${formatFloat((item.share || 0) * 100, 1)}%)`);
+      lines.push(`- **${item.label}:** ${formatNumber(item.count)} messages (${formatFloat((item.share || 0) * 100, 1)}%)`);
     });
   } else {
-    lines.push("No classified message types for this range.");
+    lines.push("No message type details for this range.");
   }
   lines.push("");
 
-  lines.push("## System Events");
-  lines.push(`- Joins: ${formatNumber(systemSummary.joins || 0)}`);
+  lines.push("## Group activity");
+  lines.push(`- People joined: ${formatNumber(systemSummary.joins || 0)}`);
   lines.push(`- Join requests: ${formatNumber(systemSummary.join_requests || 0)}`);
-  lines.push(`- Members added: ${formatNumber(systemSummary.added || 0)}`);
-  lines.push(`- Members left: ${formatNumber(systemSummary.left || 0)}`);
-  lines.push(`- Removed: ${formatNumber(systemSummary.removed || 0)}`);
-  lines.push(`- Settings changed: ${formatNumber(systemSummary.changed || 0)}`);
-  lines.push(`- Other events: ${formatNumber(systemSummary.other || 0)}`);
+  lines.push(`- Added by admins: ${formatNumber(systemSummary.added || 0)}`);
+  lines.push(`- Left on their own: ${formatNumber(systemSummary.left || 0)}`);
+  lines.push(`- Removed by admins: ${formatNumber(systemSummary.removed || 0)}`);
+  lines.push(`- Settings changes: ${formatNumber(systemSummary.changed || 0)}`);
+  lines.push(`- Other system messages: ${formatNumber(systemSummary.other || 0)}`);
   lines.push("");
 
-  lines.push("## Suggested Actions");
-  lines.push("- Capture screenshots of key charts for visual context.");
-  lines.push("- Combine this markdown with attachments or notes for stakeholders.");
+  lines.push("## Helpful next steps");
+  lines.push("- Grab screenshots of charts you want to share.");
+  lines.push("- Add notes or decisions alongside this summary for context.");
 
   return lines.join("\n");
 }
 
 function buildSlidesHtml(analytics) {
-  const title = escapeHtml(getDatasetLabel() || "Chat Analytics");
+  const title = escapeHtml(getDatasetLabel() || "Chat summary");
   const generatedAt = escapeHtml(new Date().toLocaleString());
   const highlights = (analytics.highlights || []).slice(0, 6);
   const topSenders = (analytics.top_senders || []).slice(0, 6);
@@ -2190,28 +2226,49 @@ function buildSlidesHtml(analytics) {
   const dateRange = analytics.date_range || {};
 
   const highlightList = highlights.length
-    ? highlights.map(item => `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""}</li>`).join("")
-    : "<li>Highlights will appear once enough data is available.</li>";
+    ? highlights
+        .map(item => `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""}</li>`)
+        .join("")
+    : "<li>Highlights will show up once there's enough data.</li>";
 
   const participantList = topSenders.length
-    ? topSenders.map((entry, index) => `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages (${entry.share ? formatFloat(entry.share * 100, 1) + "%" : "—"})</li>`).join("")
+    ? topSenders
+        .map(entry => `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages (${entry.share ? formatFloat(entry.share * 100, 1) + "%" : "—"})</li>`)
+        .join("")
     : "<li>No participant activity recorded.</li>";
 
   const overviewItems = [
-    `Total messages: ${formatNumber(analytics.total_messages)}`,
-    `Active participants: ${formatNumber(analytics.unique_senders)}`,
-    `System events: ${formatNumber(systemSummary.count || 0)}`,
-    dateRange.start && dateRange.end ? `Date range: ${escapeHtml(formatDisplayDate(dateRange.start))} → ${escapeHtml(formatDisplayDate(dateRange.end))}` : null,
-  ].filter(Boolean).map(item => `<li>${item}</li>`).join("");
+    `Messages in total: ${formatNumber(analytics.total_messages)}`,
+    `People who spoke: ${formatNumber(analytics.unique_senders)}`,
+    `System notices: ${formatNumber(systemSummary.count || 0)}`,
+    dateRange.start && dateRange.end ? `Covers: ${escapeHtml(formatDisplayDate(dateRange.start))} → ${escapeHtml(formatDisplayDate(dateRange.end))}` : null,
+  ]
+    .filter(Boolean)
+    .map(item => `<li>${item}</li>`)
+    .join("");
+
+  const paceItems = [
+    `Average per day: ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`,
+    `Average per week: ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`,
+    `Busiest hour: ${
+      analytics.hourly_summary?.topHour
+        ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
+        : "—"
+    }`,
+  ]
+    .map(item => `<li>${item}</li>`)
+    .join("");
 
   const systemItems = [
-    `Joins: ${formatNumber(systemSummary.joins || 0)}`,
+    `People joined: ${formatNumber(systemSummary.joins || 0)}`,
     `Join requests: ${formatNumber(systemSummary.join_requests || 0)}`,
-    `Members added: ${formatNumber(systemSummary.added || 0)}`,
-    `Members left: ${formatNumber(systemSummary.left || 0)}`,
-    `Removed: ${formatNumber(systemSummary.removed || 0)}`,
-    `Changed: ${formatNumber(systemSummary.changed || 0)}`,
-  ].map(item => `<li>${item}</li>`).join("");
+    `Added by admins: ${formatNumber(systemSummary.added || 0)}`,
+    `Left on their own: ${formatNumber(systemSummary.left || 0)}`,
+    `Removed by admins: ${formatNumber(systemSummary.removed || 0)}`,
+    `Settings changes: ${formatNumber(systemSummary.changed || 0)}`,
+  ]
+    .map(item => `<li>${item}</li>`)
+    .join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -2244,23 +2301,19 @@ function buildSlidesHtml(analytics) {
       <ul>${highlightList}</ul>
       <div class="two-column" style="margin-top:1.5rem;">
         <div class="callout">
-          <h3>Engagement</h3>
-          <ul>
-            <li>Avg / day: ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages</li>
-            <li>Avg / week: ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages</li>
-            <li>Top hour: ${analytics.hourly_summary?.topHour ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00` : "—"}</li>
-          </ul>
+          <h3>Chat pace</h3>
+          <ul>${paceItems}</ul>
         </div>
         <div class="callout">
-          <h3>System Events</h3>
+          <h3>Group activity</h3>
           <ul>${systemItems}</ul>
         </div>
       </div>
     </section>
     <section class="slide">
-      <h2>Top Contributors</h2>
+      <h2>Top voices</h2>
       <ul>${participantList}</ul>
-      <div class="footer">Tip: paste these slides into PowerPoint or Google Slides to layer charts/screenshots.</div>
+      <div class="footer">Tip: copy this deck into PowerPoint or Google Slides to add charts or notes.</div>
     </section>
   </div>
 </body>
@@ -2305,7 +2358,7 @@ function enterSnapshotMode(snapshot) {
   disableInteractiveControlsForSnapshot();
   setDatasetEntries([]);
   setDatasetAnalytics(snapshot.analytics);
-  setDatasetLabel(snapshot.label || "Shared snapshot");
+  setDatasetLabel(snapshot.label || "Shared view");
   if (rangeSelect) {
     rangeSelect.value = "all";
   }
@@ -2314,17 +2367,17 @@ function enterSnapshotMode(snapshot) {
   applySearchStateToForm();
   renderSearchResults();
   if (searchResultsSummary) {
-    searchResultsSummary.textContent = "Search is unavailable in shared snapshot view.";
+    searchResultsSummary.textContent = "Search isn't available in shared link view.";
   }
   if (searchResultsList) {
     searchResultsList.innerHTML = "";
     const note = document.createElement("div");
     note.className = "search-results-empty";
-    note.textContent = "Search is not available when viewing a shared snapshot.";
+    note.textContent = "Search isn't available while viewing a shared link.";
     searchResultsList.appendChild(note);
   }
   const timestampInfo = snapshot.generatedAt ? ` · Generated ${formatSnapshotTimestamp(snapshot.generatedAt)}` : "";
-  updateStatus(`Viewing shared snapshot${timestampInfo}. Controls are read-only.`, "info");
+  updateStatus(`Viewing a shared link${timestampInfo}. Controls are read-only.`, "info");
 }
 
 function tryLoadSnapshotFromHash() {
@@ -2339,7 +2392,7 @@ function tryLoadSnapshotFromHash() {
     return true;
   } catch (error) {
     console.error(error);
-    updateStatus("Failed to load shared snapshot.", "error");
+    updateStatus("Couldn't open the shared link.", "error");
     return false;
   }
 }
@@ -2459,7 +2512,7 @@ function renderTimeOfDayChart(dataset) {
     container.classList.add("empty");
     const empty = document.createElement("div");
     empty.className = "timeofday-summary";
-    empty.textContent = "No time-of-day data available.";
+    empty.textContent = "No time-of-day data yet.";
     timeOfDaySparklineEl.appendChild(empty);
     return;
   }
@@ -2482,7 +2535,7 @@ function renderTimeOfDayChart(dataset) {
       topPoint.total,
     )}${shareText}<br><span>Focus window ${formatHourLabel(dataset.brush.start)} – ${formatHourLabel(
       dataset.brush.end,
-    )} captures ${formatFloat(focusShare, 1)}% of messages.</span>`;
+    )} covers ${formatFloat(focusShare, 1)}% of messages.</span>`;
   }
   timeOfDaySparklineEl.appendChild(summary);
 
@@ -2755,7 +2808,7 @@ function renderStatistics(analytics) {
 
 async function handleRangeChange() {
   if (snapshotMode) {
-    updateStatus("Range controls are disabled in shared snapshot view.", "warning");
+    updateStatus("Range controls are disabled in shared link view.", "warning");
     return;
   }
   const value = rangeSelect?.value;
@@ -2763,7 +2816,7 @@ async function handleRangeChange() {
 
   if (value === "custom") {
     showCustomControls(true);
-    updateStatus("Pick your date range and click Apply.", "info");
+    updateStatus("Choose your dates and click Apply.", "info");
     return;
   }
 
@@ -2775,13 +2828,13 @@ async function handleRangeChange() {
 
 async function applyCustomRange(start, end) {
   if (snapshotMode) {
-    updateStatus("Custom ranges are disabled in shared snapshot view.", "warning");
+    updateStatus("Custom dates are disabled in shared link view.", "warning");
     return;
   }
   const startDate = new Date(start);
   const endDate = new Date(end);
   if (Number.isNaN(startDate) || Number.isNaN(endDate)) {
-    updateStatus("Invalid date selection.", "error");
+    updateStatus("Those dates don't look right.", "error");
     return;
   }
   if (startDate > endDate) {
@@ -2801,7 +2854,7 @@ async function applyRangeAndRender(range) {
   if (snapshotMode) return;
   const entries = getDatasetEntries();
   if (!entries.length) {
-    updateStatus("Load a chat export before selecting a range.", "warning");
+    updateStatus("Load a chat file before picking a range.", "warning");
     return;
   }
 
@@ -2823,7 +2876,7 @@ async function applyRangeAndRender(range) {
     return;
   }
 
-  updateStatus("Computing analytics for the selected range…", "info");
+  updateStatus("Calculating stats for the selected range…", "info");
 
   const subset = filterEntriesByRange(entries, normalizedRange);
   try {
@@ -2843,7 +2896,7 @@ async function applyRangeAndRender(range) {
   } catch (error) {
     console.error(error);
     if (requestToken === activeAnalyticsRequest) {
-      updateStatus("Failed to compute analytics for this range.", "error");
+      updateStatus("We couldn't calculate stats for this range.", "error");
     }
   }
 }
@@ -2928,11 +2981,11 @@ function showCustomControls(visible) {
 function exportParticipants() {
   const analytics = getDatasetAnalytics();
   if (!analytics || !analytics.top_senders.length) {
-    updateStatus("No participant data to export for this period.", "warning");
+    updateStatus("No participant data to export right now.", "warning");
     return;
   }
   if (!participantView.length) {
-    updateStatus("No participants match the current filters to export.", "warning");
+    updateStatus("No participants fit the current filters to export.", "warning");
     return;
   }
   const rows = participantView.map((entry, idx) => [
@@ -2972,7 +3025,7 @@ function exportParticipants() {
 function exportHourly() {
   const analytics = getDatasetAnalytics();
   if (!analytics || !analytics.hourly_distribution) {
-    updateStatus("No hourly activity to export for this period.", "warning");
+    updateStatus("No hourly activity to export right now.", "warning");
     return;
   }
   const rows = analytics.hourly_distribution.map(entry => [
@@ -2985,7 +3038,7 @@ function exportHourly() {
 function exportDaily() {
   const analytics = getDatasetAnalytics();
   if (!analytics || !analytics.daily_counts.length) {
-    updateStatus("No daily activity to export for this period.", "warning");
+    updateStatus("No daily activity to export right now.", "warning");
     return;
   }
   const rows = analytics.daily_counts.map(entry => [entry.date, entry.count]);
@@ -2995,7 +3048,7 @@ function exportDaily() {
 function exportWeekly() {
   const analytics = getDatasetAnalytics();
   if (!analytics || !analytics.weekly_counts.length) {
-    updateStatus("No weekly trends to export for this period.", "warning");
+    updateStatus("No weekly trends to export right now.", "warning");
     return;
   }
   const rows = analytics.weekly_counts.map(entry => [
@@ -3009,7 +3062,7 @@ function exportWeekly() {
 function exportWeekday() {
   const analytics = getDatasetAnalytics();
   if (!analytics || !analytics.weekday_distribution.length) {
-    updateStatus("No weekday data to export for this period.", "warning");
+    updateStatus("No weekday data to export right now.", "warning");
     return;
   }
   const rows = analytics.weekday_distribution.map(entry => [
@@ -3029,7 +3082,7 @@ function exportTimeOfDay() {
   const analytics = getDatasetAnalytics();
   const dataset = computeTimeOfDayDataset(analytics);
   if (!dataset || !dataset.points.length || !dataset.total) {
-    updateStatus("No time-of-day data to export for this period.", "warning");
+    updateStatus("No time-of-day data to export right now.", "warning");
     return;
   }
   const headers = ["Hour", "Messages", "Share (%)", "Weekday Messages", "Weekend Messages"];
@@ -3048,7 +3101,7 @@ function exportMessageTypes() {
   const data = analytics?.message_types;
 
   if (!data) {
-    updateStatus("No message type data to export for this period.", "warning");
+    updateStatus("No message type data to export right now.", "warning");
     return;
   }
 
@@ -3065,7 +3118,7 @@ function exportMessageTypes() {
   });
 
   if (!rows.length) {
-    updateStatus("No message type data to export for this period.", "warning");
+    updateStatus("No message type data to export right now.", "warning");
     return;
   }
 
@@ -3076,7 +3129,7 @@ function exportSentiment() {
   const analytics = getDatasetAnalytics();
   const sentiment = analytics?.sentiment;
   if (!sentiment) {
-    updateStatus("No sentiment data to export for this period.", "warning");
+    updateStatus("No sentiment data to export right now.", "warning");
     return;
   }
 
@@ -3092,7 +3145,7 @@ function exportSentiment() {
     ]);
 
   if (!rows.length) {
-    updateStatus("No sentiment data to export for this period.", "warning");
+    updateStatus("No sentiment data to export right now.", "warning");
     return;
   }
 
@@ -3105,13 +3158,13 @@ function exportSentiment() {
 
 function exportSearchResults() {
   if (snapshotMode) {
-    updateStatus("Search results are unavailable in shared snapshot view.", "warning");
+    updateStatus("Can't export search results while viewing a shared link.", "warning");
     return;
   }
   const state = getSearchState();
   const results = state?.results ?? [];
   if (!results.length) {
-    updateStatus("Run a search before exporting results.", "warning");
+    updateStatus("Run a search before exporting.", "warning");
     return;
   }
 
@@ -3131,23 +3184,23 @@ function exportSearchResults() {
 function handleDownloadMarkdownReport() {
   const analytics = getDatasetAnalytics();
   if (!analytics) {
-    updateStatus("Generate analytics before exporting a report.", "warning");
+    updateStatus("Load the chat summary before exporting a report.", "warning");
     return;
   }
   const markdown = buildMarkdownReport(analytics);
   downloadTextFile(buildReportFilename("report", "md"), markdown, "text/markdown;charset=utf-8;");
-  updateStatus("Markdown report downloaded.", "success");
+  updateStatus("Saved the text report.", "success");
 }
 
 function handleDownloadSlidesReport() {
   const analytics = getDatasetAnalytics();
   if (!analytics) {
-    updateStatus("Generate analytics before exporting a report.", "warning");
+    updateStatus("Load the chat summary before exporting a report.", "warning");
     return;
   }
   const html = buildSlidesHtml(analytics);
   downloadTextFile(buildReportFilename("slides", "html"), html, "text/html;charset=utf-8;");
-  updateStatus("HTML slides downloaded.", "success");
+  updateStatus("Saved the slide deck.", "success");
 }
 
 function buildFilename(suffix) {
@@ -3263,7 +3316,7 @@ function renderDailyCalendar(dailyCounts) {
   container.innerHTML = "";
 
   if (!dailyCounts || !dailyCounts.length) {
-    container.textContent = "No data available.";
+    container.textContent = "No data yet.";
     return;
   }
 
@@ -3430,7 +3483,7 @@ function renderWeeklyTrend(weeklyData, summary) {
   chartContainer.innerHTML = "";
 
   if (!weeklyData || !weeklyData.length) {
-    chartContainer.textContent = "No data available.";
+    chartContainer.textContent = "No data yet.";
     return;
   }
 
@@ -3440,17 +3493,8 @@ function renderWeeklyTrend(weeklyData, summary) {
   bars.className = "weekly-bars";
   wrapper.appendChild(bars);
 
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.classList.add("weekly-line");
-  svg.setAttribute("preserveAspectRatio", "none");
-  svg.setAttribute("viewBox", `0 0 ${Math.max(weeklyData.length - 1, 1)} 100`);
-  wrapper.appendChild(svg);
-
   chartContainer.appendChild(wrapper);
-
   const maxCount = Math.max(...weeklyData.map(item => item.count)) || 1;
-  const maxCumulative = Math.max(...weeklyData.map(item => item.cumulative)) || 1;
-  const pathSegments = [];
 
   weeklyData.forEach((entry, index) => {
     const bar = document.createElement("button");
@@ -3481,25 +3525,48 @@ function renderWeeklyTrend(weeklyData, summary) {
 
     const weekLabel = document.createElement("span");
     weekLabel.className = "weekly-bar-week";
-    weekLabel.textContent = entry.week.split("-")[1] ?? entry.week;
+    const [weekYear, weekNumber] = (entry.week || "").split("-");
+    if (weekYear && weekNumber) {
+      const yearEl = document.createElement("span");
+      yearEl.className = "week-label-year";
+      yearEl.textContent = weekYear;
+      const numberEl = document.createElement("span");
+      numberEl.className = "week-label-number";
+      numberEl.textContent = weekNumber;
+      weekLabel.append(yearEl, numberEl);
+    } else {
+      weekLabel.textContent = entry.week ?? "—";
+    }
     bar.appendChild(weekLabel);
 
     const deltaEl = document.createElement("span");
     deltaEl.className = "weekly-bar-delta";
+    const deltaDiff = document.createElement("span");
+    deltaDiff.className = "delta-diff";
+    const deltaPct = document.createElement("span");
+    deltaPct.className = "delta-pct";
+
     if (entry.delta === null) {
-      deltaEl.textContent = "—";
+      deltaEl.classList.add("flat");
+      deltaDiff.textContent = "—";
+      deltaPct.textContent = "";
     } else if (entry.delta > 0) {
-      const pct = entry.deltaPercent ? formatFloat(entry.deltaPercent * 100, 1) : "";
+      const pct = entry.deltaPercent ? formatFloat(entry.deltaPercent * 100, 1) : null;
       deltaEl.classList.add("up");
-      deltaEl.textContent = `▲ ${formatNumber(entry.delta)}${pct ? ` (${pct}%)` : ""}`;
+      deltaDiff.textContent = `▲ ${formatNumber(entry.delta)}`;
+      deltaPct.textContent = pct !== null ? `(${pct}%)` : "";
     } else if (entry.delta < 0) {
-      const pct = entry.deltaPercent ? formatFloat(Math.abs(entry.deltaPercent) * 100, 1) : "";
+      const pct = entry.deltaPercent ? formatFloat(Math.abs(entry.deltaPercent) * 100, 1) : null;
       deltaEl.classList.add("down");
-      deltaEl.textContent = `▼ ${formatNumber(Math.abs(entry.delta))}${pct ? ` (${pct}%)` : ""}`;
+      deltaDiff.textContent = `▼ ${formatNumber(Math.abs(entry.delta))}`;
+      deltaPct.textContent = pct !== null ? `(${pct}%)` : "";
     } else {
       deltaEl.classList.add("flat");
-      deltaEl.textContent = "—";
+      deltaDiff.textContent = "—";
+      deltaPct.textContent = "";
     }
+
+    deltaEl.append(deltaDiff, deltaPct);
     bar.appendChild(deltaEl);
 
     bar.addEventListener("click", () => {
@@ -3509,15 +3576,7 @@ function renderWeeklyTrend(weeklyData, summary) {
     });
 
     bars.appendChild(bar);
-
-    const x = weeklyData.length > 1 ? index : 0;
-    const y = maxCumulative ? 100 - (entry.cumulative / maxCumulative) * 100 : 100;
-    pathSegments.push(`${index === 0 ? "M" : "L"}${x} ${y}`);
   });
-
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", pathSegments.join(" "));
-  svg.appendChild(path);
 }
 
 function ensureWeekdayDayFilters() {
@@ -3716,7 +3775,7 @@ function renderWeekdayChart() {
   const state = getWeekdayState();
   const distribution = state.distribution || [];
   if (!distribution.length) {
-    container.textContent = "No data available.";
+    container.textContent = "No data yet.";
     updateWeekdayFilterNote(state);
     return;
   }
@@ -3724,7 +3783,7 @@ function renderWeekdayChart() {
   const { entries, total, std } = computeWeekdayFilteredData();
 
   if (!total) {
-    container.textContent = "No data for the selected filters.";
+    container.textContent = "No data for these filters.";
     updateWeekdayFilterNote({ ...state, filters: state.filters, brush: state.brush });
     return;
   }
@@ -3749,13 +3808,13 @@ function renderWeekdayChart() {
 
     const diffPercent = entry.filteredDeltaPercent ? entry.filteredDeltaPercent * 100 : 0;
     const diffText = entry.filteredDeltaPercent
-      ? `${diffPercent >= 0 ? "+" : ""}${formatFloat(diffPercent, 1)}% vs avg`
-      : "Matches average";
+      ? `${diffPercent >= 0 ? "+" : ""}${formatFloat(diffPercent, 1)}% vs average`
+      : "About average";
     const topSenderText = entry.topSenders.length
       ? entry.topSenders
           .map(sender => `${sender.sender} (${formatNumber(sender.count)} · ${formatFloat(sender.share * 100, 1)}%)`)
           .join(", ")
-      : "No sender data";
+      : "No sender info";
     const tooltip = `${entry.label}\nMessages: ${formatNumber(entry.filteredCount)} (${formatFloat(entry.filteredShare * 100, 1)}% of filtered view)\n${diffText}\nTop senders: ${topSenderText}`;
     barFill.title = tooltip;
 
@@ -3783,9 +3842,9 @@ function renderWeekdayChart() {
       badge.className = `weekday-badge ${entry.filteredStdScore >= 0 ? "positive" : "negative"}`;
       if (entry.filteredDeltaPercent) {
         const pct = Math.abs(entry.filteredDeltaPercent) * 100;
-        badge.textContent = `${entry.filteredStdScore >= 0 ? "+" : "−"}${formatFloat(pct, 1)}% vs avg`;
+        badge.textContent = `${entry.filteredStdScore >= 0 ? "+" : "−"}${formatFloat(pct, 1)}% vs average`;
       } else {
-        badge.textContent = entry.filteredStdScore >= 0 ? "Above avg" : "Below avg";
+        badge.textContent = entry.filteredStdScore >= 0 ? "Above average" : "Below average";
       }
       meta.appendChild(badge);
     }
@@ -4166,7 +4225,7 @@ function updateHourlyAnomalies() {
     }));
 
   if (!anomalies.length) {
-    anomaliesEl.textContent = "No hourly anomalies detected.";
+    anomaliesEl.textContent = "No hourly surprises detected.";
     return;
   }
 

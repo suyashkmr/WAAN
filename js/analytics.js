@@ -1,4 +1,4 @@
-import { MESSAGE_START, SYSTEM_PREFIXES, SYSTEM_PATTERNS, WEEKDAY_SHORT } from "./constants.js";
+import { MESSAGE_START, SYSTEM_PREFIXES, SYSTEM_PATTERNS, WEEKDAY_SHORT, WEEKDAY_LONG } from "./constants.js";
 import { isoWeekDateRange, toISODate } from "./utils.js";
 
 const LINK_REGEX = /(https?:\/\/\S+)/i;
@@ -860,18 +860,18 @@ function buildHighlights({ dailyCounts, weeklyCounts, weekdayDetails, topSenders
 
   const engagementToday = buildEngagementForecastHighlight(dailyCounts, {
     offsetDays: 0,
-    label: "Engagement outlook",
+    label: "Activity outlook",
   });
   if (engagementToday) highlights.push(engagementToday);
 
   const engagementTomorrow = buildEngagementForecastHighlight(dailyCounts, {
     offsetDays: 1,
-    label: "Engagement outlook (Tomorrow)",
+    label: "Activity outlook (day after session)",
   });
   if (engagementTomorrow) highlights.push(engagementTomorrow);
 
-  const hourDriftHighlight = buildHourDriftHighlight(hourlySeries);
-  if (hourDriftHighlight) highlights.push(hourDriftHighlight);
+  const nextWeekdayHighlight = buildNextBusiestWeekdayHighlight(dailyCounts);
+  if (nextWeekdayHighlight) highlights.push(nextWeekdayHighlight);
 
   return highlights.slice(0, 6);
 }
@@ -910,7 +910,7 @@ function buildTopContributorsHighlight(weeklyCounts, topSenders) {
 
   return {
     type: "contributors",
-    label: "Top Contributors",
+    label: "Recent top senders",
     value: `${formatHighlightCount(
       topWeekSenders.reduce((sum, [, count]) => sum + count, 0),
       "message",
@@ -926,7 +926,7 @@ function buildMostActiveDayHighlight(dailyCounts) {
 
   return {
     type: "activity",
-    label: "Most active day",
+    label: "Busiest day",
     value: formatHighlightCount(busiestDay.count, "message"),
     descriptor: formatHighlightDate(busiestDay.date),
   };
@@ -942,77 +942,11 @@ function buildBusiestWeekdayHighlight(weekdayDetails) {
 
   return {
     type: "weekday",
-    label: "Busiest day of the week",
+    label: "Busiest weekday",
     value: topWeekday.label,
     descriptor: `${formatHighlightCount(topWeekday.count, "message")} (${formatHighlightPercent(
       topWeekday.count / totalFiltered,
     )})`,
-  };
-}
-
-function buildHourDriftHighlight(hourlySeries) {
-  if (!Array.isArray(hourlySeries) || hourlySeries.length < 3) return null;
-
-  const sortedSeries = hourlySeries
-    .filter(entry => Array.isArray(entry?.hours) && entry.hours.length === 24)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  if (sortedSeries.length < 3) return null;
-
-  const alpha = 0.35;
-  const smoothed = Array.from({ length: 24 }, () => null);
-
-  sortedSeries.forEach(day => {
-    day.hours.forEach((rawCount, hour) => {
-      const value = Number(rawCount);
-      if (!Number.isFinite(value)) return;
-      smoothed[hour] = smoothed[hour] === null ? value : alpha * value + (1 - alpha) * smoothed[hour];
-    });
-  });
-
-  const forecasts = smoothed.map((value, hour) => ({
-    hour,
-    value: value === null ? 0 : value,
-  }));
-
-  const peak = forecasts.reduce(
-    (best, candidate) => (candidate.value > best.value ? candidate : best),
-    { hour: 0, value: -Infinity },
-  );
-
-  if (!Number.isFinite(peak.value) || peak.value <= 0) return null;
-
-  const wrapHour = hour => ((hour % 24) + 24) % 24;
-  const formatHour = hour => `${String(hour).padStart(2, "0")}:00`;
-
-  const neighborHours = [-1, 0, 1].map(offset => wrapHour(peak.hour + offset));
-  const neighborhoodAverage =
-    neighborHours.reduce((sum, hour) => sum + (forecasts[hour]?.value || 0), 0) / neighborHours.length || 0;
-
-  const secondBest = forecasts
-    .filter(entry => entry.hour !== peak.hour)
-    .reduce(
-      (best, candidate) => (candidate.value > best.value ? candidate : best),
-      { hour: null, value: -Infinity },
-    );
-
-  const comparativeText =
-    Number.isFinite(secondBest.value) && secondBest.value > 0
-      ? ` · +${formatHighlightPercent((peak.value - secondBest.value) / secondBest.value, 0)} vs ${formatHour(
-          secondBest.hour,
-        )}`
-      : "";
-
-  const rangeLabel = `${formatHour(wrapHour(peak.hour - 1))}–${formatHour(wrapHour(peak.hour + 1))}`;
-  const trailingDays = sortedSeries.length;
-
-  return {
-    type: "hour-drift",
-    label: "Hour Drift Forecast",
-    value: `Tomorrow most likely peak: ${formatHour(peak.hour)} ±1h`,
-    descriptor: `EWMA ≈ ${formatHighlightCount(Math.round(neighborhoodAverage), "message")} between ${rangeLabel} (based on ${
-      trailingDays === 1 ? "1 day" : `${trailingDays} days`
-    })${comparativeText}`,
   };
 }
 
@@ -1038,7 +972,66 @@ function formatHighlightDate(date) {
   return `${day}-${month}-${year}`;
 }
 
-function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label = "Engagement outlook" } = {}) {
+function buildNextBusiestWeekdayHighlight(dailyCounts) {
+  if (!Array.isArray(dailyCounts) || dailyCounts.length < 5) return null;
+
+  const sorted = [...dailyCounts]
+    .filter(entry => Number.isFinite(Number(entry?.count)) && entry?.date)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  if (!sorted.length) return null;
+
+  const windowSize = Math.min(sorted.length, 21);
+  const recent = sorted.slice(-windowSize);
+  const totals = Array(7).fill(0);
+  const occurrences = Array(7).fill(0);
+
+  recent.forEach(entry => {
+    const date = new Date(entry.date);
+    if (Number.isNaN(date.getTime())) return;
+    const index = date.getDay();
+    totals[index] += Number(entry.count) || 0;
+    occurrences[index] += 1;
+  });
+
+  let bestIndex = null;
+  let bestAverage = -Infinity;
+
+  for (let day = 0; day < 7; day += 1) {
+    if (!occurrences[day]) continue;
+    const average = totals[day] / occurrences[day];
+    if (average > bestAverage) {
+      bestAverage = average;
+      bestIndex = day;
+    }
+  }
+
+  if (bestIndex === null || bestAverage <= 0) return null;
+
+  const totalRecent = recent.reduce((sum, entry) => sum + (Number(entry.count) || 0), 0);
+  const share = totalRecent ? totals[bestIndex] / totalRecent : 0;
+
+  const sessionEnd = new Date(sorted[sorted.length - 1].date);
+  if (Number.isNaN(sessionEnd.getTime())) return null;
+
+  const nextDate = new Date(sessionEnd.getTime());
+  do {
+    nextDate.setDate(nextDate.getDate() + 1);
+  } while (nextDate.getDay() !== bestIndex);
+
+  const nextDateLabel = formatHighlightDate(nextDate.toISOString());
+  const windowLabel = recent.length === 1 ? "last day" : `last ${recent.length} days`;
+  const weekdayName = WEEKDAY_LONG[bestIndex] ?? `Day ${bestIndex + 1}`;
+
+  return {
+    type: "weekday-forecast",
+    label: "Next Busy Weekday",
+    value: `${weekdayName} · ≈ ${formatHighlightCount(Math.round(bestAverage), "message")}/day`,
+    descriptor: `${windowLabel} · About ${formatHighlightPercent(share, 1)} of recent messages · Next ${weekdayName} falls on ${nextDateLabel}.`,
+  };
+}
+
+function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label = "Activity outlook" } = {}) {
   if (!Array.isArray(dailyCounts) || dailyCounts.length < 5) return null;
   const sorted = [...dailyCounts]
     .filter(entry => Number.isFinite(entry?.count))
@@ -1058,9 +1051,9 @@ function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label =
   const diff = forecast - avg;
   const threshold = (std || 1) * 0.6;
   let classification;
-  if (diff > threshold) classification = "Above normal";
-  else if (diff < -threshold) classification = "Soft";
-  else classification = "Steady";
+  if (diff > threshold) classification = "More than usual";
+  else if (diff < -threshold) classification = "Quieter than usual";
+  else classification = "About the same";
   const trendSymbol = diff > threshold ? "↑" : diff < -threshold ? "↓" : "→";
 
   const forecastDate = new Date();
@@ -1072,10 +1065,10 @@ function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label =
     type: "engagement",
     label,
     value: `${trendSymbol} ${classification}`,
-    descriptor: `${formatHighlightDate(forecastDate.toISOString())} · forecast ${formatHighlightCount(
+    descriptor: `${formatHighlightDate(forecastDate.toISOString())} · Expect about ${formatHighlightCount(
       Math.round(forecast),
       "message",
-    )} vs avg ${formatHighlightCount(Math.round(avg), "message")}`,
+    )} (typical is ${formatHighlightCount(Math.round(avg), "message")})`,
   };
 }
 
