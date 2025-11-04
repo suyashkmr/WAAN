@@ -1,43 +1,97 @@
 :root {
-    color-scheme: light dark;
-    --bg: #f6f7fb;
-    --card-bg: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --accent: #2563eb;
-    --accent-soft: rgba(37, 99, 235, 0.15);
-    --border: rgba(148, 163, 184, 0.4);
-    --calendar-level-0: rgba(148, 163, 184, 0.25);
-    --calendar-level-1: #bfdbfe;
-    --calendar-level-2: #93c5fd;
-    --calendar-level-3: #60a5fa;
-    --calendar-level-4: #2563eb;
-    --positive: #16a34a;
-    --positive-soft: rgba(22, 163, 74, 0.1);
-    --negative: #dc2626;
-    --negative-soft: rgba(220, 38, 38, 0.12);
-    --neutral-tone: #64748b;
+    color-scheme: light;
+    --md-primary: #6750a4;
+    --md-on-primary: #ffffff;
+    --md-primary-container: #eaddff;
+    --md-on-primary-container: #21005d;
+    --md-secondary: #625b71;
+    --md-on-secondary: #ffffff;
+    --md-secondary-container: #e8def8;
+    --md-on-secondary-container: #1d192b;
+    --md-tertiary: #7d5260;
+    --md-on-tertiary: #ffffff;
+    --md-tertiary-container: #ffd8e4;
+    --md-on-tertiary-container: #31101d;
+    --md-neutral: #5c5f66;
+    --md-surface: #fdf8ff;
+    --md-surface-container-high: #ece5f6;
+    --md-surface-container: #f4ecff;
+    --md-outline: rgba(96, 92, 118, 0.45);
+    --md-outline-variant: rgba(96, 92, 118, 0.25);
+    --md-on-surface: #1d192b;
+    --md-on-surface-variant: #49454f;
+    --surface-tint: rgba(103, 80, 164, 0.14);
+
+    --bg: var(--md-surface);
+    --card-bg: var(--md-surface-container-high);
+    --text: var(--md-on-surface);
+    --muted: var(--md-on-surface-variant);
+    --accent: var(--md-primary);
+    --accent-soft: color-mix(in srgb, var(--md-primary) 16%, transparent);
+    --border: var(--md-outline-variant);
+
+    --positive: #2e7d32;
+    --positive-soft: rgba(46, 125, 50, 0.12);
+    --negative: #c62828;
+    --negative-soft: rgba(198, 40, 40, 0.12);
+    --neutral-tone: #5c5f66;
+
+    --shape-small: 12px;
+    --shape-medium: 16px;
+    --shape-large: 28px;
+    --shape-full: 999px;
+
+    --calendar-level-0: rgba(96, 92, 118, 0.12);
+    --calendar-level-1: rgba(103, 80, 164, 0.18);
+    --calendar-level-2: rgba(103, 80, 164, 0.32);
+    --calendar-level-3: rgba(77, 53, 127, 0.54);
+    --calendar-level-4: rgba(77, 53, 127, 0.82);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #0f172a;
-        --card-bg: #101b30;
-        --text: #e5e7eb;
-        --muted: #cbd5ff;
-        --accent: #60a5fa;
-        --accent-soft: rgba(96, 165, 250, 0.24);
-        --border: rgba(100, 116, 139, 0.55);
-        --calendar-level-0: rgba(148, 163, 184, 0.15);
-        --calendar-level-1: rgba(96, 165, 250, 0.35);
-        --calendar-level-2: rgba(96, 165, 250, 0.55);
-        --calendar-level-3: rgba(96, 165, 250, 0.75);
-        --calendar-level-4: #3b82f6;
-        --positive: #34d399;
-        --positive-soft: rgba(52, 211, 153, 0.12);
-        --negative: #f87171;
-        --negative-soft: rgba(248, 113, 113, 0.15);
-        --neutral-tone: #a1a1aa;
+        color-scheme: dark;
+        --md-primary: #d0bcff;
+        --md-on-primary: #381e72;
+        --md-primary-container: #4f378b;
+        --md-on-primary-container: #eaddff;
+        --md-secondary: #ccc2dc;
+        --md-on-secondary: #332d41;
+        --md-secondary-container: #4a4458;
+        --md-on-secondary-container: #e8def8;
+        --md-tertiary: #efb8c8;
+        --md-on-tertiary: #492532;
+        --md-tertiary-container: #633b48;
+        --md-on-tertiary-container: #ffd8e4;
+        --md-neutral: #c6c6d0;
+        --md-surface: #151218;
+        --md-surface-container-high: #201f24;
+        --md-surface-container: #1c1b20;
+        --md-outline: rgba(202, 196, 208, 0.45);
+        --md-outline-variant: rgba(202, 196, 208, 0.25);
+        --md-on-surface: #e6e0e9;
+        --md-on-surface-variant: #cac4d0;
+        --surface-tint: rgba(208, 188, 255, 0.14);
+
+        --bg: var(--md-surface);
+        --card-bg: color-mix(in srgb, var(--md-surface-container) 85%, transparent);
+        --text: var(--md-on-surface);
+        --muted: var(--md-on-surface-variant);
+        --accent: var(--md-primary);
+        --accent-soft: color-mix(in srgb, var(--md-primary) 22%, transparent);
+        --border: var(--md-outline-variant);
+
+        --positive: #5bd97c;
+        --positive-soft: rgba(91, 217, 124, 0.16);
+        --negative: #ff8a82;
+        --negative-soft: rgba(255, 138, 130, 0.16);
+        --neutral-tone: #d0d0dd;
+
+        --calendar-level-0: rgba(202, 196, 208, 0.12);
+        --calendar-level-1: rgba(208, 188, 255, 0.22);
+        --calendar-level-2: rgba(208, 188, 255, 0.34);
+        --calendar-level-3: rgba(208, 188, 255, 0.52);
+        --calendar-level-4: rgba(208, 188, 255, 0.76);
     }
 }
 
@@ -49,19 +103,62 @@ body {
     margin: 0;
     padding: 0;
     font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-    background: var(--bg);
+    font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    background: radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--md-primary) 10%, transparent) 0%, transparent 55%), radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--md-tertiary) 12%, transparent) 0%, transparent 52%), var(--bg);
     color: var(--text);
-    line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    color: var(--text);
 }
 
 header {
-    padding: 2.5rem 1.5rem 1.5rem;
+    padding: 2.75rem 1.5rem 1.75rem;
     text-align: center;
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+    border-bottom-left-radius: var(--shape-large);
+    border-bottom-right-radius: var(--shape-large);
 }
 
 header h1 {
-    margin: 0;
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2.4rem, 5vw, 3.4rem);
+    letter-spacing: -0.015em;
+}
+
+.headline {
+    font-size: 1.8rem;
+    letter-spacing: 0.01em;
+}
+
+.title-large,
+.card-title-group h2 {
+    font-size: 1.42rem;
+    letter-spacing: 0.01em;
+}
+
+.title-medium {
+    font-size: 1.2rem;
+    letter-spacing: 0.015em;
+}
+
+.label-medium,
+.section-note,
+.sentiment-note,
+.legend-cell,
+.legend-swatch {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .subtitle {
@@ -99,15 +196,13 @@ main > .card.half-span {
 .card {
     position: relative;
     overflow: hidden;
-    --card-accent-color: var(--card-accent, var(--border));
-    background: var(--card-bg);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    border: 1px solid color-mix(in srgb, var(--card-accent-color) 35%, var(--border));
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05), 0 2px 8px rgba(15, 23, 42, 0.04);
-    background-image: linear-gradient(165deg, color-mix(in srgb, var(--card-accent-color) 18%, transparent) 0%, rgba(255, 255, 255, 0) 58%);
-    background-blend-mode: normal;
-    border-top: 3px solid color-mix(in srgb, var(--card-accent-color) 70%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    border-radius: var(--shape-large);
+    padding: 1.65rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 40px rgba(17, 16, 28, 0.12), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 22%, transparent);
+    background-image: linear-gradient(160deg, color-mix(in srgb, var(--surface-tint) 32%, transparent) 0%, transparent 65%);
+    background-blend-mode: lighten;
 }
 
 .card-header {
@@ -181,38 +276,37 @@ main > .card.half-span {
 
 .ghost-button {
     appearance: none;
-    border: 1px solid var(--border);
-    border-radius: 0.6rem;
-    background: transparent;
-    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+    border-radius: var(--shape-small);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
     font-size: 0.85rem;
     font-weight: 600;
-    padding: 0.45rem 0.9rem;
+    padding: 0.5rem 1rem;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .ghost-button:hover {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     transform: translateY(-1px);
 }
 
 .ghost-button:focus {
-    outline: 2px solid var(--accent);
+    outline: 3px solid color-mix(in srgb, var(--accent) 20%, transparent);
     outline-offset: 2px;
 }
 
 .ghost-button:disabled {
-    opacity: 0.6;
+    opacity: 0.45;
     cursor: not-allowed;
     transform: none;
 }
 
 .ghost-button.small {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.75rem;
 }
 
 .hourly-summary,
@@ -328,6 +422,7 @@ main > .card.half-span {
     max-height: 520px;
     overflow-y: auto;
     padding-right: 0.5rem;
+    scrollbar-color: color-mix(in srgb, var(--border) 80%, transparent) transparent;
 }
 
 .sentiment-calendar-container::-webkit-scrollbar {
@@ -443,7 +538,8 @@ main > .card.half-span {
 }
 
 .sentiment-day-empty {
-    background: rgba(148, 163, 184, 0.06);
+    background: rgba(148, 163, 184, 0.08);
+    background-image: repeating-linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0, rgba(148, 163, 184, 0.18) 6px, transparent 6px, transparent 12px);
     border-style: dashed;
     color: color-mix(in srgb, var(--muted) 70%, transparent);
 }
@@ -2163,13 +2259,12 @@ main > .card.half-span {
 .page-controls {
     display: grid;
     gap: 0.75rem;
-    padding: 0.9rem 1.1rem;
-    background: var(--card-bg);
-    background: color-mix(in srgb, var(--card-bg) 72%, transparent);
-    backdrop-filter: blur(14px);
+    padding: 1rem 1.2rem;
+    background: color-mix(in srgb, var(--md-surface-container) 92%, transparent);
+    backdrop-filter: blur(16px);
     border: 1px solid var(--border);
-    border-radius: 0.9rem;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    border-radius: var(--shape-large);
+    box-shadow: 0 14px 32px rgba(24, 22, 39, 0.11), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 18%, transparent);
 }
 
 .page-controls .control-row {
@@ -2198,11 +2293,10 @@ main > .card.half-span {
 }
 
 .page-controls .control span {
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: color-mix(in srgb, var(--card-accent-color, var(--accent)) 30%, var(--muted));
+    color: color-mix(in srgb, var(--muted) 80%, transparent);
 }
 
 .page-controls .control input[type="file"] {
@@ -2285,11 +2379,10 @@ main > .card.half-span {
     flex-wrap: wrap;
     justify-content: center;
     padding: 0.75rem 1rem;
-    border-radius: 999px;
-    background: var(--card-bg);
-    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
-    border: 1px solid var(--border);
+    border-radius: var(--shape-full);
+    background: color-mix(in srgb, var(--md-surface-container) 92%, transparent);
+    box-shadow: 0 20px 40px rgba(17, 16, 28, 0.12);
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
 .section-nav a {
