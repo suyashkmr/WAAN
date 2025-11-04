@@ -1067,7 +1067,7 @@ function renderSentiment(sentiment) {
 function renderSentimentTrend(dailyData) {
   if (!sentimentDailyChart) return;
   sentimentDailyChart.innerHTML = "";
-  sentimentDailyChart.classList.add("sentiment-chart");
+  sentimentDailyChart.className = "sentiment-calendar-container";
 
   if (!dailyData || !dailyData.length) {
     const empty = document.createElement("p");
@@ -1077,104 +1077,134 @@ function renderSentimentTrend(dailyData) {
     return;
   }
 
-  const values = dailyData.map(item => Number(item.average) || 0);
-  let minVal = Math.min(-1, ...values);
-  let maxVal = Math.max(1, ...values);
-  if (maxVal - minVal < 0.1) {
-    const offset = 0.5;
-    minVal = Math.min(minVal, -offset);
-    maxVal = Math.max(maxVal, offset);
+
+  const dailyMap = new Map();
+  dailyData.forEach(item => dailyMap.set(item.date, item));
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const firstDate = new Date(dailyData[0].date);
+  firstDate.setHours(0, 0, 0, 0);
+  const lastDate = new Date(dailyData[dailyData.length - 1].date);
+  lastDate.setHours(0, 0, 0, 0);
+
+  const startMonth = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+  const endMonth = new Date(lastDate.getFullYear(), lastDate.getMonth(), 1);
+
+  const calendar = document.createElement("div");
+  calendar.className = "sentiment-calendar";
+
+  const getMoodClass = value => {
+    if (value >= 0.4) return "mood-strong-positive";
+    if (value >= 0.15) return "mood-positive";
+    if (value <= -0.4) return "mood-strong-negative";
+    if (value <= -0.15) return "mood-negative";
+    return "mood-neutral";
+  };
+
+  for (let cursor = new Date(startMonth); cursor <= endMonth; cursor.setMonth(cursor.getMonth() + 1)) {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const monthCard = document.createElement("div");
+    monthCard.className = "sentiment-calendar-month";
+
+    const header = document.createElement("div");
+    header.className = "sentiment-calendar-month-header";
+    const label = document.createElement("span");
+    label.textContent = `${monthNames[month]} ${year}`;
+    const avgSpan = document.createElement("span");
+    avgSpan.className = "sentiment-month-average";
+
+    let weightedSum = 0;
+    let totalMessages = 0;
+
+    const weekdaysRow = document.createElement("div");
+    weekdaysRow.className = "sentiment-calendar-weekdays";
+    weekdayLabels.forEach(labelText => {
+      const span = document.createElement("span");
+      span.textContent = labelText;
+      weekdaysRow.appendChild(span);
+    });
+
+    const grid = document.createElement("div");
+    grid.className = "sentiment-calendar-days";
+
+    const firstWeekday = new Date(year, month, 1).getDay();
+    for (let i = 0; i < firstWeekday; i += 1) {
+      const filler = document.createElement("div");
+      filler.className = "sentiment-calendar-day filler";
+      grid.appendChild(filler);
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const entry = dailyMap.get(iso);
+      const cell = document.createElement("div");
+      cell.className = "sentiment-calendar-day";
+      const numberEl = document.createElement("span");
+      numberEl.className = "sentiment-day-number";
+      numberEl.textContent = day;
+      cell.appendChild(numberEl);
+
+      if (entry && Number.isFinite(entry.average)) {
+        const moodClass = getMoodClass(entry.average);
+        cell.classList.add(moodClass);
+        const tooltip = `${formatDisplayDate(iso)} · ${formatSentimentScore(entry.average, 2)} · ${formatNumber(entry.count)} msgs`;
+        cell.title = tooltip;
+        weightedSum += entry.average * (entry.count || 0);
+        totalMessages += entry.count || 0;
+      } else {
+        cell.classList.add("sentiment-day-empty");
+        cell.title = `${formatDisplayDate(iso)} · No scored messages`;
+      }
+
+      grid.appendChild(cell);
+    }
+
+    const remainder = grid.children.length % 7;
+    if (remainder) {
+      for (let i = remainder; i < 7; i += 1) {
+        const filler = document.createElement("div");
+        filler.className = "sentiment-calendar-day filler";
+        grid.appendChild(filler);
+      }
+    }
+
+    const monthAverage = totalMessages ? weightedSum / totalMessages : null;
+    if (monthAverage !== null) {
+      avgSpan.textContent = formatSentimentScore(monthAverage, 2);
+      avgSpan.classList.add(getMoodClass(monthAverage));
+    } else {
+      avgSpan.textContent = "—";
+    }
+
+    header.append(label, avgSpan);
+    monthCard.append(header, weekdaysRow, grid);
+    calendar.appendChild(monthCard);
   }
-  const range = Math.max(maxVal - minVal, 0.01);
-  const height = 120;
-  const segments = Math.max(dailyData.length - 1, 1);
-  const width = segments || 1;
 
-  const points = dailyData.map((item, index) => {
-    const x = segments ? (index / segments) * width : width / 2;
-    const y = height - ((Number(item.average) || 0) - minVal) / range * height;
-    return { x, y, item };
-  });
-
-  const chartHeader = document.createElement("div");
-  chartHeader.className = "sentiment-chart-header";
-  const yAxisLabel = document.createElement("span");
-  yAxisLabel.textContent = "Mood score (avg per day)";
-  const baselineLabel = document.createElement("span");
-  baselineLabel.className = "sentiment-baseline-label";
-  baselineLabel.textContent = "Baseline 0 = neutral";
-  chartHeader.append(yAxisLabel, baselineLabel);
-  sentimentDailyChart.appendChild(chartHeader);
-
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.classList.add("sentiment-sparkline");
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");
-
-  const baselineY = height - ((0 - minVal) / range) * height;
-  const baseline = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  baseline.setAttribute("x1", "0");
-  baseline.setAttribute("y1", baselineY);
-  baseline.setAttribute("x2", width);
-  baseline.setAttribute("y2", baselineY);
-  baseline.classList.add("sentiment-baseline");
-
-  const areaPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  const startX = points[0].x;
-  const endX = points[points.length - 1].x;
-  let areaD = `M ${startX} ${baselineY}`;
-  points.forEach(pt => {
-    areaD += ` L ${pt.x} ${pt.y}`;
-  });
-  areaD += ` L ${endX} ${baselineY} Z`;
-  areaPath.setAttribute("d", areaD);
-  areaPath.classList.add("sentiment-area");
-
-  const linePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  const lineD = points
-    .map((pt, idx) => `${idx === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
-    .join(" ");
-  linePath.setAttribute("d", lineD);
-  linePath.classList.add("sentiment-line");
-
-  const nodes = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  nodes.classList.add("sentiment-nodes");
-  points.forEach(pt => {
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", pt.x);
-    circle.setAttribute("cy", pt.y);
-    circle.setAttribute("r", segments ? 0.8 : 1.2);
-    circle.classList.add("sentiment-node");
-    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-    title.textContent = `${formatDisplayDate(pt.item.date)} · ${formatSentimentScore(
-      pt.item.average,
-      2,
-    )} · ${formatNumber(pt.item.count)} msgs`;
-    circle.appendChild(title);
-    nodes.appendChild(circle);
-  });
-
-  svg.append(areaPath, baseline, linePath, nodes);
-  sentimentDailyChart.appendChild(svg);
-
-  const axisRow = document.createElement("div");
-  axisRow.className = "sentiment-axis";
-  const axisStart = formatDisplayDate(dailyData[0].date);
-  const axisEnd = formatDisplayDate(dailyData[dailyData.length - 1].date);
-  axisRow.innerHTML = `<span>${axisStart}</span><span>Date</span><span>${axisEnd}</span>`;
+  sentimentDailyChart.appendChild(calendar);
 
   const legend = document.createElement("div");
-  legend.className = "sentiment-legend";
+  legend.className = "sentiment-calendar-legend";
   legend.innerHTML = `
-    <span><span class="legend-swatch legend-swatch-line"></span>Average score</span>
-    <span><span class="legend-swatch legend-swatch-area"></span>Area fill</span>
-    <span><span class="legend-swatch legend-swatch-baseline"></span>Baseline 0</span>
+    <span><span class="legend-swatch legend-swatch-positive"></span>Positive (≥ +0.15)</span>
+    <span><span class="legend-swatch legend-swatch-neutral"></span>Neutral (−0.15 to +0.15)</span>
+    <span><span class="legend-swatch legend-swatch-negative"></span>Negative (≤ −0.15)</span>
+    <span><span class="legend-swatch legend-swatch-empty"></span>No scored messages</span>
   `;
+  sentimentDailyChart.appendChild(legend);
 
-  const chartFooter = document.createElement("div");
-  chartFooter.className = "sentiment-chart-footer";
-  chartFooter.append(axisRow, legend);
-  sentimentDailyChart.appendChild(chartFooter);
+  const calendarNote = document.createElement("p");
+  calendarNote.className = "sentiment-calendar-note";
+  calendarNote.textContent = "Colour scale shows daily mood score (weighted by messages). Hatched tiles = no scored messages.";
+  sentimentDailyChart.appendChild(calendarNote);
 }
 
 function renderSentimentParticipants(participants) {
