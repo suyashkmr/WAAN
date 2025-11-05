@@ -29,23 +29,10 @@
 
         <div class="page-controls full-span">
             <div class="control-row primary-controls">
-                <div id="file-upload-container">
-                    <label class="control upload-control" id="file-upload-desktop">
-                        <span>Upload chat file (Mac/Windows)</span>
-                        <input type="file" id="chat-file" accept=".txt,text/plain">
-                    </label>
-                    <label class="control upload-control" id="file-upload-android" style="display: none;">
-                        <span>Select WhatsApp chat folder (Android)</span>
-                        <input type="file" id="chat-file" accept=".txt,text/plain">
-                    </label>
+                <div class="control upload-control">
+                    <span>Upload WhatsApp chat</span>
+                    <input type="file" id="chat-file" accept=".txt,text/plain">
                 </div>
-                <script>
-                    // Show appropriate file input based on platform
-                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        document.getElementById('file-upload-desktop').style.display = 'none';
-                        document.getElementById('file-upload-android').style.display = 'block';
-                    }
-                </script>
                 <div class="control custom-range hidden" id="custom-range-controls">
                     <span>Custom dates</span>
                     <div class="custom-range-inputs">
