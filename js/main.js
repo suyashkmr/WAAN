@@ -645,18 +645,45 @@ async function handleFileUpload(event) {
     updateStatus("Uploads are turned off while you're viewing a shared link.", "warning");
     return;
   }
-  const file = event.target.files && event.target.files[0];
-  if (!file) return;
+  
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
 
-  if (!file.name.toLowerCase().endsWith(".txt")) {
-    updateStatus("That file type isn't supported. Please upload the WhatsApp .txt export.", "error");
-    event.target.value = "";
-    return;
+  // For multiple files (Android folder selection)
+  if (files.length > 1 || files[0].webkitRelativePath) {
+    updateStatus(`Processing ${files.length} files...`, "info");
+    
+    // Find the first .txt file in the selection
+    const textFile = Array.from(files).find(file => 
+      file.name.toLowerCase().endsWith('.txt')
+    );
+    
+    if (!textFile) {
+      updateStatus("No .txt file found in the selection.", "error");
+      event.target.value = "";
+      return;
+    }
+    
+    // Process the first .txt file found
+    await processFile(textFile);
+  } else {
+    // For single file upload
+    const file = files[0];
+    if (!file.name.toLowerCase().endsWith(".txt")) {
+      updateStatus("That file type isn't supported. Please upload the WhatsApp .txt export.", "error");
+      event.target.value = "";
+      return;
+    }
+    
+    await processFile(file);
   }
+  
+  event.target.value = "";
+}
 
+async function processFile(file) {
   if (file.size > 10 * 1024 * 1024) {
     updateStatus("This file is over 10MB. Please split the export and try again.", "warning");
-    event.target.value = "";
     return;
   }
 
@@ -667,8 +694,6 @@ async function handleFileUpload(event) {
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't read that file.", "error");
-  } finally {
-    event.target.value = "";
   }
 }
 
