@@ -27,6 +27,11 @@ import {
   getCurrentRange,
   setCustomRange,
   getCustomRange,
+  saveChatDataset,
+  listChatDatasets,
+  getChatDatasetById,
+  setActiveChatId,
+  getActiveChatId,
   addSavedView,
   getSavedViews,
   updateSavedView,
@@ -55,6 +60,7 @@ const participantsBody = document.querySelector("#top-senders tbody");
 const participantsNote = document.getElementById("participants-note");
 const participantsTopSelect = document.getElementById("participants-top-count");
 const rangeSelect = document.getElementById("global-range");
+const chatSelector = document.getElementById("chat-selector");
 const customControls = document.getElementById("custom-range-controls");
 const customStartInput = document.getElementById("custom-start");
 const customEndInput = document.getElementById("custom-end");
@@ -110,20 +116,19 @@ const timeOfDayHourEndLabel = document.getElementById("timeofday-hour-end-label"
 const timeOfDaySparklineEl = document.getElementById("timeofday-sparkline");
 const timeOfDayBandsEl = document.getElementById("timeofday-bands");
 const timeOfDayCalloutsEl = document.getElementById("timeofday-callouts");
-const deliveryNote = document.getElementById("delivery-note");
-const deliverySeenRateEl = document.getElementById("delivery-seen-rate");
-const deliveryDeliveredRateEl = document.getElementById("delivery-delivered-rate");
-const deliveryAckListEl = document.getElementById("delivery-ack-list");
-const forwardCountEl = document.getElementById("forward-count");
-const forwardShareEl = document.getElementById("forward-share");
-const forwardTopListEl = document.getElementById("forward-top-list");
-const replyCountEl = document.getElementById("reply-count");
-const replyShareEl = document.getElementById("reply-share");
-const replyListEl = document.getElementById("reply-list");
 const pollsNote = document.getElementById("polls-note");
 const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
+const liveChatListContainer = document.getElementById("live-chat-list");
+const refreshLiveChatsButton = document.getElementById("refresh-live-chats");
+const relayStartButton = document.getElementById("relay-start-button");
+const relayStopButton = document.getElementById("relay-stop-button");
+const relayStatusIndicator = document.getElementById("relay-status-indicator");
+const relayStatusMeta = document.getElementById("relay-status-meta");
+const relayEndpointDisplay = document.getElementById("relay-endpoint-display");
+const relayLogView = document.getElementById("relay-log-view");
+const relayLogClearButton = document.getElementById("relay-log-clear");
 
 let hourlyControlsInitialised = false;
 const participantFilters = {
@@ -140,15 +145,16 @@ const TIME_OF_DAY_BANDS = [
   { id: "late-evening", label: "Late Evening", start: 21, end: 23 },
 ];
 const TIME_OF_DAY_SPAN_WINDOW = 3;
-const DELIVERY_STATE_LABELS = {
-  "-1": "Failed",
-  0: "Pending",
-  1: "Sent",
-  2: "Delivered",
-  3: "Read",
-  4: "Played",
-};
-const DELIVERY_STATE_ORDER = [-1, 0, 1, 2, 3, 4];
+const API_BASE = window.WAAN_API_BASE || "http://localhost:3333/api";
+const RELAY_CTRL_BASE = window.RELAY_CTRL_BASE || "http://localhost:4545";
+let liveChatCache = [];
+let liveChatListError = null;
+let chatSelectorRefreshInterval = null;
+const RELAY_STATUS_REFRESH_INTERVAL = 5000;
+const RELAY_LOG_LIMIT = 400;
+let relayStatusTimer = null;
+let relayLogSource = null;
+let relayLogBuffer = [];
 
 let analyticsWorkerInstance = null;
 let analyticsWorkerRequestId = 0;
@@ -179,6 +185,158 @@ function scheduleDeferredRender(task, token) {
     if (token !== renderTaskToken) return;
     task();
   });
+}
+
+function setRelayIndicator(text, statusClass = "") {
+  if (!relayStatusIndicator) return;
+  relayStatusIndicator.textContent = text;
+  relayStatusIndicator.classList.remove("status-running", "status-stopped", "status-connecting");
+  if (statusClass) {
+    relayStatusIndicator.classList.add(statusClass);
+  }
+}
+
+function appendRelayLogLine(line) {
+  if (!relayLogView || !line) return;
+  relayLogBuffer.push(line);
+  if (relayLogBuffer.length > RELAY_LOG_LIMIT) {
+    relayLogBuffer.splice(0, relayLogBuffer.length - RELAY_LOG_LIMIT);
+  }
+  relayLogView.textContent = relayLogBuffer.join("\n");
+  relayLogView.scrollTop = relayLogView.scrollHeight;
+}
+
+function clearRelayLog() {
+  relayLogBuffer = [];
+  if (relayLogView) {
+    relayLogView.textContent = "";
+  }
+}
+
+async function refreshRelayStatus() {
+  if (!relayStatusIndicator || !RELAY_CTRL_BASE) return;
+  try {
+    setRelayIndicator("Checking…", "status-connecting");
+    const response = await fetch(`${RELAY_CTRL_BASE}/relay/status`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    updateRelayStatusDisplay(payload);
+  } catch (error) {
+    console.warn("Failed to refresh relay status", error);
+    setRelayIndicator("Unavailable", "status-stopped");
+    if (relayStatusMeta) {
+      relayStatusMeta.textContent = "Could not reach relay manager.";
+    }
+  }
+}
+
+function updateRelayStatusDisplay(payload) {
+  if (!relayStatusIndicator) return;
+  const status = payload?.status || {};
+  const running = Boolean(status.running);
+  if (running) {
+    setRelayIndicator("Running", "status-running");
+  } else {
+    setRelayIndicator("Stopped", "status-stopped");
+  }
+  if (relayStatusMeta) {
+    const parts = [];
+    if (status.pid) parts.push(`PID ${status.pid}`);
+    if (status.startedAt && running) parts.push(`since ${formatDisplayDate(status.startedAt.slice(0, 10))}`);
+    if (!running && status.stoppedAt) parts.push(`last stopped ${status.stoppedAt}`);
+    if (!parts.length) parts.push("No additional details");
+    relayStatusMeta.textContent = parts.join(" · ");
+  }
+  const logTail = payload?.logTail || [];
+  if (logTail.length) {
+    logTail.forEach(line => appendRelayLogLine(line));
+  }
+}
+
+async function postRelayCommand(path) {
+  if (!RELAY_CTRL_BASE) return;
+  const url = `${RELAY_CTRL_BASE}/relay/${path}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Failed with ${response.status}`);
+  }
+  const data = await response.json();
+  updateRelayStatusDisplay(data);
+}
+
+function connectRelayLogStream() {
+  if (!RELAY_CTRL_BASE || !relayLogView) return;
+  if (relayLogSource) return;
+  try {
+    relayLogSource = new EventSource(`${RELAY_CTRL_BASE}/relay/logs/stream`);
+    relayLogSource.onmessage = event => {
+      if (event.data) {
+        appendRelayLogLine(event.data);
+      }
+    };
+    relayLogSource.onerror = () => {
+      relayLogSource?.close();
+      relayLogSource = null;
+      setTimeout(connectRelayLogStream, 5000);
+    };
+  } catch (_error) {
+    relayLogSource = null;
+  }
+}
+
+function initRelayControl() {
+  if (!relayStatusIndicator) return;
+  if (relayEndpointDisplay) {
+    relayEndpointDisplay.textContent = RELAY_CTRL_BASE || "Not configured";
+  }
+  if (!RELAY_CTRL_BASE) {
+    setRelayIndicator("Not configured", "status-stopped");
+    if (relayStartButton) relayStartButton.disabled = true;
+    if (relayStopButton) relayStopButton.disabled = true;
+    if (relayLogClearButton) relayLogClearButton.disabled = true;
+    return;
+  }
+  if (relayStartButton) {
+    relayStartButton.addEventListener("click", async () => {
+      relayStartButton.disabled = true;
+      try {
+        await postRelayCommand("start");
+      } catch (error) {
+        updateStatus(`Could not start relay (${error.message})`, "error");
+      } finally {
+        if (!snapshotMode) {
+          relayStartButton.disabled = false;
+        }
+      }
+    });
+  }
+  if (relayStopButton) {
+    relayStopButton.addEventListener("click", async () => {
+      relayStopButton.disabled = true;
+      try {
+        await postRelayCommand("stop");
+      } catch (error) {
+        updateStatus(`Could not stop relay (${error.message})`, "error");
+      } finally {
+        if (!snapshotMode) {
+          relayStopButton.disabled = false;
+        }
+      }
+    });
+  }
+  if (relayLogClearButton) {
+    relayLogClearButton.addEventListener("click", clearRelayLog);
+  }
+  connectRelayLogStream();
+  refreshRelayStatus();
+  if (!relayStatusTimer) {
+    relayStatusTimer = setInterval(refreshRelayStatus, RELAY_STATUS_REFRESH_INTERVAL);
+  }
 }
 
 function ensureAnalyticsWorker() {
@@ -361,6 +519,243 @@ async function copyTextToClipboard(text) {
   }
 }
 
+function encodeChatSelectorValue(source, id) {
+  return `${source}:${id}`;
+}
+
+function decodeChatSelectorValue(value) {
+  if (!value) return null;
+  const [prefix, ...rest] = value.split(":");
+  if (!prefix || !rest.length) return null;
+  return { source: prefix, id: rest.join(":") };
+}
+
+function formatLocalChatLabel(chat) {
+  const parts = [chat.label || "Untitled chat"];
+  if (Number.isFinite(chat.messageCount)) {
+    parts.push(`${formatNumber(chat.messageCount)} msgs`);
+  }
+  if (chat.dateRange?.start && chat.dateRange?.end) {
+    parts.push(`${formatDisplayDate(chat.dateRange.start)} → ${formatDisplayDate(chat.dateRange.end)}`);
+  }
+  return parts.join(" · ");
+}
+
+function formatLiveChatLabel(chat) {
+  const pieces = [chat.name || chat.id];
+  pieces.push(chat.isGroup ? "Group" : "Direct");
+  if (Number.isFinite(chat.unreadCount)) {
+    pieces.push(`${formatNumber(chat.unreadCount)} unread`);
+  }
+  if (chat.lastMessageAt) {
+    pieces.push(`last ${formatDisplayDate(chat.lastMessageAt.slice(0, 10))}`);
+  }
+  return pieces.join(" · ");
+}
+
+async function fetchLiveChatList() {
+  if (!API_BASE || snapshotMode) {
+    liveChatCache = [];
+    liveChatListError = null;
+    return [];
+  }
+  try {
+    const response = await fetch(`${API_BASE}/chats`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    liveChatCache = Array.isArray(data.chats) ? data.chats : [];
+    liveChatListError = null;
+  } catch (error) {
+    console.warn("Failed to fetch live chats", error);
+    liveChatCache = [];
+    liveChatListError = error;
+  }
+  return liveChatCache;
+}
+
+function renderLiveChatList(state = {}) {
+  if (!liveChatListContainer) return;
+  const { loading = false } = state;
+  liveChatListContainer.innerHTML = "";
+
+  if (!API_BASE) {
+    renderLiveChatListMessage("Set WAAN_API_BASE to connect to the WhatsApp relay.");
+    return;
+  }
+
+  if (snapshotMode) {
+    renderLiveChatListMessage("Live WhatsApp browsing is disabled in snapshot mode.");
+    return;
+  }
+
+  if (loading) {
+    renderLiveChatListMessage("Loading chats…");
+    return;
+  }
+
+  if (liveChatListError) {
+    renderLiveChatListMessage("Couldn't fetch live chats. Try refreshing.");
+    return;
+  }
+
+  if (!liveChatCache.length) {
+    renderLiveChatListMessage("No live chats are available yet.");
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  const activeValue = getActiveChatId();
+  liveChatCache.forEach(chat => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "live-chat-item";
+    button.dataset.chatId = chat.id;
+    const liveSelectorValue = encodeChatSelectorValue("live", chat.id);
+    const storedSelectorValue = encodeChatSelectorValue("local", `live:cache:${chat.id}`);
+    if (activeValue === liveSelectorValue || activeValue === storedSelectorValue) {
+      button.classList.add("active");
+    }
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "live-chat-name";
+    nameEl.textContent = chat.name || chat.id;
+
+    const metaEl = document.createElement("div");
+    metaEl.className = "live-chat-meta";
+    const metaParts = [];
+    metaParts.push(chat.isGroup ? "Group chat" : "Direct chat");
+    if (Number.isFinite(chat.unreadCount)) {
+      metaParts.push(`${formatNumber(chat.unreadCount)} unread`);
+    }
+    if (chat.lastMessageAt) {
+      metaParts.push(`last ${formatDisplayDate(chat.lastMessageAt.slice(0, 10))}`);
+    }
+    metaEl.textContent = metaParts.join(" · ");
+
+    button.append(nameEl, metaEl);
+    fragment.appendChild(button);
+  });
+  liveChatListContainer.appendChild(fragment);
+}
+
+function renderLiveChatListMessage(text) {
+  if (!liveChatListContainer) return;
+  const message = document.createElement("p");
+  message.className = "live-chat-empty";
+  message.textContent = text;
+  liveChatListContainer.appendChild(message);
+}
+
+async function refreshChatSelector(options = {}) {
+  const { skipLiveFetch = false } = options;
+  if (!skipLiveFetch) {
+    renderLiveChatList({ loading: true });
+    await fetchLiveChatList();
+    renderLiveChatList();
+  } else {
+    renderLiveChatList();
+  }
+
+  if (!chatSelector) {
+    return;
+  }
+
+  const storedChats = listChatDatasets();
+  if (!storedChats.length) {
+    chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
+    chatSelector.value = "";
+    chatSelector.disabled = true;
+    return;
+  }
+
+  chatSelector.innerHTML = "";
+  const storedGroup = document.createElement("optgroup");
+  storedGroup.label = "Your chats";
+  storedChats.forEach(chat => {
+    const option = document.createElement("option");
+    option.value = encodeChatSelectorValue("local", chat.id);
+    option.textContent = formatLocalChatLabel(chat);
+    storedGroup.appendChild(option);
+  });
+  chatSelector.appendChild(storedGroup);
+
+  const activeValue = getActiveChatId();
+  const availableValues = Array.from(chatSelector.options).map(option => option.value);
+  const resolvedValue = activeValue && availableValues.includes(activeValue)
+    ? activeValue
+    : availableValues[0];
+  if (resolvedValue) {
+    chatSelector.value = resolvedValue;
+    setActiveChatId(resolvedValue);
+  }
+  chatSelector.disabled = snapshotMode;
+  renderLiveChatList();
+}
+
+async function handleChatSelectionChange(event) {
+  if (snapshotMode) return;
+  const decoded = decodeChatSelectorValue(event.target.value);
+  if (!decoded) return;
+  if (event.target.value === getActiveChatId()) return;
+  const { source, id } = decoded;
+  try {
+    event.target.disabled = true;
+    if (source === "local") {
+      const dataset = getChatDatasetById(id);
+      if (!dataset) {
+        updateStatus("We couldn't load that chat.", "error");
+        await refreshChatSelector();
+        return;
+      }
+      await applyEntriesToApp(dataset.entries, dataset.label, {
+        datasetId: dataset.id,
+        analyticsOverride: dataset.analytics ?? null,
+        statusMessage: `Switched to ${dataset.label}.`,
+        selectionValue: event.target.value,
+        skipLiveFetch: true,
+      });
+    } else if (source === "live") {
+      await loadLiveChatFromApi(id);
+    }
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't switch chats.", "error");
+  } finally {
+    if (!snapshotMode) {
+      event.target.disabled = false;
+    }
+  }
+}
+
+async function loadLiveChatFromApi(chatId) {
+  if (!API_BASE) {
+    updateStatus("Live chat API is not configured.", "warning");
+    return;
+  }
+  try {
+    updateStatus("Fetching chat from WhatsApp…", "info");
+    const response = await fetch(`${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?limit=2000`, {
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    const entries = Array.isArray(payload.entries) ? payload.entries : [];
+    if (!entries.length) {
+      updateStatus("No messages available for that chat yet.", "warning");
+      return;
+    }
+    await applyEntriesToApp(entries, payload.label || "WhatsApp chat", {
+      datasetId: `live:cache:${chatId}`,
+      skipLiveFetch: true,
+    });
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't fetch that WhatsApp chat.", "error");
+  }
+}
+
 function buildParticipantDetail(entry) {
   const first = entry.first_message
     ? sanitizeText(formatDisplayDate(entry.first_message))
@@ -440,6 +835,7 @@ setStatusCallback((message, tone) => {
 document.addEventListener("DOMContentLoaded", () => {
   attachEventHandlers();
   setupSectionNavTracking();
+  initRelayControl();
   Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
     toggle.addEventListener("click", () => {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
@@ -453,8 +849,17 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   applySearchStateToForm();
   renderSearchResults();
-  if (!tryLoadSnapshotFromHash()) {
+  const viewingSnapshot = tryLoadSnapshotFromHash();
+  if (!viewingSnapshot) {
     refreshSavedViewsUI();
+  }
+  refreshChatSelector();
+  if (!viewingSnapshot && !chatSelectorRefreshInterval) {
+    chatSelectorRefreshInterval = setInterval(() => {
+      refreshChatSelector();
+    }, 60 * 1000);
+  }
+  if (!viewingSnapshot) {
     loadDefaultChat();
   }
 });
@@ -463,6 +868,50 @@ function attachEventHandlers() {
   const fileInput = document.getElementById("chat-file");
   if (fileInput) {
     fileInput.addEventListener("change", handleFileUpload);
+  }
+
+  if (chatSelector) {
+    chatSelector.addEventListener("change", handleChatSelectionChange);
+  }
+
+  if (refreshLiveChatsButton) {
+    const defaultLabel = refreshLiveChatsButton.textContent.trim() || "Refresh";
+    refreshLiveChatsButton.addEventListener("click", async () => {
+      if (snapshotMode) return;
+      refreshLiveChatsButton.disabled = true;
+      refreshLiveChatsButton.textContent = "Refreshing…";
+      try {
+        await refreshChatSelector();
+      } catch (error) {
+        console.error(error);
+        updateStatus("We couldn't refresh the WhatsApp chats.", "error");
+      } finally {
+        refreshLiveChatsButton.disabled = false;
+        refreshLiveChatsButton.textContent = defaultLabel;
+      }
+    });
+  }
+
+  if (liveChatListContainer) {
+    liveChatListContainer.addEventListener("click", async event => {
+      if (snapshotMode) return;
+      const trigger = event.target instanceof Element ? event.target.closest("button.live-chat-item[data-chat-id]") : null;
+      if (!trigger) return;
+      const { chatId } = trigger.dataset;
+      if (!chatId) return;
+      const liveSelectorValue = encodeChatSelectorValue("live", chatId);
+      const storedSelectorValue = encodeChatSelectorValue("local", `live:cache:${chatId}`);
+      const currentValue = getActiveChatId();
+      if (currentValue === liveSelectorValue || currentValue === storedSelectorValue) return;
+      trigger.disabled = true;
+      trigger.setAttribute("aria-busy", "true");
+      try {
+        await loadLiveChatFromApi(chatId);
+      } finally {
+        trigger.disabled = false;
+        trigger.removeAttribute("aria-busy");
+      }
+    });
   }
 
   if (rangeSelect) {
@@ -656,7 +1105,11 @@ async function loadDefaultChat() {
       return;
     }
     const text = await response.text();
-    await processChatText(text, "sample chat");
+    await processChatText(text, "Sample chat", {
+      datasetId: "sample",
+      selectionValue: encodeChatSelectorValue("local", "sample"),
+      skipLiveFetch: true,
+    });
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't open the sample chat. Please upload your chat file.", "error");
@@ -720,39 +1173,68 @@ async function processFile(file) {
   }
 }
 
-async function processChatText(rawText, label) {
+async function applyEntriesToApp(entries, label, options = {}) {
+  setDatasetEntries(entries);
+  clearSavedViews();
+  refreshSavedViewsUI();
+  clearAnalyticsCache();
+  resetSearchState();
+  applySearchStateToForm();
+  renderSearchResults();
+  setDatasetLabel(label);
+  setCurrentRange("all");
+  setCustomRange(null);
+  if (rangeSelect) rangeSelect.value = "all";
+  resetHourlyFilters();
+  resetWeekdayFilters();
+
+  const requestToken = ++activeAnalyticsRequest;
+  let analytics = options.analyticsOverride ?? null;
+  if (!analytics) {
+    analytics = await computeAnalyticsWithWorker(entries);
+    if (requestToken !== activeAnalyticsRequest) return null;
+  }
+
+  setCachedAnalytics("all", analytics);
+  setDatasetAnalytics(analytics);
+  renderDashboard(analytics);
+  updateCustomRangeBounds();
+
+  const savedRecord = saveChatDataset({
+    id: options.datasetId ?? undefined,
+    label,
+    entries,
+    analytics,
+    meta: {
+      messageCount: analytics.total_messages,
+      dateRange: analytics.date_range,
+    },
+  });
+
+  const selectionValue = options.selectionValue ?? encodeChatSelectorValue("local", savedRecord.id);
+  setActiveChatId(selectionValue);
+  await refreshChatSelector({ skipLiveFetch: Boolean(options.skipLiveFetch) });
+
+  const statusMessage =
+    options.statusMessage ??
+    `Loaded ${formatNumber(entries.length)} chat lines from ${label}. Showing the full message history (${formatNumber(
+      analytics.total_messages,
+    )} messages).`;
+  updateStatus(statusMessage, "info");
+  return { analytics, datasetId: savedRecord.id };
+}
+
+async function processChatText(rawText, label, options = {}) {
   try {
     const entries = parseChatText(rawText);
     if (!entries.length) {
       updateStatus("We couldn't find any messages in that file.", "warning");
       return;
     }
-
-    setDatasetEntries(entries);
-    clearSavedViews();
-    refreshSavedViewsUI();
-    clearAnalyticsCache();
-    resetSearchState();
-    applySearchStateToForm();
-    renderSearchResults();
-    setDatasetLabel(label);
-    setCurrentRange("all");
-    setCustomRange(null);
-    if (rangeSelect) rangeSelect.value = "all";
-    resetHourlyFilters();
-    resetWeekdayFilters();
-    const requestToken = ++activeAnalyticsRequest;
-    const analytics = await computeAnalyticsWithWorker(entries);
-    if (requestToken !== activeAnalyticsRequest) return;
-    setCachedAnalytics("all", analytics);
-    setDatasetAnalytics(analytics);
-    renderDashboard(analytics);
-    updateCustomRangeBounds();
-
-    updateStatus(
-      `Loaded ${formatNumber(entries.length)} chat lines from ${label}. Showing the full message history (${formatNumber(analytics.total_messages)} messages).`,
-      "info",
-    );
+    await applyEntriesToApp(entries, label, {
+      skipLiveFetch: true,
+      ...options,
+    });
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't process that chat file.", "error");
@@ -825,7 +1307,6 @@ function renderDashboard(analytics) {
   renderWeekdayPanel(analytics);
   scheduleDeferredRender(() => renderTimeOfDayPanel(analytics), currentToken);
   scheduleDeferredRender(() => renderMessageTypes(analytics.message_types ?? null), currentToken);
-  scheduleDeferredRender(() => renderDeliveryInsights(analytics), currentToken);
   scheduleDeferredRender(() => renderPolls(analytics.polls ?? null), currentToken);
   renderStatistics(analytics);
   scheduleDeferredRender(populateSearchParticipants, currentToken);
@@ -997,178 +1478,6 @@ function renderMessageTypes(messageTypes) {
 
   if (messageTypeNoteEl) {
     messageTypeNoteEl.textContent = "";
-  }
-}
-
-function renderDeliveryInsights(analytics) {
-  if (!deliveryAckListEl) return;
-
-  const delivery = analytics.delivery || {};
-  const forwards = analytics.forwards || {};
-  const replies = analytics.replies || {};
-
-  const seenRate = delivery.seen_rate || 0;
-  const deliveredRate = delivery.delivered_rate || 0;
-  if (deliverySeenRateEl) {
-    deliverySeenRateEl.textContent = `${formatFloat(seenRate * 100, 1)}%`;
-  }
-  if (deliveryDeliveredRateEl) {
-    deliveryDeliveredRateEl.textContent = `${formatFloat(deliveredRate * 100, 1)}%`;
-  }
-  if (deliveryNote) {
-    if (delivery.total) {
-      deliveryNote.textContent = `Based on ${formatNumber(delivery.total)} sent messages with delivery receipts.`;
-    } else {
-      deliveryNote.textContent = "Delivery stats appear once the relay captures outbound messages.";
-    }
-  }
-
-  if (deliveryAckListEl) {
-    const counts = delivery.counts || {};
-    if (!delivery.total) {
-      deliveryAckListEl.innerHTML = `<li class="empty-state">No delivery receipts yet.</li>`;
-    } else {
-      const knownKeys = DELIVERY_STATE_ORDER.map(state => String(state));
-      const dynamicStates = Object.keys(counts).filter(key => !knownKeys.includes(key));
-      const ordering = [...DELIVERY_STATE_ORDER, ...dynamicStates.map(key => Number(key))];
-      const items = ordering
-        .map(state => {
-          const key = String(state);
-          const count = counts[key] || 0;
-          const share = delivery.total ? (count / delivery.total) * 100 : 0;
-          return {
-            label: DELIVERY_STATE_LABELS[key] || `Ack ${key}`,
-            count,
-            share,
-          };
-        })
-        .filter(item => item.count > 0);
-      deliveryAckListEl.innerHTML = items.length
-        ? items
-            .map(
-              item => `
-                <li>
-                  <span class="label">${sanitizeText(item.label)}</span>
-                  <span class="value">${formatNumber(item.count)} (${formatFloat(item.share, 1)}%)</span>
-                </li>
-              `,
-            )
-            .join("")
-        : `<li class="empty-state">No delivery receipts yet.</li>`;
-    }
-  }
-
-  const forwardCount = forwards.total || 0;
-  const forwardShare = forwards.share || 0;
-  if (forwardCountEl) forwardCountEl.textContent = formatNumber(forwardCount);
-  if (forwardShareEl) forwardShareEl.textContent = `${formatFloat(forwardShare * 100, 1)}% of all messages`;
-
-  if (forwardTopListEl) {
-    const top = Array.isArray(forwards.top_senders) ? forwards.top_senders : [];
-    forwardTopListEl.innerHTML = top.length
-      ? top
-          .map(
-            item => `
-              <li>
-                <span>${sanitizeText(item.sender || "Unknown")}</span>
-                <span>${formatNumber(item.count || 0)}</span>
-              </li>
-            `,
-          )
-          .join("")
-      : `<li class="empty-state">No forwards tracked yet.</li>`;
-  }
-
-  const replyCount = replies.total || 0;
-  const replyShare = replies.share || 0;
-  if (replyCountEl) replyCountEl.textContent = formatNumber(replyCount);
-  if (replyShareEl) replyShareEl.textContent = `${formatFloat(replyShare * 100, 1)}% of all messages`;
-
-  if (replyListEl) {
-    const entries = Array.isArray(replies.entries) ? replies.entries.slice(0, 5) : [];
-    replyListEl.innerHTML = entries.length
-      ? entries
-          .map(entry => {
-            const metaParts = [
-              entry.sender ? sanitizeText(entry.sender) : null,
-              entry.target_sender ? `→ ${sanitizeText(entry.target_sender)}` : null,
-              entry.timestamp_text ? sanitizeText(entry.timestamp_text) : null,
-            ].filter(Boolean);
-            const snippet = entry.snippet ? sanitizeText(entry.snippet) : "";
-            const targetSnippet = entry.target_snippet ? sanitizeText(entry.target_snippet) : "";
-            return `
-              <li>
-                <div class="reply-meta">${metaParts.join(" · ") || "Reply"}</div>
-                ${snippet ? `<p class="reply-snippet">"${snippet}"</p>` : ""}
-                ${targetSnippet ? `<p class="reply-target">Replying to: "${targetSnippet}"</p>` : ""}
-              </li>
-            `;
-          })
-          .join("")
-      : `<li class="empty-state">No replies captured yet.</li>`;
-  }
-}
-
-function renderPolls(polls) {
-  if (!pollsListEl) return;
-
-  const totalPolls = pollCount => (Number.isFinite(pollCount) && pollCount > 0 ? pollCount : 0);
-  const uniqueCreators = count => (Number.isFinite(count) && count > 0 ? count : 0);
-  const total = totalPolls(polls?.total);
-  const creators = uniqueCreators(polls?.unique_creators);
-
-  if (pollsTotalEl) pollsTotalEl.textContent = formatNumber(total);
-  if (pollsCreatorsEl) pollsCreatorsEl.textContent = formatNumber(creators);
-
-  const entries = Array.isArray(polls?.entries) ? polls.entries.slice(0, 5) : [];
-
-  if (!entries.length) {
-    pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
-    if (pollsNote) {
-      pollsNote.textContent = "Live polls are available once the WhatsApp relay is running.";
-    }
-    return;
-  }
-
-  const formatTimestamp = entry => {
-    if (entry.timestamp) return formatDisplayDate(entry.timestamp);
-    if (entry.timestamp_text) return entry.timestamp_text;
-    return "";
-  };
-
-  pollsListEl.innerHTML = entries
-    .map(entry => {
-      const title = sanitizeText(entry.title || "Poll");
-      const sender = entry.sender || "Unknown";
-      const timeLabel = formatTimestamp(entry);
-      const metaParts = [sender ? `By ${sender}` : null, timeLabel || null].filter(Boolean);
-      const options = Array.isArray(entry.options) ? entry.options.slice(0, 6) : [];
-      const optionsMarkup = options.length
-        ? `<div class="poll-item-options">${options
-            .map(option => `<span>${sanitizeText(option)}</span>`)
-            .join("")}</div>`
-        : "";
-      return `
-        <li class="poll-item">
-          <div class="poll-item-title">${title}</div>
-          <div class="poll-item-meta">${metaParts.map(text => sanitizeText(text)).join(" · ")}</div>
-          ${optionsMarkup}
-        </li>
-      `;
-    })
-    .join("");
-
-  if (pollsNote) {
-    const topCreator = Array.isArray(polls?.top_creators) ? polls.top_creators[0] : null;
-    const noteParts = [`${formatNumber(total)} polls recorded`];
-    if (topCreator) {
-      noteParts.push(
-        `Most polls: ${sanitizeText(topCreator.sender || "Unknown")} (${formatNumber(topCreator.count || 0)})`,
-      );
-    } else if (creators) {
-      noteParts.push(`${formatNumber(creators)} people created polls`);
-    }
-    pollsNote.textContent = noteParts.join(" · ");
   }
 }
 
@@ -2576,6 +2885,8 @@ function disableInteractiveControlsForSnapshot() {
   const fileInput = document.getElementById("chat-file");
   if (fileInput) fileInput.disabled = true;
   if (rangeSelect) rangeSelect.disabled = true;
+  if (chatSelector) chatSelector.disabled = true;
+  if (refreshLiveChatsButton) refreshLiveChatsButton.disabled = true;
   if (saveViewButton) saveViewButton.disabled = true;
   if (savedViewNameInput) savedViewNameInput.disabled = true;
   if (savedViewList) savedViewList.disabled = true;
@@ -2594,6 +2905,9 @@ function disableInteractiveControlsForSnapshot() {
   if (searchEndInput) searchEndInput.disabled = true;
   if (resetSearchButton) resetSearchButton.disabled = true;
   if (downloadSearchButton) downloadSearchButton.disabled = true;
+  if (relayStartButton) relayStartButton.disabled = true;
+  if (relayStopButton) relayStopButton.disabled = true;
+  if (relayLogClearButton) relayLogClearButton.disabled = true;
 }
 
 function formatSnapshotTimestamp(value) {
@@ -3056,6 +3370,69 @@ function renderStatistics(analytics) {
   }
   setText("avg-chars", formatFloat(analytics.averages.characters, 1));
   setText("avg-words", formatFloat(analytics.averages.words, 1));
+}
+
+function renderPolls(polls) {
+  if (!pollsListEl) return;
+
+  const totalPolls = pollCount => (Number.isFinite(pollCount) && pollCount > 0 ? pollCount : 0);
+  const uniqueCreators = count => (Number.isFinite(count) && count > 0 ? count : 0);
+  const total = totalPolls(polls?.total);
+  const creators = uniqueCreators(polls?.unique_creators);
+
+  if (pollsTotalEl) pollsTotalEl.textContent = formatNumber(total);
+  if (pollsCreatorsEl) pollsCreatorsEl.textContent = formatNumber(creators);
+
+  const entries = Array.isArray(polls?.entries) ? polls.entries.slice(0, 5) : [];
+
+  if (!entries.length) {
+    pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
+    if (pollsNote) {
+      pollsNote.textContent = "Live polls are available once the WhatsApp relay is running.";
+    }
+    return;
+  }
+
+  const formatTimestamp = entry => {
+    if (entry.timestamp) return formatDisplayDate(entry.timestamp);
+    if (entry.timestamp_text) return entry.timestamp_text;
+    return "";
+  };
+
+  pollsListEl.innerHTML = entries
+    .map(entry => {
+      const title = sanitizeText(entry.title || "Poll");
+      const sender = entry.sender || "Unknown";
+      const timeLabel = formatTimestamp(entry);
+      const metaParts = [sender ? `By ${sender}` : null, timeLabel || null].filter(Boolean);
+      const options = Array.isArray(entry.options) ? entry.options.slice(0, 6) : [];
+      const optionsMarkup = options.length
+        ? `<div class="poll-item-options">${options
+            .map(option => `<span>${sanitizeText(option)}</span>`)
+            .join("")}</div>`
+        : "";
+      return `
+        <li class="poll-item">
+          <div class="poll-item-title">${title}</div>
+          <div class="poll-item-meta">${metaParts.map(text => sanitizeText(text)).join(" · ")}</div>
+          ${optionsMarkup}
+        </li>
+      `;
+    })
+    .join("");
+
+  if (pollsNote) {
+    const topCreator = Array.isArray(polls?.top_creators) ? polls.top_creators[0] : null;
+    const noteParts = [`${formatNumber(total)} polls recorded`];
+    if (topCreator) {
+      noteParts.push(
+        `Most polls: ${sanitizeText(topCreator.sender || "Unknown")} (${formatNumber(topCreator.count || 0)})`,
+      );
+    } else if (creators) {
+      noteParts.push(`${formatNumber(creators)} people created polls`);
+    }
+    pollsNote.textContent = noteParts.join(" · ");
+  }
 }
 
 async function handleRangeChange() {

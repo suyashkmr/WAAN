@@ -1319,191 +1319,6 @@ main > .card.half-span {
     margin-top: 0.5rem;
 }
 
-.delivery-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.stat-sub {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 0.2rem;
-}
-
-.delivery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-}
-
-.delivery-panel {
-    border: 1px solid var(--border);
-    border-radius: 0.9rem;
-    padding: 1rem 1.25rem;
-    background: var(--panel-bg, #fff);
-}
-
-.delivery-panel h3 {
-    margin: 0 0 0.75rem;
-    font-size: 1rem;
-}
-
-.ack-list,
-.mini-list,
-.reply-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-.ack-list li,
-.mini-list li {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: #0f172a;
-}
-
-.ack-list li .label {
-    color: #5b6470;
-}
-
-.ack-list li .value {
-    font-weight: 600;
-}
-
-.mini-list li span:last-child {
-    font-weight: 600;
-    color: #111827;
-}
-
-.reply-list li {
-    border: 1px solid #e4e8ec;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: #fff;
-}
-
-.reply-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    color: #5b6470;
-    margin-bottom: 0.35rem;
-}
-
-.reply-meta strong {
-    color: #0f172a;
-}
-
-.reply-snippet,
-.reply-target {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #111827;
-}
-
-.reply-target {
-    color: #5b6470;
-    margin-top: 0.25rem;
-}
-
-.delivery-panel .empty-state {
-    border: 1px dashed var(--border);
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.85rem;
-}
-
-.polls-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.polls-summary .stat {
-    background: #f4f6f8;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.polls-summary .stat-label {
-    font-size: 0.85rem;
-    color: #5b6470;
-    margin-bottom: 0.35rem;
-}
-
-.polls-summary .stat-value {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #0f172a;
-}
-
-.polls-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.poll-item {
-    border: 1px solid #e4e8ec;
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
-}
-
-.poll-item-title {
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 0.35rem;
-}
-
-.poll-item-meta {
-    font-size: 0.85rem;
-    color: #5b6470;
-    margin-bottom: 0.5rem;
-}
-
-.poll-item-options {
-    font-size: 0.9rem;
-    color: #111827;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-
-.poll-item-options span {
-    background: #eef2ff;
-    color: #3538cd;
-    border-radius: 999px;
-    padding: 0.15rem 0.65rem;
-    font-size: 0.8rem;
-}
-
-.polls-list .empty-state {
-    border: 1px dashed #cbd5f5;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    text-align: center;
-    color: #5b6470;
-    background: #f9fbff;
-}
-
 .empty-state.small {
     font-size: 0.85rem;
     margin: 0;
@@ -2490,6 +2305,174 @@ main > .card.half-span {
     color: var(--muted);
 }
 
+.page-controls .control.dataset-control {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.page-controls .control.dataset-control select {
+    min-width: 220px;
+    max-width: 320px;
+}
+
+.page-controls .control.live-chats-panel {
+    flex: 1 1 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    border-radius: var(--shape-medium);
+    background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+}
+
+.live-chats-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.live-chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.live-chat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 100%;
+    border-radius: var(--shape-medium);
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card-bg) 95%, transparent);
+    padding: 0.65rem 0.85rem;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.live-chat-item:hover:not(:disabled),
+.live-chat-item:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 8px 20px rgba(10, 12, 28, 0.24);
+    outline: none;
+}
+
+.live-chat-item:disabled {
+    opacity: 0.55;
+    cursor: progress;
+}
+
+.live-chat-item.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.live-chat-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.live-chat-meta,
+.live-chat-empty {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.live-chat-empty {
+    margin: 0;
+}
+
+.polls-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.polls-summary .stat {
+    background: #f4f6f8;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.polls-summary .stat-label {
+    font-size: 0.85rem;
+    color: #5b6470;
+    margin-bottom: 0.35rem;
+}
+
+.polls-summary .stat-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.polls-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.poll-item {
+    border: 1px solid #e4e8ec;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+.poll-item-title {
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.35rem;
+}
+
+.poll-item-meta {
+    font-size: 0.85rem;
+    color: #5b6470;
+    margin-bottom: 0.5rem;
+}
+
+.poll-item-options {
+    font-size: 0.9rem;
+    color: #111827;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.poll-item-options span {
+    background: #eef2ff;
+    color: #3538cd;
+    border-radius: 999px;
+    padding: 0.15rem 0.65rem;
+    font-size: 0.8rem;
+}
+
+.polls-list .empty-state {
+    border: 1px dashed #cbd5f5;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    color: #5b6470;
+    background: #f9fbff;
+}
+
 .page-controls .control span {
     letter-spacing: 0.08em;
     font-size: 0.78rem;
@@ -2556,6 +2539,80 @@ main > .card.half-span {
 
 .page-controls .custom-range-inputs input[type="date"] {
     min-width: 150px;
+}
+
+#relay-control-card .card-header-actions {
+    gap: 0.5rem;
+}
+
+.relay-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.relay-status-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.relay-status-indicator {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    color: var(--muted);
+}
+
+.relay-status-indicator.status-running {
+    color: var(--positive);
+}
+
+.relay-status-indicator.status-stopped {
+    color: var(--negative);
+}
+
+.relay-status-indicator.status-connecting {
+    color: var(--accent);
+}
+
+.relay-status-meta {
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.relay-log-wrapper {
+    border: 1px solid var(--border);
+    border-radius: var(--shape-medium);
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    padding: 0.75rem;
+}
+
+.relay-log-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.relay-log-view {
+    min-height: 200px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    border-radius: var(--shape-small);
+    padding: 0.75rem;
+    font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
 .section-nav {
