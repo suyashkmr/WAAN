@@ -110,6 +110,20 @@ const timeOfDayHourEndLabel = document.getElementById("timeofday-hour-end-label"
 const timeOfDaySparklineEl = document.getElementById("timeofday-sparkline");
 const timeOfDayBandsEl = document.getElementById("timeofday-bands");
 const timeOfDayCalloutsEl = document.getElementById("timeofday-callouts");
+const deliveryNote = document.getElementById("delivery-note");
+const deliverySeenRateEl = document.getElementById("delivery-seen-rate");
+const deliveryDeliveredRateEl = document.getElementById("delivery-delivered-rate");
+const deliveryAckListEl = document.getElementById("delivery-ack-list");
+const forwardCountEl = document.getElementById("forward-count");
+const forwardShareEl = document.getElementById("forward-share");
+const forwardTopListEl = document.getElementById("forward-top-list");
+const replyCountEl = document.getElementById("reply-count");
+const replyShareEl = document.getElementById("reply-share");
+const replyListEl = document.getElementById("reply-list");
+const pollsNote = document.getElementById("polls-note");
+const pollsTotalEl = document.getElementById("polls-total");
+const pollsCreatorsEl = document.getElementById("polls-creators");
+const pollsListEl = document.getElementById("polls-list");
 
 let hourlyControlsInitialised = false;
 const participantFilters = {
@@ -126,6 +140,15 @@ const TIME_OF_DAY_BANDS = [
   { id: "late-evening", label: "Late Evening", start: 21, end: 23 },
 ];
 const TIME_OF_DAY_SPAN_WINDOW = 3;
+const DELIVERY_STATE_LABELS = {
+  "-1": "Failed",
+  0: "Pending",
+  1: "Sent",
+  2: "Delivered",
+  3: "Read",
+  4: "Played",
+};
+const DELIVERY_STATE_ORDER = [-1, 0, 1, 2, 3, 4];
 
 let analyticsWorkerInstance = null;
 let analyticsWorkerRequestId = 0;
@@ -802,6 +825,8 @@ function renderDashboard(analytics) {
   renderWeekdayPanel(analytics);
   scheduleDeferredRender(() => renderTimeOfDayPanel(analytics), currentToken);
   scheduleDeferredRender(() => renderMessageTypes(analytics.message_types ?? null), currentToken);
+  scheduleDeferredRender(() => renderDeliveryInsights(analytics), currentToken);
+  scheduleDeferredRender(() => renderPolls(analytics.polls ?? null), currentToken);
   renderStatistics(analytics);
   scheduleDeferredRender(populateSearchParticipants, currentToken);
   scheduleDeferredRender(renderSearchResults, currentToken);
@@ -972,6 +997,178 @@ function renderMessageTypes(messageTypes) {
 
   if (messageTypeNoteEl) {
     messageTypeNoteEl.textContent = "";
+  }
+}
+
+function renderDeliveryInsights(analytics) {
+  if (!deliveryAckListEl) return;
+
+  const delivery = analytics.delivery || {};
+  const forwards = analytics.forwards || {};
+  const replies = analytics.replies || {};
+
+  const seenRate = delivery.seen_rate || 0;
+  const deliveredRate = delivery.delivered_rate || 0;
+  if (deliverySeenRateEl) {
+    deliverySeenRateEl.textContent = `${formatFloat(seenRate * 100, 1)}%`;
+  }
+  if (deliveryDeliveredRateEl) {
+    deliveryDeliveredRateEl.textContent = `${formatFloat(deliveredRate * 100, 1)}%`;
+  }
+  if (deliveryNote) {
+    if (delivery.total) {
+      deliveryNote.textContent = `Based on ${formatNumber(delivery.total)} sent messages with delivery receipts.`;
+    } else {
+      deliveryNote.textContent = "Delivery stats appear once the relay captures outbound messages.";
+    }
+  }
+
+  if (deliveryAckListEl) {
+    const counts = delivery.counts || {};
+    if (!delivery.total) {
+      deliveryAckListEl.innerHTML = `<li class="empty-state">No delivery receipts yet.</li>`;
+    } else {
+      const knownKeys = DELIVERY_STATE_ORDER.map(state => String(state));
+      const dynamicStates = Object.keys(counts).filter(key => !knownKeys.includes(key));
+      const ordering = [...DELIVERY_STATE_ORDER, ...dynamicStates.map(key => Number(key))];
+      const items = ordering
+        .map(state => {
+          const key = String(state);
+          const count = counts[key] || 0;
+          const share = delivery.total ? (count / delivery.total) * 100 : 0;
+          return {
+            label: DELIVERY_STATE_LABELS[key] || `Ack ${key}`,
+            count,
+            share,
+          };
+        })
+        .filter(item => item.count > 0);
+      deliveryAckListEl.innerHTML = items.length
+        ? items
+            .map(
+              item => `
+                <li>
+                  <span class="label">${sanitizeText(item.label)}</span>
+                  <span class="value">${formatNumber(item.count)} (${formatFloat(item.share, 1)}%)</span>
+                </li>
+              `,
+            )
+            .join("")
+        : `<li class="empty-state">No delivery receipts yet.</li>`;
+    }
+  }
+
+  const forwardCount = forwards.total || 0;
+  const forwardShare = forwards.share || 0;
+  if (forwardCountEl) forwardCountEl.textContent = formatNumber(forwardCount);
+  if (forwardShareEl) forwardShareEl.textContent = `${formatFloat(forwardShare * 100, 1)}% of all messages`;
+
+  if (forwardTopListEl) {
+    const top = Array.isArray(forwards.top_senders) ? forwards.top_senders : [];
+    forwardTopListEl.innerHTML = top.length
+      ? top
+          .map(
+            item => `
+              <li>
+                <span>${sanitizeText(item.sender || "Unknown")}</span>
+                <span>${formatNumber(item.count || 0)}</span>
+              </li>
+            `,
+          )
+          .join("")
+      : `<li class="empty-state">No forwards tracked yet.</li>`;
+  }
+
+  const replyCount = replies.total || 0;
+  const replyShare = replies.share || 0;
+  if (replyCountEl) replyCountEl.textContent = formatNumber(replyCount);
+  if (replyShareEl) replyShareEl.textContent = `${formatFloat(replyShare * 100, 1)}% of all messages`;
+
+  if (replyListEl) {
+    const entries = Array.isArray(replies.entries) ? replies.entries.slice(0, 5) : [];
+    replyListEl.innerHTML = entries.length
+      ? entries
+          .map(entry => {
+            const metaParts = [
+              entry.sender ? sanitizeText(entry.sender) : null,
+              entry.target_sender ? `→ ${sanitizeText(entry.target_sender)}` : null,
+              entry.timestamp_text ? sanitizeText(entry.timestamp_text) : null,
+            ].filter(Boolean);
+            const snippet = entry.snippet ? sanitizeText(entry.snippet) : "";
+            const targetSnippet = entry.target_snippet ? sanitizeText(entry.target_snippet) : "";
+            return `
+              <li>
+                <div class="reply-meta">${metaParts.join(" · ") || "Reply"}</div>
+                ${snippet ? `<p class="reply-snippet">"${snippet}"</p>` : ""}
+                ${targetSnippet ? `<p class="reply-target">Replying to: "${targetSnippet}"</p>` : ""}
+              </li>
+            `;
+          })
+          .join("")
+      : `<li class="empty-state">No replies captured yet.</li>`;
+  }
+}
+
+function renderPolls(polls) {
+  if (!pollsListEl) return;
+
+  const totalPolls = pollCount => (Number.isFinite(pollCount) && pollCount > 0 ? pollCount : 0);
+  const uniqueCreators = count => (Number.isFinite(count) && count > 0 ? count : 0);
+  const total = totalPolls(polls?.total);
+  const creators = uniqueCreators(polls?.unique_creators);
+
+  if (pollsTotalEl) pollsTotalEl.textContent = formatNumber(total);
+  if (pollsCreatorsEl) pollsCreatorsEl.textContent = formatNumber(creators);
+
+  const entries = Array.isArray(polls?.entries) ? polls.entries.slice(0, 5) : [];
+
+  if (!entries.length) {
+    pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
+    if (pollsNote) {
+      pollsNote.textContent = "Live polls are available once the WhatsApp relay is running.";
+    }
+    return;
+  }
+
+  const formatTimestamp = entry => {
+    if (entry.timestamp) return formatDisplayDate(entry.timestamp);
+    if (entry.timestamp_text) return entry.timestamp_text;
+    return "";
+  };
+
+  pollsListEl.innerHTML = entries
+    .map(entry => {
+      const title = sanitizeText(entry.title || "Poll");
+      const sender = entry.sender || "Unknown";
+      const timeLabel = formatTimestamp(entry);
+      const metaParts = [sender ? `By ${sender}` : null, timeLabel || null].filter(Boolean);
+      const options = Array.isArray(entry.options) ? entry.options.slice(0, 6) : [];
+      const optionsMarkup = options.length
+        ? `<div class="poll-item-options">${options
+            .map(option => `<span>${sanitizeText(option)}</span>`)
+            .join("")}</div>`
+        : "";
+      return `
+        <li class="poll-item">
+          <div class="poll-item-title">${title}</div>
+          <div class="poll-item-meta">${metaParts.map(text => sanitizeText(text)).join(" · ")}</div>
+          ${optionsMarkup}
+        </li>
+      `;
+    })
+    .join("");
+
+  if (pollsNote) {
+    const topCreator = Array.isArray(polls?.top_creators) ? polls.top_creators[0] : null;
+    const noteParts = [`${formatNumber(total)} polls recorded`];
+    if (topCreator) {
+      noteParts.push(
+        `Most polls: ${sanitizeText(topCreator.sender || "Unknown")} (${formatNumber(topCreator.count || 0)})`,
+      );
+    } else if (creators) {
+      noteParts.push(`${formatNumber(creators)} people created polls`);
+    }
+    pollsNote.textContent = noteParts.join(" · ");
   }
 }
 

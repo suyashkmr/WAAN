@@ -1,8 +1,23 @@
-import { MESSAGE_START, SYSTEM_PREFIXES, SYSTEM_PATTERNS, WEEKDAY_SHORT, WEEKDAY_LONG } from "./constants.js";
+import {
+  MESSAGE_START,
+  SYSTEM_PREFIXES,
+  SYSTEM_PATTERNS,
+  SYSTEM_JOIN_TEXT_PATTERNS,
+  SYSTEM_JOIN_REQUEST_TEXT_PATTERNS,
+  SYSTEM_JOIN_SUBTYPES,
+  SYSTEM_JOIN_REQUEST_SUBTYPES,
+  SYSTEM_ADD_SUBTYPES,
+  SYSTEM_REMOVE_SUBTYPES,
+  SYSTEM_LEAVE_SUBTYPES,
+  SYSTEM_CHANGE_SUBTYPES,
+  WEEKDAY_SHORT,
+  WEEKDAY_LONG,
+} from "./constants.js";
 import { isoWeekDateRange, toISODate } from "./utils.js";
 
 const LINK_REGEX = /(https?:\/\/\S+)/i;
 const POLL_PREFIX_REGEX = /^poll:/i;
+const ACK_STATE_ORDER = [-1, 0, 1, 2, 3, 4];
 const SENTIMENT_LEXICON = {
   good: 1,
   great: 1,
@@ -99,13 +114,18 @@ function isSystemContent(content) {
   return SYSTEM_PATTERNS.some(pattern => pattern.test(trimmed));
 }
 
-function countAddedMembers(message) {
+function countAffectedParticipants(message, verbs = ["added"]) {
   if (!message) return 0;
-  const match = message.match(/^you added (.+)$/i);
+  const normalized = message.replace(/\s+/g, " ").trim();
+  if (!normalized.length) return 0;
+  const verbsPattern = verbs.map(verb => verb.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const pattern = new RegExp(`^(?:you|[^:]+)\\s+(?:${verbsPattern})\\s+(.+)$`, "i");
+  const match = normalized.match(pattern);
   if (!match) return 0;
 
   let namesFragment = match[1].trim();
   namesFragment = namesFragment.replace(/\s+(?:to|into)\s+(?:the|this)\s+group.*$/i, "");
+  namesFragment = namesFragment.replace(/\s+(?:from|out of)\s+(?:the|this)\s+group.*$/i, "");
   namesFragment = namesFragment.replace(/[.。]+$/g, "");
   namesFragment = namesFragment.replace(/\s+(?:and|&)\s+/gi, ",");
 
@@ -113,6 +133,91 @@ function countAddedMembers(message) {
     .split(/\s*,\s*/)
     .map(name => name.trim())
     .filter(Boolean).length;
+}
+
+function pickField(entry, candidates = []) {
+  if (!entry) return null;
+  for (const path of candidates) {
+    if (!path) continue;
+    const segments = path.split(".");
+    let value = entry;
+    let missing = false;
+    for (const segment of segments) {
+      if (value && Object.prototype.hasOwnProperty.call(value, segment)) {
+        value = value[segment];
+      } else {
+        value = undefined;
+        missing = true;
+        break;
+      }
+    }
+    if (!missing && value !== undefined && value !== null) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function getMessageId(entry) {
+  if (!entry) return null;
+  const candidates = [
+    "message_id",
+    "id.id",
+    "id._serialized",
+    "id",
+    "key.id",
+    "key._serialized",
+    "stanzaId",
+    "stanza_id",
+  ];
+  for (const candidate of candidates) {
+    const value = pickField(entry, [candidate]);
+    if (value) {
+      if (typeof value === "object") {
+        if (value.id) return String(value.id);
+        if (value._serialized) return String(value._serialized);
+        continue;
+      }
+      return String(value);
+    }
+  }
+  return null;
+}
+
+function getQuotedMessageId(entry) {
+  return pickField(entry, ["quoted_message_id", "quotedMsgId", "quoted_stanza_id", "quotedStanzaId"]);
+}
+
+function getAckValue(entry) {
+  const value = pickField(entry, ["ack", "delivery_state", "deliveryState"]);
+  if (value === null || value === undefined) return null;
+  const numeric = Number(value);
+  return Number.isNaN(numeric) ? null : numeric;
+}
+
+function getForwardingScore(entry) {
+  const score = pickField(entry, ["forwarding_score", "forwardingScore"]);
+  if (score === null || score === undefined) return null;
+  const numeric = Number(score);
+  return Number.isNaN(numeric) ? null : numeric;
+}
+
+function getBooleanFlag(entry, keys = []) {
+  for (const key of keys) {
+    const value = pickField(entry, [key]);
+    if (value !== null && value !== undefined) {
+      return Boolean(value);
+    }
+  }
+  return false;
+}
+
+function buildSnippet(text, limit = 160) {
+  if (!text) return "";
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (!normalized) return "";
+  if (normalized.length <= limit) return normalized;
+  return `${normalized.slice(0, limit - 3)}...`;
 }
 
 export function parseChatText(text) {
@@ -169,6 +274,9 @@ export function parseChatText(text) {
         sender,
         message: messageBody,
         type,
+        has_poll: false,
+        poll_title: null,
+        poll_options: null,
       };
     } else if (current) {
       current.message += `\n${rawLine}`;
@@ -181,6 +289,109 @@ export function parseChatText(text) {
   }
 
   return entries;
+}
+
+function getSystemParticipantCount(entry) {
+  if (!entry) return null;
+  const declaredCount = Number(entry.system_participant_count);
+  if (Number.isFinite(declaredCount) && declaredCount > 0) {
+    return declaredCount;
+  }
+  if (Array.isArray(entry.system_participants) && entry.system_participants.length) {
+    return entry.system_participants.length;
+  }
+  return null;
+}
+
+function matchesAnyPattern(patterns, text) {
+  if (!text) return false;
+  return patterns.some(pattern => pattern.test(text));
+}
+
+function isJoinSystemEntry(entry) {
+  if (!entry) return false;
+  if (entry.system_subtype && SYSTEM_JOIN_SUBTYPES.has(entry.system_subtype)) {
+    return true;
+  }
+  return matchesAnyPattern(SYSTEM_JOIN_TEXT_PATTERNS, entry.message);
+}
+
+function isJoinRequestEntry(entry) {
+  if (!entry) return false;
+  if (entry.system_subtype && SYSTEM_JOIN_REQUEST_SUBTYPES.has(entry.system_subtype)) {
+    return true;
+  }
+  return matchesAnyPattern(SYSTEM_JOIN_REQUEST_TEXT_PATTERNS, entry.message);
+}
+
+function containsWord(text, word) {
+  if (!text || !word) return false;
+  const pattern = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+  return pattern.test(text);
+}
+
+function isAddSystemEntry(entry) {
+  if (!entry) return false;
+  if (entry.system_subtype && SYSTEM_ADD_SUBTYPES.has(entry.system_subtype)) return true;
+  const lower = (entry.message || "").toLowerCase();
+  return containsWord(lower, "added") || containsWord(lower, "invited");
+}
+
+function isLeaveSystemEntry(entry) {
+  if (!entry) return false;
+  if (entry.system_subtype && SYSTEM_LEAVE_SUBTYPES.has(entry.system_subtype)) return true;
+  const lower = (entry.message || "").toLowerCase();
+  return containsWord(lower, "left");
+}
+
+function isRemoveSystemEntry(entry) {
+  if (!entry) return false;
+  if (entry.system_subtype && SYSTEM_REMOVE_SUBTYPES.has(entry.system_subtype)) return true;
+  const lower = (entry.message || "").toLowerCase();
+  return containsWord(lower, "removed");
+}
+
+function isChangeSystemEntry(entry) {
+  if (!entry) return false;
+  if (entry.system_subtype && SYSTEM_CHANGE_SUBTYPES.has(entry.system_subtype)) return true;
+  const lower = (entry.message || "").toLowerCase();
+  return containsWord(lower, "changed");
+}
+
+function getAdditionIncrement(entry) {
+  if (!entry) return 0;
+  if (entry.system_subtype && SYSTEM_ADD_SUBTYPES.has(entry.system_subtype)) {
+    return getSystemParticipantCount(entry) || 1;
+  }
+  const fromText = countAffectedParticipants(entry.message, ["added", "invited"]);
+  if (fromText > 0) return fromText;
+  const lower = (entry.message || "").toLowerCase();
+  if (containsWord(lower, "added") || containsWord(lower, "invited")) {
+    return 1;
+  }
+  return 0;
+}
+
+function getRemovalIncrement(entry) {
+  if (!entry) return 0;
+  if (entry.system_subtype && SYSTEM_REMOVE_SUBTYPES.has(entry.system_subtype)) {
+    return getSystemParticipantCount(entry) || 1;
+  }
+  const fromText = countAffectedParticipants(entry.message, ["removed"]);
+  if (fromText > 0) return fromText;
+  const lower = (entry.message || "").toLowerCase();
+  if (containsWord(lower, "removed")) return 1;
+  return 0;
+}
+
+function getLeaveIncrement(entry) {
+  if (!entry) return 0;
+  if (entry.system_subtype && SYSTEM_LEAVE_SUBTYPES.has(entry.system_subtype)) {
+    return getSystemParticipantCount(entry) || 1;
+  }
+  const lower = (entry.message || "").toLowerCase();
+  if (containsWord(lower, "left")) return 1;
+  return 0;
 }
 
 function buildTimestampISO(dayStr, monthStr, yearStr, hourStr, minuteStr, period) {
@@ -222,9 +433,12 @@ export function computeAnalytics(entries) {
   let changedEvents = 0;
   let linkCount = 0;
   let deletedMessageCount = 0;
-  let pollCount = 0;
   let linkCountPrev = 0;
   let systemJoinRequests = 0;
+  let classifiedSystemEntries = 0;
+  let pollCount = 0;
+  let forwardCount = 0;
+  let replyCount = 0;
 
   const sentimentTotals = { positive: 0, neutral: 0, negative: 0, score: 0 };
   const dailyStatsMap = new Map();
@@ -236,11 +450,56 @@ export function computeAnalytics(entries) {
   }));
 
   const senderStats = new Map();
+  const pollEntries = [];
+  const pollSenderCounts = new Map();
+  const ackCounts = new Map();
+  const forwardSenderCounts = new Map();
+  const replySenderCounts = new Map();
+  const replyEntries = [];
+  const messageById = new Map();
   messages.forEach(entry => {
     const trimmedMessage = (entry.message || "").trim();
     const lowerMessage = trimmedMessage.toLowerCase();
     const sentimentScore = scoreSentiment(entry.message);
     const sentimentLabel = sentimentScore > 0 ? "positive" : sentimentScore < 0 ? "negative" : "neutral";
+    const fromMe = getBooleanFlag(entry, ["from_me", "fromMe"]);
+    const ackValue = getAckValue(entry);
+    if (Number.isFinite(ackValue)) {
+      ackCounts.set(ackValue, (ackCounts.get(ackValue) || 0) + 1);
+    }
+    const forwardingScore = getForwardingScore(entry);
+    const forwardedFlag = getBooleanFlag(entry, ["is_forwarded", "isForwarded", "forwarded"]);
+    const isForwarded =
+      (Number.isFinite(forwardingScore) && forwardingScore > 0) ||
+      (forwardingScore === null && forwardedFlag);
+    if (isForwarded) {
+      forwardCount += 1;
+      const forwardSender = entry.sender || (fromMe ? "You" : "Unknown");
+      forwardSenderCounts.set(forwardSender, (forwardSenderCounts.get(forwardSender) || 0) + 1);
+    }
+    const messageId = getMessageId(entry);
+    if (messageId) {
+      messageById.set(messageId, {
+        sender: entry.sender || (fromMe ? "You" : "Unknown"),
+        message: entry.message,
+        timestamp: entry.timestamp || null,
+      });
+    }
+    const quotedId = getQuotedMessageId(entry);
+    if (quotedId) {
+      replyCount += 1;
+      const replySender = entry.sender || (fromMe ? "You" : "Unknown");
+      replySenderCounts.set(replySender, (replySenderCounts.get(replySender) || 0) + 1);
+      const target = messageById.get(quotedId);
+      replyEntries.push({
+        sender: replySender,
+        target_sender: target?.sender || "Unknown",
+        snippet: buildSnippet(trimmedMessage || entry.message || ""),
+        target_snippet: buildSnippet(target?.message || ""),
+        timestamp: entry.timestamp || null,
+        timestamp_text: entry.timestamp_text || "",
+      });
+    }
 
     sentimentTotals[sentimentLabel] += 1;
     sentimentTotals.score += sentimentScore;
@@ -452,11 +711,39 @@ export function computeAnalytics(entries) {
       linkCount += 1;
       if (inPreviousWindow) linkCountPrev += 1;
     }
-    if (POLL_PREFIX_REGEX.test(trimmedMessage)) {
-      pollCount += 1;
-    }
     if (isMediaMessage(trimmedMessage)) {
       mediaCount += 1;
+    }
+
+    const hasPoll =
+      Boolean(entry.has_poll) ||
+      Boolean(entry.poll_title) ||
+      (Array.isArray(entry.poll_options) && entry.poll_options.length > 0) ||
+      POLL_PREFIX_REGEX.test(trimmedMessage);
+    if (hasPoll) {
+      pollCount += 1;
+      const pollOptions = Array.isArray(entry.poll_options)
+        ? entry.poll_options
+            .map(option => {
+              if (option == null) return null;
+              if (typeof option === "string") return option.trim();
+              if (typeof option === "object") {
+                const text = option.name || option.title || option.label || option.localizedText;
+                return text ? String(text).trim() : null;
+              }
+              return String(option).trim();
+            })
+            .filter(Boolean)
+        : [];
+      pollEntries.push({
+        sender: entry.sender || "Unknown",
+        title: entry.poll_title || trimmedMessage.split("\n")[0] || "Poll",
+        options: pollOptions,
+        timestamp: entry.timestamp || null,
+        timestamp_text: entry.timestamp_text || "",
+      });
+      const pollSender = entry.sender || "Unknown";
+      pollSenderCounts.set(pollSender, (pollSenderCounts.get(pollSender) || 0) + 1);
     }
 
     let weekInfo = weeklyMap.get(weekKey);
@@ -484,17 +771,54 @@ export function computeAnalytics(entries) {
   });
 
   systems.forEach(entry => {
-    const message = (entry.message || "").toLowerCase();
-    if (message.includes("joined")) joinEvents += 1;
-    if (message.includes("added")) {
-      const addedCount = countAddedMembers(entry.message);
-      addedEvents += addedCount || 1;
+    const lowerMessage = (entry.message || "").toLowerCase();
+    const participantCount = getSystemParticipantCount(entry) || 1;
+    let classified = false;
+
+    if (isJoinSystemEntry(entry)) {
+      joinEvents += participantCount;
+      classified = true;
+    } else if (containsWord(lowerMessage, "joined")) {
+      joinEvents += 1;
+      classified = true;
     }
-    if (message.includes("left")) leftEvents += 1;
-    if (message.includes("removed")) removedEvents += 1;
-    if (message.includes("changed")) changedEvents += 1;
-    if (SYSTEM_PATTERNS[3].test(message)) {
+
+    const additions = getAdditionIncrement(entry);
+    if (additions > 0) {
+      addedEvents += additions;
+      classified = true;
+    }
+
+    const leaves = getLeaveIncrement(entry);
+    if (leaves > 0) {
+      leftEvents += leaves;
+      classified = true;
+    }
+
+    const removals = getRemovalIncrement(entry);
+    if (removals > 0) {
+      removedEvents += removals;
+      classified = true;
+    }
+
+    if (isChangeSystemEntry(entry)) {
+      changedEvents += 1;
+      classified = true;
+    } else if (containsWord(lowerMessage, "changed")) {
+      changedEvents += 1;
+      classified = true;
+    }
+
+    if (isJoinRequestEntry(entry)) {
+      systemJoinRequests += participantCount;
+      classified = true;
+    } else if (SYSTEM_PATTERNS[3].test(lowerMessage)) {
       systemJoinRequests += 1;
+      classified = true;
+    }
+
+    if (classified) {
+      classifiedSystemEntries += 1;
     }
   });
 
@@ -642,10 +966,7 @@ export function computeAnalytics(entries) {
     return sum + trimmed.split(/\s+/).length;
   }, 0);
 
-  const otherSystemEvents = Math.max(
-    systems.length - (joinEvents + addedEvents + leftEvents + removedEvents + changedEvents),
-    0,
-  );
+  const otherSystemEvents = Math.max(0, systems.length - classifiedSystemEntries);
 
   const avgChars = messages.length ? totalChars / messages.length : 0;
   const avgWords = messages.length ? totalWords / messages.length : 0;
@@ -664,6 +985,50 @@ export function computeAnalytics(entries) {
   weeklyCounts.forEach(entry => {
     delete entry.startMs;
   });
+
+  const deliveryCounts = {};
+  let ackSampleTotal = 0;
+  ackCounts.forEach((count, state) => {
+    const key = String(state);
+    deliveryCounts[key] = count;
+    ackSampleTotal += count;
+  });
+  ACK_STATE_ORDER.forEach(state => {
+    const key = String(state);
+    if (deliveryCounts[key] === undefined) {
+      deliveryCounts[key] = 0;
+    }
+  });
+  const seenCount = (deliveryCounts["3"] || 0) + (deliveryCounts["4"] || 0);
+  const deliveredCount = seenCount + (deliveryCounts["2"] || 0);
+  const deliveryAnalytics = {
+    total: ackSampleTotal,
+    counts: deliveryCounts,
+    seen_rate: ackSampleTotal ? seenCount / ackSampleTotal : 0,
+    delivered_rate: ackSampleTotal ? deliveredCount / ackSampleTotal : 0,
+  };
+
+  const forwardTopSenders = Array.from(forwardSenderCounts.entries())
+    .map(([sender, count]) => ({ sender, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  const forwardAnalytics = {
+    total: forwardCount,
+    share: totalMessages ? forwardCount / totalMessages : 0,
+    top_senders: forwardTopSenders,
+  };
+
+  const replyTopSenders = Array.from(replySenderCounts.entries())
+    .map(([sender, count]) => ({ sender, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  const replyDetails = replyEntries.slice(-15).reverse();
+  const replyAnalytics = {
+    total: replyCount,
+    share: totalMessages ? replyCount / totalMessages : 0,
+    top_senders: replyTopSenders,
+    entries: replyDetails,
+  };
 
   const messageTypeSummary = [
     {
@@ -699,6 +1064,32 @@ export function computeAnalytics(entries) {
   }
 
   const mediaCategories = [];
+
+  const pollDetails = pollEntries
+    .map(entry => ({
+      sender: entry.sender || "Unknown",
+      title: entry.title || "Poll",
+      options: Array.isArray(entry.options) ? entry.options.slice(0, 10) : [],
+      timestamp: entry.timestamp || null,
+      timestamp_text: entry.timestamp_text || "",
+    }))
+    .sort((a, b) => {
+      const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return bTime - aTime;
+    });
+
+  const pollTopCreators = Array.from(pollSenderCounts.entries())
+    .map(([sender, count]) => ({ sender, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const pollAnalytics = {
+    total: pollCount,
+    unique_creators: pollSenderCounts.size,
+    entries: pollDetails.slice(0, 25),
+    top_creators: pollTopCreators,
+  };
 
   const messageTypes = {
     summary: messageTypeSummary.filter(entry => entry.count > 0),
@@ -807,6 +1198,10 @@ export function computeAnalytics(entries) {
       words: avgWords,
     },
     message_types: messageTypes,
+    polls: pollAnalytics,
+    delivery: deliveryAnalytics,
+    forwards: forwardAnalytics,
+    replies: replyAnalytics,
     sentiment: sentimentOverview,
     highlights: buildHighlights({
       dailyCounts,

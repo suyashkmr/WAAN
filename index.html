@@ -22,6 +22,8 @@
                 <a href="#timeofday-trend">Time of Day</a>
                 <a href="#sentiment-overview">Mood</a>
                 <a href="#message-types">Message Mix</a>
+                <a href="#delivery-card">Delivery</a>
+                <a href="#polls-card">Polls</a>
                 <a href="#saved-views-card">Saved Setups</a>
                 <a href="#search-panel">Search Messages</a>
             </div>
@@ -76,6 +78,52 @@
             </div>
             <div class="card-content" id="insight-highlights-content">
                 <div class="highlight-grid" id="highlight-list"></div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="delivery-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Delivery & Replies</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="delivery-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="delivery-content">
+                <p class="section-note" id="delivery-note">WhatsApp delivery signals (ack states), forwards, and replies observed by the live relay.</p>
+                <div class="delivery-summary">
+                    <div class="stat">
+                        <span class="stat-label">Seen rate</span>
+                        <span class="stat-value" id="delivery-seen-rate">0%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Delivered</span>
+                        <span class="stat-value" id="delivery-delivered-rate">0%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Forwarded messages</span>
+                        <span class="stat-value" id="forward-count">0</span>
+                        <span class="stat-sub" id="forward-share">0% of all messages</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Replies</span>
+                        <span class="stat-value" id="reply-count">0</span>
+                        <span class="stat-sub" id="reply-share">0% of all messages</span>
+                    </div>
+                </div>
+                <div class="delivery-grid">
+                    <div class="delivery-panel">
+                        <h3>Delivery states</h3>
+                        <ul class="ack-list" id="delivery-ack-list"></ul>
+                    </div>
+                    <div class="delivery-panel">
+                        <h3>Top forwarders</h3>
+                        <ol class="mini-list" id="forward-top-list"></ol>
+                    </div>
+                    <div class="delivery-panel">
+                        <h3>Latest replies</h3>
+                        <ol class="reply-list" id="reply-list"></ol>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -420,6 +468,74 @@
                         <span class="stat-label">Average words per message</span>
                     </div>
                 </div>
+            </div>
+        </section>
+        <section class="card full-span" id="delivery-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Delivery & Replies</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="delivery-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="delivery-content">
+                <p class="section-note" id="delivery-note">WhatsApp delivery signals (ack states), forwards, and replies observed by the live relay.</p>
+                <div class="delivery-summary">
+                    <div class="stat">
+                        <span class="stat-label">Seen rate</span>
+                        <span class="stat-value" id="delivery-seen-rate">0%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Delivered</span>
+                        <span class="stat-value" id="delivery-delivered-rate">0%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Forwarded messages</span>
+                        <span class="stat-value" id="forward-count">0</span>
+                        <span class="stat-sub" id="forward-share">0% of all messages</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Replies</span>
+                        <span class="stat-value" id="reply-count">0</span>
+                        <span class="stat-sub" id="reply-share">0% of all messages</span>
+                    </div>
+                </div>
+                <div class="delivery-grid">
+                    <div class="delivery-panel">
+                        <h3>Delivery states</h3>
+                        <ul class="ack-list" id="delivery-ack-list"></ul>
+                    </div>
+                    <div class="delivery-panel">
+                        <h3>Top forwarders</h3>
+                        <ol class="mini-list" id="forward-top-list"></ol>
+                    </div>
+                    <div class="delivery-panel">
+                        <h3>Latest replies</h3>
+                        <ol class="reply-list" id="reply-list"></ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="polls-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Polls</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="polls-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="polls-content">
+                <p class="section-note" id="polls-note">Live poll questions captured by the relay.</p>
+                <div class="polls-summary">
+                    <div class="stat">
+                        <span class="stat-label">Total polls</span>
+                        <span class="stat-value" id="polls-total">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Unique poll creators</span>
+                        <span class="stat-value" id="polls-creators">0</span>
+                    </div>
+                </div>
+                <ol class="polls-list" id="polls-list"></ol>
             </div>
         </section>
 
