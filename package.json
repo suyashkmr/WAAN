@@ -1,0 +1,16 @@
+{
+  "name": "waan-suite",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WAAN macOS distribution containing the WhatsApp relay server and desktop client.",
+  "workspaces": [
+    "apps/server",
+    "apps/client"
+  ],
+  "scripts": {
+    "bootstrap": "npm install --workspaces",
+    "lint": "echo \"No root lint configured\""
+  },
+  "author": "WAAN",
+  "license": "MIT"
+}

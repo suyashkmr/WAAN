@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="1">
+  <title>WAAN Suite</title>
+  <choices-outline>
+    <line choice="com.waan.server"/>
+    <line choice="com.waan.client"/>
+  </choices-outline>
+  <choice id="com.waan.server" title="WAAN Server" description="Installs the background relay service.">
+    <pkg-ref id="com.waan.server.pkg"/>
+  </choice>
+  <choice id="com.waan.client" title="WAAN Client" description="Installs the desktop application.">
+    <pkg-ref id="com.waan.client.pkg"/>
+  </choice>
+  <pkg-ref id="com.waan.server.pkg" version="1.0" auth="Root">#waan-server.pkg</pkg-ref>
+  <pkg-ref id="com.waan.client.pkg" version="1.0" auth="Root">#waan-client.pkg</pkg-ref>
+</installer-gui-script>

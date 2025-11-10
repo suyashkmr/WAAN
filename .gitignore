@@ -1,0 +1,13 @@
+.DS_Store
+node_modules
+dist
+out
+logs
+tmp
+**/*.log
+coverage
+apps/client/resources/web
+apps/client/.erb
+*.pkg
+*.dmg
+*.zip
