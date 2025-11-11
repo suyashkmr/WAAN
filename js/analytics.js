@@ -1,5 +1,4 @@
 import {
-  MESSAGE_START,
   SYSTEM_PREFIXES,
   SYSTEM_PATTERNS,
   SYSTEM_JOIN_TEXT_PATTERNS,
@@ -14,6 +13,7 @@ import {
   WEEKDAY_LONG,
 } from "./constants.js";
 import { isoWeekDateRange, toISODate } from "./utils.js";
+import { parseString } from "./vendor/whatsapp-chat-parser.js";
 
 const LINK_REGEX = /(https?:\/\/\S+)/i;
 const POLL_PREFIX_REGEX = /^poll:/i;
@@ -220,75 +220,40 @@ function buildSnippet(text, limit = 160) {
   return `${normalized.slice(0, limit - 3)}...`;
 }
 
+function formatTimestampFromDate(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear());
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${day}/${month}/${year}, ${hours}:${minutes}`;
+}
+
 export function parseChatText(text) {
   if (!text) return [];
-  const lines = text.split(/\r?\n/);
-  const entries = [];
-  let current = null;
-
-  for (let rawLine of lines) {
-    if (rawLine.endsWith("\r")) rawLine = rawLine.slice(0, -1);
-    if (!rawLine.length) {
-      if (current) current.message += "\n";
-      continue;
+  const parsed = parseString(text, { parseAttachments: true }) || [];
+  return parsed.map(message => {
+    const timestamp = message.date instanceof Date ? message.date.toISOString() : null;
+    const timestampText = formatTimestampFromDate(message.date);
+    let sender = message.author || null;
+    let body = message.message || "";
+    let type = sender ? "message" : "system";
+    if (type === "message" && isSystemContent(body)) {
+      type = "system";
+      sender = null;
     }
-
-    if (rawLine.charCodeAt(0) === 0xfeff) rawLine = rawLine.slice(1);
-
-    const match = MESSAGE_START.exec(rawLine);
-    if (match) {
-      if (current) {
-        current.message = current.message.replace(/\n+$/, "");
-        entries.push(current);
-      }
-
-      const [, day, month, year, hour, minute, periodRaw, contentRaw] = match;
-      const period = periodRaw ? periodRaw.toUpperCase() : null;
-      const timestampISO = buildTimestampISO(day, month, year, hour, minute, period);
-      let timestampText = `${day}/${month}/${year}, ${hour}:${minute}`;
-      if (period) timestampText += ` ${period}`;
-
-      const content = contentRaw ?? "";
-      let sender = null;
-      let messageBody = content;
-      let type = "system";
-
-      if (!isSystemContent(content)) {
-        const delimiterIndex = content.indexOf(": ");
-        if (delimiterIndex !== -1) {
-          sender = content.slice(0, delimiterIndex);
-          messageBody = content.slice(delimiterIndex + 2);
-          type = "message";
-
-          if (isSystemContent(messageBody)) {
-            sender = null;
-            messageBody = content;
-            type = "system";
-          }
-        }
-      }
-
-      current = {
-        timestamp: timestampISO,
-        timestamp_text: timestampText,
-        sender,
-        message: messageBody,
-        type,
-        has_poll: false,
-        poll_title: null,
-        poll_options: null,
-      };
-    } else if (current) {
-      current.message += `\n${rawLine}`;
-    }
-  }
-
-  if (current) {
-    current.message = current.message.replace(/\n+$/, "");
-    entries.push(current);
-  }
-
-  return entries;
+    return {
+      timestamp,
+      timestamp_text: timestampText,
+      sender,
+      message: body,
+      type,
+      has_poll: false,
+      poll_title: null,
+      poll_options: null,
+    };
+  });
 }
 
 function getSystemParticipantCount(entry) {
@@ -392,24 +357,6 @@ function getLeaveIncrement(entry) {
   const lower = (entry.message || "").toLowerCase();
   if (containsWord(lower, "left")) return 1;
   return 0;
-}
-
-function buildTimestampISO(dayStr, monthStr, yearStr, hourStr, minuteStr, period) {
-  let day = Number(dayStr);
-  let month = Number(monthStr) - 1;
-  let year = Number(yearStr);
-  if (year < 100) year += 2000;
-  let hour = Number(hourStr);
-  const minute = Number(minuteStr);
-
-  if (period) {
-    const upper = period.toUpperCase();
-    if (upper === "PM" && hour < 12) hour += 12;
-    else if (upper === "AM" && hour === 12) hour = 0;
-  }
-
-  const date = new Date(year, month, day, hour, minute);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 export function computeAnalytics(entries) {

@@ -2350,6 +2350,9 @@ main > .card.half-span {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
 }
 
 .poll-item {
@@ -2805,13 +2808,13 @@ tbody tr:hover {
 }
 
 #hourly-chart {
-    min-height: 360px;
-    padding-top: 1.5rem;
+    min-height: 240px;
+    padding-top: 1rem;
 }
 
 #weekday-chart {
-    min-height: 260px;
-    padding-top: 1.25rem;
+    min-height: 200px;
+    padding-top: 1rem;
 }
 
 .bar {
