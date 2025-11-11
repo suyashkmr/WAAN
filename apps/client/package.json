@@ -1,0 +1,46 @@
+{
+  "name": "@waan/client",
+  "version": "0.1.0",
+  "description": "WAAN desktop client for macOS that embeds the analytics UI.",
+  "main": "src/main.js",
+  "scripts": {
+    "sync:web": "node scripts/sync-web-assets.js",
+    "start": "npm run sync:web && electron .",
+    "dev": "npm run start",
+    "pack": "npm run sync:web && electron-builder --dir",
+    "dist": "npm run sync:web && electron-builder"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.2"
+  },
+  "devDependencies": {
+    "electron": "^30.0.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.waan.client",
+    "productName": "WAAN Client",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/web",
+        "to": "web",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  },
+  "license": "MIT"
+}

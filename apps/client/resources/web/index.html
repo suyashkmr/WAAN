@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat Overview</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Whatsapp Group Chat Analytics</h1>
+    </header>
+
+    <main>
+        <nav class="section-nav full-span" aria-label="Section shortcuts">
+            <div class="section-nav-inner">
+                <a href="#summary">Overview</a>
+                <a href="#insight-highlights">Highlights</a>
+                <a href="#relay-control-card">Relay</a>
+                <a href="#daily-activity">Day by Day</a>
+                <a href="#weekly-trend">Week by Week</a>
+                <a href="#weekday-trend">Day of the Week</a>
+                <a href="#timeofday-trend">Time of Day</a>
+                <a href="#sentiment-overview">Mood</a>
+                <a href="#message-types">Message Mix</a>
+                <a href="#polls-card">Polls</a>
+                <a href="#saved-views-card">Saved Setups</a>
+                <a href="#search-panel">Search Messages</a>
+            </div>
+        </nav>
+
+        <div class="page-controls full-span">
+            <div class="control-row primary-controls">
+                <div class="control upload-control">
+                    <span>Upload WhatsApp chat </span>
+                    <input type="file" id="chat-file" accept=".txt,text/plain">
+                  
+                </div>
+                <label class="control dataset-control">
+                    <span>Loaded chats</span>
+                    <select id="chat-selector" disabled>
+                        <option value="">No chats loaded yet</option>
+                    </select>
+                </label>
+                <div class="control live-chats-panel">
+                    <div class="live-chats-header">
+                        <span>Live WhatsApp chats</span>
+                        <button type="button" class="ghost-button small" id="refresh-live-chats">Refresh</button>
+                    </div>
+                    <div id="live-chat-list" class="live-chat-list" aria-live="polite"></div>
+                </div>
+                <div class="control custom-range hidden" id="custom-range-controls">
+                    <span>Custom dates</span>
+                    <div class="custom-range-inputs">
+                        <input type="date" id="custom-start" disabled>
+                        <span class="range-separator">to</span>
+                        <input type="date" id="custom-end" disabled>
+                        <button type="button" class="ghost-button small" id="apply-custom-range" disabled>Apply</button>
+                    </div>
+                </div>
+                <label class="control period-control">
+                    <span>Time range</span>
+                    <select id="global-range">
+                        <option value="all">All time</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="180">Last 180 days</option>
+                        <option value="365">Last 365 days</option>
+                        <option value="custom">Custom range</option>
+                    </select>
+                </label>
+            </div>
+            <div class="control-row page-actions">
+                <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
+                <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
+                <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
+                <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
+            </div>
+        </div>
+
+        <p id="data-status" class="status full-span"></p>
+
+        <section class="card full-span" id="relay-control-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Relay Control</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button small" id="relay-start-button">Start relay</button>
+                        <button type="button" class="ghost-button small" id="relay-stop-button">Stop relay</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="relay-control-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="relay-control-content">
+                <div class="relay-status-grid">
+                    <div>
+                        <span class="relay-status-label">Relay status</span>
+                        <div id="relay-status-indicator" class="relay-status-indicator" aria-live="polite">Not connected</div>
+                        <p class="relay-status-meta" id="relay-status-meta"></p>
+                    </div>
+                    <div>
+                        <span class="relay-status-label">Manager endpoint</span>
+                        <p class="relay-status-meta" id="relay-endpoint-display">—</p>
+                    </div>
+                </div>
+                <div class="relay-log-wrapper">
+                    <div class="relay-log-toolbar">
+                        <span>Live logs & QR output</span>
+                        <button type="button" class="ghost-button small" id="relay-log-clear">Clear</button>
+                    </div>
+                    <pre id="relay-log-view" class="relay-log-view" aria-live="polite"></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary" class="card-grid summary full-span"></section>
+
+        <section class="card full-span highlights" id="insight-highlights">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Highlights</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="insight-highlights-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="insight-highlights-content">
+                <div class="highlight-grid" id="highlight-list"></div>
+            </div>
+        </section>
+
+<section class="card full-span participants">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Participants</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-participants">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="participants-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="participants-content">
+                <p class="section-note" id="participants-note">Everyone listed by how many messages they have sent.</p>
+                <div class="participants-controls">
+                    <label class="control-group" for="participants-top-count">
+                        <span>Show Top</span>
+                        <select id="participants-top-count">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="0">All</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="table-container scrollable">
+                    <table id="top-senders">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Participant</th>
+                                <th>Messages</th>
+                                <th>Share</th>
+                                <th>Avg Words</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="hourly-activity">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Hourly Activity</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-hourly">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="hourly-activity-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="hourly-activity-content">
+                <p class="section-note">Shows when messages were sent during the day (using times from the chat).</p>
+                <div class="hourly-summary">
+                    <div class="summary-block">
+                        <span class="summary-label">Top Hour</span>
+                        <span class="summary-value" id="hourly-top-hour">—</span>
+                    </div>
+                </div>
+                <div class="hourly-controls">
+                    <div class="toggle-group">
+                        <span class="toggle-label">Days</span>
+                        <label><input type="checkbox" id="filter-weekdays" checked> Weekdays</label>
+                        <label><input type="checkbox" id="filter-weekends" checked> Weekends</label>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">Hours</span>
+                        <label><input type="checkbox" id="filter-working" checked> Working (09-17)</label>
+                        <label><input type="checkbox" id="filter-offhours" checked> Off Hours</label>
+                    </div>
+                    <div class="brush-group">
+                        <label for="hourly-brush-start">Hour Range</label>
+                        <div class="brush-inputs">
+                            <input type="range" id="hourly-brush-start" min="0" max="23" value="0">
+                            <input type="range" id="hourly-brush-end" min="0" max="23" value="23">
+                        </div>
+                        <div class="brush-labels">
+                            <span id="hourly-brush-start-label">00:00</span>
+                            <span>–</span>
+                            <span id="hourly-brush-end-label">23:00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hourly-filter-note" id="hourly-filter-note"></div>
+                <div class="brush-summary" id="hourly-brush-summary">Select hour range to view details.</div>
+                <div id="hourly-chart" class="hourly-heatmap"></div>
+                <div class="hourly-anomalies" id="hourly-anomalies"></div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="daily-activity">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Day by Day</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-daily">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="daily-activity-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="daily-activity-content">
+                <p class="section-note">Messages per day across the whole chat. Hover to see the numbers.</p>
+                <div class="daily-summary">
+                    <div class="summary-block">
+                        <span class="summary-label">Avg per day</span>
+                    <span class="summary-value" id="daily-avg-day">—</span>
+                    </div>
+                </div>
+                <div id="daily-chart" class="calendar-chart"></div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="weekly-trend">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Week by Week</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-weekly">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="weekly-trend-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="weekly-trend-content">
+                <p class="section-note">Messages per week (calendar weeks).</p>
+                <div class="weekly-summary">
+                    <div class="summary-block">
+                        <span class="summary-label">Total so far</span>
+                        <span class="summary-value" id="weekly-cumulative">—</span>
+                    </div>
+                    <div class="summary-block">
+                        <span class="summary-label">Avg of last 3 weeks</span>
+                        <span class="summary-value" id="weekly-rolling">—</span>
+                    </div>
+                    <div class="summary-block">
+                        <span class="summary-label">Avg per week</span>
+                        <span class="summary-value" id="weekly-average">—</span>
+                    </div>
+                </div>
+                <div id="weekly-chart" class="weekly-chart"></div>
+                <p class="section-note week-number-note">Week labels follow ISO week notation (ISO 8601).</p>
+            </div>
+        </section>
+
+        <section class="card full-span" id="weekday-trend">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Day of the Week</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-weekday">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="weekday-trend-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="weekday-trend-content">
+                <p class="section-note">Average messages for each day of the week.</p>
+                <div class="weekday-controls">
+                    <div class="toggle-group">
+                        <span class="toggle-label">Days</span>
+                        <label class="segmented-option">
+                            <input type="checkbox" id="weekday-toggle-weekdays" checked>
+                            <span>Weekdays</span>
+                        </label>
+                        <label class="segmented-option">
+                            <input type="checkbox" id="weekday-toggle-weekends" checked>
+                            <span>Weekends</span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">Hours</span>
+                        <label class="segmented-option">
+                            <input type="checkbox" id="weekday-toggle-working" checked>
+                            <span>Work hours (09-17)</span>
+                        </label>
+                        <label class="segmented-option">
+                            <input type="checkbox" id="weekday-toggle-offhours" checked>
+                            <span>Off hours</span>
+                        </label>
+                    </div>
+                    <div class="brush-group">
+                        <label for="weekday-hour-start">Hour Range</label>
+                        <div class="brush-inputs">
+                            <input type="range" id="weekday-hour-start" min="0" max="23" value="0">
+                            <input type="range" id="weekday-hour-end" min="0" max="23" value="23">
+                        </div>
+                        <div class="brush-labels">
+                            <span id="weekday-hour-start-label">00:00</span>
+                            <span>–</span>
+                            <span id="weekday-hour-end-label">23:00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="weekday-filter-note" id="weekday-filter-note"></div>
+                <div id="weekday-chart" class="weekday-chart"></div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="timeofday-trend">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Time of Day</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-timeofday">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="timeofday-trend-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="timeofday-trend-content">
+                <p class="section-note">Average messages per hour for the selected range.</p>
+                <div class="timeofday-controls">
+                    <div class="toggle-group">
+                        <span class="toggle-label">Days to include</span>
+                        <label class="segmented-option">
+                            <input type="checkbox" id="timeofday-toggle-weekdays" checked>
+                            <span>Weekdays</span>
+                        </label>
+                        <label class="segmented-option">
+                            <input type="checkbox" id="timeofday-toggle-weekends" checked>
+                            <span>Weekends</span>
+                        </label>
+                    </div>
+                    <div class="brush-group">
+                        <label for="timeofday-hour-start">Focus Hours</label>
+                        <div class="brush-inputs">
+                            <input type="range" id="timeofday-hour-start" min="0" max="23" value="0">
+                            <input type="range" id="timeofday-hour-end" min="0" max="23" value="23">
+                        </div>
+                        <div class="brush-labels">
+                            <span id="timeofday-hour-start-label">00:00</span>
+                            <span>–</span>
+                            <span id="timeofday-hour-end-label">23:00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeofday-chart" id="timeofday-chart">
+                    <div class="timeofday-sparkline" id="timeofday-sparkline"></div>
+                    <div class="timeofday-band-grid" id="timeofday-bands"></div>
+                    <div class="timeofday-callouts" id="timeofday-callouts"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card full-span sentiment" id="sentiment-overview">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Mood</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-sentiment">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="sentiment-overview-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="sentiment-overview-content">
+                <p class="section-note">Estimated mood (positive, neutral, negative) based on the message text. Treat this as a rough guide.</p>
+                <div class="sentiment-summary" id="sentiment-summary"></div>
+                <div class="sentiment-content">
+                    <div class="sentiment-trend sentiment-panel">
+                        <h3>Daily mood</h3>
+                        <p class="sentiment-note" id="sentiment-trend-note"></p>
+                        <div class="sentiment-calendar-container" id="sentiment-daily-chart"></div>
+                    </div>
+                    <div class="sentiment-participants sentiment-panel">
+                        <h3>Members</h3>
+                        <p class="sentiment-note">Average mood score (−1 to +1) for active members.</p>
+                        <div class="sentiment-lists">
+                            <div class="sentiment-list">
+                                <h4>Most Positive</h4>
+                                <ul id="sentiment-top-positive"></ul>
+                            </div>
+                            <div class="sentiment-list">
+                                <h4>Most Negative</h4>
+                                <ul id="sentiment-top-negative"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card full-span message-types" id="message-types">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Message Mix</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-message-types">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="message-types-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="message-types-content">
+                <p class="section-note">Shows each type of message and how it has changed since last week.</p>
+                <div class="message-type-summary" id="message-type-summary"></div>
+                <p class="message-type-note" id="message-type-note"></p>
+                <div class="card-grid stats message-basics">
+                    <div class="stat" data-stat="media">
+                        <span class="stat-value" id="media-count">0</span>
+                        <span class="stat-label">Messages with media</span>
+                    </div>
+                    <div class="stat" data-stat="link">
+                        <span class="stat-value" id="link-count">0</span>
+                        <span class="stat-label">Messages with links</span>
+                    </div>
+                    <div class="stat" data-stat="poll">
+                        <span class="stat-value" id="poll-count">0</span>
+                        <span class="stat-label">Polls</span>
+                    </div>
+                    <div class="stat" data-stat="join">
+                        <span class="stat-value" id="join-events">0</span>
+                        <span class="stat-label">Join events</span>
+                    </div>
+                    <div class="stat" data-stat="added">
+                        <span class="stat-value" id="added-events">0</span>
+                        <span class="stat-label">Members added</span>
+                    </div>
+                    <div class="stat" data-stat="left">
+                        <span class="stat-value" id="left-events">0</span>
+                        <span class="stat-label">Members left</span>
+                    </div>
+                    <div class="stat" data-stat="removed">
+                        <span class="stat-value" id="removed-events">0</span>
+                        <span class="stat-label">Members removed</span>
+                    </div>
+                    <div class="stat" data-stat="changed">
+                        <span class="stat-value" id="changed-events">0</span>
+                        <span class="stat-label">Settings changes</span>
+                    </div>
+                    <div class="stat" data-stat="other">
+                        <span class="stat-value" id="other-system-events">0</span>
+                        <span class="stat-label">Other system messages</span>
+                    </div>
+                    <div class="stat" data-stat="join-requests">
+                        <span class="stat-value" id="join-requests">0</span>
+                        <span class="stat-label">Join requests</span>
+                    </div>
+                    <div class="stat" data-stat="avg-chars">
+                        <span class="stat-value" id="avg-chars">0</span>
+                        <span class="stat-label">Average characters per message</span>
+                    </div>
+                    <div class="stat" data-stat="avg-words">
+                        <span class="stat-value" id="avg-words">0</span>
+                        <span class="stat-label">Average words per message</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="card full-span" id="polls-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Polls</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="polls-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="polls-content">
+                <p class="section-note" id="polls-note">Live poll questions captured by the relay.</p>
+                <div class="polls-summary">
+                    <div class="stat">
+                        <span class="stat-label">Total polls</span>
+                        <span class="stat-value" id="polls-total">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Unique poll creators</span>
+                        <span class="stat-value" id="polls-creators">0</span>
+                    </div>
+                </div>
+                <ol class="polls-list" id="polls-list"></ol>
+            </div>
+        </section>
+
+        <section class="card full-span saved-views" id="saved-views-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Saved Setups</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="saved-views-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="saved-views-content">
+                <div class="saved-view-actions">
+                    <div class="saved-view-save">
+                        <label for="saved-view-name">Name</label>
+                        <input type="text" id="saved-view-name" placeholder="e.g. Last 30 days weekdays">
+                        <button type="button" class="ghost-button" id="save-view">Save current setup</button>
+                    </div>
+                    <div class="saved-view-manage">
+                        <label class="control-group" for="saved-view-list">
+                            <span>Saved setups</span>
+                            <select id="saved-view-list"></select>
+                        </label>
+                        <button type="button" class="ghost-button small" id="apply-saved-view">Use</button>
+                        <button type="button" class="ghost-button small" id="delete-saved-view">Remove</button>
+                    </div>
+                </div>
+                <div class="compare-controls" id="compare-controls">
+                    <div class="compare-select">
+                        <label for="compare-view-a">Setup A</label>
+                        <select id="compare-view-a"></select>
+                    </div>
+                    <div class="compare-select">
+                        <label for="compare-view-b">Setup B</label>
+                        <select id="compare-view-b"></select>
+                    </div>
+                    <button type="button" class="ghost-button" id="compare-views">Compare</button>
+                </div>
+                <div class="compare-summary" id="compare-summary"></div>
+            </div>
+        </section>
+
+        <section class="card full-span search-panel" id="search-panel">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Search Messages</h2>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-search-results">Save CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="search-panel-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="search-panel-content">
+                <p class="section-note">Add words, pick people, and optional dates to find messages.</p>
+                <form id="advanced-search-form" class="search-controls">
+                    <div class="search-control">
+                        <label for="search-keyword">Keywords</label>
+                        <input type="text" id="search-keyword" placeholder="e.g. launch plan" autocomplete="off">
+                    </div>
+                    <div class="search-control">
+                        <label for="search-participant">Participant</label>
+                        <select id="search-participant">
+                            <option value="">All participants</option>
+                        </select>
+                    </div>
+                    <div class="search-control">
+                        <label for="search-start">Start date</label>
+                        <input type="date" id="search-start">
+                    </div>
+                    <div class="search-control">
+                        <label for="search-end">End date</label>
+                        <input type="date" id="search-end">
+                    </div>
+                    <div class="search-actions">
+                        <button type="submit" class="ghost-button">Search</button>
+                        <button type="button" class="ghost-button" id="reset-search">Reset</button>
+                    </div>
+                </form>
+                <div class="search-results-summary" id="search-results-summary">Add filters to search messages.</div>
+                <div class="search-results-list" id="search-results-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
