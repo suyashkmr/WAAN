@@ -35,14 +35,11 @@ function loadConfig(overrides = {}) {
   const host = overrides.host || process.env.WAAN_BIND_HOST || "127.0.0.1";
   const allowOrigin =
     overrides.allowOrigin || process.env.WAAN_ALLOW_ORIGIN || "*";
-  const chromiumPath =
-    overrides.chromiumPath || process.env.WAAN_CHROMIUM_PATH || null;
   const logDir = path.resolve(
     overrides.logDir || process.env.WAAN_LOG_DIR || path.join(dataDir, "logs")
   );
 
   fs.ensureDirSync(dataDir);
-  fs.ensureDirSync(path.join(dataDir, "sessions"));
   fs.ensureDirSync(path.join(dataDir, "storage"));
   fs.ensureDirSync(logDir);
 
@@ -57,14 +54,12 @@ function loadConfig(overrides = {}) {
   return {
     version: pkg.version,
     dataDir,
-    sessionDir: path.join(dataDir, "sessions"),
     storageDir: path.join(dataDir, "storage"),
     logDir,
     host,
     apiPort,
     relayPort,
     allowOrigin,
-    chromiumPath,
   };
 }
 

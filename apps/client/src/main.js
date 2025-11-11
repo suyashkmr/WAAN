@@ -23,15 +23,7 @@ function resolveWebEntry() {
   throw new Error("Unable to find web assets. Run npm run sync:web first.");
 }
 
-function getEnvConfig() {
-  return {
-    apiBase: process.env.WAAN_API_BASE || "http://127.0.0.1:3333/api",
-    relayBase: process.env.WAAN_RELAY_CTRL_BASE || "http://127.0.0.1:4545",
-  };
-}
-
 function createWindow() {
-  const env = getEnvConfig();
   const mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -43,10 +35,6 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
-      additionalArguments: [
-        `--waan-api-base=${env.apiBase}`,
-        `--waan-relay-base=${env.relayBase}`,
-      ],
     },
   });
 

@@ -16,7 +16,6 @@
             <div class="section-nav-inner">
                 <a href="#summary">Overview</a>
                 <a href="#insight-highlights">Highlights</a>
-                <a href="#relay-control-card">Relay</a>
                 <a href="#daily-activity">Day by Day</a>
                 <a href="#weekly-trend">Week by Week</a>
                 <a href="#weekday-trend">Day of the Week</a>
@@ -42,13 +41,6 @@
                         <option value="">No chats loaded yet</option>
                     </select>
                 </label>
-                <div class="control live-chats-panel">
-                    <div class="live-chats-header">
-                        <span>Live WhatsApp chats</span>
-                        <button type="button" class="ghost-button small" id="refresh-live-chats">Refresh</button>
-                    </div>
-                    <div id="live-chat-list" class="live-chat-list" aria-live="polite"></div>
-                </div>
                 <div class="control custom-range hidden" id="custom-range-controls">
                     <span>Custom dates</span>
                     <div class="custom-range-inputs">
@@ -79,39 +71,6 @@
         </div>
 
         <p id="data-status" class="status full-span"></p>
-
-        <section class="card full-span" id="relay-control-card">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <h2>Relay Control</h2>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button small" id="relay-start-button">Start relay</button>
-                        <button type="button" class="ghost-button small" id="relay-stop-button">Stop relay</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="relay-control-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="relay-control-content">
-                <div class="relay-status-grid">
-                    <div>
-                        <span class="relay-status-label">Relay status</span>
-                        <div id="relay-status-indicator" class="relay-status-indicator" aria-live="polite">Not connected</div>
-                        <p class="relay-status-meta" id="relay-status-meta"></p>
-                    </div>
-                    <div>
-                        <span class="relay-status-label">Manager endpoint</span>
-                        <p class="relay-status-meta" id="relay-endpoint-display">—</p>
-                    </div>
-                </div>
-                <div class="relay-log-wrapper">
-                    <div class="relay-log-toolbar">
-                        <span>Live logs & QR output</span>
-                        <button type="button" class="ghost-button small" id="relay-log-clear">Clear</button>
-                    </div>
-                    <pre id="relay-log-view" class="relay-log-view" aria-live="polite"></pre>
-                </div>
-            </div>
-        </section>
 
         <section id="summary" class="card-grid summary full-span"></section>
 
@@ -478,7 +437,7 @@
                 </div>
             </div>
             <div class="card-content" id="polls-content">
-                <p class="section-note" id="polls-note">Live poll questions captured by the relay.</p>
+                <p class="section-note" id="polls-note">Poll questions detected in your uploaded chats.</p>
                 <div class="polls-summary">
                     <div class="stat">
                         <span class="stat-label">Total polls</span>

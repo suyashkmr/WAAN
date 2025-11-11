@@ -2,7 +2,7 @@
   "name": "waan-suite",
   "version": "0.1.0",
   "private": true,
-  "description": "WAAN macOS distribution containing the WhatsApp relay server and desktop client.",
+  "description": "WAAN macOS distribution containing the offline WhatsApp analytics dashboard.",
   "workspaces": [
     "apps/server",
     "apps/client"

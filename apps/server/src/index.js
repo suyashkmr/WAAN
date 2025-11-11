@@ -17,7 +17,6 @@ async function main() {
     .option("--api-port <number>", "API port", parseInt)
     .option("--relay-port <number>", "Relay control port", parseInt)
     .option("--host <host>", "Host/IP to bind")
-    .option("--chromium-path <path>", "Custom Chromium executable path")
     .option("--allow-origin <origin,...>", "Comma separated CORS origins")
     .option("--auto-start", "Start the relay immediately", false)
     .parse(process.argv);

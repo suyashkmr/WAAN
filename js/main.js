@@ -120,15 +120,6 @@ const pollsNote = document.getElementById("polls-note");
 const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
-const liveChatListContainer = document.getElementById("live-chat-list");
-const refreshLiveChatsButton = document.getElementById("refresh-live-chats");
-const relayStartButton = document.getElementById("relay-start-button");
-const relayStopButton = document.getElementById("relay-stop-button");
-const relayStatusIndicator = document.getElementById("relay-status-indicator");
-const relayStatusMeta = document.getElementById("relay-status-meta");
-const relayEndpointDisplay = document.getElementById("relay-endpoint-display");
-const relayLogView = document.getElementById("relay-log-view");
-const relayLogClearButton = document.getElementById("relay-log-clear");
 
 let hourlyControlsInitialised = false;
 const participantFilters = {
@@ -145,16 +136,6 @@ const TIME_OF_DAY_BANDS = [
   { id: "late-evening", label: "Late Evening", start: 21, end: 23 },
 ];
 const TIME_OF_DAY_SPAN_WINDOW = 3;
-const API_BASE = window.WAAN_API_BASE || "http://localhost:3333/api";
-const RELAY_CTRL_BASE = window.RELAY_CTRL_BASE || "http://localhost:4545";
-let liveChatCache = [];
-let liveChatListError = null;
-let chatSelectorRefreshInterval = null;
-const RELAY_STATUS_REFRESH_INTERVAL = 5000;
-const RELAY_LOG_LIMIT = 400;
-let relayStatusTimer = null;
-let relayLogSource = null;
-let relayLogBuffer = [];
 
 let analyticsWorkerInstance = null;
 let analyticsWorkerRequestId = 0;
@@ -185,158 +166,6 @@ function scheduleDeferredRender(task, token) {
     if (token !== renderTaskToken) return;
     task();
   });
-}
-
-function setRelayIndicator(text, statusClass = "") {
-  if (!relayStatusIndicator) return;
-  relayStatusIndicator.textContent = text;
-  relayStatusIndicator.classList.remove("status-running", "status-stopped", "status-connecting");
-  if (statusClass) {
-    relayStatusIndicator.classList.add(statusClass);
-  }
-}
-
-function appendRelayLogLine(line) {
-  if (!relayLogView || !line) return;
-  relayLogBuffer.push(line);
-  if (relayLogBuffer.length > RELAY_LOG_LIMIT) {
-    relayLogBuffer.splice(0, relayLogBuffer.length - RELAY_LOG_LIMIT);
-  }
-  relayLogView.textContent = relayLogBuffer.join("\n");
-  relayLogView.scrollTop = relayLogView.scrollHeight;
-}
-
-function clearRelayLog() {
-  relayLogBuffer = [];
-  if (relayLogView) {
-    relayLogView.textContent = "";
-  }
-}
-
-async function refreshRelayStatus() {
-  if (!relayStatusIndicator || !RELAY_CTRL_BASE) return;
-  try {
-    setRelayIndicator("Checking…", "status-connecting");
-    const response = await fetch(`${RELAY_CTRL_BASE}/relay/status`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
-    updateRelayStatusDisplay(payload);
-  } catch (error) {
-    console.warn("Failed to refresh relay status", error);
-    setRelayIndicator("Unavailable", "status-stopped");
-    if (relayStatusMeta) {
-      relayStatusMeta.textContent = "Could not reach relay manager.";
-    }
-  }
-}
-
-function updateRelayStatusDisplay(payload) {
-  if (!relayStatusIndicator) return;
-  const status = payload?.status || {};
-  const running = Boolean(status.running);
-  if (running) {
-    setRelayIndicator("Running", "status-running");
-  } else {
-    setRelayIndicator("Stopped", "status-stopped");
-  }
-  if (relayStatusMeta) {
-    const parts = [];
-    if (status.pid) parts.push(`PID ${status.pid}`);
-    if (status.startedAt && running) parts.push(`since ${formatDisplayDate(status.startedAt.slice(0, 10))}`);
-    if (!running && status.stoppedAt) parts.push(`last stopped ${status.stoppedAt}`);
-    if (!parts.length) parts.push("No additional details");
-    relayStatusMeta.textContent = parts.join(" · ");
-  }
-  const logTail = payload?.logTail || [];
-  if (logTail.length) {
-    logTail.forEach(line => appendRelayLogLine(line));
-  }
-}
-
-async function postRelayCommand(path) {
-  if (!RELAY_CTRL_BASE) return;
-  const url = `${RELAY_CTRL_BASE}/relay/${path}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({}),
-  });
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.error || `Failed with ${response.status}`);
-  }
-  const data = await response.json();
-  updateRelayStatusDisplay(data);
-}
-
-function connectRelayLogStream() {
-  if (!RELAY_CTRL_BASE || !relayLogView) return;
-  if (relayLogSource) return;
-  try {
-    relayLogSource = new EventSource(`${RELAY_CTRL_BASE}/relay/logs/stream`);
-    relayLogSource.onmessage = event => {
-      if (event.data) {
-        appendRelayLogLine(event.data);
-      }
-    };
-    relayLogSource.onerror = () => {
-      relayLogSource?.close();
-      relayLogSource = null;
-      setTimeout(connectRelayLogStream, 5000);
-    };
-  } catch (_error) {
-    relayLogSource = null;
-  }
-}
-
-function initRelayControl() {
-  if (!relayStatusIndicator) return;
-  if (relayEndpointDisplay) {
-    relayEndpointDisplay.textContent = RELAY_CTRL_BASE || "Not configured";
-  }
-  if (!RELAY_CTRL_BASE) {
-    setRelayIndicator("Not configured", "status-stopped");
-    if (relayStartButton) relayStartButton.disabled = true;
-    if (relayStopButton) relayStopButton.disabled = true;
-    if (relayLogClearButton) relayLogClearButton.disabled = true;
-    return;
-  }
-  if (relayStartButton) {
-    relayStartButton.addEventListener("click", async () => {
-      relayStartButton.disabled = true;
-      try {
-        await postRelayCommand("start");
-      } catch (error) {
-        updateStatus(`Could not start relay (${error.message})`, "error");
-      } finally {
-        if (!snapshotMode) {
-          relayStartButton.disabled = false;
-        }
-      }
-    });
-  }
-  if (relayStopButton) {
-    relayStopButton.addEventListener("click", async () => {
-      relayStopButton.disabled = true;
-      try {
-        await postRelayCommand("stop");
-      } catch (error) {
-        updateStatus(`Could not stop relay (${error.message})`, "error");
-      } finally {
-        if (!snapshotMode) {
-          relayStopButton.disabled = false;
-        }
-      }
-    });
-  }
-  if (relayLogClearButton) {
-    relayLogClearButton.addEventListener("click", clearRelayLog);
-  }
-  connectRelayLogStream();
-  refreshRelayStatus();
-  if (!relayStatusTimer) {
-    relayStatusTimer = setInterval(refreshRelayStatus, RELAY_STATUS_REFRESH_INTERVAL);
-  }
 }
 
 function ensureAnalyticsWorker() {
@@ -541,121 +370,7 @@ function formatLocalChatLabel(chat) {
   return parts.join(" · ");
 }
 
-function formatLiveChatLabel(chat) {
-  const pieces = [chat.name || chat.id];
-  pieces.push(chat.isGroup ? "Group" : "Direct");
-  if (Number.isFinite(chat.unreadCount)) {
-    pieces.push(`${formatNumber(chat.unreadCount)} unread`);
-  }
-  if (chat.lastMessageAt) {
-    pieces.push(`last ${formatDisplayDate(chat.lastMessageAt.slice(0, 10))}`);
-  }
-  return pieces.join(" · ");
-}
-
-async function fetchLiveChatList() {
-  if (!API_BASE || snapshotMode) {
-    liveChatCache = [];
-    liveChatListError = null;
-    return [];
-  }
-  try {
-    const response = await fetch(`${API_BASE}/chats`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    liveChatCache = Array.isArray(data.chats) ? data.chats : [];
-    liveChatListError = null;
-  } catch (error) {
-    console.warn("Failed to fetch live chats", error);
-    liveChatCache = [];
-    liveChatListError = error;
-  }
-  return liveChatCache;
-}
-
-function renderLiveChatList(state = {}) {
-  if (!liveChatListContainer) return;
-  const { loading = false } = state;
-  liveChatListContainer.innerHTML = "";
-
-  if (!API_BASE) {
-    renderLiveChatListMessage("Set WAAN_API_BASE to connect to the WhatsApp relay.");
-    return;
-  }
-
-  if (snapshotMode) {
-    renderLiveChatListMessage("Live WhatsApp browsing is disabled in snapshot mode.");
-    return;
-  }
-
-  if (loading) {
-    renderLiveChatListMessage("Loading chats…");
-    return;
-  }
-
-  if (liveChatListError) {
-    renderLiveChatListMessage("Couldn't fetch live chats. Try refreshing.");
-    return;
-  }
-
-  if (!liveChatCache.length) {
-    renderLiveChatListMessage("No live chats are available yet.");
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  const activeValue = getActiveChatId();
-  liveChatCache.forEach(chat => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "live-chat-item";
-    button.dataset.chatId = chat.id;
-    const liveSelectorValue = encodeChatSelectorValue("live", chat.id);
-    const storedSelectorValue = encodeChatSelectorValue("local", `live:cache:${chat.id}`);
-    if (activeValue === liveSelectorValue || activeValue === storedSelectorValue) {
-      button.classList.add("active");
-    }
-
-    const nameEl = document.createElement("div");
-    nameEl.className = "live-chat-name";
-    nameEl.textContent = chat.name || chat.id;
-
-    const metaEl = document.createElement("div");
-    metaEl.className = "live-chat-meta";
-    const metaParts = [];
-    metaParts.push(chat.isGroup ? "Group chat" : "Direct chat");
-    if (Number.isFinite(chat.unreadCount)) {
-      metaParts.push(`${formatNumber(chat.unreadCount)} unread`);
-    }
-    if (chat.lastMessageAt) {
-      metaParts.push(`last ${formatDisplayDate(chat.lastMessageAt.slice(0, 10))}`);
-    }
-    metaEl.textContent = metaParts.join(" · ");
-
-    button.append(nameEl, metaEl);
-    fragment.appendChild(button);
-  });
-  liveChatListContainer.appendChild(fragment);
-}
-
-function renderLiveChatListMessage(text) {
-  if (!liveChatListContainer) return;
-  const message = document.createElement("p");
-  message.className = "live-chat-empty";
-  message.textContent = text;
-  liveChatListContainer.appendChild(message);
-}
-
-async function refreshChatSelector(options = {}) {
-  const { skipLiveFetch = false } = options;
-  if (!skipLiveFetch) {
-    renderLiveChatList({ loading: true });
-    await fetchLiveChatList();
-    renderLiveChatList();
-  } else {
-    renderLiveChatList();
-  }
-
+async function refreshChatSelector() {
   if (!chatSelector) {
     return;
   }
@@ -689,7 +404,6 @@ async function refreshChatSelector(options = {}) {
     setActiveChatId(resolvedValue);
   }
   chatSelector.disabled = snapshotMode;
-  renderLiveChatList();
 }
 
 async function handleChatSelectionChange(event) {
@@ -712,10 +426,7 @@ async function handleChatSelectionChange(event) {
         analyticsOverride: dataset.analytics ?? null,
         statusMessage: `Switched to ${dataset.label}.`,
         selectionValue: event.target.value,
-        skipLiveFetch: true,
       });
-    } else if (source === "live") {
-      await loadLiveChatFromApi(id);
     }
   } catch (error) {
     console.error(error);
@@ -724,35 +435,6 @@ async function handleChatSelectionChange(event) {
     if (!snapshotMode) {
       event.target.disabled = false;
     }
-  }
-}
-
-async function loadLiveChatFromApi(chatId) {
-  if (!API_BASE) {
-    updateStatus("Live chat API is not configured.", "warning");
-    return;
-  }
-  try {
-    updateStatus("Fetching chat from WhatsApp…", "info");
-    const response = await fetch(`${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?limit=2000`, {
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const payload = await response.json();
-    const entries = Array.isArray(payload.entries) ? payload.entries : [];
-    if (!entries.length) {
-      updateStatus("No messages available for that chat yet.", "warning");
-      return;
-    }
-    await applyEntriesToApp(entries, payload.label || "WhatsApp chat", {
-      datasetId: `live:cache:${chatId}`,
-      skipLiveFetch: true,
-    });
-  } catch (error) {
-    console.error(error);
-    updateStatus("We couldn't fetch that WhatsApp chat.", "error");
   }
 }
 
@@ -835,7 +517,6 @@ setStatusCallback((message, tone) => {
 document.addEventListener("DOMContentLoaded", () => {
   attachEventHandlers();
   setupSectionNavTracking();
-  initRelayControl();
   Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
     toggle.addEventListener("click", () => {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
@@ -854,11 +535,6 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshSavedViewsUI();
   }
   refreshChatSelector();
-  if (!viewingSnapshot && !chatSelectorRefreshInterval) {
-    chatSelectorRefreshInterval = setInterval(() => {
-      refreshChatSelector();
-    }, 60 * 1000);
-  }
   if (!viewingSnapshot) {
     loadDefaultChat();
   }
@@ -873,47 +549,6 @@ function attachEventHandlers() {
   if (chatSelector) {
     chatSelector.addEventListener("change", handleChatSelectionChange);
   }
-
-  if (refreshLiveChatsButton) {
-    const defaultLabel = refreshLiveChatsButton.textContent.trim() || "Refresh";
-    refreshLiveChatsButton.addEventListener("click", async () => {
-      if (snapshotMode) return;
-      refreshLiveChatsButton.disabled = true;
-      refreshLiveChatsButton.textContent = "Refreshing…";
-      try {
-        await refreshChatSelector();
-      } catch (error) {
-        console.error(error);
-        updateStatus("We couldn't refresh the WhatsApp chats.", "error");
-      } finally {
-        refreshLiveChatsButton.disabled = false;
-        refreshLiveChatsButton.textContent = defaultLabel;
-      }
-    });
-  }
-
-  if (liveChatListContainer) {
-    liveChatListContainer.addEventListener("click", async event => {
-      if (snapshotMode) return;
-      const trigger = event.target instanceof Element ? event.target.closest("button.live-chat-item[data-chat-id]") : null;
-      if (!trigger) return;
-      const { chatId } = trigger.dataset;
-      if (!chatId) return;
-      const liveSelectorValue = encodeChatSelectorValue("live", chatId);
-      const storedSelectorValue = encodeChatSelectorValue("local", `live:cache:${chatId}`);
-      const currentValue = getActiveChatId();
-      if (currentValue === liveSelectorValue || currentValue === storedSelectorValue) return;
-      trigger.disabled = true;
-      trigger.setAttribute("aria-busy", "true");
-      try {
-        await loadLiveChatFromApi(chatId);
-      } finally {
-        trigger.disabled = false;
-        trigger.removeAttribute("aria-busy");
-      }
-    });
-  }
-
   if (rangeSelect) {
     rangeSelect.addEventListener("change", handleRangeChange);
   }
@@ -1108,7 +743,6 @@ async function loadDefaultChat() {
     await processChatText(text, "Sample chat", {
       datasetId: "sample",
       selectionValue: encodeChatSelectorValue("local", "sample"),
-      skipLiveFetch: true,
     });
   } catch (error) {
     console.error(error);
@@ -1213,7 +847,7 @@ async function applyEntriesToApp(entries, label, options = {}) {
 
   const selectionValue = options.selectionValue ?? encodeChatSelectorValue("local", savedRecord.id);
   setActiveChatId(selectionValue);
-  await refreshChatSelector({ skipLiveFetch: Boolean(options.skipLiveFetch) });
+  await refreshChatSelector();
 
   const statusMessage =
     options.statusMessage ??
@@ -1231,10 +865,7 @@ async function processChatText(rawText, label, options = {}) {
       updateStatus("We couldn't find any messages in that file.", "warning");
       return;
     }
-    await applyEntriesToApp(entries, label, {
-      skipLiveFetch: true,
-      ...options,
-    });
+    await applyEntriesToApp(entries, label, options);
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't process that chat file.", "error");
@@ -2905,9 +2536,6 @@ function disableInteractiveControlsForSnapshot() {
   if (searchEndInput) searchEndInput.disabled = true;
   if (resetSearchButton) resetSearchButton.disabled = true;
   if (downloadSearchButton) downloadSearchButton.disabled = true;
-  if (relayStartButton) relayStartButton.disabled = true;
-  if (relayStopButton) relayStopButton.disabled = true;
-  if (relayLogClearButton) relayLogClearButton.disabled = true;
 }
 
 function formatSnapshotTimestamp(value) {
@@ -3388,7 +3016,7 @@ function renderPolls(polls) {
   if (!entries.length) {
     pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
     if (pollsNote) {
-      pollsNote.textContent = "Live polls are available once the WhatsApp relay is running.";
+      pollsNote.textContent = "Upload a chat export that includes poll messages to see them here.";
     }
     return;
   }
