@@ -7,7 +7,9 @@
     "waan-server": "src/index.js"
   },
   "scripts": {
+    "prestart": "node ../../scripts/restore-waandata.js",
     "start": "node src/index.js",
+    "predev": "node ../../scripts/restore-waandata.js",
     "dev": "NODE_ENV=development nodemon src/index.js"
   },
   "dependencies": {

@@ -9,8 +9,12 @@
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces",
-    "lint": "echo \"No root lint configured\""
+    "lint": "echo \"No root lint configured\"",
+    "start": "node serve.js"
   },
   "author": "WAAN",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }

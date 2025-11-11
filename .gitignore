@@ -1,13 +1,35 @@
-.DS_Store
-node_modules
-dist
-out
-logs
-tmp
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+out/
+build/
+
+# Logs
+logs/
+tmp/
 **/*.log
-coverage
+
+# Coverage
+coverage/
+
+# Environment variables
+.env
+.env.local
+
+# Application specific
 apps/client/resources/web
 apps/client/.erb
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Build artifacts
 *.pkg
 *.dmg
 *.zip
