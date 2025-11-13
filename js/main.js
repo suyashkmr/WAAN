@@ -27,6 +27,7 @@ import {
   getCurrentRange,
   setCustomRange,
   getCustomRange,
+  setSenderAliases,
   saveChatDataset,
   listChatDatasets,
   getChatDatasetById,
@@ -54,6 +55,61 @@ import {
   clearAnalyticsCache,
 } from "./state.js";
 
+const runtimeConfig = window.WAAN_CONFIG || {};
+const API_BASE = runtimeConfig.apiBase || "http://127.0.0.1:3333/api";
+const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4545";
+const RELAY_POLL_INTERVAL_MS = 5000;
+const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
+const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
+
+function normalizeJid(value) {
+  if (!value) return "";
+  return String(value).trim().toLowerCase();
+}
+
+function stripJidSuffix(value) {
+  return value.replace(/@[\w.]+$/, "");
+}
+
+function buildSenderAliasMap(participants = []) {
+  const map = new Map();
+  participants.forEach(participant => {
+    const id = normalizeJid(participant.id || participant.jid);
+    const label = (participant.label || participant.name || "").trim();
+    if (!id || !label) return;
+    map.set(id, label);
+    map.set(stripJidSuffix(id), label);
+  });
+  return map;
+}
+
+function applySenderAliases(entries = [], aliasMap = new Map()) {
+  if (!aliasMap || !aliasMap.size) return entries;
+  const lookup = value => {
+    if (!value) return null;
+    const normalized = normalizeJid(value);
+    if (!normalized) return null;
+    return aliasMap.get(normalized) || aliasMap.get(stripJidSuffix(normalized)) || null;
+  };
+  return entries.map(entry => {
+    if (!entry || !entry.sender) return entry;
+    const candidates = [
+      entry.sender_jid,
+      entry.sender_id,
+      entry.sender,
+    ];
+    for (const candidate of candidates) {
+      const alias = lookup(candidate);
+      if (alias && alias !== entry.sender) {
+        if (!entry.sender_id) entry.sender_id = entry.sender;
+        entry.sender = alias;
+        break;
+      }
+    }
+    return entry;
+  });
+}
+
 const statusEl = document.getElementById("data-status");
 const summaryEl = document.getElementById("summary");
 const participantsBody = document.querySelector("#top-senders tbody");
@@ -61,6 +117,14 @@ const participantsNote = document.getElementById("participants-note");
 const participantsTopSelect = document.getElementById("participants-top-count");
 const rangeSelect = document.getElementById("global-range");
 const chatSelector = document.getElementById("chat-selector");
+const whatsappStatusEl = document.getElementById("whatsapp-connection-status");
+const whatsappAccountEl = document.getElementById("whatsapp-account-name");
+const whatsappStartButton = document.getElementById("whatsapp-start");
+const whatsappStopButton = document.getElementById("whatsapp-stop");
+const whatsappRefreshButton = document.getElementById("whatsapp-refresh");
+const whatsappQrContainer = document.getElementById("whatsapp-qr-container");
+const whatsappQrImage = document.getElementById("whatsapp-qr-image");
+const whatsappHelpText = document.getElementById("whatsapp-help-text");
 const customControls = document.getElementById("custom-range-controls");
 const customStartInput = document.getElementById("custom-start");
 const customEndInput = document.getElementById("custom-end");
@@ -145,6 +209,15 @@ let snapshotMode = false;
 let sectionNavObserver = null;
 let activeSectionId = null;
 let renderTaskToken = 0;
+const remoteChatState = {
+  list: [],
+  lastFetchedAt: 0,
+};
+const relayUiState = {
+  pollTimer: null,
+  status: null,
+  lastErrorNotice: null,
+};
 
 const deferRenderTask =
   typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
@@ -370,13 +443,46 @@ function formatLocalChatLabel(chat) {
   return parts.join(" · ");
 }
 
+function formatRemoteChatLabel(chat) {
+  const parts = [chat.name || chat.id || "WhatsApp chat"];
+  if (Number.isFinite(chat.messageCount)) {
+    parts.push(`${formatNumber(chat.messageCount)} msgs`);
+  }
+  if (chat.lastMessageAt) {
+    parts.push(`Active ${formatDisplayDate(chat.lastMessageAt)}`);
+  }
+  return parts.join(" · ");
+}
+
+function setRemoteChatList(list = []) {
+  remoteChatState.list = Array.isArray(list) ? list : [];
+  remoteChatState.lastFetchedAt = Date.now();
+}
+
+function getRemoteChatList() {
+  return remoteChatState.list;
+}
+
+function stripWhatsAppSuffix(value) {
+  if (!value) return "";
+  return value.replace(/@(?:c|g)\.us$/gi, "");
+}
+
+function formatRelayAccount(account) {
+  if (!account) return "";
+  if (account.pushName) return account.pushName;
+  if (account.wid) return stripWhatsAppSuffix(account.wid);
+  return "";
+}
+
 async function refreshChatSelector() {
   if (!chatSelector) {
     return;
   }
 
   const storedChats = listChatDatasets();
-  if (!storedChats.length) {
+  const remoteChats = getRemoteChatList();
+  if (!storedChats.length && !remoteChats.length) {
     chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
     chatSelector.value = "";
     chatSelector.disabled = true;
@@ -384,15 +490,29 @@ async function refreshChatSelector() {
   }
 
   chatSelector.innerHTML = "";
-  const storedGroup = document.createElement("optgroup");
-  storedGroup.label = "Your chats";
-  storedChats.forEach(chat => {
-    const option = document.createElement("option");
-    option.value = encodeChatSelectorValue("local", chat.id);
-    option.textContent = formatLocalChatLabel(chat);
-    storedGroup.appendChild(option);
-  });
-  chatSelector.appendChild(storedGroup);
+  if (remoteChats.length) {
+    const remoteGroup = document.createElement("optgroup");
+    remoteGroup.label = "WhatsApp account";
+    remoteChats.forEach(chat => {
+      const option = document.createElement("option");
+      option.value = encodeChatSelectorValue("remote", chat.id);
+      option.textContent = formatRemoteChatLabel(chat);
+      remoteGroup.appendChild(option);
+    });
+    chatSelector.appendChild(remoteGroup);
+  }
+
+  if (storedChats.length) {
+    const storedGroup = document.createElement("optgroup");
+    storedGroup.label = "Your chats";
+    storedChats.forEach(chat => {
+      const option = document.createElement("option");
+      option.value = encodeChatSelectorValue("local", chat.id);
+      option.textContent = formatLocalChatLabel(chat);
+      storedGroup.appendChild(option);
+    });
+    chatSelector.appendChild(storedGroup);
+  }
 
   const activeValue = getActiveChatId();
   const availableValues = Array.from(chatSelector.options).map(option => option.value);
@@ -427,6 +547,8 @@ async function handleChatSelectionChange(event) {
         statusMessage: `Switched to ${dataset.label}.`,
         selectionValue: event.target.value,
       });
+    } else if (source === "remote") {
+      await loadRemoteChat(id);
     }
   } catch (error) {
     console.error(error);
@@ -516,6 +638,7 @@ setStatusCallback((message, tone) => {
 
 document.addEventListener("DOMContentLoaded", () => {
   attachEventHandlers();
+  initWhatsAppControls();
   setupSectionNavTracking();
   Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
     toggle.addEventListener("click", () => {
@@ -750,6 +873,209 @@ async function loadDefaultChat() {
   }
 }
 
+function initWhatsAppControls() {
+  if (!whatsappStartButton || !whatsappStatusEl) {
+    return;
+  }
+  whatsappStartButton.addEventListener("click", startRelaySession);
+  whatsappStopButton?.addEventListener("click", stopRelaySession);
+  whatsappRefreshButton?.addEventListener("click", () => syncRelayChats({ silent: false }));
+  refreshRelayStatus({ silent: true }).finally(() => {
+    scheduleRelayStatusPolling();
+  });
+}
+
+function scheduleRelayStatusPolling() {
+  if (relayUiState.pollTimer) {
+    clearTimeout(relayUiState.pollTimer);
+  }
+  const poll = async () => {
+    await refreshRelayStatus({ silent: true });
+    relayUiState.pollTimer = setTimeout(poll, RELAY_POLL_INTERVAL_MS);
+  };
+  poll();
+}
+
+function setRelayControlsDisabled(disabled) {
+  [whatsappStartButton, whatsappStopButton, whatsappRefreshButton].forEach(button => {
+    if (button) button.disabled = disabled;
+  });
+}
+
+async function startRelaySession() {
+  if (!RELAY_BASE) return;
+  setRelayControlsDisabled(true);
+  try {
+    await fetchJson(`${RELAY_BASE}/relay/start`, { method: "POST" });
+    updateStatus("Starting the WhatsApp relay…", "info");
+    await refreshRelayStatus({ silent: true });
+  } catch (error) {
+    console.error(error);
+    updateStatus(
+      "We couldn't start the WhatsApp relay. Run `npm start --workspace apps/server` in another terminal.",
+      "error"
+    );
+  } finally {
+    setRelayControlsDisabled(false);
+    applyRelayStatus(relayUiState.status);
+  }
+}
+
+async function stopRelaySession() {
+  if (!RELAY_BASE) return;
+  setRelayControlsDisabled(true);
+  try {
+    await fetchJson(`${RELAY_BASE}/relay/stop`, { method: "POST" });
+    updateStatus("Stopped the WhatsApp relay.", "info");
+    setRemoteChatList([]);
+    await refreshChatSelector();
+    await refreshRelayStatus({ silent: true });
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't stop the WhatsApp relay.", "warning");
+  } finally {
+    setRelayControlsDisabled(false);
+    applyRelayStatus(relayUiState.status);
+  }
+}
+
+async function syncRelayChats({ silent = true } = {}) {
+  if (!RELAY_BASE) return;
+  if (!relayUiState.status || relayUiState.status.status !== "running") {
+    if (!silent) {
+      updateStatus("Connect WhatsApp before refreshing chats.", "warning");
+    }
+    return;
+  }
+  try {
+    await fetchJson(`${RELAY_BASE}/relay/sync`, { method: "POST" });
+    await refreshRemoteChats({ silent });
+  } catch (error) {
+    console.error(error);
+    if (!silent) {
+      updateStatus("We couldn't refresh chats from WhatsApp.", "warning");
+    }
+  }
+}
+
+async function refreshRemoteChats({ silent = true } = {}) {
+  try {
+    const payload = await fetchJson(`${API_BASE}/chats`);
+    const chats = Array.isArray(payload.chats) ? payload.chats : [];
+    setRemoteChatList(chats);
+    if (!silent) {
+      updateStatus(`Fetched ${formatNumber(chats.length)} chats from WhatsApp.`, "info");
+    }
+  } catch (error) {
+    console.error(error);
+    setRemoteChatList([]);
+    if (!silent) {
+      updateStatus("Couldn't load chats from the relay. Is it running?", "warning");
+    }
+  } finally {
+    await refreshChatSelector();
+  }
+}
+
+async function refreshRelayStatus({ silent = false } = {}) {
+  if (!RELAY_BASE || !whatsappStatusEl) return null;
+  try {
+    const status = await fetchJson(`${RELAY_BASE}/relay/status`);
+    applyRelayStatus(status);
+    relayUiState.status = status;
+    return status;
+  } catch (error) {
+    if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
+      updateStatus("WhatsApp relay is offline. Start `apps/server` to enable live loading.", "warning");
+      relayUiState.lastErrorNotice = Date.now();
+    }
+    relayUiState.status = null;
+    applyRelayStatus(null);
+    return null;
+  }
+}
+
+function applyRelayStatus(status) {
+  if (!whatsappStatusEl) return;
+  if (!status) {
+    whatsappStatusEl.textContent = "Relay offline. Start the server to link WhatsApp.";
+    if (whatsappAccountEl) whatsappAccountEl.textContent = "";
+    if (whatsappQrContainer) whatsappQrContainer.classList.add("hidden");
+    if (whatsappQrImage) whatsappQrImage.removeAttribute("src");
+    if (whatsappHelpText) {
+      whatsappHelpText.textContent =
+        "Run `npm start --workspace apps/server` then press Connect to load chats from your phone.";
+    }
+    if (whatsappStartButton) whatsappStartButton.disabled = false;
+    if (whatsappStopButton) whatsappStopButton.disabled = true;
+    if (whatsappRefreshButton) whatsappRefreshButton.disabled = true;
+    setRemoteChatList([]);
+    refreshChatSelector();
+    return;
+  }
+
+  const description = describeRelayStatus(status);
+  whatsappStatusEl.textContent = description.message;
+  if (whatsappAccountEl) {
+    whatsappAccountEl.textContent = status.account
+      ? `Logged in as ${formatRelayAccount(status.account)}`
+      : "";
+  }
+  if (whatsappHelpText) {
+    whatsappHelpText.textContent =
+      status.status === "running"
+        ? "Your WhatsApp chats now appear under “Loaded chats”. Pick one to analyse it."
+        : "Scan the QR code after pressing Connect to mirror your chats without exporting files.";
+  }
+  if (status.lastQr && whatsappQrContainer && whatsappQrImage) {
+    whatsappQrImage.src = status.lastQr;
+    whatsappQrContainer.classList.remove("hidden");
+  } else if (whatsappQrContainer) {
+    whatsappQrContainer.classList.add("hidden");
+  }
+
+  const running = status.status === "running";
+  const waiting = status.status === "waiting_qr" || status.status === "starting";
+  if (whatsappStartButton) {
+    whatsappStartButton.disabled = running || waiting;
+  }
+  if (whatsappStopButton) {
+    whatsappStopButton.disabled = !running && !waiting;
+  }
+  if (whatsappRefreshButton) {
+    whatsappRefreshButton.disabled = !running;
+  }
+
+  if (running) {
+    const needsRefresh =
+      !getRemoteChatList().length || Date.now() - remoteChatState.lastFetchedAt > REMOTE_CHAT_REFRESH_INTERVAL_MS;
+    if (needsRefresh) {
+      refreshRemoteChats({ silent: true });
+    }
+  } else {
+    setRemoteChatList([]);
+    refreshChatSelector();
+  }
+}
+
+function describeRelayStatus(status) {
+  const baseMessage = (() => {
+    switch (status.status) {
+      case "starting":
+        return "Connecting to WhatsApp…";
+      case "waiting_qr":
+        return "Scan the QR code with WhatsApp → Linked devices.";
+      case "running":
+        return status.account
+          ? `Connected as ${formatRelayAccount(status.account)}.`
+          : "Connected to WhatsApp.";
+      default:
+        return "Relay stopped.";
+    }
+  })();
+  return { message: baseMessage };
+}
+
 async function handleFileUpload(event) {
   if (snapshotMode) {
     updateStatus("Uploads are turned off while you're viewing a shared link.", "warning");
@@ -807,8 +1133,51 @@ async function processFile(file) {
   }
 }
 
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Request failed (${response.status})`);
+  }
+  return response.json();
+}
+
+async function loadRemoteChat(chatId, options = {}) {
+  if (!chatId) return;
+  const limit = Number(options.limit) || REMOTE_MESSAGE_LIMIT;
+  const params = new URLSearchParams({ limit: String(limit), refresh: "1", full: String(limit) });
+  if (options.refresh === false) {
+    params.delete("refresh");
+  }
+  if (options.fullLimit) params.set("full", String(options.fullLimit));
+  const endpoint = `${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?${params.toString()}`;
+  updateStatus("Fetching messages directly from WhatsApp…", "info");
+  try {
+    const payload = await fetchJson(endpoint);
+    const entries = Array.isArray(payload.entries) ? payload.entries : [];
+    const label = payload.label || "WhatsApp chat";
+    await applyEntriesToApp(entries, label, {
+      datasetId: `remote-${chatId}`,
+      selectionValue: encodeChatSelectorValue("remote", chatId),
+      statusMessage: `Loaded ${formatNumber(entries.length)} messages from ${label}.`,
+      persist: false,
+      participants: Array.isArray(payload.participants) ? payload.participants : [],
+    });
+  } catch (error) {
+    console.error(error);
+    updateStatus(
+      "We couldn't reach the WhatsApp relay. Make sure the server workspace is running (`npm start --workspace apps/server`).",
+      "error"
+    );
+    throw error;
+  }
+}
+
 async function applyEntriesToApp(entries, label, options = {}) {
-  setDatasetEntries(entries);
+  const aliasMap = buildSenderAliasMap(options.participants || []);
+  const normalizedEntries = aliasMap.size ? applySenderAliases(entries, aliasMap) : entries;
+  setSenderAliases(aliasMap);
+  setDatasetEntries(normalizedEntries);
   clearSavedViews();
   refreshSavedViewsUI();
   clearAnalyticsCache();
@@ -825,7 +1194,7 @@ async function applyEntriesToApp(entries, label, options = {}) {
   const requestToken = ++activeAnalyticsRequest;
   let analytics = options.analyticsOverride ?? null;
   if (!analytics) {
-    analytics = await computeAnalyticsWithWorker(entries);
+    analytics = await computeAnalyticsWithWorker(normalizedEntries);
     if (requestToken !== activeAnalyticsRequest) return null;
   }
 
@@ -834,28 +1203,36 @@ async function applyEntriesToApp(entries, label, options = {}) {
   renderDashboard(analytics);
   updateCustomRangeBounds();
 
-  const savedRecord = saveChatDataset({
-    id: options.datasetId ?? undefined,
-    label,
-    entries,
-    analytics,
-    meta: {
-      messageCount: analytics.total_messages,
-      dateRange: analytics.date_range,
-    },
-  });
+  let savedRecord = null;
+  const persistDataset = options.persist !== false;
+  if (persistDataset) {
+    savedRecord = saveChatDataset({
+      id: options.datasetId ?? undefined,
+      label,
+      entries: normalizedEntries,
+      analytics,
+      meta: {
+        messageCount: analytics.total_messages,
+        dateRange: analytics.date_range,
+      },
+    });
+  }
 
-  const selectionValue = options.selectionValue ?? encodeChatSelectorValue("local", savedRecord.id);
-  setActiveChatId(selectionValue);
+  const selectionValue =
+    options.selectionValue ??
+    (persistDataset && savedRecord ? encodeChatSelectorValue("local", savedRecord.id) : null);
+  if (selectionValue) {
+    setActiveChatId(selectionValue);
+  }
   await refreshChatSelector();
 
   const statusMessage =
     options.statusMessage ??
-    `Loaded ${formatNumber(entries.length)} chat lines from ${label}. Showing the full message history (${formatNumber(
+    `Loaded ${formatNumber(normalizedEntries.length)} chat lines from ${label}. Showing the full message history (${formatNumber(
       analytics.total_messages,
     )} messages).`;
   updateStatus(statusMessage, "info");
-  return { analytics, datasetId: savedRecord.id };
+  return { analytics, datasetId: savedRecord?.id ?? null };
 }
 
 async function processChatText(rawText, label, options = {}) {

@@ -72,6 +72,33 @@
 
         <p id="data-status" class="status full-span"></p>
 
+        <section id="whatsapp-live-card" class="card full-span live-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Connect to WhatsApp</h2>
+                    <p class="card-subtitle">Skip file uploads by mirroring your chats with whatsapp-web.js.</p>
+                </div>
+                <div class="card-header-actions">
+                    <button type="button" class="ghost-button small" id="whatsapp-refresh" disabled>Refresh chats</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <p id="whatsapp-connection-status" class="live-status"></p>
+                <div class="live-actions">
+                    <button type="button" class="ghost-button" id="whatsapp-start">Connect</button>
+                    <button type="button" class="ghost-button" id="whatsapp-stop" disabled>Disconnect</button>
+                </div>
+                <p id="whatsapp-account-name" class="live-account"></p>
+                <div id="whatsapp-qr-container" class="whatsapp-qr hidden" aria-live="polite">
+                    <img id="whatsapp-qr-image" alt="Scan this QR code with WhatsApp → Linked devices">
+                    <p>Open WhatsApp → Settings → Linked devices → Link a device, then scan this code.</p>
+                </div>
+                <p id="whatsapp-help-text" class="live-help">
+                    Run <code>npm start --workspace apps/server</code> in another terminal, then press Connect.
+                </p>
+            </div>
+        </section>
+
         <section id="summary" class="card-grid summary full-span"></section>
 
         <section class="card full-span highlights" id="insight-highlights">

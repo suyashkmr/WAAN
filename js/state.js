@@ -6,6 +6,7 @@ const datasetState = {
   datasetLabel: "sample chat",
   currentRange: "all",
   customRange: null,
+  senderAliases: new Map(),
 };
 
 const chatLibrary = new Map();
@@ -66,6 +67,15 @@ export function setDatasetEntries(entries) {
 
 export function getDatasetEntries() {
   return datasetState.entries;
+}
+
+export function setSenderAliases(map) {
+  datasetState.senderAliases =
+    map instanceof Map ? new Map(map) : map ? new Map(Object.entries(map)) : new Map();
+}
+
+export function getSenderAliases() {
+  return datasetState.senderAliases;
 }
 
 export function setDatasetAnalytics(analytics) {

@@ -315,6 +315,54 @@ main > .card.half-span {
     font-size: 0.75rem;
 }
 
+.live-card .card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.live-status {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+}
+
+.live-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.live-account {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.live-help {
+    margin: 0.75rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.whatsapp-qr {
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: var(--shape-medium);
+    text-align: center;
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.whatsapp-qr img {
+    max-width: 220px;
+    width: 100%;
+    height: auto;
+    border-radius: var(--shape-small);
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+}
+
 .hourly-summary,
 .daily-summary {
     display: flex;

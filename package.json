@@ -4,8 +4,7 @@
   "private": true,
   "description": "WAAN macOS distribution containing the offline WhatsApp analytics dashboard.",
   "workspaces": [
-    "apps/server",
-    "apps/client"
+    "apps/server"
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces",

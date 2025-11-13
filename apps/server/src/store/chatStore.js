@@ -105,11 +105,15 @@ class ChatStore extends EventEmitter {
       unreadCount: 0,
       lastMessageAt: null,
       messageCount: 0,
+      participants: [],
     };
     const updated = {
       ...existing,
       ...patch,
     };
+    if (patch.participants) {
+      updated.participants = patch.participants;
+    }
     this.metadata.set(chatId, updated);
     await this.persistMetadata();
     this.emit("chats:updated", this.listChats());
@@ -131,6 +135,21 @@ class ChatStore extends EventEmitter {
     await this.saveEntries(chatId);
     this.emit("chat:message", { chatId, entry });
     return entry;
+  }
+
+  async replaceEntries(chatId, entries = [], meta = {}) {
+    const normalized = Array.isArray(entries) ? entries : [];
+    this.entriesCache.set(chatId, normalized);
+    await fs.outputJson(this.getChatPath(chatId), { chatId, entries: normalized }, { spaces: 2 });
+    const lastEntry = normalized.length ? normalized[normalized.length - 1] : null;
+    const patch = {
+      lastMessageAt: lastEntry?.timestamp || null,
+      messageCount: normalized.length,
+      ...meta,
+    };
+    await this.upsertChatMeta(chatId, patch);
+    this.emit("chat:replaced", { chatId, count: normalized.length });
+    return normalized;
   }
 }
 

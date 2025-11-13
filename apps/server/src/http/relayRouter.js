@@ -46,6 +46,15 @@ function buildRelayRouter({ relayManager }) {
     }
   });
 
+  router.post("/relay/sync", async (req, res) => {
+    try {
+      const status = await relayManager.syncChats();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   router.get("/relay/logs/stream", (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");

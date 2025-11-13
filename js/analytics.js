@@ -184,6 +184,25 @@ function getMessageId(entry) {
   return null;
 }
 
+function dedupeEntries(entries) {
+  if (!Array.isArray(entries) || entries.length < 2) {
+    return Array.isArray(entries) ? entries : [];
+  }
+  const seen = new Set();
+  const result = [];
+  for (const entry of entries) {
+    const id = getMessageId(entry);
+    if (id) {
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+    }
+    result.push(entry);
+  }
+  return result;
+}
+
 function getQuotedMessageId(entry) {
   return pickField(entry, ["quoted_message_id", "quotedMsgId", "quoted_stanza_id", "quotedStanzaId"]);
 }
@@ -359,7 +378,8 @@ function getLeaveIncrement(entry) {
   return 0;
 }
 
-export function computeAnalytics(entries) {
+export function computeAnalytics(entries = []) {
+  entries = dedupeEntries(entries);
   const messages = entries.filter(entry => entry.type === "message");
   const systems = entries.filter(entry => entry.type === "system");
 
