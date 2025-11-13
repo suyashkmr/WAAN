@@ -180,6 +180,18 @@ class RelayManager extends EventEmitter {
     return this.getStatus();
   }
 
+  async logout() {
+    if (this.client && typeof this.client.logout === "function") {
+      try {
+        await this.client.logout();
+        this.log("WhatsApp session logged out.");
+      } catch (error) {
+        this.logger.warn("Failed to logout session: %s", error.message);
+      }
+    }
+    return this.stop();
+  }
+
   isReady() {
     return this.client !== null && this.state.status === "running";
   }

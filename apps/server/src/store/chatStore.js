@@ -151,6 +151,14 @@ class ChatStore extends EventEmitter {
     this.emit("chat:replaced", { chatId, count: normalized.length });
     return normalized;
   }
+
+  async clearAll() {
+    this.metadata.clear();
+    this.entriesCache.clear();
+    await fs.remove(this.metadataPath).catch(() => {});
+    await fs.emptyDir(this.chatsDir);
+    this.emit("chats:cleared");
+  }
 }
 
 module.exports = {

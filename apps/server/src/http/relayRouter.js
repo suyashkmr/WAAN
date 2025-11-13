@@ -46,6 +46,15 @@ function buildRelayRouter({ relayManager }) {
     }
   });
 
+  router.post("/relay/logout", async (req, res) => {
+    try {
+      const status = await relayManager.logout();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   router.post("/relay/sync", async (req, res) => {
     try {
       const status = await relayManager.syncChats();

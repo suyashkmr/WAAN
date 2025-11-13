@@ -315,6 +315,21 @@ main > .card.half-span {
     font-size: 0.75rem;
 }
 
+.ghost-button.tiny {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+}
+
+.ghost-button.danger {
+    border-color: rgba(255, 127, 157, 0.45);
+    color: var(--negative);
+}
+
+.ghost-button.danger:hover {
+    border-color: rgba(255, 127, 157, 0.7);
+    background: rgba(255, 127, 157, 0.12);
+}
+
 .live-card .card-title-group {
     display: flex;
     flex-direction: column;
@@ -332,6 +347,11 @@ main > .card.half-span {
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
+}
+
+.live-button-group {
+    display: flex;
+    gap: 0.35rem;
 }
 
 .live-account {
@@ -2936,6 +2956,10 @@ tbody tr:hover {
     align-items: flex-start;
     text-align: left;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.stat .stat-download {
+    margin-top: 0.1rem;
 }
 
 .stat-value {

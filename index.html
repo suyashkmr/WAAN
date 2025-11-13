@@ -80,13 +80,18 @@
                 </div>
                 <div class="card-header-actions">
                     <button type="button" class="ghost-button small" id="whatsapp-refresh" disabled>Refresh chats</button>
+                    <button type="button" class="ghost-button small" id="whatsapp-reload-all" disabled>Reload all chats</button>
+                    <button type="button" class="ghost-button small danger" id="whatsapp-clear-storage" disabled>Clear cached chats</button>
                 </div>
             </div>
             <div class="card-content">
                 <p id="whatsapp-connection-status" class="live-status"></p>
                 <div class="live-actions">
                     <button type="button" class="ghost-button" id="whatsapp-start">Connect</button>
-                    <button type="button" class="ghost-button" id="whatsapp-stop" disabled>Disconnect</button>
+                    <div class="live-button-group">
+                        <button type="button" class="ghost-button" id="whatsapp-stop" disabled>Disconnect</button>
+                        <button type="button" class="ghost-button danger" id="whatsapp-logout" disabled>Log out</button>
+                    </div>
                 </div>
                 <p id="whatsapp-account-name" class="live-account"></p>
                 <div id="whatsapp-qr-container" class="whatsapp-qr hidden" aria-live="polite">
@@ -408,42 +413,52 @@
                     <div class="stat" data-stat="media">
                         <span class="stat-value" id="media-count">0</span>
                         <span class="stat-label">Messages with media</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="media">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="link">
                         <span class="stat-value" id="link-count">0</span>
                         <span class="stat-label">Messages with links</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="links">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="poll">
                         <span class="stat-value" id="poll-count">0</span>
                         <span class="stat-label">Polls</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="polls">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="join">
                         <span class="stat-value" id="join-events">0</span>
                         <span class="stat-label">Join events</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="joins">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="added">
                         <span class="stat-value" id="added-events">0</span>
                         <span class="stat-label">Members added</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="added">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="left">
                         <span class="stat-value" id="left-events">0</span>
                         <span class="stat-label">Members left</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="left">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="removed">
                         <span class="stat-value" id="removed-events">0</span>
                         <span class="stat-label">Members removed</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="removed">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="changed">
                         <span class="stat-value" id="changed-events">0</span>
                         <span class="stat-label">Settings changes</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="changed">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="other">
                         <span class="stat-value" id="other-system-events">0</span>
                         <span class="stat-label">Other system messages</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="other">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="join-requests">
                         <span class="stat-value" id="join-requests">0</span>
                         <span class="stat-label">Join requests</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="join_requests">Download CSV</button>
                     </div>
                     <div class="stat" data-stat="avg-chars">
                         <span class="stat-value" id="avg-chars">0</span>

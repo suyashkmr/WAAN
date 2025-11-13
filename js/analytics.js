@@ -221,6 +221,30 @@ function getForwardingScore(entry) {
   return Number.isNaN(numeric) ? null : numeric;
 }
 
+function buildMessageSnapshot(entry, extras = {}) {
+  return {
+    type: "message",
+    sender: entry.sender || (getBooleanFlag(entry, ["from_me", "fromMe"]) ? "You" : "Unknown"),
+    sender_id: entry.sender_id || entry.sender || null,
+    message: entry.message || "",
+    timestamp: entry.timestamp || null,
+    timestamp_text: entry.timestamp_text || "",
+    ...extras,
+  };
+}
+
+function buildSystemSnapshot(entry, extras = {}) {
+  return {
+    type: "system",
+    sender: entry.sender || "System",
+    message: entry.message || "",
+    timestamp: entry.timestamp || null,
+    timestamp_text: entry.timestamp_text || "",
+    system_subtype: entry.system_subtype || null,
+    ...extras,
+  };
+}
+
 function getBooleanFlag(entry, keys = []) {
   for (const key of keys) {
     const value = pickField(entry, [key]);
@@ -257,22 +281,120 @@ export function parseChatText(text) {
     const timestampText = formatTimestampFromDate(message.date);
     let sender = message.author || null;
     let body = message.message || "";
-    let type = sender ? "message" : "system";
-    if (type === "message" && isSystemContent(body)) {
+    if (!sender && body.includes(":")) {
+      const splitIndex = body.indexOf(":");
+      const possibleName = body.slice(0, splitIndex).trim();
+      const remainder = body.slice(splitIndex + 1).trim();
+      if (possibleName && remainder) {
+        sender = possibleName;
+        body = remainder;
+      }
+    }
+    let type = "message";
+    let systemSubtype = null;
+    const classification = classifyExportSystemMessage(sender, body);
+    if (classification) {
       type = "system";
       sender = null;
+      systemSubtype = classification.subtype || null;
     }
-    return {
+    const entry = {
       timestamp,
       timestamp_text: timestampText,
       sender,
+      sender_id: sender || null,
       message: body,
       type,
       has_poll: false,
       poll_title: null,
       poll_options: null,
     };
+    if (systemSubtype) {
+      entry.system_subtype = systemSubtype;
+    }
+    return entry;
   });
+}
+
+function classifyExportSystemMessage(sender, body) {
+  const senderLower = (sender || "").trim().toLowerCase();
+  const bodyLower = (body || "").trim().toLowerCase();
+  if (!bodyLower) return null;
+
+const autoSender =
+  senderLower === "" ||
+  senderLower === "you" ||
+  senderLower === "self community" ||
+  senderLower === "community" ||
+  senderLower === "whatsapp" ||
+  /(?:^|\s)admin(?:istrator)?$/.test(senderLower) ||
+  senderLower === "system";
+
+  const joinedPhrases = [
+    "joined using",
+    "joined via",
+    "joined from the community",
+    "joined using this group's",
+    "joined the group",
+  ];
+  const additionPhrases = ["added ", "invited "];
+  const removalPhrases = ["removed "];
+const changePhrases = [
+  "changed ",
+  "changed the group settings",
+  "changed group settings",
+  "changed this group's",
+  "changed to allow only admins",
+  "changed to allow all participants",
+  "changed to only admins",
+  "changed to everyone",
+  "privacy settings",
+  "created this group",
+  "updated this group's",
+];
+  const requestPhrase = "requested to join";
+  const leavePhrase = " left";
+
+  const matches = patternList => patternList.some(pattern => bodyLower.includes(pattern));
+
+  if (bodyLower.includes(requestPhrase)) {
+    return autoSender || matches([requestPhrase]) ? { subtype: "join_request" } : null;
+  }
+  if (matches(joinedPhrases)) {
+    if (autoSender || !senderLower) {
+      return { subtype: "text_join" };
+    }
+  }
+  if (matches(additionPhrases)) {
+    if (autoSender || senderLower === "self community") {
+      return { subtype: "text_add" };
+    }
+  }
+  if (matches(removalPhrases)) {
+    if (autoSender || senderLower === "self community") {
+      return { subtype: "text_remove" };
+    }
+  }
+  if (bodyLower.includes(leavePhrase)) {
+    if (autoSender || !senderLower || bodyLower.endsWith(" left")) {
+      return { subtype: "text_leave" };
+    }
+  }
+  if (matches(changePhrases)) {
+    if (autoSender || senderLower === "you") {
+      return { subtype: "text_change" };
+    }
+  }
+
+  if (
+    autoSender ||
+    bodyLower.startsWith("messages and calls are end-to-end encrypted") ||
+    bodyLower.startsWith("missed voice call")
+  ) {
+    return { subtype: "text_system" };
+  }
+
+  return null;
 }
 
 function getSystemParticipantCount(entry) {
@@ -391,6 +513,10 @@ export function computeAnalytics(entries = []) {
     .map(entry => getTimestamp(entry))
     .filter(Boolean)
     .sort((a, b) => a - b);
+  const firstTimestamp = messageTimestamps.length ? new Date(messageTimestamps[0]).toISOString() : null;
+  const lastTimestamp = messageTimestamps.length
+    ? new Date(messageTimestamps[messageTimestamps.length - 1]).toISOString()
+    : null;
 
   let mediaCount = 0;
   let joinEvents = 0;
@@ -402,7 +528,6 @@ export function computeAnalytics(entries = []) {
   let deletedMessageCount = 0;
   let linkCountPrev = 0;
   let systemJoinRequests = 0;
-  let classifiedSystemEntries = 0;
   let pollCount = 0;
   let forwardCount = 0;
   let replyCount = 0;
@@ -417,6 +542,18 @@ export function computeAnalytics(entries = []) {
   }));
 
   const senderStats = new Map();
+  const linkSnapshots = [];
+  const mediaSnapshots = [];
+  const pollSnapshots = [];
+  const systemSnapshots = {
+    joins: [],
+    added: [],
+    left: [],
+    removed: [],
+    changed: [],
+    join_requests: [],
+    other: [],
+  };
   const pollEntries = [];
   const pollSenderCounts = new Map();
   const ackCounts = new Map();
@@ -427,6 +564,7 @@ export function computeAnalytics(entries = []) {
   messages.forEach(entry => {
     const trimmedMessage = (entry.message || "").trim();
     const lowerMessage = trimmedMessage.toLowerCase();
+    const snapshot = buildMessageSnapshot(entry);
     const sentimentScore = scoreSentiment(entry.message);
     const sentimentLabel = sentimentScore > 0 ? "positive" : sentimentScore < 0 ? "negative" : "neutral";
     const fromMe = getBooleanFlag(entry, ["from_me", "fromMe"]);
@@ -670,16 +808,19 @@ export function computeAnalytics(entries = []) {
 
     const trimmedMessage = (entry.message || "").trim();
     const lowerMessage = trimmedMessage.toLowerCase();
+    const snapshot = buildMessageSnapshot(entry);
     if (lowerMessage === "this message was deleted") {
       deletedMessageCount += 1;
     }
 
     if (LINK_REGEX.test(trimmedMessage)) {
       linkCount += 1;
+      linkSnapshots.push({ ...snapshot });
       if (inPreviousWindow) linkCountPrev += 1;
     }
     if (isMediaMessage(trimmedMessage)) {
       mediaCount += 1;
+      mediaSnapshots.push({ ...snapshot });
     }
 
     const hasPoll =
@@ -702,13 +843,13 @@ export function computeAnalytics(entries = []) {
             })
             .filter(Boolean)
         : [];
-      pollEntries.push({
-        sender: entry.sender || "Unknown",
+      const pollSnapshot = {
+        ...snapshot,
         title: entry.poll_title || trimmedMessage.split("\n")[0] || "Poll",
         options: pollOptions,
-        timestamp: entry.timestamp || null,
-        timestamp_text: entry.timestamp_text || "",
-      });
+      };
+      pollSnapshots.push(pollSnapshot);
+      pollEntries.push(pollSnapshot);
       const pollSender = entry.sender || "Unknown";
       pollSenderCounts.set(pollSender, (pollSenderCounts.get(pollSender) || 0) + 1);
     }
@@ -740,52 +881,61 @@ export function computeAnalytics(entries = []) {
   systems.forEach(entry => {
     const lowerMessage = (entry.message || "").toLowerCase();
     const participantCount = getSystemParticipantCount(entry) || 1;
+    const baseSnapshot = buildSystemSnapshot(entry, { participant_count: participantCount });
+    const pushSnapshot = (collection, extra = {}) => {
+      collection.push({ ...baseSnapshot, ...extra });
+    };
     let classified = false;
 
     if (isJoinSystemEntry(entry)) {
       joinEvents += participantCount;
+      pushSnapshot(systemSnapshots.joins, { participant_count: participantCount });
       classified = true;
     } else if (containsWord(lowerMessage, "joined")) {
       joinEvents += 1;
+      pushSnapshot(systemSnapshots.joins, { participant_count: 1 });
       classified = true;
     }
 
     const additions = getAdditionIncrement(entry);
     if (additions > 0) {
       addedEvents += additions;
+      pushSnapshot(systemSnapshots.added, { participant_count: additions });
       classified = true;
     }
 
     const leaves = getLeaveIncrement(entry);
     if (leaves > 0) {
       leftEvents += leaves;
+      pushSnapshot(systemSnapshots.left, { participant_count: leaves });
       classified = true;
     }
 
     const removals = getRemovalIncrement(entry);
     if (removals > 0) {
       removedEvents += removals;
+      pushSnapshot(systemSnapshots.removed, { participant_count: removals });
       classified = true;
     }
 
-    if (isChangeSystemEntry(entry)) {
+    if (isChangeSystemEntry(entry) || containsWord(lowerMessage, "changed")) {
       changedEvents += 1;
-      classified = true;
-    } else if (containsWord(lowerMessage, "changed")) {
-      changedEvents += 1;
+      pushSnapshot(systemSnapshots.changed);
       classified = true;
     }
 
     if (isJoinRequestEntry(entry)) {
       systemJoinRequests += participantCount;
+      pushSnapshot(systemSnapshots.join_requests, { participant_count: participantCount });
       classified = true;
     } else if (SYSTEM_PATTERNS[3].test(lowerMessage)) {
       systemJoinRequests += 1;
+      pushSnapshot(systemSnapshots.join_requests, { participant_count: 1 });
       classified = true;
     }
 
-    if (classified) {
-      classifiedSystemEntries += 1;
+    if (!classified) {
+      systemSnapshots.other.push(baseSnapshot);
     }
   });
 
@@ -933,7 +1083,7 @@ export function computeAnalytics(entries = []) {
     return sum + trimmed.split(/\s+/).length;
   }, 0);
 
-  const otherSystemEvents = Math.max(0, systems.length - classifiedSystemEntries);
+  const otherSystemEvents = systemSnapshots.other.length;
 
   const avgChars = messages.length ? totalChars / messages.length : 0;
   const avgWords = messages.length ? totalWords / messages.length : 0;
@@ -1033,13 +1183,7 @@ export function computeAnalytics(entries = []) {
   const mediaCategories = [];
 
   const pollDetails = pollEntries
-    .map(entry => ({
-      sender: entry.sender || "Unknown",
-      title: entry.title || "Poll",
-      options: Array.isArray(entry.options) ? entry.options.slice(0, 10) : [],
-      timestamp: entry.timestamp || null,
-      timestamp_text: entry.timestamp_text || "",
-    }))
+    .slice()
     .sort((a, b) => {
       const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
       const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
@@ -1051,20 +1195,32 @@ export function computeAnalytics(entries = []) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  const pollAnalytics = {
-    total: pollCount,
-    unique_creators: pollSenderCounts.size,
-    entries: pollDetails.slice(0, 25),
-    top_creators: pollTopCreators,
-  };
-
   const messageTypes = {
     summary: messageTypeSummary.filter(entry => entry.count > 0),
     media: {
       total: mediaCount,
       share: totalMessages ? mediaCount / totalMessages : 0,
       categories: mediaCategories,
+      entries: mediaSnapshots,
     },
+    links: {
+      total: linkCount,
+      share: totalMessages ? linkCount / totalMessages : 0,
+      entries: linkSnapshots,
+    },
+    polls: {
+      total: pollCount,
+      share: totalMessages ? pollCount / totalMessages : 0,
+      entries: pollDetails,
+    },
+  };
+
+  const pollAnalytics = {
+    total: pollCount,
+    unique_creators: pollSenderCounts.size,
+    entries: pollDetails.slice(0, 25),
+    top_creators: pollTopCreators,
+    messages: pollDetails,
   };
 
   const sentimentOverview = {
@@ -1124,6 +1280,8 @@ export function computeAnalytics(entries = []) {
       start: timestamps.length ? toISODate(timestamps[0]) : null,
       end: timestamps.length ? toISODate(timestamps[timestamps.length - 1]) : null,
     },
+    first_timestamp: firstTimestamp,
+    last_timestamp: lastTimestamp,
     top_senders: topSenders,
     daily_counts: dailyCounts,
     hourly_distribution: hourlyCounts,
@@ -1159,6 +1317,15 @@ export function computeAnalytics(entries = []) {
       changed: changedEvents,
       other: otherSystemEvents,
       join_requests: systemJoinRequests,
+      details: {
+        joins: systemSnapshots.joins,
+        added: systemSnapshots.added,
+        left: systemSnapshots.left,
+        removed: systemSnapshots.removed,
+        changed: systemSnapshots.changed,
+        join_requests: systemSnapshots.join_requests,
+        other: systemSnapshots.other,
+      },
     },
     averages: {
       characters: avgChars,

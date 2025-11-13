@@ -66,6 +66,24 @@ export function formatDisplayDate(value) {
   return formatDisplayDate(parsed);
 }
 
+export function formatTimestampDisplay(value) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${formatDisplayDate(date)} ${hours}:${minutes}`;
+}
+
+export function formatDateRangeWithTime(start, end) {
+  if (!start && !end) return "";
+  if (start && end) {
+    return `${formatTimestampDisplay(start)} → ${formatTimestampDisplay(end)}`;
+  }
+  if (start) return formatTimestampDisplay(start);
+  return formatTimestampDisplay(end);
+}
+
 export function isoWeekDateRange(isoWeekKey) {
   const [yearPart, weekPart] = isoWeekKey.split("-W");
   const year = Number(yearPart);

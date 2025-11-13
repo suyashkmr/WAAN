@@ -12,6 +12,16 @@ function buildApiRouter({ store, relayManager, logger }) {
     res.json({ chats });
   });
 
+  router.post("/chats/reload", async (req, res) => {
+    try {
+      await relayManager?.syncChats();
+      res.json({ ok: true });
+    } catch (error) {
+      logger?.error("Failed to reload chats: %s", error.message);
+      res.status(500).json({ error: "Unable to reload chats" });
+    }
+  });
+
   router.get("/chats/:chatId/messages", async (req, res) => {
     const chatId = decodeURIComponent(req.params.chatId);
     const limit = Number(req.query.limit) || 500;
@@ -45,6 +55,16 @@ function buildApiRouter({ store, relayManager, logger }) {
       entries,
       participants: meta.participants || [],
     });
+  });
+
+  router.post("/chats/clear", async (req, res) => {
+    try {
+      await store.clearAll();
+      res.json({ ok: true });
+    } catch (error) {
+      logger?.error("Failed to clear chats: %s", error.message);
+      res.status(500).json({ error: "Unable to clear stored chats" });
+    }
   });
 
   return router;

@@ -9,6 +9,8 @@ import {
   sanitizeText,
   toISODate,
   formatDisplayDate,
+  formatDateRangeWithTime,
+  formatTimestampDisplay,
 } from "./utils.js";
 import {
   WEEKDAY_LONG,
@@ -27,7 +29,6 @@ import {
   getCurrentRange,
   setCustomRange,
   getCustomRange,
-  setSenderAliases,
   saveChatDataset,
   listChatDatasets,
   getChatDatasetById,
@@ -71,43 +72,128 @@ function stripJidSuffix(value) {
   return value.replace(/@[\w.]+$/, "");
 }
 
-function buildSenderAliasMap(participants = []) {
-  const map = new Map();
-  participants.forEach(participant => {
-    const id = normalizeJid(participant.id || participant.jid);
-    const label = (participant.label || participant.name || "").trim();
-    if (!id || !label) return;
-    map.set(id, label);
-    map.set(stripJidSuffix(id), label);
-  });
-  return map;
+function normalizeContactId(value) {
+  if (!value) return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  if (text.includes("@")) return normalizeJid(text);
+  const digits = text.replace(/\D+/g, "");
+  if (digits.length >= 5) return digits;
+  return normalizeJid(text);
 }
 
-function applySenderAliases(entries = [], aliasMap = new Map()) {
-  if (!aliasMap || !aliasMap.size) return entries;
-  const lookup = value => {
-    if (!value) return null;
-    const normalized = normalizeJid(value);
+function shouldPreferLabel(next, current) {
+  if (!current) return true;
+  if (!next) return false;
+  const currentIsNumber = /^\d+$/.test(current.replace(/\D+/g, ""));
+  const nextIsNumber = /^\d+$/.test(next.replace(/\D+/g, ""));
+  if (currentIsNumber && !nextIsNumber) return true;
+  if (!currentIsNumber && nextIsNumber) return false;
+  return next.length <= current.length;
+}
+
+function createParticipantDirectory(entries = [], participants = []) {
+  const records = new Map();
+  const aliasIndex = new Map();
+
+  const ensureRecord = id => {
+    const normalized = normalizeContactId(id);
     if (!normalized) return null;
-    return aliasMap.get(normalized) || aliasMap.get(stripJidSuffix(normalized)) || null;
+    if (!records.has(normalized)) {
+      records.set(normalized, { id: normalized, label: null, aliases: new Set() });
+    }
+    return records.get(normalized);
   };
-  return entries.map(entry => {
-    if (!entry || !entry.sender) return entry;
-    const candidates = [
-      entry.sender_jid,
-      entry.sender_id,
-      entry.sender,
-    ];
-    for (const candidate of candidates) {
-      const alias = lookup(candidate);
-      if (alias && alias !== entry.sender) {
-        if (!entry.sender_id) entry.sender_id = entry.sender;
-        entry.sender = alias;
-        break;
+
+  const register = (id, label) => {
+    let record = ensureRecord(id);
+    const cleanLabel = label ? String(label).trim() : "";
+    if (!record && cleanLabel) {
+      const aliasKey = cleanLabel.toLowerCase();
+      record = aliasIndex.get(aliasKey);
+      if (!record) {
+        const aliasId = `alias:${aliasKey}`;
+        record = { id: aliasId, label: null, aliases: new Set() };
+        records.set(aliasId, record);
       }
     }
-    return entry;
+    if (!record) return null;
+    if (cleanLabel) {
+      if (!record.label || shouldPreferLabel(cleanLabel, record.label)) {
+        record.label = cleanLabel;
+      }
+      record.aliases.add(cleanLabel);
+      aliasIndex.set(cleanLabel.toLowerCase(), record);
+    }
+    return record;
+  };
+
+  participants.forEach(participant => {
+    const label = participant.label || participant.name || participant.displayName || participant.pushname;
+    const id = participant.id || participant.jid || participant.phone || participant.identifier;
+    if (id || label) {
+      register(id, label || (id ? stripJidSuffix(id) : ""));
+    }
   });
+
+  entries.forEach(entry => {
+    register(entry.sender_jid || entry.sender_id || entry.sender, entry.sender);
+  });
+
+  return { records, aliasIndex };
+}
+
+function normalizeEntriesWithDirectory(entries = [], directory) {
+  if (!directory) return entries;
+  const { records, aliasIndex } = directory;
+
+  const resolveRecord = entry => {
+    const candidates = [entry.sender_jid, entry.sender_id, entry.sender];
+    for (const candidate of candidates) {
+      const normalized = normalizeContactId(candidate);
+      if (normalized && records.has(normalized)) {
+        return records.get(normalized);
+      }
+    }
+    if (entry.sender) {
+      const alias = aliasIndex.get(entry.sender.trim().toLowerCase());
+      if (alias) return alias;
+    }
+    return null;
+  };
+
+  return entries.map(entry => {
+    const record = resolveRecord(entry);
+    const normalizedId =
+      record?.id ||
+      normalizeContactId(entry.sender_jid) ||
+      normalizeContactId(entry.sender_id) ||
+      normalizeContactId(entry.sender) ||
+      entry.sender_id ||
+      entry.sender;
+    const displayName =
+      record?.label ||
+      (normalizedId && !normalizedId.startsWith("alias:") ? stripJidSuffix(normalizedId) : null) ||
+      entry.sender ||
+      "Unknown";
+    return {
+      ...entry,
+      sender_id: normalizedId || entry.sender_id || entry.sender,
+      sender: displayName,
+    };
+  });
+}
+
+function buildParticipantRoster(directory) {
+  if (!directory) return [];
+  const roster = [];
+  directory.records.forEach(record => {
+    const label = record.label || stripJidSuffix(record.id);
+    if (label) {
+      roster.push({ id: record.id, label });
+    }
+  });
+  return roster;
 }
 
 const statusEl = document.getElementById("data-status");
@@ -121,7 +207,10 @@ const whatsappStatusEl = document.getElementById("whatsapp-connection-status");
 const whatsappAccountEl = document.getElementById("whatsapp-account-name");
 const whatsappStartButton = document.getElementById("whatsapp-start");
 const whatsappStopButton = document.getElementById("whatsapp-stop");
+const whatsappLogoutButton = document.getElementById("whatsapp-logout");
 const whatsappRefreshButton = document.getElementById("whatsapp-refresh");
+const whatsappReloadAllButton = document.getElementById("whatsapp-reload-all");
+const whatsappClearStorageButton = document.getElementById("whatsapp-clear-storage");
 const whatsappQrContainer = document.getElementById("whatsapp-qr-container");
 const whatsappQrImage = document.getElementById("whatsapp-qr-image");
 const whatsappHelpText = document.getElementById("whatsapp-help-text");
@@ -490,17 +579,6 @@ async function refreshChatSelector() {
   }
 
   chatSelector.innerHTML = "";
-  if (remoteChats.length) {
-    const remoteGroup = document.createElement("optgroup");
-    remoteGroup.label = "WhatsApp account";
-    remoteChats.forEach(chat => {
-      const option = document.createElement("option");
-      option.value = encodeChatSelectorValue("remote", chat.id);
-      option.textContent = formatRemoteChatLabel(chat);
-      remoteGroup.appendChild(option);
-    });
-    chatSelector.appendChild(remoteGroup);
-  }
 
   if (storedChats.length) {
     const storedGroup = document.createElement("optgroup");
@@ -512,6 +590,18 @@ async function refreshChatSelector() {
       storedGroup.appendChild(option);
     });
     chatSelector.appendChild(storedGroup);
+  }
+
+  if (remoteChats.length) {
+    const remoteGroup = document.createElement("optgroup");
+    remoteGroup.label = "WhatsApp account";
+    remoteChats.forEach(chat => {
+      const option = document.createElement("option");
+      option.value = encodeChatSelectorValue("remote", chat.id);
+      option.textContent = formatRemoteChatLabel(chat);
+      remoteGroup.appendChild(option);
+    });
+    chatSelector.appendChild(remoteGroup);
   }
 
   const activeValue = getActiveChatId();
@@ -546,6 +636,7 @@ async function handleChatSelectionChange(event) {
         analyticsOverride: dataset.analytics ?? null,
         statusMessage: `Switched to ${dataset.label}.`,
         selectionValue: event.target.value,
+        participants: dataset.meta?.participants || [],
       });
     } else if (source === "remote") {
       await loadRemoteChat(id);
@@ -720,6 +811,14 @@ function attachEventHandlers() {
   if (downloadSentiment) {
     downloadSentiment.addEventListener("click", exportSentiment);
   }
+  document.querySelectorAll(".stat-download").forEach(button => {
+    button.addEventListener("click", () => {
+      const type = button.dataset.export;
+      if (type) {
+        exportMessageSubtype(type);
+      }
+    });
+  });
   if (downloadMarkdownButton) {
     downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
   }
@@ -879,7 +978,10 @@ function initWhatsAppControls() {
   }
   whatsappStartButton.addEventListener("click", startRelaySession);
   whatsappStopButton?.addEventListener("click", stopRelaySession);
+  whatsappLogoutButton?.addEventListener("click", logoutRelaySession);
   whatsappRefreshButton?.addEventListener("click", () => syncRelayChats({ silent: false }));
+  whatsappReloadAllButton?.addEventListener("click", handleReloadAllChats);
+  whatsappClearStorageButton?.addEventListener("click", handleClearStorageClick);
   refreshRelayStatus({ silent: true }).finally(() => {
     scheduleRelayStatusPolling();
   });
@@ -897,7 +999,7 @@ function scheduleRelayStatusPolling() {
 }
 
 function setRelayControlsDisabled(disabled) {
-  [whatsappStartButton, whatsappStopButton, whatsappRefreshButton].forEach(button => {
+  [whatsappStartButton, whatsappStopButton, whatsappRefreshButton, whatsappLogoutButton, whatsappReloadAllButton, whatsappClearStorageButton].forEach(button => {
     if (button) button.disabled = disabled;
   });
 }
@@ -939,6 +1041,23 @@ async function stopRelaySession() {
   }
 }
 
+async function logoutRelaySession() {
+  if (!RELAY_BASE) return;
+  setRelayControlsDisabled(true);
+  try {
+    await fetchJson(`${RELAY_BASE}/relay/logout`, { method: "POST" });
+    updateStatus("Logged out from WhatsApp.", "info");
+    setRemoteChatList([]);
+    await refreshChatSelector();
+    await refreshRelayStatus({ silent: true });
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't log out from WhatsApp.", "warning");
+  } finally {
+    setRelayControlsDisabled(false);
+  }
+}
+
 async function syncRelayChats({ silent = true } = {}) {
   if (!RELAY_BASE) return;
   if (!relayUiState.status || relayUiState.status.status !== "running") {
@@ -956,6 +1075,11 @@ async function syncRelayChats({ silent = true } = {}) {
       updateStatus("We couldn't refresh chats from WhatsApp.", "warning");
     }
   }
+}
+
+async function reloadAllChats() {
+  if (!API_BASE) return;
+  return fetchJson(`${API_BASE}/chats/reload`, { method: "POST" });
 }
 
 async function refreshRemoteChats({ silent = true } = {}) {
@@ -1009,6 +1133,8 @@ function applyRelayStatus(status) {
     if (whatsappStartButton) whatsappStartButton.disabled = false;
     if (whatsappStopButton) whatsappStopButton.disabled = true;
     if (whatsappRefreshButton) whatsappRefreshButton.disabled = true;
+    if (whatsappReloadAllButton) whatsappReloadAllButton.disabled = true;
+    if (whatsappClearStorageButton) whatsappClearStorageButton.disabled = false;
     setRemoteChatList([]);
     refreshChatSelector();
     return;
@@ -1036,14 +1162,24 @@ function applyRelayStatus(status) {
 
   const running = status.status === "running";
   const waiting = status.status === "waiting_qr" || status.status === "starting";
+  const canLogout = running || waiting || Boolean(status.account);
   if (whatsappStartButton) {
     whatsappStartButton.disabled = running || waiting;
   }
   if (whatsappStopButton) {
     whatsappStopButton.disabled = !running && !waiting;
   }
+  if (whatsappLogoutButton) {
+    whatsappLogoutButton.disabled = !canLogout;
+  }
   if (whatsappRefreshButton) {
     whatsappRefreshButton.disabled = !running;
+  }
+  if (whatsappReloadAllButton) {
+    whatsappReloadAllButton.disabled = !running;
+  }
+  if (whatsappClearStorageButton) {
+    whatsappClearStorageButton.disabled = false;
   }
 
   if (running) {
@@ -1142,6 +1278,46 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
+async function clearStoredChatsOnServer() {
+  return fetchJson(`${API_BASE}/chats/clear`, { method: "POST" });
+}
+
+async function handleClearStorageClick() {
+  if (typeof window !== "undefined" && window.confirm) {
+    const confirmed = window.confirm(
+      "Clear all cached WhatsApp chats on this machine? You'll need to refresh to download them again."
+    );
+    if (!confirmed) return;
+  }
+  if (whatsappClearStorageButton) whatsappClearStorageButton.disabled = true;
+  try {
+    await clearStoredChatsOnServer();
+    setRemoteChatList([]);
+    await refreshChatSelector();
+    updateStatus("Cleared cached chats. Click Refresh to sync them again.", "info");
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't clear the cached chats.", "error");
+  } finally {
+    if (whatsappClearStorageButton) whatsappClearStorageButton.disabled = false;
+  }
+}
+
+async function handleReloadAllChats() {
+  if (!RELAY_BASE || !whatsappReloadAllButton) return;
+  whatsappReloadAllButton.disabled = true;
+  try {
+    await reloadAllChats();
+    await refreshRemoteChats({ silent: false });
+    updateStatus("Reloaded chat list from WhatsApp.", "info");
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't reload the chat list.", "error");
+  } finally {
+    whatsappReloadAllButton.disabled = false;
+  }
+}
+
 async function loadRemoteChat(chatId, options = {}) {
   if (!chatId) return;
   const limit = Number(options.limit) || REMOTE_MESSAGE_LIMIT;
@@ -1174,9 +1350,8 @@ async function loadRemoteChat(chatId, options = {}) {
 }
 
 async function applyEntriesToApp(entries, label, options = {}) {
-  const aliasMap = buildSenderAliasMap(options.participants || []);
-  const normalizedEntries = aliasMap.size ? applySenderAliases(entries, aliasMap) : entries;
-  setSenderAliases(aliasMap);
+  const participantDirectory = createParticipantDirectory(entries, options.participants || []);
+  const normalizedEntries = normalizeEntriesWithDirectory(entries, participantDirectory);
   setDatasetEntries(normalizedEntries);
   clearSavedViews();
   refreshSavedViewsUI();
@@ -1205,6 +1380,8 @@ async function applyEntriesToApp(entries, label, options = {}) {
 
   let savedRecord = null;
   const persistDataset = options.persist !== false;
+  const participantRoster = buildParticipantRoster(participantDirectory);
+
   if (persistDataset) {
     savedRecord = saveChatDataset({
       id: options.datasetId ?? undefined,
@@ -1214,6 +1391,7 @@ async function applyEntriesToApp(entries, label, options = {}) {
       meta: {
         messageCount: analytics.total_messages,
         dateRange: analytics.date_range,
+        participants: participantRoster,
       },
     });
   }
@@ -1327,6 +1505,13 @@ function renderDashboard(analytics) {
 
 function renderSummaryCards(analytics, label) {
   if (!summaryEl) return;
+  const startTimestamp = analytics.first_timestamp || analytics.date_range.start;
+  const endTimestamp = analytics.last_timestamp || analytics.date_range.end;
+  const dateRangeValue = startTimestamp && endTimestamp
+    ? formatDateRangeWithTime(startTimestamp, endTimestamp)
+    : startTimestamp || endTimestamp
+      ? formatDateRangeWithTime(startTimestamp, endTimestamp)
+      : "—";
   const cards = [
     {
       title: "Total Messages",
@@ -1345,9 +1530,7 @@ function renderSummaryCards(analytics, label) {
     },
     {
       title: "Date Range",
-      value: analytics.date_range.start && analytics.date_range.end
-        ? `${formatDisplayDate(analytics.date_range.start)} → ${formatDisplayDate(analytics.date_range.end)}`
-        : "—",
+      value: dateRangeValue,
       hint: analytics.date_range.start && analytics.date_range.end
         ? `${formatNumber(analytics.weekly_summary.weekCount)} weeks of activity`
         : "",
@@ -2402,7 +2585,7 @@ async function handleShareSnapshot() {
     version: 1,
     label: getDatasetLabel(),
     generatedAt: new Date().toISOString(),
-    analytics,
+    analytics: buildSnapshotAnalytics(analytics),
   };
 
   try {
@@ -2619,15 +2802,6 @@ function parseDateInput(value, endOfDay = false) {
     endOfDay ? 999 : 0,
   );
   return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatTimestampDisplay(value) {
-  if (!value) return "—";
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${formatDisplayDate(date)} ${hours}:${minutes}`;
 }
 
 function escapeRegExp(value) {
@@ -3757,6 +3931,212 @@ function exportMessageTypes() {
   }
 
   downloadCSV(buildFilename("message-types"), headers, rows);
+}
+
+function formatEntryTimestamp(entry) {
+  if (!entry) return "";
+  if (entry.timestamp) {
+    const formatted = formatTimestampDisplay(entry.timestamp);
+    if (formatted) return formatted;
+  }
+  if (entry.timestamp_text) return entry.timestamp_text;
+  return "";
+}
+
+function formatPollOptionsList(options) {
+  if (!Array.isArray(options) || !options.length) return "";
+  const normalizeOption = option => {
+    if (option == null) return "";
+    if (typeof option === "string") return option.trim();
+    if (typeof option === "object") {
+      const label =
+        option.label ||
+        option.title ||
+        option.name ||
+        option.text ||
+        option.optionName?.defaultText ||
+        option.optionName ||
+        option.localizedText ||
+        option.displayText ||
+        "Option";
+      const voteCount =
+        Number.isFinite(option.count)
+          ? option.count
+          : Array.isArray(option.voters)
+            ? option.voters.length
+            : Number.isFinite(option.voteCount)
+              ? option.voteCount
+              : null;
+      const details = voteCount !== null ? ` (votes: ${voteCount})` : "";
+      return `${label}${details}`.trim();
+    }
+    return String(option);
+  };
+  return options.map(normalizeOption).filter(Boolean).join("; ");
+}
+
+function exportMessageSubtype(type) {
+  const analytics = getDatasetAnalytics();
+  if (!analytics) {
+    updateStatus("Load the chat before exporting message details.", "warning");
+    return;
+  }
+
+  const systemDetails = analytics.system_summary?.details || {};
+  const messageDetails = analytics.message_types || {};
+
+  let entries = [];
+  let headers = [];
+  let rows = [];
+  let label = "messages";
+
+  switch (type) {
+    case "media":
+      entries = messageDetails.media?.entries || [];
+      headers = ["Timestamp", "Sender", "Message"];
+      label = "media messages";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.sender || "Unknown",
+        entry.message || "",
+      ]);
+      break;
+    case "links":
+      entries = messageDetails.links?.entries || [];
+      headers = ["Timestamp", "Sender", "Message"];
+      label = "messages with links";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.sender || "Unknown",
+        entry.message || "",
+      ]);
+      break;
+    case "polls":
+      entries = analytics.polls?.messages || messageDetails.polls?.entries || [];
+      headers = ["Timestamp", "Sender", "Title", "Options"];
+      label = "polls";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.sender || "Unknown",
+        entry.title || "Poll",
+        formatPollOptionsList(entry.options),
+      ]);
+      break;
+    case "joins":
+      entries = systemDetails.joins || [];
+      headers = ["Timestamp", "Message", "Subtype", "Participants"];
+      label = "join events";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+        entry.participant_count ?? "",
+      ]);
+      break;
+    case "added":
+      entries = systemDetails.added || [];
+      headers = ["Timestamp", "Message", "Subtype", "Members added"];
+      label = "member additions";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+        entry.participant_count ?? "",
+      ]);
+      break;
+    case "left":
+      entries = systemDetails.left || [];
+      headers = ["Timestamp", "Message", "Subtype", "Members left"];
+      label = "member departures";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+        entry.participant_count ?? "",
+      ]);
+      break;
+    case "removed":
+      entries = systemDetails.removed || [];
+      headers = ["Timestamp", "Message", "Subtype", "Members removed"];
+      label = "member removals";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+        entry.participant_count ?? "",
+      ]);
+      break;
+    case "changed":
+      entries = systemDetails.changed || [];
+      headers = ["Timestamp", "Message", "Subtype"];
+      label = "settings changes";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+      ]);
+      break;
+    case "other":
+      entries = systemDetails.other || [];
+      headers = ["Timestamp", "Message", "Subtype"];
+      label = "other system messages";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+      ]);
+      break;
+    case "join_requests":
+      entries = systemDetails.join_requests || [];
+      headers = ["Timestamp", "Message", "Subtype", "Requests"];
+      label = "join requests";
+      rows = entries.map(entry => [
+        formatEntryTimestamp(entry),
+        entry.message || "",
+        entry.system_subtype || "",
+        entry.participant_count ?? "",
+      ]);
+      break;
+    default:
+      updateStatus("We don't recognize that message type yet.", "warning");
+      return;
+  }
+
+  if (!entries || !entries.length) {
+    updateStatus(`No ${label} to export right now.`, "warning");
+    return;
+  }
+
+  downloadCSV(buildFilename(`messages-${type}`), headers, rows);
+}
+
+function buildSnapshotAnalytics(analytics) {
+  let copy;
+  try {
+    copy = structuredClone ? structuredClone(analytics) : JSON.parse(JSON.stringify(analytics));
+  } catch (error) {
+    copy = JSON.parse(JSON.stringify(analytics));
+  }
+
+  if (copy.message_types) {
+    const mt = copy.message_types;
+    if (mt.media) delete mt.media.entries;
+    if (mt.links) delete mt.links.entries;
+    if (mt.polls) delete mt.polls.entries;
+  }
+
+  if (copy.polls) {
+    delete copy.polls.messages;
+  }
+
+  if (copy.system_summary?.details) {
+    Object.keys(copy.system_summary.details).forEach(key => {
+      copy.system_summary.details[key] = undefined;
+    });
+    delete copy.system_summary.details;
+  }
+
+  return copy;
 }
 
 function exportSentiment() {
