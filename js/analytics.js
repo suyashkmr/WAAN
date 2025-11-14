@@ -358,7 +358,7 @@ const changePhrases = [
   const matches = patternList => patternList.some(pattern => bodyLower.includes(pattern));
 
   if (bodyLower.includes(requestPhrase)) {
-    return autoSender || matches([requestPhrase]) ? { subtype: "join_request" } : null;
+    return autoSender ? { subtype: "join_request" } : null;
   }
   if (matches(joinedPhrases)) {
     if (autoSender || !senderLower) {
