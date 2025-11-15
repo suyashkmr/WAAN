@@ -9,6 +9,7 @@ export const SYSTEM_PREFIXES = [
   "You left",
   "You invited",
   "You deleted",
+  "This message was deleted",
   "You turned",
   "You blocked",
   "You unblocked",
