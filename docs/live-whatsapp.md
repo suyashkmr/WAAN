@@ -12,7 +12,7 @@ npm start --workspace apps/server
 By default the server binds to:
 
 - API (chat data): `http://127.0.0.1:3333`
-- Relay control (QR/status): `http://127.0.0.1:4545`
+- Relay control (QR/status): `http://127.0.0.1:4546`
 
 Override the host/ports with `WAAN_API_PORT`, `WAAN_RELAY_PORT`, or CLI flags (`--api-port`, `--relay-port`, `--host`, `--allow-origin`).
 
@@ -35,7 +35,7 @@ Select any chat from the *WhatsApp account* optgroup. WAAN fetches up to 4 000
 
 ### Troubleshooting
 
-- **Relay offline**: Ensure `apps/server` is running. The UI polls `http://127.0.0.1:4545/relay/status`.
+- **Relay offline**: Ensure `apps/server` is running. The UI polls `http://127.0.0.1:4546/relay/status`.
 - **No QR shown**: Delete the session folder (`~/Library/Application Support/WAAN/whatsapp-session`) and restart the relay to force a new login.
 - **Chats missing messages**: Increase the fetch window via `WAAN_CHAT_FETCH_LIMIT` on the server or `remoteMessageLimit` in `window.WAAN_CONFIG`.
 
