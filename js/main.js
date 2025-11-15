@@ -57,7 +57,7 @@ import {
 } from "./state.js";
 
 const runtimeConfig = window.WAAN_CONFIG || {};
-const API_BASE = runtimeConfig.apiBase || "http://127.0.0.1:3333/api";
+const API_BASE = runtimeConfig.apiBase || "http://127.0.0.1:3334/api";
 const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4546";
 const RELAY_POLL_INTERVAL_MS = 5000;
 const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;

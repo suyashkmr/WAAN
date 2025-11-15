@@ -11,7 +11,7 @@ npm start --workspace apps/server
 
 By default the server binds to:
 
-- API (chat data): `http://127.0.0.1:3333`
+- API (chat data): `http://127.0.0.1:3334`
 - Relay control (QR/status): `http://127.0.0.1:4546`
 
 Override the host/ports with `WAAN_API_PORT`, `WAAN_RELAY_PORT`, or CLI flags (`--api-port`, `--relay-port`, `--host`, `--allow-origin`).

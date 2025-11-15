@@ -26,7 +26,7 @@ function loadConfig(overrides = {}) {
   );
   const apiPort = toNumber(
     overrides.apiPort || process.env.WAAN_API_PORT,
-    3333
+    3334
   );
   const relayPort = toNumber(
     overrides.relayPort || process.env.WAAN_RELAY_PORT,
