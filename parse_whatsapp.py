@@ -36,6 +36,9 @@ SYSTEM_PREFIXES = (
     "You invited",
     "You deleted",
     "This message was deleted",
+    "Messages to this group are now",
+    "You're now an admin",
+    "An admin linked this group",
     "You turned",
     "You blocked",
     "You unblocked",
@@ -54,8 +57,37 @@ SYSTEM_PATTERNS = (
     re.compile(r".*\bjoined using your invite\.?$", re.IGNORECASE),
     re.compile(r".*\bjoined from the community\.?$", re.IGNORECASE),
     re.compile(r".*\brequested to join\.?$", re.IGNORECASE),
+    re.compile(r".*\bchanged this (?:group|community)'s\b.*$", re.IGNORECASE),
+    re.compile(r".*\bchanged to allow\b.*$", re.IGNORECASE),
+    re.compile(r".*\bapproved\b.*\bjoin request\b.*$", re.IGNORECASE),
+    re.compile(r".*\bdeclined\b.*\bjoin request\b.*$", re.IGNORECASE),
 )
 
+STATUS_PATTERNS = (
+    (
+        re.compile(r"waiting for this message", re.IGNORECASE),
+        ("Waiting on server", "⌛"),
+    ),
+    (
+        re.compile(r"missed voice call", re.IGNORECASE),
+        ("Missed voice call", "📞"),
+    ),
+    (
+        re.compile(r"you deleted this message", re.IGNORECASE),
+        ("Deleted", "🗑️"),
+    ),
+    (
+        re.compile(r"this message was deleted", re.IGNORECASE),
+        ("Deleted", "🗑️"),
+    ),
+)
+
+SIZE_PATTERN = re.compile(r"\((?P<size>\d+(?:\.\d+)?)\s?(?P<unit>KB|MB|GB)\)", re.IGNORECASE)
+DURATION_PATTERN = re.compile(r"\b(?:(?P<hours>\d+):)?(?P<minutes>\d{1,2}):(?P<seconds>\d{2})\b")
+FILENAME_PATTERN = re.compile(
+    r"([\w\-.]+\.(?:jpg|jpeg|png|gif|mp4|mp3|m4a|pdf|docx?|pptx?|xlsx?|vcf|zip|txt))",
+    re.IGNORECASE,
+)
 
 @dataclass
 class ChatEntry:
@@ -64,6 +96,9 @@ class ChatEntry:
     sender: Optional[str]
     message: str
     type: str  # 'message' or 'system'
+    status_label: Optional[str] = None
+    status_icon: Optional[str] = None
+    attachment: Optional[dict] = None
 
 
 def is_system_content(content: str) -> bool:
@@ -95,6 +130,45 @@ def parse_timestamp(date_text: str, time_text: str, period: Optional[str]) -> Op
     return None
 
 
+def infer_status(message: str) -> tuple[Optional[str], Optional[str]]:
+    if not message:
+        return None, None
+    lowered = message.strip().lower()
+    for pattern, (label, icon) in STATUS_PATTERNS:
+        if pattern.search(lowered):
+            return label, icon
+    return None, None
+
+
+def extract_attachment_metadata(message: str) -> Optional[dict]:
+    if not message:
+        return None
+    match_filename = FILENAME_PATTERN.search(message)
+    match_size = SIZE_PATTERN.search(message)
+    match_duration = DURATION_PATTERN.search(message)
+    has_generic_attachment = "(file attached)" in message.lower()
+    if not any((match_filename, match_size, match_duration, has_generic_attachment)):
+        return None
+    metadata: dict[str, str] = {}
+    if match_filename:
+        metadata["filename"] = match_filename.group(1)
+    if match_size:
+        metadata["size"] = f"{match_size.group('size')} {match_size.group('unit').upper()}"
+    if match_duration:
+        hours = int(match_duration.group("hours") or 0)
+        minutes = int(match_duration.group("minutes") or 0)
+        seconds = int(match_duration.group("seconds") or 0)
+        if hours:
+            metadata["duration"] = f"{hours}h {minutes}m {seconds}s"
+        elif minutes:
+            metadata["duration"] = f"{minutes}m {seconds}s"
+        else:
+            metadata["duration"] = f"{seconds}s"
+    if has_generic_attachment and "filename" not in metadata:
+        metadata["note"] = "Attachment detected"
+    return metadata or None
+
+
 def iter_entries(lines: Iterable[str]) -> Iterator[ChatEntry]:
     """Yield chat entries from raw lines."""
     current_entry: Optional[ChatEntry] = None
@@ -122,6 +196,10 @@ def iter_entries(lines: Iterable[str]) -> Iterator[ChatEntry]:
             if period:
                 timestamp_text = f"{timestamp_text} {period.upper()}"
 
+            status_label = None
+            status_icon = None
+            attachment_meta = None
+
             if is_system_content(content):
                 sender = None
                 message_body = content
@@ -144,12 +222,19 @@ def iter_entries(lines: Iterable[str]) -> Iterator[ChatEntry]:
                     message_body = content
                     entry_type = "system"
 
+            if entry_type == "message":
+                status_label, status_icon = infer_status(message_body)
+                attachment_meta = extract_attachment_metadata(message_body)
+
             current_entry = ChatEntry(
                 timestamp=parse_timestamp(date_text, time_text, period),
                 timestamp_text=timestamp_text,
                 sender=sender,
                 message=message_body,
                 type=entry_type,
+                status_label=status_label,
+                status_icon=status_icon,
+                attachment=attachment_meta,
             )
         else:
             if current_entry is None:
