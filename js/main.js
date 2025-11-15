@@ -1,5 +1,4 @@
 import {
-  parseChatText,
   computeAnalytics,
   getTimestamp,
 } from "./analytics.js";
@@ -751,16 +750,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   refreshChatSelector();
   if (!viewingSnapshot) {
-    loadDefaultChat();
+    updateStatus("Connect to WhatsApp to start mirroring chats.", "info");
   }
 });
 
 function attachEventHandlers() {
-  const fileInput = document.getElementById("chat-file");
-  if (fileInput) {
-    fileInput.addEventListener("change", handleFileUpload);
-  }
-
   if (chatSelector) {
     chatSelector.addEventListener("change", handleChatSelectionChange);
   }
@@ -954,25 +948,6 @@ function attachEventHandlers() {
     };
     weekdayHourStartInput.addEventListener("input", updateBrush);
     weekdayHourEndInput.addEventListener("input", updateBrush);
-  }
-}
-
-async function loadDefaultChat() {
-  try {
-    updateStatus("Loading the sample chat…", "info");
-    const response = await fetch("chat.json");
-    if (!response.ok) {
-      updateStatus("We couldn't find the sample chat. Upload your chat file to begin.", "warning");
-      return;
-    }
-    const text = await response.text();
-    await processChatText(text, "Sample chat", {
-      datasetId: "sample",
-      selectionValue: encodeChatSelectorValue("local", "sample"),
-    });
-  } catch (error) {
-    console.error(error);
-    updateStatus("We couldn't open the sample chat. Please upload your chat file.", "error");
   }
 }
 
@@ -1216,63 +1191,6 @@ function describeRelayStatus(status) {
   return { message: baseMessage };
 }
 
-async function handleFileUpload(event) {
-  if (snapshotMode) {
-    updateStatus("Uploads are turned off while you're viewing a shared link.", "warning");
-    return;
-  }
-  
-  const files = event.target.files;
-  if (!files || files.length === 0) return;
-
-  // For multiple files (Android folder selection)
-  if (files.length > 1 || files[0].webkitRelativePath) {
-    updateStatus(`Processing ${files.length} files...`, "info");
-    
-    // Find the first .txt file in the selection
-    const textFile = Array.from(files).find(file => 
-      file.name.toLowerCase().endsWith('.txt')
-    );
-    
-    if (!textFile) {
-      updateStatus("No .txt file found in the selection.", "error");
-      event.target.value = "";
-      return;
-    }
-    
-    // Process the first .txt file found
-    await processFile(textFile);
-  } else {
-    // For single file upload
-    const file = files[0];
-    if (!file.name.toLowerCase().endsWith(".txt")) {
-      updateStatus("That file type isn't supported. Please upload the WhatsApp .txt export.", "error");
-      event.target.value = "";
-      return;
-    }
-    
-    await processFile(file);
-  }
-  
-  event.target.value = "";
-}
-
-async function processFile(file) {
-  if (file.size > 10 * 1024 * 1024) {
-    updateStatus("This file is over 10MB. Please split the export and try again.", "warning");
-    return;
-  }
-
-  updateStatus(`Reading ${file.name}…`, "info");
-  try {
-    const text = await file.text();
-    await processChatText(text, file.name);
-  } catch (error) {
-    console.error(error);
-    updateStatus("We couldn't read that file.", "error");
-  }
-}
-
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -1417,20 +1335,6 @@ async function applyEntriesToApp(entries, label, options = {}) {
   return { analytics, datasetId: savedRecord?.id ?? null };
 }
 
-async function processChatText(rawText, label, options = {}) {
-  try {
-    const entries = parseChatText(rawText);
-    if (!entries.length) {
-      updateStatus("We couldn't find any messages in that file.", "warning");
-      return;
-    }
-    await applyEntriesToApp(entries, label, options);
-  } catch (error) {
-    console.error(error);
-    updateStatus("We couldn't process that chat file.", "error");
-  }
-}
-
 function handleParticipantsTopChange() {
   const value = Number(participantsTopSelect?.value ?? 0);
   participantFilters.topCount = Number.isFinite(value) && value > 0 ? value : 0;
@@ -1561,7 +1465,7 @@ function renderParticipants(analytics) {
   if (!analytics || !analytics.top_senders.length) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
-      <td colspan="5" class="empty-state">Upload a chat file to see participant details.</td>
+      <td colspan="5" class="empty-state">Connect to WhatsApp to see participant details.</td>
     `;
     participantsBody.appendChild(emptyRow);
     return;
@@ -3068,11 +2972,8 @@ function buildSlidesHtml(analytics) {
 }
 
 function disableInteractiveControlsForSnapshot() {
-  const fileInput = document.getElementById("chat-file");
-  if (fileInput) fileInput.disabled = true;
   if (rangeSelect) rangeSelect.disabled = true;
   if (chatSelector) chatSelector.disabled = true;
-  if (refreshLiveChatsButton) refreshLiveChatsButton.disabled = true;
   if (saveViewButton) saveViewButton.disabled = true;
   if (savedViewNameInput) savedViewNameInput.disabled = true;
   if (savedViewList) savedViewList.disabled = true;
@@ -3571,7 +3472,7 @@ function renderPolls(polls) {
   if (!entries.length) {
     pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
     if (pollsNote) {
-      pollsNote.textContent = "Upload a chat export that includes poll messages to see them here.";
+    pollsNote.textContent = "Connect to a chat that includes poll messages to see them here.";
     }
     return;
   }
