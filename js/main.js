@@ -260,6 +260,7 @@ const shareSnapshotButton = document.getElementById("share-snapshot");
 const downloadMarkdownButton = document.getElementById("download-markdown-report");
 const downloadSlidesButton = document.getElementById("download-slides-report");
 const sectionNavLinks = Array.from(document.querySelectorAll(".section-nav a"));
+const downloadChatJsonButton = document.getElementById("download-chat-json");
 const timeOfDayWeekdayToggle = document.getElementById("timeofday-toggle-weekdays");
 const timeOfDayWeekendToggle = document.getElementById("timeofday-toggle-weekends");
 const timeOfDayHourStartInput = document.getElementById("timeofday-hour-start");
@@ -807,6 +808,9 @@ function attachEventHandlers() {
   }
   if (downloadMessageTypes) {
     downloadMessageTypes.addEventListener("click", exportMessageTypes);
+  }
+  if (downloadChatJsonButton) {
+    downloadChatJsonButton.addEventListener("click", exportChatJson);
   }
   if (downloadSentiment) {
     downloadSentiment.addEventListener("click", exportSentiment);
@@ -3943,200 +3947,32 @@ function formatEntryTimestamp(entry) {
   return "";
 }
 
-function formatPollOptionsList(options) {
-  if (!Array.isArray(options) || !options.length) return "";
-  const normalizeOption = option => {
-    if (option == null) return "";
-    if (typeof option === "string") return option.trim();
-    if (typeof option === "object") {
-      const label =
-        option.label ||
-        option.title ||
-        option.name ||
-        option.text ||
-        option.optionName?.defaultText ||
-        option.optionName ||
-        option.localizedText ||
-        option.displayText ||
-        "Option";
-      const voteCount =
-        Number.isFinite(option.count)
-          ? option.count
-          : Array.isArray(option.voters)
-            ? option.voters.length
-            : Number.isFinite(option.voteCount)
-              ? option.voteCount
-              : null;
-      const details = voteCount !== null ? ` (votes: ${voteCount})` : "";
-      return `${label}${details}`.trim();
-    }
-    return String(option);
-  };
-  return options.map(normalizeOption).filter(Boolean).join("; ");
-}
-
-function exportMessageSubtype(type) {
-  const analytics = getDatasetAnalytics();
-  if (!analytics) {
-    updateStatus("Load the chat before exporting message details.", "warning");
+function exportChatJson() {
+  const entries = getDatasetEntries();
+  if (!entries.length) {
+    updateStatus("Load a chat summary before downloading the JSON.", "warning");
     return;
   }
 
-  const systemDetails = analytics.system_summary?.details || {};
-  const messageDetails = analytics.message_types || {};
+  const rangeValue = normalizeRangeValue(getCurrentRange());
+  const subset = filterEntriesByRange(entries, rangeValue);
+  const payload = subset.length ? subset : entries;
 
-  let entries = [];
-  let headers = [];
-  let rows = [];
-  let label = "messages";
+  const dataStr = JSON.stringify(payload, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
 
-  switch (type) {
-    case "media":
-      entries = messageDetails.media?.entries || [];
-      headers = ["Timestamp", "Sender", "Message"];
-      label = "media messages";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.sender || "Unknown",
-        entry.message || "",
-      ]);
-      break;
-    case "links":
-      entries = messageDetails.links?.entries || [];
-      headers = ["Timestamp", "Sender", "Message"];
-      label = "messages with links";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.sender || "Unknown",
-        entry.message || "",
-      ]);
-      break;
-    case "polls":
-      entries = analytics.polls?.messages || messageDetails.polls?.entries || [];
-      headers = ["Timestamp", "Sender", "Title", "Options"];
-      label = "polls";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.sender || "Unknown",
-        entry.title || "Poll",
-        formatPollOptionsList(entry.options),
-      ]);
-      break;
-    case "joins":
-      entries = systemDetails.joins || [];
-      headers = ["Timestamp", "Message", "Subtype", "Participants"];
-      label = "join events";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-        entry.participant_count ?? "",
-      ]);
-      break;
-    case "added":
-      entries = systemDetails.added || [];
-      headers = ["Timestamp", "Message", "Subtype", "Members added"];
-      label = "member additions";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-        entry.participant_count ?? "",
-      ]);
-      break;
-    case "left":
-      entries = systemDetails.left || [];
-      headers = ["Timestamp", "Message", "Subtype", "Members left"];
-      label = "member departures";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-        entry.participant_count ?? "",
-      ]);
-      break;
-    case "removed":
-      entries = systemDetails.removed || [];
-      headers = ["Timestamp", "Message", "Subtype", "Members removed"];
-      label = "member removals";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-        entry.participant_count ?? "",
-      ]);
-      break;
-    case "changed":
-      entries = systemDetails.changed || [];
-      headers = ["Timestamp", "Message", "Subtype"];
-      label = "settings changes";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-      ]);
-      break;
-    case "other":
-      entries = systemDetails.other || [];
-      headers = ["Timestamp", "Message", "Subtype"];
-      label = "other system messages";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-      ]);
-      break;
-    case "join_requests":
-      entries = systemDetails.join_requests || [];
-      headers = ["Timestamp", "Message", "Subtype", "Requests"];
-      label = "join requests";
-      rows = entries.map(entry => [
-        formatEntryTimestamp(entry),
-        entry.message || "",
-        entry.system_subtype || "",
-        entry.participant_count ?? "",
-      ]);
-      break;
-    default:
-      updateStatus("We don't recognize that message type yet.", "warning");
-      return;
-  }
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = buildFilename("chat-summary") + ".json";
+  link.click();
 
-  if (!entries || !entries.length) {
-    updateStatus(`No ${label} to export right now.`, "warning");
-    return;
-  }
-
-  downloadCSV(buildFilename(`messages-${type}`), headers, rows);
-}
-
-function buildSnapshotAnalytics(analytics) {
-  let copy;
-  try {
-    copy = structuredClone ? structuredClone(analytics) : JSON.parse(JSON.stringify(analytics));
-  } catch (error) {
-    copy = JSON.parse(JSON.stringify(analytics));
-  }
-
-  if (copy.message_types) {
-    const mt = copy.message_types;
-    if (mt.media) delete mt.media.entries;
-    if (mt.links) delete mt.links.entries;
-    if (mt.polls) delete mt.polls.entries;
-  }
-
-  if (copy.polls) {
-    delete copy.polls.messages;
-  }
-
-  if (copy.system_summary?.details) {
-    Object.keys(copy.system_summary.details).forEach(key => {
-      copy.system_summary.details[key] = undefined;
-    });
-    delete copy.system_summary.details;
-  }
-
-  return copy;
+  URL.revokeObjectURL(url);
+  const label = describeRange(rangeValue);
+  updateStatus(
+    `Saved ${formatNumber(payload.length)} entries from ${getDatasetLabel()} (${label}).`,
+    "success",
+  );
 }
 
 function exportSentiment() {
