@@ -107,6 +107,7 @@ const shareSnapshotButton = document.getElementById("share-snapshot");
 const downloadMarkdownButton = document.getElementById("download-markdown-report");
 const downloadSlidesButton = document.getElementById("download-slides-report");
 const sectionNavLinks = Array.from(document.querySelectorAll(".section-nav a"));
+const downloadChatJsonButton = document.getElementById("download-chat-json");
 const timeOfDayWeekdayToggle = document.getElementById("timeofday-toggle-weekdays");
 const timeOfDayWeekendToggle = document.getElementById("timeofday-toggle-weekends");
 const timeOfDayHourStartInput = document.getElementById("timeofday-hour-start");
@@ -593,6 +594,9 @@ function attachEventHandlers() {
   }
   if (downloadMessageTypes) {
     downloadMessageTypes.addEventListener("click", exportMessageTypes);
+  }
+  if (downloadChatJsonButton) {
+    downloadChatJsonButton.addEventListener("click", exportChatJson);
   }
   if (downloadSentiment) {
     downloadSentiment.addEventListener("click", exportSentiment);
@@ -3380,6 +3384,26 @@ function exportMessageTypes() {
   }
 
   downloadCSV(buildFilename("message-types"), headers, rows);
+}
+
+function exportChatJson() {
+  const entries = getDatasetEntries();
+  if (!entries.length) {
+    updateStatus("Load a chat summary before downloading the JSON.", "warning");
+    return;
+  }
+
+  const rangeValue = normalizeRangeValue(getCurrentRange());
+  const subset = filterEntriesByRange(entries, rangeValue);
+  const payload = subset.length ? subset : entries;
+  const filename = buildReportFilename("chat", "json");
+  downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
+
+  const label = describeRange(rangeValue);
+  updateStatus(
+    `Saved ${formatNumber(payload.length)} entries from ${getDatasetLabel()} (${label}).`,
+    "success",
+  );
 }
 
 function exportSentiment() {
