@@ -3,115 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Chat Overview</title>
+    <title>WAAN Signal Studio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2399a7ff'/%3E%3Cpath d='M9.5 12.25a1.75 1.75 0 011.75-1.75h9.5a1.75 1.75 0 011.75 1.75v9.5a1.75 1.75 0 01-1.75 1.75h-6.88L7 25l1.75-4.38z' fill='%23050a1a' opacity='.25'/%3E%3Cpath d='M11 10h10a2 2 0 012 2v6.75L22.25 20H18l-4 4v-4H11a2 2 0 01-2-2v-6a2 2 0 012-2z' fill='%230b1634'/%3E%3Cpath d='M11 10h10a2 2 0 012 2v6.75L22.25 20H18l-4 4v-4H11a2 2 0 01-2-2v-6a2 2 0 012-2z' fill='%23f4f6ff' opacity='.8'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Whatsapp Group Chat Analytics</h1>
-    </header>
+    <div class="app-shell">
+        <aside class="shell-sidebar">
+            <div class="brand-block">
+                <h1>WAAN Signal Studio</h1>
+                <p>Live insights from your linked messenger account.</p>
+            </div>
 
-    <main>
-        <nav class="section-nav full-span" aria-label="Section shortcuts">
-            <div class="section-nav-inner">
+            <section id="whatsapp-live-card" class="card live-card sidebar-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <h2>Signal Relay Control</h2>
+                        <p class="card-subtitle">Mirror chats securely from your linked device.</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button small primary" id="whatsapp-refresh" data-icon="↻" disabled>Refresh chat</button>
+                        <div class="dropdown">
+                            <button type="button" class="ghost-button small subtle" id="relay-menu-button" aria-haspopup="true" aria-expanded="false" data-icon="⋯">More</button>
+                            <div class="dropdown-menu" id="relay-menu" role="menu">
+                                <button type="button" class="dropdown-item" id="whatsapp-reload-all" data-icon="⟳" disabled>Reload all chats</button>
+                                <button type="button" class="dropdown-item" id="whatsapp-clear-storage" data-icon="✖" disabled>Clear cached chats</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <p id="whatsapp-connection-status" class="live-status"></p>
+                    <p id="relay-sync-indicator" class="live-sync">Not synced yet.</p>
+                    <p class="live-hint">
+                        Refresh updates the selected chat. Use More → Reload for a full resync.
+                    </p>
+                    <div class="live-actions">
+                        <button type="button" class="ghost-button" id="whatsapp-start" data-icon="⏺">Connect</button>
+                        <div class="live-button-group">
+                            <button type="button" class="ghost-button" id="whatsapp-stop" data-icon="⏹" disabled>Disconnect</button>
+                            <button type="button" class="ghost-button danger" id="whatsapp-logout" data-icon="⇦" disabled>Log out</button>
+                        </div>
+                    </div>
+                    <p id="whatsapp-account-name" class="live-account"></p>
+                    <div id="whatsapp-qr-container" class="whatsapp-qr hidden" aria-live="polite">
+                        <img id="whatsapp-qr-image" alt="Scan this QR code with your messenger app">
+                        <p>Open your messenger → Settings → Linked devices → Link a device, then scan this code.</p>
+                    </div>
+                    <p id="whatsapp-help-text" class="live-help">
+                        Run <code>npm start --workspace apps/server</code> in another terminal, then press Connect.
+                    </p>
+                </div>
+            </section>
+
+            <nav class="sidebar-nav section-nav" aria-label="Sections">
                 <a href="#summary">Overview</a>
                 <a href="#insight-highlights">Highlights</a>
                 <a href="#daily-activity">Day by Day</a>
                 <a href="#weekly-trend">Week by Week</a>
-                <a href="#weekday-trend">Day of the Week</a>
+                <a href="#weekday-trend">Day of Week</a>
                 <a href="#timeofday-trend">Time of Day</a>
                 <a href="#sentiment-overview">Mood</a>
                 <a href="#message-types">Message Mix</a>
                 <a href="#polls-card">Polls</a>
-                <a href="#saved-views-card">Saved Setups</a>
-                <a href="#search-panel">Search Messages</a>
-            </div>
-        </nav>
+                <a href="#saved-views-card">Saved set-ups</a>
+                <a href="#search-panel">Search</a>
+            </nav>
+        </aside>
 
-        <div class="page-controls full-span">
-            <div class="control-row primary-controls">
-                <label class="control dataset-control">
-                    <span>Loaded chats</span>
-                    <select id="chat-selector" disabled>
-                        <option value="">No chats loaded yet</option>
-                    </select>
-                </label>
-                <div class="control custom-range hidden" id="custom-range-controls">
-                    <span>Custom dates</span>
-                    <div class="custom-range-inputs">
-                        <input type="date" id="custom-start" disabled>
-                        <span class="range-separator">to</span>
-                        <input type="date" id="custom-end" disabled>
-                        <button type="button" class="ghost-button small" id="apply-custom-range" disabled>Apply</button>
+        <main class="shell-content">
+            <section class="page-controls">
+                <div class="control-row primary-controls">
+                    <label class="control dataset-control">
+                        <span>Loaded chats</span>
+                        <select id="chat-selector" disabled>
+                            <option value="">No chats loaded yet</option>
+                        </select>
+                    </label>
+                    <label class="control period-control">
+                        <span>Time range</span>
+                        <select id="global-range">
+                            <option value="all">All time</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="180">Last 180 days</option>
+                            <option value="365">Last 365 days</option>
+                            <option value="custom">Custom range</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="control-row secondary-controls">
+                    <div class="control custom-range hidden" id="custom-range-controls">
+                        <span>Custom dates</span>
+                        <div class="custom-range-inputs">
+                            <input type="date" id="custom-start" disabled>
+                            <span class="range-separator">to</span>
+                            <input type="date" id="custom-end" disabled>
+                            <button type="button" class="ghost-button small" id="apply-custom-range" disabled>Apply</button>
+                        </div>
                     </div>
                 </div>
-                <label class="control period-control">
-                    <span>Time range</span>
-                    <select id="global-range">
-                        <option value="all">All time</option>
-                        <option value="30">Last 30 days</option>
-                        <option value="90">Last 90 days</option>
-                        <option value="180">Last 180 days</option>
-                        <option value="365">Last 365 days</option>
-                        <option value="custom">Custom range</option>
-                    </select>
-                </label>
-            </div>
-            <div class="control-row page-actions">
-                <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
-                <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
-                <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
-                <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
-            </div>
-        </div>
-
-        <p id="data-status" class="status full-span"></p>
-
-        <section id="whatsapp-live-card" class="card full-span live-card">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <h2>Connect to WhatsApp</h2>
-                    <p class="card-subtitle">Mirror your chats with whatsapp-web.js.</p>
+                <div class="control-row page-actions">
+                    <div class="split-button" id="export-menu">
+                        <button type="button" class="ghost-button tiny primary" id="export-primary" data-action="pdf">Export</button>
+                        <button type="button" class="ghost-button tiny split-toggle" id="export-toggle" aria-haspopup="true" aria-expanded="false">▾</button>
+                        <div class="split-dropdown" id="export-dropdown">
+                            <button type="button" class="dropdown-item" id="download-pdf">Save PDF</button>
+                            <button type="button" class="dropdown-item" id="share-snapshot">Share view</button>
+                            <button type="button" class="dropdown-item" id="download-markdown-report">Text report</button>
+                        </div>
+                    </div>
+                    <button type="button" class="ghost-button tiny" id="snapshot-button">Create snapshot</button>
                 </div>
-                <div class="card-header-actions">
-                    <button type="button" class="ghost-button small" id="whatsapp-refresh" disabled>Refresh chats</button>
-                    <button type="button" class="ghost-button small" id="whatsapp-reload-all" disabled>Reload all chats</button>
-                    <button type="button" class="ghost-button small danger" id="whatsapp-clear-storage" disabled>Clear cached chats</button>
+            </section>
+            <p id="data-status" class="status"></p>
+
+            <section id="empty-state-card" class="card hero-card hidden">
+                <div class="hero-content">
+                    <h2>Link a chat to begin</h2>
+                    <p>Pick a dataset from the sidebar or connect the relay to mirror live conversations.</p>
+                    <button type="button" class="ghost-button primary" id="hero-connect-button">Connect relay</button>
                 </div>
-            </div>
-            <div class="card-content">
-                <p id="whatsapp-connection-status" class="live-status"></p>
-                <div class="live-actions">
-                    <button type="button" class="ghost-button" id="whatsapp-start">Connect</button>
-                    <div class="live-button-group">
-                        <button type="button" class="ghost-button" id="whatsapp-stop" disabled>Disconnect</button>
-                        <button type="button" class="ghost-button danger" id="whatsapp-logout" disabled>Log out</button>
+            </section>
+
+            <section id="summary" class="card-grid summary full-span"></section>
+            <section id="snapshot-panel" class="card hidden">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <h2>Pinned snapshot</h2>
+                        <button type="button" class="ghost-button small subtle" id="clear-snapshot">Clear</button>
                     </div>
                 </div>
-                <p id="whatsapp-account-name" class="live-account"></p>
-                <div id="whatsapp-qr-container" class="whatsapp-qr hidden" aria-live="polite">
-                    <img id="whatsapp-qr-image" alt="Scan this QR code with WhatsApp → Linked devices">
-                    <p>Open WhatsApp → Settings → Linked devices → Link a device, then scan this code.</p>
-                </div>
-                <p id="whatsapp-help-text" class="live-help">
-                    Run <code>npm start --workspace apps/server</code> in another terminal, then press Connect.
-                </p>
-            </div>
-        </section>
+                <div class="card-content" id="snapshot-content"></div>
+            </section>
 
-        <section id="summary" class="card-grid summary full-span"></section>
-
-        <section class="card full-span highlights" id="insight-highlights">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <h2>Highlights</h2>
-                    <button type="button" class="card-toggle" aria-expanded="true" data-target="insight-highlights-content">▾</button>
+            <section class="card full-span highlights" id="insight-highlights">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <h2>Highlights</h2>
+                        <button type="button" class="card-toggle" aria-expanded="true" data-target="insight-highlights-content">▾</button>
+                    </div>
                 </div>
-            </div>
-            <div class="card-content" id="insight-highlights-content">
-                <div class="highlight-grid" id="highlight-list"></div>
-            </div>
-        </section>
+                <div class="card-content" id="insight-highlights-content">
+                    <div class="highlight-grid" id="highlight-list"></div>
+                </div>
+            </section>
 
 <section class="card full-span participants">
             <div class="card-header">
@@ -164,7 +200,7 @@
                 </div>
             </div>
             <div class="card-content" id="hourly-activity-content">
-                <p class="section-note">Shows when messages were sent during the day (using times from the chat).</p>
+                <p class="section-note" id="hourly-note">Shows when messages were sent during the day.</p>
                 <div class="hourly-summary">
                     <div class="summary-block">
                         <span class="summary-label">Top Hour</span>
@@ -213,7 +249,7 @@
                 </div>
             </div>
             <div class="card-content" id="daily-activity-content">
-                <p class="section-note">Messages per day across the whole chat. Hover to see the numbers.</p>
+                <p class="section-note" id="daily-note">Messages per day across the whole chat. Hover to see the numbers.</p>
                 <div class="daily-summary">
                     <div class="summary-block">
                         <span class="summary-label">Avg per day</span>
@@ -235,7 +271,7 @@
                 </div>
             </div>
             <div class="card-content" id="weekly-trend-content">
-                <p class="section-note">Messages per week (calendar weeks).</p>
+                <p class="section-note" id="weekly-note">Messages per week (calendar weeks).</p>
                 <div class="weekly-summary">
                     <div class="summary-block">
                         <span class="summary-label">Total so far</span>
@@ -266,7 +302,7 @@
                 </div>
             </div>
             <div class="card-content" id="weekday-trend-content">
-                <p class="section-note">Average messages for each day of the week.</p>
+                <p class="section-note" id="weekday-note">Average messages for each day of the week.</p>
                 <div class="weekday-controls">
                     <div class="toggle-group">
                         <span class="toggle-label">Days</span>
@@ -319,7 +355,7 @@
                 </div>
             </div>
             <div class="card-content" id="timeofday-trend-content">
-                <p class="section-note">Average messages per hour for the selected range.</p>
+                <p class="section-note" id="timeofday-note">Average messages per hour for the selected range.</p>
                 <div class="timeofday-controls">
                     <div class="toggle-group">
                         <span class="toggle-label">Days to include</span>
@@ -569,6 +605,7 @@
             </div>
         </section>
     </main>
+</div>
 
     <footer>
     </footer>

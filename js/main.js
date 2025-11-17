@@ -60,7 +60,11 @@ const API_BASE = runtimeConfig.apiBase || "http://127.0.0.1:3334/api";
 const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4546";
 const RELAY_POLL_INTERVAL_MS = 5000;
 const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
+const REFRESH_PROMPT_COOLDOWN_MS = 15000;
 const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
+const RELAY_SERVICE_NAME = runtimeConfig.relayName || "Signal Relay";
+const RELAY_APP_REFERENCE = runtimeConfig.relayAppLabel || "linked messenger";
+const RELAY_CHAT_LABEL = runtimeConfig.chatLabel || "linked chat";
 
 function normalizeJid(value) {
   if (!value) return "";
@@ -273,6 +277,22 @@ const pollsNote = document.getElementById("polls-note");
 const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
+const relaySyncIndicator = document.getElementById("relay-sync-indicator");
+const emptyStateCard = document.getElementById("empty-state-card");
+const heroConnectButton = document.getElementById("hero-connect-button");
+const snapshotPanel = document.getElementById("snapshot-panel");
+const snapshotContent = document.getElementById("snapshot-content");
+const snapshotButton = document.getElementById("snapshot-button");
+const clearSnapshotButton = document.getElementById("clear-snapshot");
+const exportMenu = document.getElementById("export-menu");
+const exportToggleButton = document.getElementById("export-toggle");
+const exportPrimaryButton = document.getElementById("export-primary");
+const exportDropdown = document.getElementById("export-dropdown");
+const hourlyNote = document.getElementById("hourly-note");
+const dailyNote = document.getElementById("daily-note");
+const weeklyNote = document.getElementById("weekly-note");
+const weekdayNote = document.getElementById("weekday-note");
+const timeOfDayNote = document.getElementById("timeofday-note");
 
 let hourlyControlsInitialised = false;
 const participantFilters = {
@@ -302,11 +322,149 @@ const remoteChatState = {
   list: [],
   lastFetchedAt: 0,
 };
+let syncIndicatorInterval = null;
+let inlineSnapshot = null;
 const relayUiState = {
   pollTimer: null,
   status: null,
   lastErrorNotice: null,
+  pendingUpdate: false,
+  lastRefreshNoticeAt: 0,
 };
+
+function updateRelayBadge() {
+  if (!whatsappStatusEl) return;
+  whatsappStatusEl.dataset.badge = "";
+}
+
+function announceRefreshNeeded(label) {
+  return;
+}
+
+function updateSyncIndicatorText() {
+  if (!relaySyncIndicator) return;
+  const last = remoteChatState.lastFetchedAt;
+  if (!last) {
+    relaySyncIndicator.textContent = "Waiting for first sync…";
+    return;
+  }
+  const diffSeconds = Math.max(0, Math.round((Date.now() - last) / 1000));
+  if (diffSeconds < 5) {
+    relaySyncIndicator.textContent = "Synced just now";
+  } else if (diffSeconds < 60) {
+    relaySyncIndicator.textContent = `Synced ${diffSeconds}s ago`;
+  } else {
+    const minutes = Math.floor(diffSeconds / 60);
+    relaySyncIndicator.textContent = `Synced ${minutes}m ago`;
+  }
+}
+
+function startSyncIndicatorTimer() {
+  if (syncIndicatorInterval) return;
+  syncIndicatorInterval = setInterval(updateSyncIndicatorText, 10000);
+}
+
+function updateHeroVisibility() {
+  if (!emptyStateCard) return;
+  const entries = getDatasetEntries();
+  const hasData = Array.isArray(entries) && entries.length > 0;
+  emptyStateCard.classList.toggle("hidden", hasData);
+}
+
+function renderInlineSnapshot(snapshot) {
+  if (!snapshotPanel || !snapshotContent) return;
+  if (!snapshot) {
+    snapshotPanel.classList.add("hidden");
+    snapshotContent.innerHTML = "";
+    return;
+  }
+  snapshotPanel.classList.remove("hidden");
+  const rows = [];
+  rows.push({ label: "Messages", value: formatNumber(snapshot.totalMessages || 0) });
+  rows.push({ label: "Participants", value: formatNumber(snapshot.uniqueSenders || 0) });
+  rows.push({ label: "System events", value: formatNumber(snapshot.systemEvents || 0) });
+  rows.push({ label: "Weekly avg", value: formatFloat(snapshot.weeklyAverage || 0, 1) });
+  rows.push({ label: "Daily avg", value: formatFloat(snapshot.dailyAverage || 0, 1) });
+  if (snapshot.topSender) {
+    rows.push({
+      label: `Top sender (${snapshot.topSender.sender})`,
+      value: `${formatNumber(snapshot.topSender.count)} msgs`,
+    });
+  }
+  const html = rows
+    .map(
+      row => `
+      <div class="snapshot-row">
+        <span>${sanitizeText(row.label)}</span>
+        <strong>${sanitizeText(row.value)}</strong>
+      </div>`,
+    )
+    .join("");
+  snapshotContent.innerHTML = `<div class="snapshot-card">${html}</div>`;
+}
+
+function clearInlineSnapshot() {
+  inlineSnapshot = null;
+  renderInlineSnapshot(null);
+}
+
+function handleCreateSnapshot() {
+  if (snapshotMode) {
+    updateStatus("Snapshots are read-only in shared links.", "info");
+    return;
+  }
+  const analytics = getDatasetAnalytics();
+  if (!analytics) {
+    updateStatus("Load a chat before pinning a snapshot.", "warning");
+    return;
+  }
+  inlineSnapshot = buildViewSnapshot(analytics);
+  renderInlineSnapshot(inlineSnapshot);
+  updateStatus("Snapshot pinned below the overview.", "success");
+}
+
+function setupExportSplitMenu() {
+  if (!exportMenu || !exportToggleButton || !exportPrimaryButton || !exportDropdown) return;
+  const closeMenu = () => {
+    exportMenu.classList.remove("open");
+    exportToggleButton.setAttribute("aria-expanded", "false");
+  };
+  exportToggleButton.addEventListener("click", event => {
+    event.stopPropagation();
+    const expanded = exportMenu.classList.toggle("open");
+    exportToggleButton.setAttribute("aria-expanded", String(expanded));
+  });
+  document.addEventListener("click", event => {
+    if (!exportMenu.contains(event.target)) {
+      closeMenu();
+    }
+  });
+  exportPrimaryButton.addEventListener("click", () => {
+    downloadPdfButton?.click();
+  });
+  exportDropdown.querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", () => {
+      closeMenu();
+    });
+  });
+}
+
+function describeTimezoneLabel() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "local time";
+  } catch (error) {
+    return "local time";
+  }
+}
+
+function applyTimezoneContext() {
+  const label = describeTimezoneLabel();
+  if (hourlyNote) hourlyNote.textContent = `Shows when messages were sent during the day (${label}).`;
+  if (dailyNote) dailyNote.textContent = `Messages per day across the whole chat (${label}).`;
+  if (weeklyNote) weeklyNote.textContent = `Messages per week (calendar weeks, ${label}).`;
+  if (weekdayNote) weekdayNote.textContent = `Average messages for each weekday (${label}).`;
+  if (timeOfDayNote) timeOfDayNote.textContent = `Average messages per hour for the selected range (${label}).`;
+}
 
 const deferRenderTask =
   typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
@@ -533,7 +691,7 @@ function formatLocalChatLabel(chat) {
 }
 
 function formatRemoteChatLabel(chat) {
-  const parts = [chat.name || chat.id || "WhatsApp chat"];
+  const parts = [chat.name || chat.id || RELAY_CHAT_LABEL];
   if (Number.isFinite(chat.messageCount)) {
     parts.push(`${formatNumber(chat.messageCount)} msgs`);
   }
@@ -543,9 +701,14 @@ function formatRemoteChatLabel(chat) {
   return parts.join(" · ");
 }
 
-function setRemoteChatList(list = []) {
+function setRemoteChatList(list = [], options = {}) {
   remoteChatState.list = Array.isArray(list) ? list : [];
-  remoteChatState.lastFetchedAt = Date.now();
+  if (options.resetTimestamp) {
+    remoteChatState.lastFetchedAt = 0;
+  } else if (!options.skipTimestamp) {
+    remoteChatState.lastFetchedAt = Date.now();
+  }
+  updateSyncIndicatorText();
 }
 
 function getRemoteChatList() {
@@ -594,7 +757,7 @@ async function refreshChatSelector() {
 
   if (remoteChats.length) {
     const remoteGroup = document.createElement("optgroup");
-    remoteGroup.label = "WhatsApp account";
+    remoteGroup.label = `${RELAY_SERVICE_NAME} account`;
     remoteChats.forEach(chat => {
       const option = document.createElement("option");
       option.value = encodeChatSelectorValue("remote", chat.id);
@@ -730,6 +893,23 @@ setStatusCallback((message, tone) => {
 document.addEventListener("DOMContentLoaded", () => {
   attachEventHandlers();
   initWhatsAppControls();
+  setupExportSplitMenu();
+  applyTimezoneContext();
+  startSyncIndicatorTimer();
+  updateSyncIndicatorText();
+  updateHeroVisibility();
+  renderInlineSnapshot(null);
+  if (heroConnectButton) {
+    heroConnectButton.addEventListener("click", () => {
+      whatsappStartButton?.click();
+    });
+  }
+  if (snapshotButton) {
+    snapshotButton.addEventListener("click", handleCreateSnapshot);
+  }
+  if (clearSnapshotButton) {
+    clearSnapshotButton.addEventListener("click", clearInlineSnapshot);
+  }
   setupSectionNavTracking();
   Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
     toggle.addEventListener("click", () => {
@@ -750,7 +930,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   refreshChatSelector();
   if (!viewingSnapshot) {
-    updateStatus("Connect to WhatsApp to start mirroring chats.", "info");
+    updateStatus("Connect your relay to start mirroring chats.", "info");
   }
 });
 
@@ -961,6 +1141,22 @@ function initWhatsAppControls() {
   whatsappRefreshButton?.addEventListener("click", () => syncRelayChats({ silent: false }));
   whatsappReloadAllButton?.addEventListener("click", handleReloadAllChats);
   whatsappClearStorageButton?.addEventListener("click", handleClearStorageClick);
+  const relayMenuButton = document.getElementById("relay-menu-button");
+  const relayMenu = document.getElementById("relay-menu");
+  if (relayMenuButton && relayMenu) {
+    relayMenuButton.addEventListener("click", () => {
+      const expanded = relayMenuButton.getAttribute("aria-expanded") === "true";
+      relayMenuButton.setAttribute("aria-expanded", String(!expanded));
+      relayMenuButton.parentElement.classList.toggle("open", !expanded);
+    });
+    document.addEventListener("click", event => {
+      if (relayMenuButton.contains(event.target)) return;
+      if (!relayMenu.contains(event.target)) {
+        relayMenuButton.setAttribute("aria-expanded", "false");
+        relayMenuButton.parentElement.classList.remove("open");
+      }
+    });
+  }
   refreshRelayStatus({ silent: true }).finally(() => {
     scheduleRelayStatusPolling();
   });
@@ -988,12 +1184,12 @@ async function startRelaySession() {
   setRelayControlsDisabled(true);
   try {
     await fetchJson(`${RELAY_BASE}/relay/start`, { method: "POST" });
-    updateStatus("Starting the WhatsApp relay…", "info");
+    updateStatus(`Starting ${RELAY_SERVICE_NAME}…`, "info");
     await refreshRelayStatus({ silent: true });
   } catch (error) {
     console.error(error);
     updateStatus(
-      "We couldn't start the WhatsApp relay. Run `npm start --workspace apps/server` in another terminal.",
+      `We couldn't start ${RELAY_SERVICE_NAME}. Run \`npm start --workspace apps/server\` in another terminal.`,
       "error"
     );
   } finally {
@@ -1007,13 +1203,13 @@ async function stopRelaySession() {
   setRelayControlsDisabled(true);
   try {
     await fetchJson(`${RELAY_BASE}/relay/stop`, { method: "POST" });
-    updateStatus("Stopped the WhatsApp relay.", "info");
-    setRemoteChatList([]);
+    updateStatus(`${RELAY_SERVICE_NAME} stopped.`, "info");
+    setRemoteChatList([], { resetTimestamp: true });
     await refreshChatSelector();
     await refreshRelayStatus({ silent: true });
   } catch (error) {
     console.error(error);
-    updateStatus("We couldn't stop the WhatsApp relay.", "warning");
+    updateStatus(`We couldn't stop ${RELAY_SERVICE_NAME}.`, "warning");
   } finally {
     setRelayControlsDisabled(false);
     applyRelayStatus(relayUiState.status);
@@ -1025,13 +1221,13 @@ async function logoutRelaySession() {
   setRelayControlsDisabled(true);
   try {
     await fetchJson(`${RELAY_BASE}/relay/logout`, { method: "POST" });
-    updateStatus("Logged out from WhatsApp.", "info");
-    setRemoteChatList([]);
+    updateStatus("Session cleared from the relay.", "info");
+    setRemoteChatList([], { resetTimestamp: true });
     await refreshChatSelector();
     await refreshRelayStatus({ silent: true });
   } catch (error) {
     console.error(error);
-    updateStatus("We couldn't log out from WhatsApp.", "warning");
+    updateStatus("We couldn't clear the relay session.", "warning");
   } finally {
     setRelayControlsDisabled(false);
   }
@@ -1041,18 +1237,25 @@ async function syncRelayChats({ silent = true } = {}) {
   if (!RELAY_BASE) return;
   if (!relayUiState.status || relayUiState.status.status !== "running") {
     if (!silent) {
-      updateStatus("Connect WhatsApp before refreshing chats.", "warning");
+      updateStatus("Connect the relay before refreshing chats.", "warning");
     }
     return;
   }
+  if (whatsappStatusEl) {
+    whatsappStatusEl.dataset.badge = "loading";
+  }
+  if (whatsappRefreshButton) whatsappRefreshButton.disabled = true;
   try {
     await fetchJson(`${RELAY_BASE}/relay/sync`, { method: "POST" });
     await refreshRemoteChats({ silent });
   } catch (error) {
     console.error(error);
     if (!silent) {
-      updateStatus("We couldn't refresh chats from WhatsApp.", "warning");
+      updateStatus("We couldn't refresh chats from the relay.", "warning");
     }
+  } finally {
+    if (whatsappRefreshButton) whatsappRefreshButton.disabled = false;
+    updateRelayBadge();
   }
 }
 
@@ -1067,11 +1270,28 @@ async function refreshRemoteChats({ silent = true } = {}) {
     const chats = Array.isArray(payload.chats) ? payload.chats : [];
     setRemoteChatList(chats);
     if (!silent) {
-      updateStatus(`Fetched ${formatNumber(chats.length)} chats from WhatsApp.`, "info");
+      relayUiState.pendingUpdate = false;
+      updateRelayBadge();
+    }
+
+    const activeValue = getActiveChatId();
+    const decoded = decodeChatSelectorValue(activeValue);
+    if (decoded && decoded.source === "remote") {
+      const target = chats.find(chat => chat.id === decoded.id);
+      const loadable = target && target.id !== "status@broadcast";
+      if (loadable) {
+        await loadRemoteChatDataset(decoded.id, activeValue, { silent });
+      } else {
+        setActiveChatId(null);
+      }
+    }
+
+    if (!silent) {
+      updateStatus(`Fetched ${formatNumber(chats.length)} chats from the relay.`, "info");
     }
   } catch (error) {
     console.error(error);
-    setRemoteChatList([]);
+    setRemoteChatList([], { skipTimestamp: true });
     if (!silent) {
       updateStatus("Couldn't load chats from the relay. Is it running?", "warning");
     }
@@ -1084,12 +1304,21 @@ async function refreshRelayStatus({ silent = false } = {}) {
   if (!RELAY_BASE || !whatsappStatusEl) return null;
   try {
     const status = await fetchJson(`${RELAY_BASE}/relay/status`);
+    if (status?.chatsSyncedAt) {
+      const syncedAt = Date.parse(status.chatsSyncedAt);
+      if (!Number.isNaN(syncedAt) && syncedAt > (remoteChatState.lastFetchedAt || 0)) {
+        const decoded = decodeChatSelectorValue(getActiveChatId());
+        if (decoded && decoded.source === "remote") {
+          relayUiState.pendingUpdate = true;
+        }
+      }
+    }
     applyRelayStatus(status);
     relayUiState.status = status;
     return status;
   } catch (error) {
     if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
-      updateStatus("WhatsApp relay is offline. Start `apps/server` to enable live loading.", "warning");
+      updateStatus(`${RELAY_SERVICE_NAME} is offline. Start \`apps/server\` to enable live loading.`, "warning");
       relayUiState.lastErrorNotice = Date.now();
     }
     relayUiState.status = null;
@@ -1101,7 +1330,9 @@ async function refreshRelayStatus({ silent = false } = {}) {
 function applyRelayStatus(status) {
   if (!whatsappStatusEl) return;
   if (!status) {
-    whatsappStatusEl.textContent = "Relay offline. Start the server to link WhatsApp.";
+    whatsappStatusEl.dataset.state = "offline";
+    whatsappStatusEl.dataset.badge = "";
+    whatsappStatusEl.textContent = "Relay offline. Start the server to link your device.";
     if (whatsappAccountEl) whatsappAccountEl.textContent = "";
     if (whatsappQrContainer) whatsappQrContainer.classList.add("hidden");
     if (whatsappQrImage) whatsappQrImage.removeAttribute("src");
@@ -1114,12 +1345,14 @@ function applyRelayStatus(status) {
     if (whatsappRefreshButton) whatsappRefreshButton.disabled = true;
     if (whatsappReloadAllButton) whatsappReloadAllButton.disabled = true;
     if (whatsappClearStorageButton) whatsappClearStorageButton.disabled = false;
-    setRemoteChatList([]);
+    setRemoteChatList([], { resetTimestamp: true });
     refreshChatSelector();
     return;
   }
 
   const description = describeRelayStatus(status);
+  whatsappStatusEl.dataset.state = status.status || "unknown";
+  updateRelayBadge();
   whatsappStatusEl.textContent = description.message;
   if (whatsappAccountEl) {
     whatsappAccountEl.textContent = status.account
@@ -1129,8 +1362,8 @@ function applyRelayStatus(status) {
   if (whatsappHelpText) {
     whatsappHelpText.textContent =
       status.status === "running"
-        ? "Your WhatsApp chats now appear under “Loaded chats”. Pick one to analyse it."
-        : "Scan the QR code after pressing Connect to mirror your chats without exporting files.";
+        ? "Your mirrored chats now appear under “Loaded chats”. Pick one to analyse it."
+        : "Scan the QR code after pressing Connect to mirror your device without exports.";
   }
   if (status.lastQr && whatsappQrContainer && whatsappQrImage) {
     whatsappQrImage.src = status.lastQr;
@@ -1162,13 +1395,29 @@ function applyRelayStatus(status) {
   }
 
   if (running) {
-    const needsRefresh =
-      !getRemoteChatList().length || Date.now() - remoteChatState.lastFetchedAt > REMOTE_CHAT_REFRESH_INTERVAL_MS;
-    if (needsRefresh) {
+    const remoteChats = getRemoteChatList();
+    const needsHydration = !remoteChats.length;
+    if (needsHydration) {
       refreshRemoteChats({ silent: true });
+    } else {
+      const stale = Date.now() - remoteChatState.lastFetchedAt > REMOTE_CHAT_REFRESH_INTERVAL_MS;
+      const active = decodeChatSelectorValue(getActiveChatId());
+      if (
+        stale &&
+        active?.source === "remote" &&
+        !relayUiState.pendingUpdate
+      ) {
+        relayUiState.pendingUpdate = true;
+        updateRelayBadge();
+        const meta = remoteChats.find(chat => chat.id === active.id);
+        const label = meta?.name || stripWhatsAppSuffix(active.id);
+        announceRefreshNeeded(label);
+      }
     }
   } else {
-    setRemoteChatList([]);
+    relayUiState.pendingUpdate = false;
+    updateRelayBadge();
+    setRemoteChatList([], { resetTimestamp: true });
     refreshChatSelector();
   }
 }
@@ -1177,13 +1426,13 @@ function describeRelayStatus(status) {
   const baseMessage = (() => {
     switch (status.status) {
       case "starting":
-        return "Connecting to WhatsApp…";
+        return "Connecting to your device…";
       case "waiting_qr":
-        return "Scan the QR code with WhatsApp → Linked devices.";
+        return "Scan the QR code with your messenger app.";
       case "running":
         return status.account
           ? `Connected as ${formatRelayAccount(status.account)}.`
-          : "Connected to WhatsApp.";
+          : "Relay connection established.";
       default:
         return "Relay stopped.";
     }
@@ -1200,6 +1449,31 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
+async function loadRemoteChatDataset(chatId, selectionValue, { silent = false } = {}) {
+  if (!API_BASE || !chatId || chatId === "status@broadcast") return;
+  const endpoint = `${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?limit=${REMOTE_MESSAGE_LIMIT}`;
+  try {
+    const payload = await fetchJson(endpoint);
+    const label = payload.label || payload.name || chatId;
+    const entries = Array.isArray(payload.entries) ? payload.entries : [];
+    await applyEntriesToApp(entries, label, {
+      datasetId: payload.id || `remote-${chatId}`,
+      statusMessage: silent ? null : `Loaded ${label} from the relay.`,
+      selectionValue: selectionValue ?? encodeChatSelectorValue("remote", chatId),
+    });
+    const active = decodeChatSelectorValue(getActiveChatId());
+    if (active && active.id === chatId && active.source === "remote") {
+      relayUiState.pendingUpdate = false;
+      updateRelayBadge();
+    }
+  } catch (error) {
+    console.error(error);
+    if (!silent) {
+      updateStatus("Couldn't load that chat from the relay.", "error");
+    }
+  }
+}
+
 async function clearStoredChatsOnServer() {
   return fetchJson(`${API_BASE}/chats/clear`, { method: "POST" });
 }
@@ -1207,14 +1481,14 @@ async function clearStoredChatsOnServer() {
 async function handleClearStorageClick() {
   if (typeof window !== "undefined" && window.confirm) {
     const confirmed = window.confirm(
-      "Clear all cached WhatsApp chats on this machine? You'll need to refresh to download them again."
+      "Clear all cached relay chats on this machine? You'll need to refresh to download them again."
     );
     if (!confirmed) return;
   }
   if (whatsappClearStorageButton) whatsappClearStorageButton.disabled = true;
   try {
     await clearStoredChatsOnServer();
-    setRemoteChatList([]);
+    setRemoteChatList([], { resetTimestamp: true });
     await refreshChatSelector();
     updateStatus("Cleared cached chats. Click Refresh to sync them again.", "info");
   } catch (error) {
@@ -1231,7 +1505,7 @@ async function handleReloadAllChats() {
   try {
     await reloadAllChats();
     await refreshRemoteChats({ silent: false });
-    updateStatus("Reloaded chat list from WhatsApp.", "info");
+    updateStatus("Reloaded chat list from the relay.", "info");
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't reload the chat list.", "error");
@@ -1249,11 +1523,11 @@ async function loadRemoteChat(chatId, options = {}) {
   }
   if (options.fullLimit) params.set("full", String(options.fullLimit));
   const endpoint = `${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?${params.toString()}`;
-  updateStatus("Fetching messages directly from WhatsApp…", "info");
+  updateStatus("Fetching messages directly from the relay…", "info");
   try {
     const payload = await fetchJson(endpoint);
     const entries = Array.isArray(payload.entries) ? payload.entries : [];
-    const label = payload.label || "WhatsApp chat";
+    const label = payload.label || RELAY_CHAT_LABEL;
     await applyEntriesToApp(entries, label, {
       datasetId: `remote-${chatId}`,
       selectionValue: encodeChatSelectorValue("remote", chatId),
@@ -1264,7 +1538,7 @@ async function loadRemoteChat(chatId, options = {}) {
   } catch (error) {
     console.error(error);
     updateStatus(
-      "We couldn't reach the WhatsApp relay. Make sure the server workspace is running (`npm start --workspace apps/server`).",
+      `We couldn't reach ${RELAY_SERVICE_NAME}. Make sure the server workspace is running (\`npm start --workspace apps/server\`).`,
       "error"
     );
     throw error;
@@ -1332,6 +1606,7 @@ async function applyEntriesToApp(entries, label, options = {}) {
       analytics.total_messages,
     )} messages).`;
   updateStatus(statusMessage, "info");
+  updateHeroVisibility();
   return { analytics, datasetId: savedRecord?.id ?? null };
 }
 
@@ -1465,7 +1740,7 @@ function renderParticipants(analytics) {
   if (!analytics || !analytics.top_senders.length) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
-      <td colspan="5" class="empty-state">Connect to WhatsApp to see participant details.</td>
+      <td colspan="5" class="empty-state">Connect the relay to see participant details.</td>
     `;
     participantsBody.appendChild(emptyRow);
     return;
@@ -2505,7 +2780,7 @@ async function handleShareSnapshot() {
       try {
         await navigator.share({
           title: snapshot.label || "Chat summary",
-          text: "WhatsApp chat summary",
+          text: "Relay chat summary",
           url: shareUrl,
         });
         updateStatus("Shared the view using the device menu.", "success");
@@ -2525,6 +2800,11 @@ async function handleShareSnapshot() {
     console.error(error);
     updateStatus("Couldn't make a share link.", "error");
   }
+}
+
+function buildSnapshotAnalytics(analytics) {
+  if (!analytics) return null;
+  return JSON.parse(JSON.stringify(analytics));
 }
 
 function runAdvancedSearch(query) {
@@ -2784,7 +3064,7 @@ function escapeHtml(value) {
 
 function buildMarkdownReport(analytics) {
   const nowIso = new Date().toISOString();
-  const title = getDatasetLabel() || "WhatsApp Chat";
+  const title = getDatasetLabel() || "Chat";
   const range = analytics.date_range || {};
   const highlights = analytics.highlights || [];
   const topSenders = (analytics.top_senders || []).slice(0, 10);
