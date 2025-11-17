@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 4173;
+const PORT = Number(process.env.PORT || process.env.WAAN_CLIENT_PORT || 4174);
 
 const mimeTypes = {
   '.html': 'text/html',
