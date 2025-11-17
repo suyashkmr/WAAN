@@ -1,0 +1,54 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start-backend": "node startup.js",
+    "dist": "electron-builder --mac"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "ai.waan.desktop",
+    "productName": "WAAN",
+    "files": [
+      "**/*",
+      "!dist{,/**}"
+    ],
+    "extraResources": [
+      {
+        "from": "..",
+        "to": "waan/web",
+        "filter": [
+          "index.html",
+          "styles.css",
+          "styles/**/*",
+          "js/**/*",
+          "vendor/**/*"
+        ]
+      },
+      {
+        "from": "../apps/server",
+        "to": "waan/apps/server"
+      },
+      {
+        "from": "../scripts",
+        "to": "waan/scripts",
+        "filter": [
+          "restore-waandata.js"
+        ]
+      }
+    ]
+  }
+}
