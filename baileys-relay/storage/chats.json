@@ -1,0 +1,160 @@
+{
+  "chats": {
+    "916360465282@s.whatsapp.net": {
+      "id": "916360465282@s.whatsapp.net",
+      "label": "916360465282@s.whatsapp.net",
+      "entries": [
+        {
+          "id": "A50AD805E7720F89C39DBAA2C27F9E11",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375249000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A5A00049648A66DFAEAD4968E826B6F7",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375249000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A58737D86E16DF702EF451A29A4736EE",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375250000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A51C15568267AEC1D5AF46574C7454E1",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375250000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A5238781929A41D120DD036B0C1EECEB",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375251000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A50292127CB28724EF079C6B88999FA3",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375251000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A5F53CD08B3A06E22E064DD7D224AE95",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375257000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A5AD6F4BA705E6E95F9C4004A65C94F4",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375259000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        },
+        {
+          "id": "A57A654378F9D2AB36F659F949E74B76",
+          "sender": "916360465282@s.whatsapp.net",
+          "sender_jid": "916360465282@s.whatsapp.net",
+          "timestamp": 1763375260000,
+          "message": "[unsupported message]",
+          "type": "protocolMessage",
+          "chatLabel": "916360465282@s.whatsapp.net"
+        }
+      ]
+    },
+    "status@broadcast": {
+      "id": "status@broadcast",
+      "label": "status@broadcast",
+      "entries": [
+        {
+          "id": "3A98F4343788B078F88F",
+          "sender": "status@broadcast",
+          "sender_jid": "status@broadcast",
+          "timestamp": 1763375254000,
+          "message": "https://www.instagram.com/reel/DREJOXOCUD6/?igsh=YXhpbHkya3VvYXM=",
+          "type": "text",
+          "chatLabel": "status@broadcast"
+        }
+      ]
+    },
+    "120363171596933008@g.us": {
+      "id": "120363171596933008@g.us",
+      "label": "Priyanka",
+      "entries": [
+        {
+          "id": "3EB0D61E151E0FF7C7D929",
+          "sender": "Priyanka",
+          "sender_jid": "28888067502138@lid",
+          "timestamp": 1763375892000,
+          "message": "Hi everyone! back again :p \nAs we’re finalising details for the upcoming hackathon, we’re also exploring prize ideas / gifts for the winners.\n\nIf you’ve seen or received anything in past hackathons or corporate events that felt useful, premium, memorable, or just really cool, please share your suggestions! 😄\n\nThanks in advance, would love to hear your ideas!✨",
+          "type": "text",
+          "chatLabel": "Priyanka"
+        },
+        {
+          "id": "3EB022B36C135593AC6905",
+          "sender": "Aditi Gupta",
+          "sender_jid": "87776296988897@lid",
+          "timestamp": 1763376496000,
+          "message": "we also consider asset life span as 4 years",
+          "type": "text",
+          "chatLabel": "Aditi Gupta"
+        }
+      ]
+    },
+    "120363259942477942@g.us": {
+      "id": "120363259942477942@g.us",
+      "label": "Rimjhim",
+      "entries": [
+        {
+          "id": "3AC558C89BFD642BD3A2",
+          "sender": "Rimjhim",
+          "sender_jid": "78812649943082@lid",
+          "timestamp": 1763376391000,
+          "message": "Hello! If we have to share a candidate’s profile, is this the appropriate channel for that ? Please let me know! Thanks!",
+          "type": "text",
+          "chatLabel": "Rimjhim"
+        }
+      ]
+    },
+    "120363420213802946@g.us": {
+      "id": "120363420213802946@g.us",
+      "label": "Krutika Mishra",
+      "entries": [
+        {
+          "id": "3A3D566E1CC4ED296FFE",
+          "sender": "Krutika Mishra",
+          "sender_jid": "82978835275906@lid",
+          "timestamp": 1763377018000,
+          "message": "📢 Sydlertech Hiring – SAP CO Consultant (Kanpur | 6 Months Contract)\nExperience: 3–5 years (SAP CO)\n\nLocation: Kanpur (On-site)\n\nDuration: 6 Months\nRequired Skills:\n\n• SAP CO (CCA, PCA, Internal Orders, Product Costing, COPA)\n• Month-end closing support\n• Troubleshooting & configuration\n• Good communication skills\nInterested?\nShare your resume at varsha.shinde@sydlertech.com\n\nSubject: SAP CO – Kanpur\nPlease share with your network! 🙌",
+          "type": "text",
+          "chatLabel": "Krutika Mishra"
+        }
+      ]
+    }
+  }
+}

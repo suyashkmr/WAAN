@@ -108,6 +108,12 @@ const downloadMarkdownButton = document.getElementById("download-markdown-report
 const downloadSlidesButton = document.getElementById("download-slides-report");
 const sectionNavLinks = Array.from(document.querySelectorAll(".section-nav a"));
 const downloadChatJsonButton = document.getElementById("download-chat-json");
+const liveCard = document.getElementById("baileys-live-card");
+const liveStatusEl = document.getElementById("baileys-status");
+const liveConnectButton = document.getElementById("baileys-connect");
+const liveRefreshButton = document.getElementById("baileys-refresh");
+const liveReloadButton = document.getElementById("baileys-reload");
+const liveLogoutButton = document.getElementById("baileys-logout");
 const timeOfDayWeekdayToggle = document.getElementById("timeofday-toggle-weekdays");
 const timeOfDayWeekendToggle = document.getElementById("timeofday-toggle-weekends");
 const timeOfDayHourStartInput = document.getElementById("timeofday-hour-start");
@@ -121,6 +127,22 @@ const pollsNote = document.getElementById("polls-note");
 const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
+
+const runtimeConfig = window.WAAN_CONFIG || {};
+const API_BASE = runtimeConfig.apiBase || null;
+const RELAY_BASE = runtimeConfig.relayBase || null;
+const REMOTE_REFRESH_INTERVAL_MS =
+  Number.isFinite(Number(runtimeConfig.remoteRefreshInterval))
+    ? Number(runtimeConfig.remoteRefreshInterval)
+    : 30000;
+const RELAY_STATUS_INTERVAL_MS = Number.isFinite(Number(runtimeConfig.relayStatusInterval))
+  ? Number(runtimeConfig.relayStatusInterval)
+  : 15000;
+
+let remoteChats = [];
+let remoteRefreshHandle = null;
+let relayStatusHandle = null;
+let relayStatusState = null;
 
 let hourlyControlsInitialised = false;
 const participantFilters = {
@@ -360,6 +382,122 @@ function decodeChatSelectorValue(value) {
   return { source: prefix, id: rest.join(":") };
 }
 
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(text || `Request failed (${response.status})`);
+  }
+  return response.json();
+}
+
+async function syncRemoteChats() {
+  if (!API_BASE) {
+    remoteChats = [];
+    return remoteChats;
+  }
+  try {
+    const data = await fetchJson(`${API_BASE}/chats`);
+    remoteChats = Array.isArray(data) ? data : [];
+  } catch (error) {
+    remoteChats = [];
+    console.error(error);
+    updateStatus(`Couldn't refresh live chats: ${error.message}`, "warning");
+  }
+  await refreshChatSelector();
+  return remoteChats;
+}
+
+function scheduleRemoteRefresh() {
+  if (!API_BASE || remoteRefreshHandle) return;
+  remoteRefreshHandle = setInterval(() => {
+    syncRemoteChats().catch(() => {});
+  }, REMOTE_REFRESH_INTERVAL_MS);
+}
+
+async function loadRemoteChatDataset(chatId, selectionValue) {
+  if (!API_BASE || !chatId) return;
+  try {
+    updateStatus("Loading live chat…", "info");
+    const payload = await fetchJson(`${API_BASE}/chats/${encodeURIComponent(chatId)}`);
+    const label = payload.label || chatId;
+    const entries = Array.isArray(payload.entries) ? payload.entries : [];
+    await applyEntriesToApp(entries, label, {
+      datasetId: payload.id || `remote-${chatId}`,
+      selectionValue: selectionValue ?? encodeChatSelectorValue("remote", chatId),
+      statusMessage: `Loaded live chat: ${label}`,
+    });
+  } catch (error) {
+    console.error(error);
+    updateStatus(`We couldn't load that live chat (${chatId}).`, "error");
+  }
+}
+
+async function requestRelayAction(action, statusMessage) {
+  if (!RELAY_BASE) return;
+  const buttons = [liveConnectButton, liveRefreshButton, liveReloadButton, liveLogoutButton].filter(Boolean);
+  buttons.forEach(button => {
+    // eslint-disable-next-line no-param-reassign
+    button.disabled = true;
+  });
+  try {
+    await fetchJson(`${RELAY_BASE}/${action}`, { method: "POST" });
+    if (statusMessage) {
+      updateStatus(statusMessage, "info");
+    }
+    await pollRelayStatus();
+    if (action !== "logout") {
+      await syncRemoteChats();
+    }
+  } catch (error) {
+    console.error(error);
+    updateStatus(`Relay request failed: ${error.message}`, "error");
+  } finally {
+    buttons.forEach(button => {
+      // eslint-disable-next-line no-param-reassign
+      button.disabled = false;
+    });
+  }
+}
+
+function renderRelayStatus(status) {
+  if (!liveStatusEl) return;
+  if (!status) {
+    liveStatusEl.textContent = "Waiting for relay status…";
+    return;
+  }
+  const connection = status.connection || "unknown";
+  const state = status.state || "unknown";
+  const parts = [`Connection: ${connection}`];
+  if (state === "qr") {
+    parts.push("Scan the QR shown in the relay terminal.");
+  } else if (state === "connected") {
+    parts.push("Linked to WhatsApp.");
+  } else if (state === "disconnected") {
+    parts.push("Relay offline.");
+  }
+  liveStatusEl.textContent = parts.join(" · ");
+}
+
+async function pollRelayStatus() {
+  if (!RELAY_BASE) return;
+  try {
+    const payload = await fetchJson(`${RELAY_BASE}/status`);
+    relayStatusState = payload;
+    renderRelayStatus(payload);
+  } catch (error) {
+    console.error(error);
+    renderRelayStatus(null);
+  }
+}
+
+function scheduleRelayStatusPoll() {
+  if (!RELAY_BASE || relayStatusHandle) return;
+  relayStatusHandle = setInterval(() => {
+    pollRelayStatus().catch(() => {});
+  }, RELAY_STATUS_INTERVAL_MS);
+}
+
 function formatLocalChatLabel(chat) {
   const parts = [chat.label || "Untitled chat"];
   if (Number.isFinite(chat.messageCount)) {
@@ -377,23 +515,41 @@ async function refreshChatSelector() {
   }
 
   const storedChats = listChatDatasets();
-  if (!storedChats.length) {
-    chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
+  chatSelector.innerHTML = "";
+  let optionCount = 0;
+
+  if (storedChats.length) {
+    const storedGroup = document.createElement("optgroup");
+    storedGroup.label = "Your chats";
+    storedChats.forEach(chat => {
+      const option = document.createElement("option");
+      option.value = encodeChatSelectorValue("local", chat.id);
+      option.textContent = formatLocalChatLabel(chat);
+      storedGroup.appendChild(option);
+      optionCount += 1;
+    });
+    chatSelector.appendChild(storedGroup);
+  }
+
+  if (remoteChats.length) {
+    const remoteGroup = document.createElement("optgroup");
+    remoteGroup.label = "Live (Baileys)";
+    remoteChats.forEach(chat => {
+      const option = document.createElement("option");
+      option.value = encodeChatSelectorValue("remote", chat.id);
+      option.textContent = chat.label || chat.id;
+      remoteGroup.appendChild(option);
+      optionCount += 1;
+    });
+    chatSelector.appendChild(remoteGroup);
+  }
+
+  if (!optionCount) {
+    chatSelector.innerHTML = '<option value="">No chats available yet</option>';
     chatSelector.value = "";
     chatSelector.disabled = true;
     return;
   }
-
-  chatSelector.innerHTML = "";
-  const storedGroup = document.createElement("optgroup");
-  storedGroup.label = "Your chats";
-  storedChats.forEach(chat => {
-    const option = document.createElement("option");
-    option.value = encodeChatSelectorValue("local", chat.id);
-    option.textContent = formatLocalChatLabel(chat);
-    storedGroup.appendChild(option);
-  });
-  chatSelector.appendChild(storedGroup);
 
   const activeValue = getActiveChatId();
   const availableValues = Array.from(chatSelector.options).map(option => option.value);
@@ -428,6 +584,8 @@ async function handleChatSelectionChange(event) {
         statusMessage: `Switched to ${dataset.label}.`,
         selectionValue: event.target.value,
       });
+    } else if (source === "remote") {
+      await loadRemoteChatDataset(id, event.target.value);
     }
   } catch (error) {
     console.error(error);
@@ -515,7 +673,7 @@ setStatusCallback((message, tone) => {
   statusEl.textContent = message;
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   attachEventHandlers();
   setupSectionNavTracking();
   Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
@@ -535,18 +693,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!viewingSnapshot) {
     refreshSavedViewsUI();
   }
-  refreshChatSelector();
+  if (API_BASE) {
+    await syncRemoteChats();
+    scheduleRemoteRefresh();
+  }
+  if (RELAY_BASE) {
+    await pollRelayStatus();
+    scheduleRelayStatusPoll();
+  }
+  await refreshChatSelector();
   if (!viewingSnapshot) {
-    loadDefaultChat();
+    await loadDefaultChat();
   }
 });
 
 function attachEventHandlers() {
-  const fileInput = document.getElementById("chat-file");
-  if (fileInput) {
-    fileInput.addEventListener("change", handleFileUpload);
-  }
-
   if (chatSelector) {
     chatSelector.addEventListener("change", handleChatSelectionChange);
   }
@@ -620,6 +781,21 @@ function attachEventHandlers() {
     downloadPdfButton.addEventListener("click", () => {
       window.print();
     });
+  }
+  if (liveRefreshButton) {
+    liveRefreshButton.addEventListener("click", async () => {
+      await syncRemoteChats();
+      updateStatus("Live chats refreshed.", "info");
+    });
+  }
+  if (liveReloadButton) {
+    liveReloadButton.addEventListener("click", () => requestRelayAction("reload", "Reloading Baileys connection…"));
+  }
+  if (liveConnectButton) {
+    liveConnectButton.addEventListener("click", () => requestRelayAction("start", "Connecting to WhatsApp…"));
+  }
+  if (liveLogoutButton) {
+    liveLogoutButton.addEventListener("click", () => requestRelayAction("logout", "Logging out of WhatsApp…"));
   }
   if (shareSnapshotButton) {
     shareSnapshotButton.disabled = true;
@@ -736,11 +912,16 @@ function attachEventHandlers() {
 }
 
 async function loadDefaultChat() {
+  if (API_BASE && remoteChats.length) {
+    const firstRemote = remoteChats[0];
+    await loadRemoteChatDataset(firstRemote.id, encodeChatSelectorValue("remote", firstRemote.id));
+    return;
+  }
   try {
     updateStatus("Loading the sample chat…", "info");
     const response = await fetch("chat.json");
     if (!response.ok) {
-      updateStatus("We couldn't find the sample chat. Upload your chat file to begin.", "warning");
+      updateStatus("We couldn't find the sample chat. Connect to Baileys to begin.", "warning");
       return;
     }
     const text = await response.text();
@@ -750,64 +931,7 @@ async function loadDefaultChat() {
     });
   } catch (error) {
     console.error(error);
-    updateStatus("We couldn't open the sample chat. Please upload your chat file.", "error");
-  }
-}
-
-async function handleFileUpload(event) {
-  if (snapshotMode) {
-    updateStatus("Uploads are turned off while you're viewing a shared link.", "warning");
-    return;
-  }
-  
-  const files = event.target.files;
-  if (!files || files.length === 0) return;
-
-  // For multiple files (Android folder selection)
-  if (files.length > 1 || files[0].webkitRelativePath) {
-    updateStatus(`Processing ${files.length} files...`, "info");
-    
-    // Find the first .txt file in the selection
-    const textFile = Array.from(files).find(file => 
-      file.name.toLowerCase().endsWith('.txt')
-    );
-    
-    if (!textFile) {
-      updateStatus("No .txt file found in the selection.", "error");
-      event.target.value = "";
-      return;
-    }
-    
-    // Process the first .txt file found
-    await processFile(textFile);
-  } else {
-    // For single file upload
-    const file = files[0];
-    if (!file.name.toLowerCase().endsWith(".txt")) {
-      updateStatus("That file type isn't supported. Please upload the WhatsApp .txt export.", "error");
-      event.target.value = "";
-      return;
-    }
-    
-    await processFile(file);
-  }
-  
-  event.target.value = "";
-}
-
-async function processFile(file) {
-  if (file.size > 10 * 1024 * 1024) {
-    updateStatus("This file is over 10MB. Please split the export and try again.", "warning");
-    return;
-  }
-
-  updateStatus(`Reading ${file.name}…`, "info");
-  try {
-    const text = await file.text();
-    await processChatText(text, file.name);
-  } catch (error) {
-    console.error(error);
-    updateStatus("We couldn't read that file.", "error");
+    updateStatus("We couldn't open the sample chat. Connect to Baileys to begin.", "error");
   }
 }
 
@@ -2517,8 +2641,6 @@ function buildSlidesHtml(analytics) {
 }
 
 function disableInteractiveControlsForSnapshot() {
-  const fileInput = document.getElementById("chat-file");
-  if (fileInput) fileInput.disabled = true;
   if (rangeSelect) rangeSelect.disabled = true;
   if (chatSelector) chatSelector.disabled = true;
   if (refreshLiveChatsButton) refreshLiveChatsButton.disabled = true;

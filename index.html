@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhatsApp Chat Overview</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+      window.WAAN_CONFIG = {
+        apiBase: "http://localhost:5050/api",
+        relayBase: "http://localhost:5050/relay"
+      };
+    </script>
 </head>
 <body>
     <header>
@@ -12,6 +18,29 @@
     </header>
 
     <main>
+        <section class="card full-span live-card" id="baileys-live-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>Connect to WhatsApp (Baileys)</h2>
+                    <p class="card-subtitle">Link a WhatsApp account to stream chats directly into WAAN.</p>
+                </div>
+                <div class="card-header-actions">
+                    <button type="button" class="ghost-button small" id="baileys-refresh">Refresh chats</button>
+                    <button type="button" class="ghost-button small" id="baileys-reload">Reload connection</button>
+                    <button type="button" class="ghost-button small danger" id="baileys-logout">Log out</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <p id="baileys-status" class="live-status">Waiting for relay status…</p>
+                <div class="live-actions">
+                    <button type="button" class="ghost-button" id="baileys-connect">Connect / Reconnect</button>
+                </div>
+                <p class="live-help">
+                    Keep this window open while linking. If a QR is requested, scan it from the relay terminal window.
+                </p>
+            </div>
+        </section>
+
         <nav class="section-nav full-span" aria-label="Section shortcuts">
             <div class="section-nav-inner">
                 <a href="#summary">Overview</a>
@@ -30,11 +59,6 @@
 
         <div class="page-controls full-span">
             <div class="control-row primary-controls">
-                <div class="control upload-control">
-                    <span>Upload WhatsApp chat </span>
-                    <input type="file" id="chat-file" accept=".txt,text/plain">
-                  
-                </div>
                 <label class="control dataset-control">
                     <span>Loaded chats</span>
                     <select id="chat-selector" disabled>
