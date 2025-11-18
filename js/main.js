@@ -1274,19 +1274,29 @@ async function startRelaySession() {
   }
 }
 
-async function stopRelaySession() {
+async function stopRelaySession({ fromLogout = false } = {}) {
   if (!RELAY_BASE) return;
   setRelayControlsDisabled(true);
+  let shouldResetRelayUi = fromLogout;
   try {
     await fetchJson(`${RELAY_BASE}/relay/stop`, { method: "POST" });
-    updateStatus(`${RELAY_SERVICE_NAME} stopped.`, "info");
-    setRemoteChatList([], { resetTimestamp: true });
-    await refreshChatSelector();
-    await refreshRelayStatus({ silent: true });
+    if (!fromLogout) {
+      updateStatus(`${RELAY_SERVICE_NAME} stopped.`, "info");
+    }
+    shouldResetRelayUi = true;
   } catch (error) {
     console.error(error);
     updateStatus(`We couldn't stop ${RELAY_SERVICE_NAME}.`, "warning");
   } finally {
+    if (shouldResetRelayUi) {
+      try {
+        setRemoteChatList([], { resetTimestamp: true });
+        await refreshChatSelector();
+        await refreshRelayStatus({ silent: true });
+      } catch (uiError) {
+        console.error(uiError);
+      }
+    }
     setRelayControlsDisabled(false);
     applyRelayStatus(relayUiState.status);
   }
@@ -1298,9 +1308,7 @@ async function logoutRelaySession() {
   try {
     await fetchJson(`${RELAY_BASE}/relay/logout`, { method: "POST" });
     updateStatus("Session cleared from the relay.", "info");
-    setRemoteChatList([], { resetTimestamp: true });
-    await refreshChatSelector();
-    await refreshRelayStatus({ silent: true });
+    await stopRelaySession({ fromLogout: true });
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't clear the relay session.", "warning");
