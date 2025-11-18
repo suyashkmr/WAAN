@@ -24,13 +24,14 @@ function buildApiRouter({ store, relayManager, logger }) {
 
   router.get("/chats/:chatId/messages", async (req, res) => {
     const chatId = decodeURIComponent(req.params.chatId);
-    const limit = Number(req.query.limit) || 500;
+    const limit = Math.max(1, Math.min(Number(req.query.limit) || 500, 5000));
     const refresh = req.query.refresh === "1" || req.query.refresh === "true";
     const fullLimit = Number(req.query.full) || undefined;
+    const cursor = typeof req.query.cursor === "string" ? req.query.cursor : null;
     const autoSync = relayManager?.isReady();
     let meta = store.getChatMeta(chatId);
     try {
-      if ((!meta || refresh) && autoSync) {
+      if (!meta && autoSync) {
         await relayManager.syncChats();
         meta = store.getChatMeta(chatId);
       }
@@ -48,11 +49,17 @@ function buildApiRouter({ store, relayManager, logger }) {
       res.status(404).json({ error: "Chat not found" });
       return;
     }
-    const entries = await store.getEntries(chatId, limit);
+    const page = await store.getEntriesPage(chatId, { limit, before: cursor });
     res.json({
       chatId,
       label: meta.name || chatId,
-      entries,
+      entries: page.entries,
+      paging: {
+        nextCursor: page.nextCursor,
+        hasMore: page.hasMore,
+        remaining: page.remaining,
+        total: page.total,
+      },
       participants: meta.participants || [],
     });
   });

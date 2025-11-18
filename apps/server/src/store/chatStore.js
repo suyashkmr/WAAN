@@ -97,6 +97,41 @@ class ChatStore extends EventEmitter {
     return entries.slice(entries.length - limit);
   }
 
+  async getEntriesPage(chatId, options = {}) {
+    const limit = Number.isFinite(options.limit) && options.limit > 0 ? options.limit : 500;
+    const before = this.parseCursor(options.before);
+    const entries = await this.loadEntries(chatId);
+    let endIndex = entries.length;
+    if (before !== null) {
+      endIndex = entries.findIndex(entry => {
+        const ts = this.parseCursor(entry.timestamp || entry.date);
+        return ts !== null && ts > before;
+      });
+      if (endIndex === -1) {
+        endIndex = entries.length;
+      }
+    }
+    const startIndex = Math.max(0, endIndex - limit);
+    const pageEntries = entries.slice(startIndex, endIndex);
+    const nextCursor = pageEntries.length
+      ? pageEntries[0].timestamp || pageEntries[0].date || null
+      : null;
+    return {
+      entries: pageEntries,
+      nextCursor,
+      hasMore: startIndex > 0,
+      remaining: startIndex,
+      total: entries.length,
+    };
+  }
+
+  parseCursor(value) {
+    if (!value) return null;
+    const parsed = Date.parse(value);
+    if (Number.isNaN(parsed)) return null;
+    return parsed;
+  }
+
   async upsertChatMeta(chatId, patch = {}) {
     const existing = this.metadata.get(chatId) || {
       id: chatId,

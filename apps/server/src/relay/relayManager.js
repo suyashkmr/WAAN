@@ -123,7 +123,7 @@ class RelayManager extends EventEmitter {
     const sessionDir = path.join(this.config.dataDir, "whatsapp-session");
     this.client = new Client({
       puppeteer: {
-        headless: true,
+        headless: process.env.WAAN_HEADLESS === "0" ? false : true,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",

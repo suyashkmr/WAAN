@@ -61,7 +61,8 @@ const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4546";
 const RELAY_POLL_INTERVAL_MS = 5000;
 const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
 const REFRESH_PROMPT_COOLDOWN_MS = 15000;
-const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
+const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 15000;
+const REMOTE_HISTORY_BATCH_LIMIT = Number(runtimeConfig.remoteHistoryBatch || 2000);
 const RELAY_SERVICE_NAME = runtimeConfig.relayName || "Signal Relay";
 const RELAY_APP_REFERENCE = runtimeConfig.relayAppLabel || "linked messenger";
 const RELAY_CHAT_LABEL = runtimeConfig.chatLabel || "linked chat";
@@ -293,6 +294,8 @@ const dailyNote = document.getElementById("daily-note");
 const weeklyNote = document.getElementById("weekly-note");
 const weekdayNote = document.getElementById("weekday-note");
 const timeOfDayNote = document.getElementById("timeofday-note");
+const loadOlderButton = document.getElementById("load-older-messages");
+const messageListEl = document.getElementById("search-results-list");
 
 let hourlyControlsInitialised = false;
 const participantFilters = {
@@ -322,6 +325,7 @@ const remoteChatState = {
   list: [],
   lastFetchedAt: 0,
 };
+const remotePagingState = new Map();
 let syncIndicatorInterval = null;
 let inlineSnapshot = null;
 const relayUiState = {
@@ -362,6 +366,19 @@ function updateSyncIndicatorText() {
 function startSyncIndicatorTimer() {
   if (syncIndicatorInterval) return;
   syncIndicatorInterval = setInterval(updateSyncIndicatorText, 10000);
+}
+
+function updateLoadOlderButton() {
+  if (!loadOlderButton) return;
+  const active = decodeChatSelectorValue(getActiveChatId());
+  if (!active || active.source !== "remote") {
+    loadOlderButton.disabled = true;
+    loadOlderButton.textContent = "Load earlier messages";
+    return;
+  }
+  const paging = getRemotePagingInfo(active.id);
+  loadOlderButton.disabled = !paging.hasMore || !paging.nextCursor;
+  loadOlderButton.textContent = paging.hasMore ? "Load earlier messages" : "All messages loaded";
 }
 
 function updateHeroVisibility() {
@@ -708,11 +725,29 @@ function setRemoteChatList(list = [], options = {}) {
   } else if (!options.skipTimestamp) {
     remoteChatState.lastFetchedAt = Date.now();
   }
+  if (!remoteChatState.list.length) {
+    remotePagingState.clear();
+  }
   updateSyncIndicatorText();
+  updateLoadOlderButton();
 }
 
 function getRemoteChatList() {
   return remoteChatState.list;
+}
+
+function setRemotePagingInfo(chatId, paging = {}) {
+  if (!chatId) return;
+  remotePagingState.set(chatId, {
+    hasMore: Boolean(paging.hasMore),
+    nextCursor: paging.nextCursor || null,
+    remaining: Number.isFinite(paging.remaining) ? paging.remaining : null,
+    total: paging.total ?? null,
+  });
+}
+
+function getRemotePagingInfo(chatId) {
+  return remotePagingState.get(chatId) || { hasMore: false, nextCursor: null };
 }
 
 function stripWhatsAppSuffix(value) {
@@ -725,6 +760,39 @@ function formatRelayAccount(account) {
   if (account.pushName) return account.pushName;
   if (account.wid) return stripWhatsAppSuffix(account.wid);
   return "";
+}
+
+function entryTimestampValue(entry) {
+  if (!entry) return 0;
+  const raw = entry.timestamp || entry.date || entry.created_at || null;
+  const parsed = raw ? Date.parse(raw) : NaN;
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function entryKey(entry) {
+  if (!entry) return Math.random().toString(36);
+  return (
+    entry.id ||
+    entry.key ||
+    `${entry.timestamp || entry.date || ""}|${entry.sender || ""}|${entry.message || entry.body || ""}`
+  );
+}
+
+function mergeEntriesForDataset(newEntries = [], existingEntries = []) {
+  if (!existingEntries.length) {
+    return Array.isArray(newEntries) ? [...newEntries] : [];
+  }
+  const combined = [...(Array.isArray(newEntries) ? newEntries : []), ...existingEntries];
+  const seen = new Set();
+  const filtered = [];
+  combined.forEach(entry => {
+    const key = entryKey(entry);
+    if (seen.has(key)) return;
+    seen.add(key);
+    filtered.push(entry);
+  });
+  filtered.sort((a, b) => entryTimestampValue(a) - entryTimestampValue(b));
+  return filtered;
 }
 
 async function refreshChatSelector() {
@@ -777,6 +845,7 @@ async function refreshChatSelector() {
     setActiveChatId(resolvedValue);
   }
   chatSelector.disabled = snapshotMode;
+  updateLoadOlderButton();
 }
 
 async function handleChatSelectionChange(event) {
@@ -997,6 +1066,13 @@ function attachEventHandlers() {
       }
     });
   });
+  if (loadOlderButton) {
+    loadOlderButton.addEventListener("click", handleLoadOlderMessages);
+  }
+  const messageContainer = document.getElementById("search-results-list");
+  if (messageContainer) {
+    messageContainer.addEventListener("scroll", handleHistoryScroll);
+  }
   if (downloadMarkdownButton) {
     downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
   }
@@ -1248,6 +1324,32 @@ async function syncRelayChats({ silent = true } = {}) {
   try {
     await fetchJson(`${RELAY_BASE}/relay/sync`, { method: "POST" });
     await refreshRemoteChats({ silent });
+    const activeValue = getActiveChatId();
+    const decoded = decodeChatSelectorValue(activeValue);
+    if (decoded && decoded.source === "remote") {
+      const dataset = getChatDatasetById(decoded.id);
+      if (dataset) {
+        await loadRemoteChat(decoded.id, {
+          limit: REMOTE_MESSAGE_LIMIT,
+          refresh: true,
+        });
+      } else {
+        await loadRemoteChat(decoded.id, {
+          limit: REMOTE_MESSAGE_LIMIT,
+          refresh: true,
+        });
+      }
+    } else if (decoded && decoded.source === "local") {
+      const dataset = getChatDatasetById(decoded.id);
+      if (dataset) {
+        await applyEntriesToApp(dataset.entries, dataset.label, {
+          datasetId: dataset.id,
+          analyticsOverride: dataset.analytics ?? null,
+          selectionValue: activeValue,
+          statusMessage: "Reloaded the current dataset.",
+        });
+      }
+    }
   } catch (error) {
     console.error(error);
     if (!silent) {
@@ -1280,7 +1382,12 @@ async function refreshRemoteChats({ silent = true } = {}) {
       const target = chats.find(chat => chat.id === decoded.id);
       const loadable = target && target.id !== "status@broadcast";
       if (loadable) {
-        await loadRemoteChatDataset(decoded.id, activeValue, { silent });
+        await loadRemoteChatDataset(decoded.id, activeValue, {
+          silent,
+          mergeMode: null,
+          batchLimit: REMOTE_MESSAGE_LIMIT,
+          statusMessage: silent ? null : `Reloaded ${target.name || decoded.id}.`,
+        });
       } else {
         setActiveChatId(null);
       }
@@ -1449,16 +1556,32 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
-async function loadRemoteChatDataset(chatId, selectionValue, { silent = false } = {}) {
+async function loadRemoteChatDataset(chatId, selectionValue, options = {}) {
   if (!API_BASE || !chatId || chatId === "status@broadcast") return;
-  const endpoint = `${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?limit=${REMOTE_MESSAGE_LIMIT}`;
+  const {
+    silent = false,
+    cursor = null,
+    mergeMode = null,
+    batchLimit = null,
+    statusMessage = null,
+  } = options;
+  const limit = Number(batchLimit) || REMOTE_MESSAGE_LIMIT;
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) {
+    params.set("cursor", cursor);
+  }
+  const endpoint = `${API_BASE}/chats/${encodeURIComponent(chatId)}/messages?${params.toString()}`;
   try {
     const payload = await fetchJson(endpoint);
     const label = payload.label || payload.name || chatId;
-    const entries = Array.isArray(payload.entries) ? payload.entries : [];
-    await applyEntriesToApp(entries, label, {
+    const incomingEntries = Array.isArray(payload.entries) ? payload.entries : [];
+    let datasetEntries = incomingEntries;
+    if (mergeMode) {
+      datasetEntries = mergeEntriesForDataset(incomingEntries, getDatasetEntries());
+    }
+    await applyEntriesToApp(datasetEntries, label, {
       datasetId: payload.id || `remote-${chatId}`,
-      statusMessage: silent ? null : `Loaded ${label} from the relay.`,
+      statusMessage: statusMessage ?? (silent ? null : `Loaded ${label} from the relay.`),
       selectionValue: selectionValue ?? encodeChatSelectorValue("remote", chatId),
     });
     const active = decodeChatSelectorValue(getActiveChatId());
@@ -1466,6 +1589,8 @@ async function loadRemoteChatDataset(chatId, selectionValue, { silent = false } 
       relayUiState.pendingUpdate = false;
       updateRelayBadge();
     }
+    setRemotePagingInfo(chatId, payload.paging || { hasMore: false, nextCursor: null });
+    updateLoadOlderButton();
   } catch (error) {
     console.error(error);
     if (!silent) {
@@ -1511,6 +1636,44 @@ async function handleReloadAllChats() {
     updateStatus("We couldn't reload the chat list.", "error");
   } finally {
     whatsappReloadAllButton.disabled = false;
+  }
+}
+
+async function handleLoadOlderMessages() {
+  const activeValue = getActiveChatId();
+  const decoded = decodeChatSelectorValue(activeValue);
+  if (!decoded || decoded.source !== "remote") {
+    updateStatus("Select a live chat before loading more history.", "warning");
+    return;
+  }
+  const paging = getRemotePagingInfo(decoded.id);
+  if (!paging.hasMore || !paging.nextCursor) {
+    updateStatus("No earlier messages available from the relay.", "info");
+    return;
+  }
+  loadOlderButton.disabled = true;
+  try {
+    await loadRemoteChatDataset(decoded.id, activeValue, {
+      cursor: paging.nextCursor,
+      mergeMode: "prepend",
+      batchLimit: REMOTE_HISTORY_BATCH_LIMIT,
+      silent: true,
+      statusMessage: "Added earlier messages from the relay.",
+    });
+    updateStatus("Fetched earlier messages from the relay.", "success");
+  } catch (error) {
+    console.error(error);
+    updateStatus("We couldn't load earlier messages.", "error");
+  } finally {
+    updateLoadOlderButton();
+  }
+}
+
+function handleHistoryScroll(event) {
+  if (!event.target || !loadOlderButton) return;
+  const target = event.target;
+  if (target.scrollTop <= 50 && !loadOlderButton.disabled) {
+    handleLoadOlderMessages();
   }
 }
 
@@ -1607,6 +1770,7 @@ async function applyEntriesToApp(entries, label, options = {}) {
     )} messages).`;
   updateStatus(statusMessage, "info");
   updateHeroVisibility();
+  updateLoadOlderButton();
   return { analytics, datasetId: savedRecord?.id ?? null };
 }
 
