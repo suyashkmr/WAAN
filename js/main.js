@@ -1583,6 +1583,8 @@ async function loadRemoteChatDataset(chatId, selectionValue, options = {}) {
       datasetId: payload.id || `remote-${chatId}`,
       statusMessage: statusMessage ?? (silent ? null : `Loaded ${label} from the relay.`),
       selectionValue: selectionValue ?? encodeChatSelectorValue("remote", chatId),
+      participants: Array.isArray(payload.participants) ? payload.participants : [],
+      persist: false,
     });
     const active = decodeChatSelectorValue(getActiveChatId());
     if (active && active.id === chatId && active.source === "remote") {
