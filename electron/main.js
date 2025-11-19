@@ -2,7 +2,7 @@ if (process.env.ELECTRON_RUN_AS_NODE) {
   delete process.env.ELECTRON_RUN_AS_NODE;
 }
 
-const { app, BrowserWindow, dialog } = require("electron");
+const { app, BrowserWindow, dialog, shell, ipcMain, Menu, Notification } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
 const fs = require("fs");
@@ -15,9 +15,13 @@ const DEFAULT_CLIENT_HOST =
   process.env.WAAN_CLIENT_HOST || process.env.HOST || "127.0.0.1";
 const DEFAULT_API_PORT = Number(process.env.WAAN_API_PORT || 3334);
 const DEFAULT_RELAY_PORT = Number(process.env.WAAN_RELAY_PORT || 4546);
+const WHATSAPP_WEB_URL = "https://web.whatsapp.com";
 
 let relayProcess = null;
 let staticServer = null;
+let mainWindow = null;
+const preloadPath = path.join(__dirname, "preload.js");
+let cachedRelayStatus = null;
 
 const getRuntimeRoot = () =>
   app.isPackaged ? path.join(process.resourcesPath, "waan") : path.resolve(__dirname, "..");
@@ -77,6 +81,7 @@ function startRelayProcess() {
     env: {
       WAAN_API_PORT: String(DEFAULT_API_PORT),
       WAAN_RELAY_PORT: String(DEFAULT_RELAY_PORT),
+      WAAN_RELAY_HEADLESS: "false",
     },
   });
 }
@@ -118,16 +123,58 @@ async function startBackend() {
   await runRestoreScript();
   await startStaticServer();
   startRelayProcess();
+  buildAppMenu();
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  if (mainWindow) {
+    return mainWindow;
+  }
+
+  mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    webPreferences: {
+      preload: preloadPath,
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
   });
   const clientUrl =
     process.env.WAAN_CLIENT_URL || `http://${DEFAULT_CLIENT_HOST}:${DEFAULT_CLIENT_PORT}`;
-  win.loadURL(clientUrl);
+  mainWindow.loadURL(clientUrl);
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+  return mainWindow;
+}
+
+function runCommand(command, args = []) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "ignore" });
+    child.once("error", reject);
+    child.once("close", code => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`${command} exited with code ${code}`));
+      }
+    });
+  });
+}
+
+async function openWhatsAppInBrowser({ preferChrome = false } = {}) {
+  if (preferChrome && process.platform === "darwin") {
+    try {
+      await runCommand("open", ["-a", "Google Chrome", WHATSAPP_WEB_URL]);
+      return { method: "chrome" };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("[WAAN] Failed to open WhatsApp Web in Chrome:", error);
+    }
+  }
+  await shell.openExternal(WHATSAPP_WEB_URL);
+  return { method: "default" };
 }
 
 function stopBackend() {
@@ -140,6 +187,152 @@ function stopBackend() {
     staticServer = null;
   }
 }
+
+function sendRelayNotification(body) {
+  if (!Notification.isSupported()) return;
+  const notification = new Notification({
+    title: "WAAN Relay",
+    body,
+  });
+  notification.show();
+}
+
+function emitStatusChange(status) {
+  const previous = cachedRelayStatus;
+  cachedRelayStatus = status;
+  if (!status) return;
+  if (
+    status.status === "running" &&
+    status.account &&
+    (!previous || previous.status !== "running")
+  ) {
+    const name = status.account.pushName || status.account.wid || "WhatsApp";
+    const chatCount = Number(status.chatCount) || 0;
+    sendRelayNotification(
+      chatCount ? `${name} connected · ${chatCount.toLocaleString()} chats mirrored.` : `${name} connected on WAAN.`
+    );
+  }
+}
+
+function buildAppMenu() {
+  const template = [
+    ...(process.platform === "darwin"
+      ? [
+          {
+            label: app.name,
+            submenu: [
+              { role: "about" },
+              { type: "separator" },
+              { role: "services" },
+              { type: "separator" },
+              { role: "hide" },
+              { role: "hideOthers" },
+              { role: "unhide" },
+              { type: "separator" },
+              { role: "quit" },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: "Relay",
+      submenu: [
+        {
+          label: "Connect",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.send("relay.action", "connect");
+            }
+          },
+        },
+        {
+          label: "Disconnect",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.send("relay.action", "disconnect");
+            }
+          },
+        },
+        {
+          label: "Show WhatsApp",
+          click: () => {
+            openWhatsAppInBrowser({ preferChrome: true });
+          },
+        },
+      ],
+    },
+    {
+      label: "View",
+      submenu: [
+        { role: "reload" },
+        { role: "forceReload" },
+        { role: "toggleDevTools" },
+        { type: "separator" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
+        { type: "separator" },
+        { role: "togglefullscreen" },
+      ],
+    },
+    {
+      role: "window",
+      submenu: [{ role: "minimize" }, { role: "close" }],
+    },
+  ];
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+  buildDockMenu();
+}
+
+function buildDockMenu() {
+  if (process.platform !== "darwin" || !app.dock) return;
+  const dockMenu = Menu.buildFromTemplate([
+    {
+      label: "Connect Relay",
+      click: () => {
+        if (mainWindow) mainWindow.webContents.send("relay.action", "connect");
+      },
+    },
+    {
+      label: "Disconnect Relay",
+      click: () => {
+        if (mainWindow) mainWindow.webContents.send("relay.action", "disconnect");
+      },
+    },
+    {
+      label: "Show WhatsApp",
+      click: () => {
+        openWhatsAppInBrowser({ preferChrome: true });
+      },
+    },
+  ]);
+  app.dock.setMenu(dockMenu);
+}
+
+ipcMain.handle("whatsapp.open-web", async () => {
+  try {
+    const result = await openWhatsAppInBrowser({ preferChrome: true });
+    return { success: true, ...result };
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("[WAAN] Unable to launch WhatsApp Web:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("relay.status", () => cachedRelayStatus || null);
+ipcMain.handle("relay.status.update", (_event, status) => {
+  emitStatusChange(status);
+  return true;
+});
+ipcMain.handle("relay.sync.summary", (_event, payload = {}) => {
+  const count = Number(payload.syncedChats);
+  if (Number.isFinite(count) && count > 0) {
+    sendRelayNotification(`Synced ${count.toLocaleString()} chats from WhatsApp.`);
+  }
+  return true;
+});
 
 app
   .whenReady()
@@ -156,7 +349,9 @@ app
     }
 
     app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (BrowserWindow.getAllWindows().length === 0 || !mainWindow) {
+        createWindow();
+      }
     });
   })
   .catch(error => {

@@ -64,6 +64,15 @@ function buildRelayRouter({ relayManager }) {
     }
   });
 
+  router.post("/relay/show-browser", async (req, res) => {
+    try {
+      await relayManager.showBrowserWindow();
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   router.get("/relay/logs/stream", (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");

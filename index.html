@@ -11,11 +11,31 @@
         <h1>Whatsapp Group Chat Analytics</h1>
     </header>
 
+    <div id="global-progress" aria-live="polite" hidden>
+        <span class="global-progress-spinner" aria-hidden="true"></span>
+        <span id="global-progress-label">Working…</span>
+    </div>
+
+    <section class="relay-status-banner full-span" id="relay-status-banner" aria-live="polite">
+        <div class="relay-banner-indicator" id="relay-status-dot" aria-hidden="true"></div>
+        <div class="relay-banner-text">
+            <p class="relay-banner-status" id="relay-status-message">Relay status unknown.</p>
+            <p class="relay-banner-meta" id="relay-status-meta">Start the relay to begin mirroring chats.</p>
+        </div>
+        <div class="relay-banner-actions">
+            <button type="button" class="ghost-button small" id="relay-banner-connect">Connect</button>
+            <button type="button" class="ghost-button small" id="relay-banner-disconnect" disabled>Disconnect</button>
+            <button type="button" class="ghost-button small" id="relay-banner-show">Show WhatsApp</button>
+        </div>
+    </section>
+
     <main>
         <nav class="section-nav full-span" aria-label="Section shortcuts">
             <div class="section-nav-inner">
                 <a href="#summary">Overview</a>
                 <a href="#insight-highlights">Highlights</a>
+                <a href="#participants">Participants</a>
+                <a href="#hourly-activity">Hourly Activity</a>
                 <a href="#daily-activity">Day by Day</a>
                 <a href="#weekly-trend">Week by Week</a>
                 <a href="#weekday-trend">Day of the Week</a>
@@ -27,6 +47,33 @@
                 <a href="#search-panel">Search Messages</a>
             </div>
         </nav>
+
+        <section class="actions-toolbar full-span" aria-label="Dataset actions">
+            <div class="toolbar-group primary">
+                <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
+                <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
+                <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
+                <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
+            </div>
+            <div class="toolbar-group secondary">
+                <div class="theme-toggle">
+                    <span>Theme</span>
+                    <div class="segmented-option">
+                        <input type="radio" name="theme-option" id="theme-system" value="system" checked>
+                        <label for="theme-system">Auto</label>
+                    </div>
+                    <div class="segmented-option">
+                        <input type="radio" name="theme-option" id="theme-light" value="light">
+                        <label for="theme-light">Light</label>
+                    </div>
+                    <div class="segmented-option">
+                        <input type="radio" name="theme-option" id="theme-dark" value="dark">
+                        <label for="theme-dark">Dark</label>
+                    </div>
+                </div>
+                <button type="button" class="ghost-button" id="log-drawer-toggle">View relay logs</button>
+            </div>
+        </section>
 
         <div class="page-controls full-span">
             <div class="control-row primary-controls">
@@ -57,12 +104,6 @@
                     </select>
                 </label>
             </div>
-            <div class="control-row page-actions">
-                <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
-                <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
-                <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
-                <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
-            </div>
         </div>
 
         <p id="data-status" class="status full-span"></p>
@@ -80,6 +121,29 @@
                 </div>
             </div>
             <div class="card-content">
+                <div class="relay-onboarding" role="list">
+                    <div class="relay-step" data-step-id="start" role="listitem">
+                        <span class="relay-step-index">1</span>
+                        <div>
+                            <p class="relay-step-title">Start relay</p>
+                            <p class="relay-step-detail">Launch the background service.</p>
+                        </div>
+                    </div>
+                    <div class="relay-step" data-step-id="qr" role="listitem">
+                        <span class="relay-step-index">2</span>
+                        <div>
+                            <p class="relay-step-title">Scan QR code</p>
+                            <p class="relay-step-detail">Link your phone in WhatsApp.</p>
+                        </div>
+                    </div>
+                    <div class="relay-step" data-step-id="sync" role="listitem">
+                        <span class="relay-step-index">3</span>
+                        <div>
+                            <p class="relay-step-title">Sync chats</p>
+                            <p class="relay-step-detail">Pull messages into WAAN.</p>
+                        </div>
+                    </div>
+                </div>
                 <p id="whatsapp-connection-status" class="live-status"></p>
                 <div class="live-actions">
                     <button type="button" class="ghost-button" id="whatsapp-start">Connect</button>
@@ -110,10 +174,11 @@
             </div>
             <div class="card-content" id="insight-highlights-content">
                 <div class="highlight-grid" id="highlight-list"></div>
+                <div class="guided-insights" id="guided-insights"></div>
             </div>
         </section>
 
-<section class="card full-span participants">
+        <section class="card full-span participants" id="participants">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Participants</h2>
@@ -569,6 +634,22 @@
             </div>
         </section>
     </main>
+
+    <aside class="relay-log-drawer" id="relay-log-drawer" aria-hidden="true" aria-label="Relay logs">
+        <div class="relay-log-header">
+            <div>
+                <p class="relay-log-title">Relay logs</p>
+                <p class="relay-log-subtitle" id="relay-log-connection">Connecting…</p>
+            </div>
+            <div class="relay-log-actions">
+                <button type="button" class="ghost-button small" id="relay-log-clear">Clear</button>
+                <button type="button" class="ghost-button small" id="relay-log-close">Close</button>
+            </div>
+        </div>
+        <div class="relay-log-body" id="relay-log-list">
+            <p class="relay-log-empty">No relay logs yet.</p>
+        </div>
+    </aside>
 
     <footer>
     </footer>

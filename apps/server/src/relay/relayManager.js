@@ -1,9 +1,28 @@
 const path = require("path");
 const EventEmitter = require("events");
+const { spawn } = require("child_process");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
 
 const DEFAULT_MESSAGE_LIMIT = Number(process.env.WAAN_CHAT_FETCH_LIMIT || 2500);
+const RELAY_HEADLESS =
+  process.env.WAAN_RELAY_HEADLESS !== undefined
+    ? process.env.WAAN_RELAY_HEADLESS === "true"
+    : true;
+
+function runCommand(command, args = []) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "ignore" });
+    child.once("error", reject);
+    child.once("close", code => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`${command} exited with code ${code}`));
+      }
+    });
+  });
+}
 
 const SYSTEM_MESSAGE_TYPES = new Set(["notification", "gp2"]);
 const SYSTEM_MESSAGE_SUBTYPES = new Set([
@@ -121,15 +140,20 @@ class RelayManager extends EventEmitter {
     });
 
     const sessionDir = path.join(this.config.dataDir, "whatsapp-session");
+    const puppeteerArgs = [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-extensions",
+    ];
+    if (!RELAY_HEADLESS) {
+      puppeteerArgs.push("--start-minimized");
+    }
+
     this.client = new Client({
       puppeteer: {
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-extensions",
-        ],
+        headless: RELAY_HEADLESS,
+        args: puppeteerArgs,
       },
       authStrategy: new LocalAuth({ dataPath: sessionDir, clientId: "waan" }),
     });
@@ -259,6 +283,58 @@ class RelayManager extends EventEmitter {
       throw error;
     }
     return this.client;
+  }
+
+  async showBrowserWindow() {
+    const client = this.requireClient();
+    if (RELAY_HEADLESS) {
+      throw new Error("Relay is running in headless mode. Set WAAN_RELAY_HEADLESS=false to enable the browser UI.");
+    }
+    if (!client.pupBrowser || typeof client.pupBrowser.process !== "function") {
+      throw new Error("WhatsApp browser not available yet.");
+    }
+    const browserProcess = client.pupBrowser.process();
+    if (!browserProcess) {
+      throw new Error("Browser process not initialized.");
+    }
+    if (process.platform === "darwin") {
+      const executable =
+        browserProcess.spawnfile ||
+        (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
+      if (!executable) {
+        throw new Error("Unable to resolve WhatsApp browser executable.");
+      }
+      const macosSegment = "/Contents/MacOS/";
+      let appPath = executable;
+      if (executable.includes(macosSegment)) {
+        appPath = executable.slice(0, executable.indexOf(macosSegment));
+      } else {
+        appPath = path.dirname(executable);
+      }
+      await runCommand("open", ["-a", appPath]);
+      return;
+    }
+    if (process.platform === "win32") {
+      const executable =
+        browserProcess.spawnfile ||
+        (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
+      if (!executable) {
+        throw new Error("Unable to resolve WhatsApp browser executable.");
+      }
+      await runCommand("cmd", ["/c", "start", "", executable]);
+      return;
+    }
+    if (process.platform === "linux") {
+      const executable =
+        browserProcess.spawnfile ||
+        (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
+      if (!executable) {
+        throw new Error("Unable to resolve WhatsApp browser executable.");
+      }
+      await runCommand("xdg-open", [executable]);
+      return;
+    }
+    throw new Error("Showing the WhatsApp browser is not supported on this platform.");
   }
 
   async handleReady() {
