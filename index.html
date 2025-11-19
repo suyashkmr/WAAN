@@ -651,10 +651,22 @@
         </div>
     </aside>
 
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="onboarding-overlay" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="onboarding-panel">
+            <h2>Welcome to ChatScope</h2>
+            <p id="onboarding-copy">Link the relay to start mirroring chats.</p>
+            <div class="onboarding-actions">
+                <button type="button" class="ghost-button" id="onboarding-skip">Skip</button>
+                <button type="button" class="ghost-button primary" id="onboarding-next">Next</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
     </footer>
 
     <script type="module" src="js/main.js"></script>
   </body>
 </html>
-    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>

@@ -280,6 +280,11 @@ const logDrawerConnectionLabel = document.getElementById("relay-log-connection")
 const globalProgressEl = document.getElementById("global-progress");
 const globalProgressLabel = document.getElementById("global-progress-label");
 const toastContainer = document.getElementById("toast-container");
+const compactToggleButton = document.getElementById("compact-toggle");
+const onboardingOverlay = document.getElementById("onboarding-overlay");
+const onboardingCopyEl = document.getElementById("onboarding-copy");
+const onboardingSkipButton = document.getElementById("onboarding-skip");
+const onboardingNextButton = document.getElementById("onboarding-next");
 const TOASTS = [];
 const MAX_TOASTS = 4;
 const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
@@ -351,6 +356,24 @@ const themeState = {
   preference: "system",
   mediaQuery: window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null,
 };
+const COMPACT_STORAGE_KEY = "waan-compact-mode";
+const ONBOARDING_STORAGE_KEY = "waan-onboarding-dismissed";
+const onboardingSteps = [
+  {
+    copy: "Use the relay banner to connect and monitor status.",
+    target: "#relay-status-banner",
+  },
+  {
+    copy: "Track connection details and sync activity in the log drawer.",
+    target: "#log-drawer-toggle",
+  },
+  {
+    copy: "Guided insights highlight notable trends for your dataset.",
+    target: "#insight-highlights",
+  },
+];
+let onboardingIndex = 0;
+let onboardingHighlight = null;
 
 const deferRenderTask =
   typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
@@ -646,6 +669,84 @@ function dismissToast(toast) {
   }, 150);
 }
 
+function startOnboarding() {
+  if (!onboardingOverlay || localStorage.getItem(ONBOARDING_STORAGE_KEY) === "done") return;
+  onboardingIndex = 0;
+  document.body.classList.add("onboarding-active");
+  onboardingOverlay.setAttribute("aria-hidden", "false");
+  showOnboardingStep(onboardingIndex);
+}
+
+function showOnboardingStep(index) {
+  if (!onboardingOverlay || !onboardingCopyEl) return;
+  const step = onboardingSteps[index];
+  if (!step) {
+    finishOnboarding();
+    return;
+  }
+  onboardingCopyEl.textContent = step.copy;
+  highlightTarget(step.target);
+  onboardingNextButton.textContent = index === onboardingSteps.length - 1 ? "Done" : "Next";
+}
+
+function highlightTarget(selector) {
+  if (onboardingHighlight) {
+    onboardingHighlight.classList.remove("onboarding-highlight");
+    onboardingHighlight = null;
+  }
+  if (!selector) return;
+  const target = document.querySelector(selector);
+  if (target) {
+    onboardingHighlight = target;
+    target.classList.add("onboarding-highlight");
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+function advanceOnboarding() {
+  onboardingIndex += 1;
+  if (onboardingIndex >= onboardingSteps.length) {
+    finishOnboarding();
+  } else {
+    showOnboardingStep(onboardingIndex);
+  }
+}
+
+function skipOnboarding() {
+  finishOnboarding();
+}
+
+function finishOnboarding() {
+  if (onboardingHighlight) {
+    onboardingHighlight.classList.remove("onboarding-highlight");
+    onboardingHighlight = null;
+  }
+  onboardingOverlay?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("onboarding-active");
+  localStorage.setItem(ONBOARDING_STORAGE_KEY, "done");
+}
+
+function applyCompactMode(enabled) {
+  document.body.dataset.compact = enabled ? "true" : "false";
+  if (compactToggleButton) {
+    compactToggleButton.setAttribute("aria-pressed", String(enabled));
+    compactToggleButton.textContent = enabled ? "Comfort mode" : "Compact mode";
+  }
+  localStorage.setItem(COMPACT_STORAGE_KEY, enabled ? "true" : "false");
+}
+
+function initCompactMode() {
+  const saved = localStorage.getItem(COMPACT_STORAGE_KEY);
+  const enabled = saved === "true";
+  applyCompactMode(enabled);
+  compactToggleButton?.addEventListener("click", () => {
+    applyCompactMode(!(document.body.dataset.compact === "true"));
+    showToast(document.body.dataset.compact === "true" ? "Compact mode enabled." : "Comfort mode enabled.", "info", {
+      duration: 3000,
+    });
+  });
+}
+
 function syncHeroPillsWithRange() {}
 
 function applyHeroRange(rangeValue) {
@@ -907,6 +1008,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initRelayControls();
   setupLogDrawerControls();
   initThemeControls();
+  initCompactMode();
+  onboardingSkipButton?.addEventListener("click", skipOnboarding);
+  onboardingNextButton?.addEventListener("click", advanceOnboarding);
+  setTimeout(() => startOnboarding(), 500);
   if (window.electronAPI?.onRelayAction) {
     window.electronAPI.onRelayAction(action => {
       if (action === "connect") {
@@ -1547,7 +1652,7 @@ document.addEventListener("keydown", event => {
       syncRelayChats({ silent: false });
       return;
     }
-    if (event.key === "l" || event.key === "L") {
+    if ((event.key === "l" || event.key === "L") && !isTypingTarget) {
       event.preventDefault();
       if (relayLogState.drawerOpen) {
         closeLogDrawer();
@@ -1556,9 +1661,25 @@ document.addEventListener("keydown", event => {
       }
       return;
     }
+    if (event.key.toLowerCase() === "m") {
+      event.preventDefault();
+      applyCompactMode(!(document.body.dataset.compact === "true"));
+      showToast(
+        document.body.dataset.compact === "true" ? "Compact mode enabled." : "Comfort mode enabled.",
+        "info",
+        { duration: 2500 }
+      );
+      return;
+    }
   }
   if (event.key === "Escape" && relayLogState.drawerOpen) {
     closeLogDrawer();
+    return;
+  }
+  if (event.key === "Escape" && onboardingOverlay?.getAttribute("aria-hidden") === "false") {
+    event.preventDefault();
+    skipOnboarding();
+    return;
   }
 });
 

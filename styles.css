@@ -206,6 +206,10 @@ body {
     color: var(--text);
 }
 
+body.onboarding-active {
+    overflow: hidden;
+}
+
 h1,
 h2,
 h3,
@@ -3820,4 +3824,75 @@ footer {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+body[data-compact="true"] main > .card,
+body[data-compact="true"] .card {
+    padding: 1.1rem 1.25rem;
+    border-radius: 18px;
+}
+
+body[data-compact="true"] .card-header h2 {
+    font-size: 1.05rem;
+}
+
+body[data-compact="true"] table td,
+body[data-compact="true"] table th {
+    padding: 0.35rem 0.4rem;
+}
+
+body[data-compact="true"] .section-nav-inner {
+    flex-wrap: wrap;
+}
+
+body[data-compact="true"] .stat {
+    padding: 0.8rem;
+}
+
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 12, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.onboarding-overlay[aria-hidden="false"] {
+    display: flex;
+}
+
+.onboarding-panel {
+    width: min(420px, 90vw);
+    background: var(--card-bg);
+    border-radius: var(--shape-large);
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 35px 65px rgba(6, 10, 20, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.onboarding-panel h2 {
+    margin: 0;
+}
+
+.onboarding-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.ghost-button.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+}
+
+.onboarding-highlight {
+    position: relative;
+    z-index: 210;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent), 0 0 30px rgba(8, 16, 40, 0.6);
+    border-radius: var(--shape-medium);
 }
