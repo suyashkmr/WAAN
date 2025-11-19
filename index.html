@@ -54,6 +54,14 @@
                 <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
                 <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
                 <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
+                <label class="export-theme-control" for="export-theme">
+                    <span>Report style</span>
+                    <select id="export-theme">
+                        <option value="aurora">Aurora</option>
+                        <option value="midnight">Midnight</option>
+                        <option value="canyon">Canyon</option>
+                    </select>
+                </label>
             </div>
             <div class="toolbar-group secondary">
                 <div class="theme-toggle">
@@ -578,6 +586,7 @@
                         <button type="button" class="ghost-button small" id="delete-saved-view">Remove</button>
                     </div>
                 </div>
+                <div class="saved-view-gallery" id="saved-view-gallery" aria-live="polite"></div>
                 <div class="compare-controls" id="compare-controls">
                     <div class="compare-select">
                         <label for="compare-view-a">Setup A</label>

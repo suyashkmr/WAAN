@@ -508,6 +508,27 @@ header h1 {
     gap: 0.75rem;
 }
 
+.export-theme-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 160px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.export-theme-control select {
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    color: var(--text);
+    padding: 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.1);
+}
+
 #theme-system,
 #theme-light,
 #theme-dark {
@@ -1364,6 +1385,148 @@ main > .card.half-span {
     border-radius: 0.6rem;
     background: transparent;
     color: var(--text);
+}
+
+.saved-view-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.saved-view-gallery-empty {
+    margin: 0;
+    padding: 0.75rem 0;
+    font-style: italic;
+    color: var(--muted);
+}
+
+.saved-view-card {
+    border: 1px solid var(--border);
+    border-radius: var(--shape-large);
+    padding: 1rem 1.2rem;
+    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+    box-shadow: 0 12px 30px rgba(7, 10, 18, 0.22);
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.saved-view-card:hover,
+.saved-view-card:focus-visible {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    box-shadow: 0 16px 38px rgba(7, 10, 18, 0.28);
+    outline: none;
+}
+
+.saved-view-card.disabled {
+    cursor: default;
+    opacity: 0.65;
+    box-shadow: none;
+}
+
+.saved-view-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.saved-view-card-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.saved-view-card-range {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.saved-view-card-created {
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.saved-view-card-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.saved-view-stat {
+    border-radius: var(--shape-medium);
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.8rem;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+}
+
+.saved-view-stat .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.saved-view-stat .stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: block;
+}
+
+.saved-view-card-foot {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.9rem;
+}
+
+.saved-view-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.saved-view-detail .detail-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+
+.saved-view-detail .detail-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.saved-view-detail .detail-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.saved-view-share-bar {
+    position: relative;
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--card-bg) 65%, var(--border));
+    overflow: hidden;
+}
+
+.saved-view-share-bar span {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #f472b6));
+}
+
+.saved-view-share-bar.is-empty span {
+    width: 14%;
+    background: color-mix(in srgb, var(--card-bg) 82%, var(--border));
 }
 
 .compare-controls {

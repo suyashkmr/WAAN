@@ -2,11 +2,11 @@
 
 const fs = require("fs");
 const path = require("path");
-const { spawnSync } = require("child_process");
 
 const ROOT_DIR = path.resolve(__dirname, "..", "..");
 const serverDir = path.join(ROOT_DIR, "apps", "server");
 const modulesDir = path.join(serverDir, "node_modules");
+const rootModulesDir = path.join(ROOT_DIR, "node_modules");
 const packageJsonPath = path.join(serverDir, "package.json");
 const serverLockPath = path.join(serverDir, "package-lock.json");
 
@@ -50,26 +50,66 @@ function isDependencySatisfied(dep) {
 
 const missingDeps = dependencyNames.filter(dep => !isDependencySatisfied(dep));
 
-if (missingDeps.length === 0) {
+if (missingDeps.length === 0 && fs.existsSync(modulesDir)) {
   // eslint-disable-next-line no-console
   console.log("[WAAN] Server dependencies already installed.");
   process.exit(0);
 }
 
-// eslint-disable-next-line no-console
-console.log("[WAAN] Installing server dependencies to vendor correct versions...");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const result = spawnSync(npmCommand, ["install", "--omit=dev"], {
-  cwd: serverDir,
-  stdio: "inherit",
+if (!fs.existsSync(rootModulesDir)) {
+  console.error("[WAAN] Root node_modules missing. Run npm install at the repository root first.");
+  process.exit(1);
+}
+
+if (fs.existsSync(modulesDir)) {
+  // eslint-disable-next-line no-console
+  console.log("[WAAN] Clearing existing server node_modules...");
+  fs.rmSync(modulesDir, { recursive: true, force: true });
+}
+
+fs.mkdirSync(modulesDir, { recursive: true });
+
+const packageEntries = Object.entries(lockPackages)
+  .filter(([pkgPath, meta]) => pkgPath && pkgPath.startsWith("node_modules/") && !meta.dev);
+
+if (!packageEntries.length) {
+  console.warn("[WAAN] No runtime packages were found in the lockfile – skipping copy.");
+  process.exit(0);
+}
+
+// Copy shallow paths first so nested dependencies have their parents
+packageEntries.sort(([pathA], [pathB]) => {
+  const depthA = pathA.split("/").length;
+  const depthB = pathB.split("/").length;
+  return depthA - depthB;
 });
 
-if (result.error) {
-  throw result.error;
+const missingFromRoot = [];
+
+packageEntries.forEach(([pkgPath]) => {
+  const pkgName = path.basename(pkgPath);
+  const normalizedPath = pkgPath.replace(/\\/g, "/");
+  const sourceCandidates = [
+    path.join(ROOT_DIR, normalizedPath),
+    path.join(ROOT_DIR, "node_modules", pkgName),
+  ];
+  const sourcePath = sourceCandidates.find(candidate => fs.existsSync(candidate));
+  const targetPath = path.join(serverDir, pkgPath);
+  const parentDir = path.dirname(targetPath);
+  if (!sourcePath) {
+    missingFromRoot.push(pkgPath);
+    return;
+  }
+  fs.mkdirSync(parentDir, { recursive: true });
+  fs.cpSync(sourcePath, targetPath, { recursive: true });
+});
+
+if (missingFromRoot.length) {
+  console.warn("[WAAN] Missing packages in root node_modules:");
+  missingFromRoot.forEach(pkgPath => console.warn(` - ${pkgPath}`));
+  console.warn("Run npm install at the repo root, then re-run this script.");
+  process.exit(1);
 }
 
-if ((result.status ?? 1) !== 0) {
-  process.exit(result.status);
-}
-
+console.log("[WAAN] Server dependencies copied from workspace cache.");
 process.exit(0);

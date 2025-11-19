@@ -64,6 +64,61 @@ const RELAY_CLIENT_LABEL = "ChatScope Relay";
 const RELAY_POLL_INTERVAL_MS = 5000;
 const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
 const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
+const EXPORT_THEME_STORAGE_KEY = "waan-export-theme";
+const DEFAULT_EXPORT_THEME = "aurora";
+const EXPORT_THEMES = {
+  aurora: {
+    label: "Aurora",
+    tagline: "Calm gradients inspired by polar skies.",
+    accent: "#4c6ef5",
+    accentSoft: "#dbeafe",
+    text: "#0f172a",
+    muted: "#475569",
+    surface: "#ffffff",
+    canvas: "#f7fbff",
+    border: "rgba(15, 23, 42, 0.12)",
+    coverGradient: "linear-gradient(135deg, #4338ca 0%, #0ea5e9 60%, #22d3ee 100%)",
+    coverPattern: "radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%)",
+    coverText: "#f8fafc",
+    badge: "#bae6fd",
+    cardShadow: "0 25px 60px rgba(15, 23, 42, 0.18)",
+    dark: false,
+  },
+  midnight: {
+    label: "Midnight",
+    tagline: "Deep blues with neon accents for high contrast decks.",
+    accent: "#38bdf8",
+    accentSoft: "rgba(56, 189, 248, 0.2)",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    surface: "#0f172a",
+    canvas: "#020617",
+    border: "rgba(148, 163, 184, 0.25)",
+    coverGradient: "linear-gradient(135deg, #020617 0%, #0f172a 45%, #1d4ed8 80%, #14b8a6 100%)",
+    coverPattern: "radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.35), transparent 55%)",
+    coverText: "#e2e8f0",
+    badge: "rgba(20, 184, 166, 0.4)",
+    cardShadow: "0 25px 60px rgba(2, 6, 23, 0.65)",
+    dark: true,
+  },
+  canyon: {
+    label: "Canyon",
+    tagline: "Warm desert hues for story-driven shareouts.",
+    accent: "#f97316",
+    accentSoft: "#fed7aa",
+    text: "#2b190f",
+    muted: "#7c4a1d",
+    surface: "#fff7ed",
+    canvas: "#fff3e7",
+    border: "rgba(176, 115, 71, 0.35)",
+    coverGradient: "linear-gradient(135deg, #9a3412 0%, #ef4444 35%, #f97316 75%, #fde047 100%)",
+    coverPattern: "radial-gradient(circle at 15% 80%, rgba(253, 224, 71, 0.45), transparent 50%)",
+    coverText: "#fffdf8",
+    badge: "#fed7aa",
+    cardShadow: "0 25px 60px rgba(121, 85, 72, 0.35)",
+    dark: false,
+  },
+};
 
 function normalizeJid(value) {
   if (!value) return "";
@@ -242,6 +297,7 @@ const messageTypeSummaryEl = document.getElementById("message-type-summary");
 const messageTypeNoteEl = document.getElementById("message-type-note");
 const downloadPdfButton = document.getElementById("download-pdf");
 const downloadTimeOfDayButton = document.getElementById("download-timeofday");
+const exportThemeSelect = document.getElementById("export-theme");
 const sentimentSummaryEl = document.getElementById("sentiment-summary");
 const sentimentTrendNote = document.getElementById("sentiment-trend-note");
 const sentimentDailyChart = document.getElementById("sentiment-daily-chart");
@@ -252,6 +308,7 @@ const saveViewButton = document.getElementById("save-view");
 const savedViewList = document.getElementById("saved-view-list");
 const applySavedViewButton = document.getElementById("apply-saved-view");
 const deleteSavedViewButton = document.getElementById("delete-saved-view");
+const savedViewGallery = document.getElementById("saved-view-gallery");
 const compareViewASelect = document.getElementById("compare-view-a");
 const compareViewBSelect = document.getElementById("compare-view-b");
 const compareViewsButton = document.getElementById("compare-views");
@@ -794,6 +851,37 @@ function initThemeControls() {
   }
 }
 
+function getStoredExportThemeId() {
+  const saved = localStorage.getItem(EXPORT_THEME_STORAGE_KEY);
+  if (saved && EXPORT_THEMES[saved]) return saved;
+  return DEFAULT_EXPORT_THEME;
+}
+
+function setStoredExportThemeId(value) {
+  const applied = EXPORT_THEMES[value] ? value : DEFAULT_EXPORT_THEME;
+  localStorage.setItem(EXPORT_THEME_STORAGE_KEY, applied);
+  return applied;
+}
+
+function getExportThemeConfig(themeId) {
+  const key = themeId && EXPORT_THEMES[themeId] ? themeId : getStoredExportThemeId();
+  return {
+    id: key,
+    ...EXPORT_THEMES[key],
+  };
+}
+
+function initExportThemeControl() {
+  if (!exportThemeSelect) return;
+  exportThemeSelect.value = getStoredExportThemeId();
+  exportThemeSelect.addEventListener("change", () => {
+    const applied = setStoredExportThemeId(exportThemeSelect.value);
+    exportThemeSelect.value = applied;
+    const theme = getExportThemeConfig(applied);
+    showToast(`Report exports now use the ${theme.label} style.`, "info", { duration: 2800 });
+  });
+}
+
 function formatLocalChatLabel(chat) {
   const parts = [chat.label || "Untitled chat"];
   if (Number.isFinite(chat.messageCount)) {
@@ -1008,6 +1096,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initRelayControls();
   setupLogDrawerControls();
   initThemeControls();
+  initExportThemeControl();
   initCompactMode();
   onboardingSkipButton?.addEventListener("click", skipOnboarding);
   onboardingNextButton?.addEventListener("click", advanceOnboarding);
@@ -1115,19 +1204,11 @@ function attachEventHandlers() {
   if (downloadSlidesButton) {
     downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
   }
-  if (downloadMarkdownButton) {
-    downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
-  }
-  if (downloadSlidesButton) {
-    downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
-  }
   if (downloadSearchButton) {
     downloadSearchButton.addEventListener("click", exportSearchResults);
   }
   if (downloadPdfButton) {
-    downloadPdfButton.addEventListener("click", () => {
-      window.print();
-    });
+    downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
   }
   if (shareSnapshotButton) {
     shareSnapshotButton.disabled = true;
@@ -1220,6 +1301,10 @@ function attachEventHandlers() {
   }
   if (deleteSavedViewButton) {
     deleteSavedViewButton.addEventListener("click", handleDeleteSavedView);
+  }
+  if (savedViewGallery) {
+    savedViewGallery.addEventListener("click", handleSavedViewGalleryClick);
+    savedViewGallery.addEventListener("keydown", handleSavedViewGalleryKeydown);
   }
   if (compareViewsButton) {
     compareViewsButton.addEventListener("click", handleCompareViews);
@@ -2616,6 +2701,7 @@ function refreshSavedViewsUI() {
   if (compareViewBSelect) compareViewBSelect.value = secondary ?? "";
 
   renderComparisonSummary();
+  renderSavedViewGallery(views);
 
   if (snapshotMode) {
     if (savedViewNameInput) savedViewNameInput.disabled = true;
@@ -2634,6 +2720,136 @@ function refreshSavedViewsUI() {
     if (compareViewBSelect) compareViewBSelect.disabled = false;
     if (compareViewsButton) compareViewsButton.disabled = false;
   }
+}
+
+function renderSavedViewGallery(views) {
+  if (!savedViewGallery) return;
+  const list = Array.isArray(views) ? views : [];
+  if (!list.length) {
+    savedViewGallery.innerHTML =
+      '<p class="saved-view-gallery-empty">Save setups to see quick previews here.</p>';
+    savedViewGallery.dataset.interactive = "false";
+    return;
+  }
+  const cards = list.map(view => buildSavedViewCard(view)).join("");
+  savedViewGallery.innerHTML = cards;
+  savedViewGallery.dataset.interactive = snapshotMode ? "false" : "true";
+}
+
+function buildSavedViewCard(view) {
+  if (!view) return "";
+  const snapshot = ensureViewSnapshot(view);
+  const viewId = String(view?.id ?? "");
+  const viewName = view?.name || "Untitled setup";
+  const rangeLabel = view.rangeLabel || formatViewRange(view);
+  const createdAtLabel = view.createdAt ? formatTimestampDisplay(view.createdAt) : "";
+  const totalMessages = snapshot ? formatNumber(snapshot.totalMessages ?? 0) : "—";
+  const participants = snapshot ? formatNumber(snapshot.uniqueSenders ?? 0) : "—";
+  const avgPerDay =
+    snapshot && Number.isFinite(snapshot.dailyAverage)
+      ? `${formatFloat(snapshot.dailyAverage, 1)} / day`
+      : "Not enough data";
+  const topSender = snapshot?.topSender || null;
+  const sharePercent =
+    topSender && typeof topSender.share === "number"
+      ? Math.round(topSender.share * 100)
+      : null;
+  const topSenderShare =
+    topSender && sharePercent !== null ? `${sharePercent}% of messages` : "Share updates soon";
+  const peakHour = formatSavedViewTopHour(snapshot);
+  const peakHourCount =
+    snapshot?.topHour && Number.isFinite(snapshot.topHour.count)
+      ? `${formatNumber(snapshot.topHour.count)} msgs`
+      : "Waiting for hourly data";
+  const barWidth =
+    sharePercent !== null ? Math.min(100, Math.max(0, sharePercent)) : 8;
+  const interactive = !snapshotMode;
+  const accessibilityAttributes = interactive
+    ? `role="button" tabindex="0" aria-label="Apply saved setup ${escapeHtml(viewName)}"`
+    : `role="button" aria-disabled="true" tabindex="-1"`;
+  return `
+    <article class="saved-view-card${interactive ? "" : " disabled"}" data-view-id="${escapeHtml(
+      viewId,
+    )}" ${accessibilityAttributes}>
+      <header class="saved-view-card-header">
+        <div>
+          <p class="saved-view-card-title">${escapeHtml(viewName)}</p>
+          <p class="saved-view-card-range">${escapeHtml(rangeLabel)}</p>
+        </div>
+        ${
+          createdAtLabel
+            ? `<span class="saved-view-card-created">${escapeHtml(createdAtLabel)}</span>`
+            : ""
+        }
+      </header>
+      <div class="saved-view-card-metrics">
+        <div class="saved-view-stat">
+          <span class="stat-label">Messages</span>
+          <span class="stat-value">${totalMessages}</span>
+        </div>
+        <div class="saved-view-stat">
+          <span class="stat-label">Participants</span>
+          <span class="stat-value">${participants}</span>
+        </div>
+        <div class="saved-view-stat">
+          <span class="stat-label">Avg pace</span>
+          <span class="stat-value">${escapeHtml(avgPerDay)}</span>
+        </div>
+      </div>
+      <div class="saved-view-card-foot">
+        <div class="saved-view-detail">
+          <span class="detail-label">Top voice</span>
+          <span class="detail-value">${topSender ? escapeHtml(topSender.sender) : "—"}</span>
+          <span class="detail-meta">${escapeHtml(topSenderShare)}</span>
+        </div>
+        <div class="saved-view-detail">
+          <span class="detail-label">Peak hour</span>
+          <span class="detail-value">${escapeHtml(peakHour)}</span>
+          <span class="detail-meta">${escapeHtml(peakHourCount)}</span>
+        </div>
+      </div>
+      <div class="saved-view-share-bar${sharePercent === null ? " is-empty" : ""}">
+        <span style="width:${barWidth}%;"></span>
+      </div>
+    </article>
+  `;
+}
+
+function formatSavedViewTopHour(snapshot) {
+  if (!snapshot?.topHour) {
+    return "No hourly data yet";
+  }
+  const weekday = WEEKDAY_SHORT?.[snapshot.topHour.dayIndex] ?? `Day ${snapshot.topHour.dayIndex + 1}`;
+  return `${weekday} ${String(snapshot.topHour.hour).padStart(2, "0")}:00`;
+}
+
+async function handleSavedViewGalleryClick(event) {
+  if (snapshotMode) return;
+  const card = event.target.closest(".saved-view-card");
+  if (!card) return;
+  const viewId = card.dataset.viewId;
+  await useSavedViewFromCard(viewId);
+}
+
+async function handleSavedViewGalleryKeydown(event) {
+  if (snapshotMode) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest(".saved-view-card");
+  if (!card) return;
+  event.preventDefault();
+  await useSavedViewFromCard(card.dataset.viewId);
+}
+
+async function useSavedViewFromCard(viewId) {
+  if (!viewId) return;
+  const view = getSavedViewById(viewId);
+  if (!view) {
+    updateStatus("That saved setup is missing.", "error");
+    refreshSavedViewsUI();
+    return;
+  }
+  await applySavedView(view);
+  if (savedViewList) savedViewList.value = viewId;
 }
 
 function formatViewRange(view) {
@@ -3488,26 +3704,93 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-function buildMarkdownReport(analytics) {
-  const nowIso = new Date().toISOString();
-  const title = getDatasetLabel() || `${BRAND_NAME} Chat`;
-  const range = analytics.date_range || {};
-  const highlights = analytics.highlights || [];
+function collectExportSummary(analytics) {
+  const highlights = (analytics.highlights || []).map(item => ({
+    label: item.label || "Highlight",
+    value: item.value || "",
+    descriptor: item.descriptor || "",
+  }));
   const topSenders = (analytics.top_senders || []).slice(0, 10);
-  const messageTypeSummary = analytics.message_types?.summary || [];
   const systemSummary = analytics.system_summary || {};
   const weeklySummary = analytics.weekly_summary || {};
+  const range = analytics.date_range || {};
+  const rangeLabel =
+    range.start && range.end ? `${formatDisplayDate(range.start)} → ${formatDisplayDate(range.end)}` : null;
+  const overviewItems = [
+    `Messages in total: ${formatNumber(analytics.total_messages ?? 0)}`,
+    `People who spoke: ${formatNumber(analytics.unique_senders ?? 0)}`,
+    `System notices: ${formatNumber(systemSummary.count || 0)}`,
+    rangeLabel ? `Covers: ${rangeLabel}` : null,
+  ].filter(Boolean);
+  const paceItems = [
+    `Average per day: ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`,
+    `Average per week: ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`,
+    analytics.hourly_summary?.topHour
+      ? `Busiest hour: ${
+          WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex] ??
+          `Day ${analytics.hourly_summary.topHour.dayIndex + 1}`
+        } ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
+      : null,
+  ].filter(Boolean);
+  const systemItems = [
+    `People joined: ${formatNumber(systemSummary.joins || 0)}`,
+    `Join requests: ${formatNumber(systemSummary.join_requests || 0)}`,
+    `Added by admins: ${formatNumber(systemSummary.added || 0)}`,
+    `Left on their own: ${formatNumber(systemSummary.left || 0)}`,
+    `Removed by admins: ${formatNumber(systemSummary.removed || 0)}`,
+    `Settings changes: ${formatNumber(systemSummary.changed || 0)}`,
+  ];
+  const quickStats = [
+    { label: "Messages", value: formatNumber(analytics.total_messages ?? 0) },
+    { label: "Participants", value: formatNumber(analytics.unique_senders ?? 0) },
+    { label: "Avg/day", value: formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1) },
+    {
+      label: "Top sender",
+      value: topSenders.length
+        ? `${topSenders[0].sender} (${formatNumber(topSenders[0].count)} msgs)`
+        : "Not enough data",
+    },
+  ];
+  return {
+    highlights,
+    topSenders,
+    systemSummary,
+    weeklySummary,
+    overviewItems,
+    paceItems,
+    systemItems,
+    quickStats,
+    rangeLabel,
+  };
+}
+
+function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
+  const nowIso = new Date().toISOString();
+  const title = getDatasetLabel() || `${BRAND_NAME} Chat`;
+  const details = collectExportSummary(analytics);
+  const highlights = details.highlights;
+  const topSenders = details.topSenders;
+  const messageTypeSummary = analytics.message_types?.summary || [];
+  const systemSummary = details.systemSummary;
+  const weeklySummary = details.weeklySummary;
 
   const lines = [];
-  lines.push(`# ${title} – Chat summary`);
-  lines.push(`*Created ${nowIso}*`);
+  lines.push(`# ${title} – Conversation summary`);
+  lines.push(`_${theme?.tagline || "Insights prepared by ChatScope."}_`);
+  lines.push(`*Created ${nowIso} · Styled with the ${theme?.label || "Aurora"} theme*`);
+  if (details.rangeLabel) {
+    lines.push("");
+    lines.push(`> **Date range:** ${details.rangeLabel}`);
+  }
+  lines.push(`> **Report style:** ${theme?.label || "Default"}`);
+  lines.push("");
+  lines.push("---");
   lines.push("");
   lines.push("## Quick glance");
-  lines.push(`- **Messages in total:** ${formatNumber(analytics.total_messages)}`);
-  lines.push(`- **System notices:** ${formatNumber(systemSummary.count || 0)}`);
-  lines.push(`- **People who spoke:** ${formatNumber(analytics.unique_senders)}`);
-  if (range.start && range.end) {
-    lines.push(`- **Covers:** ${formatDisplayDate(range.start)} → ${formatDisplayDate(range.end)}`);
+  if (details.overviewItems.length) {
+    details.overviewItems.forEach(item => lines.push(`- ${item}`));
+  } else {
+    lines.push("- Load a dataset to populate this section.");
   }
   lines.push("");
 
@@ -3573,108 +3856,475 @@ function buildMarkdownReport(analytics) {
   return lines.join("\n");
 }
 
-function buildSlidesHtml(analytics) {
-  const title = escapeHtml(getDatasetLabel() || "Chat summary");
-  const generatedAt = escapeHtml(new Date().toLocaleString());
-  const highlights = (analytics.highlights || []).slice(0, 6);
-  const topSenders = (analytics.top_senders || []).slice(0, 6);
-  const systemSummary = analytics.system_summary || {};
-  const weeklySummary = analytics.weekly_summary || {};
-  const dateRange = analytics.date_range || {};
-
-  const highlightList = highlights.length
-    ? highlights
-        .map(item => `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""}</li>`)
-        .join("")
-    : "<li>Highlights will show up once there's enough data.</li>";
-
-  const participantList = topSenders.length
-    ? topSenders
-        .map(entry => `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages (${entry.share ? formatFloat(entry.share * 100, 1) + "%" : "—"})</li>`)
-        .join("")
-    : "<li>No participant activity recorded.</li>";
-
-  const overviewItems = [
-    `Messages in total: ${formatNumber(analytics.total_messages)}`,
-    `People who spoke: ${formatNumber(analytics.unique_senders)}`,
-    `System notices: ${formatNumber(systemSummary.count || 0)}`,
-    dateRange.start && dateRange.end ? `Covers: ${escapeHtml(formatDisplayDate(dateRange.start))} → ${escapeHtml(formatDisplayDate(dateRange.end))}` : null,
-  ]
-    .filter(Boolean)
-    .map(item => `<li>${item}</li>`)
-    .join("");
-
-  const paceItems = [
-    `Average per day: ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`,
-    `Average per week: ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`,
-    `Busiest hour: ${
-      analytics.hourly_summary?.topHour
-        ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
-        : "—"
-    }`,
-  ]
-    .map(item => `<li>${item}</li>`)
-    .join("");
-
-  const systemItems = [
-    `People joined: ${formatNumber(systemSummary.joins || 0)}`,
-    `Join requests: ${formatNumber(systemSummary.join_requests || 0)}`,
-    `Added by admins: ${formatNumber(systemSummary.added || 0)}`,
-    `Left on their own: ${formatNumber(systemSummary.left || 0)}`,
-    `Removed by admins: ${formatNumber(systemSummary.removed || 0)}`,
-    `Settings changes: ${formatNumber(systemSummary.changed || 0)}`,
-  ]
-    .map(item => `<li>${item}</li>`)
-    .join("");
-
+function buildSlidesHtml(analytics, theme = getExportThemeConfig()) {
+  const title = escapeHtml(getDatasetLabel() || "ChatScope conversation report");
+  const generatedAt = new Date().toLocaleString();
+  const styles = buildExportDeckCss(theme, { mode: "screen" });
+  const deckMarkup = buildExportDeckMarkup(analytics, theme, { mode: "screen", generatedAt });
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>${title} – Slides</title>
-  <style>
-    body { margin:0; font-family: 'Segoe UI', Arial, sans-serif; background:#111827; color:#f9fafb; }
-    .deck { display:flex; flex-direction:column; align-items:center; gap:3rem; padding:3rem 2rem; }
-    .slide { background:#1f2937; border-radius:24px; box-shadow:0 30px 60px rgba(15,23,42,0.4); padding:2.5rem 3rem; width:960px; max-width:100%; }
-    h1, h2 { margin-top:0; }
-    h1 { font-size:2.4rem; margin-bottom:1rem; }
-    h2 { font-size:1.8rem; margin-bottom:1.2rem; }
-    ul { margin:0; padding-left:1.3rem; }
-    li { margin-bottom:0.6rem; line-height:1.4; }
-    .footer { font-size:0.85rem; opacity:0.7; margin-top:1.5rem; }
-    .two-column { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.4rem; }
-    .callout { background:rgba(148,163,184,0.16); padding:1rem; border-radius:16px; }
-  </style>
+  <style>${styles}</style>
 </head>
 <body>
-  <div class="deck">
-    <section class="slide">
-      <h1>${title}</h1>
-      <ul>${overviewItems}</ul>
-      <div class="footer">Generated ${generatedAt}</div>
-    </section>
-    <section class="slide">
-      <h2>Highlights</h2>
-      <ul>${highlightList}</ul>
-      <div class="two-column" style="margin-top:1.5rem;">
-        <div class="callout">
-          <h3>Chat pace</h3>
-          <ul>${paceItems}</ul>
+${deckMarkup}
+</body>
+</html>`;
+}
+
+function buildExportDeckMarkup(analytics, theme, { mode = "screen", generatedAt } = {}) {
+  const details = collectExportSummary(analytics);
+  const generatedAtText = escapeHtml(generatedAt || new Date().toLocaleString());
+  const rangeLabel = escapeHtml(details.rangeLabel || "Entire history");
+  const themeLabel = escapeHtml(theme?.label || "Aurora");
+  const title = escapeHtml(getDatasetLabel() || "ChatScope conversation insights");
+  const highlightEntries = details.highlights.slice(0, 6);
+  const highlightList = highlightEntries.length
+    ? highlightEntries
+        .map(
+          item =>
+            `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${
+              item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""
+            }</li>`,
+        )
+        .join("")
+    : "<li>Highlights will show once there's enough data.</li>";
+  const participantEntries = details.topSenders.slice(0, 6);
+  const participantList = participantEntries.length
+    ? participantEntries
+        .map(
+          entry =>
+            `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages${
+              entry.share ? ` (${formatFloat(entry.share * 100, 1)}%)` : ""
+            }</li>`,
+        )
+        .join("")
+    : "<li>No participant activity recorded.</li>";
+  const overviewList = details.overviewItems.length
+    ? `<ul>${details.overviewItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : `<p class="empty">${escapeHtml("Add a dataset to populate the overview.")}</p>`;
+  const paceList = details.paceItems.length
+    ? `<ul>${details.paceItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : `<p class="empty">${escapeHtml("Need more activity to estimate pace.")}</p>`;
+  const systemList = details.systemItems.length
+    ? `<ul>${details.systemItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : `<p class="empty">${escapeHtml("No system events recorded.")}</p>`;
+  const metaEntries = [
+    { label: "Date range", value: rangeLabel },
+    { label: "Generated", value: generatedAtText },
+    { label: "Theme", value: themeLabel },
+  ];
+  const metaHtml = metaEntries
+    .map(
+      entry => `
+        <div class="cover-meta-item">
+          <span>${escapeHtml(entry.label)}</span>
+          <strong>${entry.value}</strong>
         </div>
-        <div class="callout">
-          <h3>Group activity</h3>
-          <ul>${systemItems}</ul>
+      `,
+    )
+    .join("");
+  const quickCards = details.quickStats.slice(0, 4);
+  const quickCardsHtml = quickCards
+    .map(
+      (stat, index) => `
+        <div class="stat-card" data-stat-index="${index}">
+          <span class="stat-label">${escapeHtml(stat.label)}</span>
+          <span class="stat-value">${escapeHtml(String(stat.value ?? "—"))}</span>
+        </div>
+      `,
+    )
+    .join("");
+  const coverClasses = ["slide", "cover-slide"];
+  if (mode === "print") {
+    coverClasses.push("print-page", "print-break");
+  }
+  const bodySlideClass = mode === "print" ? "slide print-page" : "slide";
+  return `
+  <div class="deck" data-mode="${mode}">
+    <section class="${coverClasses.join(" ")}">
+      <div class="cover-content">
+        <p class="cover-tag">${escapeHtml(BRAND_NAME)} · ${themeLabel} theme</p>
+        <h1>${title}</h1>
+        <p class="cover-subtitle">${escapeHtml(theme?.tagline || "Insights prepared by ChatScope.")}</p>
+        <div class="cover-meta">
+          ${metaHtml}
+        </div>
+        <div class="cover-stats">
+          ${quickCardsHtml}
         </div>
       </div>
     </section>
-    <section class="slide">
-      <h2>Top voices</h2>
-      <ul>${participantList}</ul>
-      <div class="footer">Tip: copy this deck into PowerPoint or Google Slides to add charts or notes.</div>
+    <section class="${bodySlideClass}">
+      <div class="slide-header">
+        <p class="eyebrow">At a glance</p>
+        <h2>Highlights</h2>
+      </div>
+      <div class="split-layout">
+        <div class="panel">
+          <h3>Guided highlights</h3>
+          <ul class="bullet-list">
+            ${highlightList}
+          </ul>
+        </div>
+        <div class="panel stack">
+          <div class="callout">
+            <h3>Overview</h3>
+            ${overviewList}
+          </div>
+          <div class="callout">
+            <h3>Chat pace</h3>
+            ${paceList}
+          </div>
+        </div>
+      </div>
     </section>
-  </div>
+    <section class="${bodySlideClass}">
+      <div class="slide-header">
+        <p class="eyebrow">Participation</p>
+        <h2>Top voices & activity</h2>
+      </div>
+      <div class="split-layout">
+        <div class="panel">
+          <h3>Top voices</h3>
+          <ul class="bullet-list">
+            ${participantList}
+          </ul>
+        </div>
+        <div class="panel stack">
+          <div class="callout">
+            <h3>Group activity</h3>
+            ${systemList}
+          </div>
+          <div class="callout note">
+            <h3>Next steps</h3>
+            <p>Drop this deck into Slides, Keynote, or PowerPoint to add charts, context, and speaker notes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>`;
+}
+
+function buildExportDeckCss(theme, { mode = "screen" } = {}) {
+  const accent = theme?.accent || "#4c6ef5";
+  const accentSoft = theme?.accentSoft || "rgba(76, 110, 245, 0.2)";
+  const surface = theme?.surface || "#ffffff";
+  const canvas = theme?.canvas || "#f5f7fb";
+  const text = theme?.text || "#0f172a";
+  const muted = theme?.muted || "#475569";
+  const border = theme?.border || "rgba(15, 23, 42, 0.1)";
+  const coverGradient = theme?.coverGradient || `linear-gradient(135deg, ${accent}, ${accent})`;
+  const coverPattern = theme?.coverPattern || "none";
+  const coverText = theme?.coverText || "#f8fafc";
+  const badge = theme?.badge || accentSoft;
+  const shadow = theme?.cardShadow || "0 25px 60px rgba(15, 23, 42, 0.25)";
+  const deckPadding = mode === "print" ? "1in 0.75in" : "3rem 2rem";
+  const slideWidth = mode === "screen" ? "960px" : "100%";
+  const slidePadding = mode === "print" ? "1.75rem 2rem" : "2.75rem 3rem";
+  const deckGap = mode === "print" ? "1.3rem" : "3rem";
+  const fontSize = mode === "print" ? "14px" : "16px";
+  const colorScheme = theme?.dark ? "dark" : "light";
+  return `
+    :root {
+      color-scheme: ${colorScheme};
+      --deck-bg: ${canvas};
+      --deck-surface: ${surface};
+      --deck-text: ${text};
+      --deck-muted: ${muted};
+      --deck-border: ${border};
+      --deck-accent: ${accent};
+      --deck-accent-soft: ${accentSoft};
+      --deck-cover-gradient: ${coverGradient};
+      --deck-cover-pattern: ${coverPattern};
+      --deck-cover-text: ${coverText};
+      --deck-badge: ${badge};
+      --deck-shadow: ${shadow};
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--deck-bg);
+      color: var(--deck-text);
+      font-size: ${fontSize};
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .deck {
+      display: flex;
+      flex-direction: column;
+      gap: ${deckGap};
+      padding: ${deckPadding};
+      align-items: ${mode === "print" ? "stretch" : "center"};
+    }
+    .slide {
+      width: ${slideWidth};
+      max-width: 100%;
+      background: var(--deck-surface);
+      border-radius: 28px;
+      border: 1px solid var(--deck-border);
+      padding: ${slidePadding};
+      box-shadow: ${mode === "print" ? "none" : "var(--deck-shadow)"};
+      position: relative;
+      overflow: hidden;
+    }
+    .cover-slide {
+      background-image: var(--deck-cover-gradient);
+      color: var(--deck-cover-text);
+      border: none;
+      box-shadow: ${mode === "print" ? "none" : "0 35px 80px rgba(0, 0, 0, 0.35)"};
+    }
+    .cover-slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--deck-cover-pattern);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .cover-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .cover-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      background: var(--deck-badge);
+      color: var(--deck-text);
+      font-weight: 600;
+      width: fit-content;
+    }
+    .cover-subtitle {
+      font-size: 1.15rem;
+      margin: 0;
+      color: inherit;
+    }
+    .cover-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .cover-meta-item span {
+      display: block;
+      font-size: 0.85rem;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cover-meta-item strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-top: 0.3rem;
+    }
+    .cover-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+    .stat-card {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, ${theme?.dark ? "0.08" : "0.15"});
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(4px);
+    }
+    .stat-label {
+      display: block;
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-top: 0.2rem;
+    }
+    .slide-header {
+      margin-bottom: 1.5rem;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      color: var(--deck-accent);
+      margin: 0 0 0.25rem 0;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+    h1 {
+      font-size: 2.8rem;
+    }
+    h2 {
+      font-size: 2rem;
+    }
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.6rem;
+    }
+    .split-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .panel.stack .callout {
+      flex: 1;
+    }
+    .bullet-list {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+    .bullet-list li {
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .callout {
+      border-radius: 20px;
+      border: 1px solid var(--deck-border);
+      padding: 1rem 1.2rem;
+      background: color-mix(in srgb, var(--deck-surface) 85%, var(--deck-accent-soft));
+    }
+    .callout.note {
+      background: color-mix(in srgb, var(--deck-surface) 70%, var(--deck-accent-soft));
+    }
+    .callout p {
+      margin: 0;
+      color: var(--deck-muted);
+    }
+    .empty {
+      margin: 0;
+      color: var(--deck-muted);
+      font-style: italic;
+    }
+    .print-page {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-bottom: 1rem;
+    }
+    .print-break {
+      page-break-after: always;
+      break-after: page;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    ${mode === "print" ? `
+    @page {
+      size: A4;
+      margin: 0.5in;
+    }
+    body {
+      background: #fff;
+    }` : ""}
+  `;
+}
+
+function buildPdfDocumentHtml(analytics, theme = getExportThemeConfig()) {
+  const title = escapeHtml(`${getDatasetLabel() || "ChatScope conversation"} – PDF`);
+  const generatedAt = new Date().toLocaleString();
+  const styles = buildExportDeckCss(theme, { mode: "print" });
+  const deckMarkup = buildExportDeckMarkup(analytics, theme, { mode: "print", generatedAt });
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${title}</title>
+  <style>${styles}</style>
+</head>
+<body>
+${deckMarkup}
 </body>
 </html>`;
+}
+
+function handleDownloadPdfReport() {
+  const analytics = getDatasetAnalytics();
+  if (!analytics) {
+    updateStatus("Load the chat summary before exporting a report.", "warning");
+    return;
+  }
+  const theme = getExportThemeConfig();
+  const html = buildPdfDocumentHtml(analytics, theme);
+  const opened = launchPrintableDocument(html);
+  if (opened) {
+    updateStatus(`Opened the ${theme.label} PDF preview — use your print dialog to save it.`, "info");
+  } else {
+    updateStatus("Couldn't prepare the PDF preview.", "error");
+  }
+}
+
+function launchPrintableDocument(html) {
+  try {
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    const cleanup = () => {
+      URL.revokeObjectURL(url);
+      iframe.remove();
+    };
+    iframe.addEventListener("load", () => {
+      const win = iframe.contentWindow;
+      if (!win) {
+        cleanup();
+        return;
+      }
+      const handleAfterPrint = () => {
+        win.removeEventListener("afterprint", handleAfterPrint);
+        if (cleanupTimer) {
+          clearTimeout(cleanupTimer);
+          cleanupTimer = null;
+        }
+        cleanup();
+      };
+      let cleanupTimer = window.setTimeout(() => {
+        handleAfterPrint();
+      }, 60000);
+      win.addEventListener("afterprint", handleAfterPrint);
+      setTimeout(() => {
+        try {
+          win.focus();
+          win.print();
+        } catch (error) {
+          console.error(error);
+          cleanup();
+        }
+      }, 150);
+    });
+    iframe.addEventListener("error", cleanup);
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 }
 
 function disableInteractiveControlsForSnapshot() {
@@ -4645,9 +5295,10 @@ function handleDownloadMarkdownReport() {
     updateStatus("Load the chat summary before exporting a report.", "warning");
     return;
   }
-  const markdown = buildMarkdownReport(analytics);
+  const theme = getExportThemeConfig();
+  const markdown = buildMarkdownReport(analytics, theme);
   downloadTextFile(buildReportFilename("report", "md"), markdown, "text/markdown;charset=utf-8;");
-  updateStatus("Saved the text report.", "success");
+  updateStatus(`Saved the ${theme.label} text report.`, "success");
 }
 
 function handleDownloadSlidesReport() {
@@ -4656,9 +5307,10 @@ function handleDownloadSlidesReport() {
     updateStatus("Load the chat summary before exporting a report.", "warning");
     return;
   }
-  const html = buildSlidesHtml(analytics);
+  const theme = getExportThemeConfig();
+  const html = buildSlidesHtml(analytics, theme);
   downloadTextFile(buildReportFilename("slides", "html"), html, "text/html;charset=utf-8;");
-  updateStatus("Saved the slide deck.", "success");
+  updateStatus(`Saved the ${theme.label} slide deck.`, "success");
 }
 
 function buildFilename(suffix) {
