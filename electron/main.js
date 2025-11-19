@@ -15,7 +15,7 @@ const DEFAULT_CLIENT_HOST =
   process.env.WAAN_CLIENT_HOST || process.env.HOST || "127.0.0.1";
 const DEFAULT_API_PORT = Number(process.env.WAAN_API_PORT || 3334);
 const DEFAULT_RELAY_PORT = Number(process.env.WAAN_RELAY_PORT || 4546);
-const WHATSAPP_WEB_URL = "https://web.whatsapp.com";
+const RELAY_PORTAL_URL = "https://relay.chatscope.app";
 
 let relayProcess = null;
 let staticServer = null;
@@ -163,17 +163,17 @@ function runCommand(command, args = []) {
   });
 }
 
-async function openWhatsAppInBrowser({ preferChrome = false } = {}) {
+async function openRelayPortal({ preferChrome = false } = {}) {
   if (preferChrome && process.platform === "darwin") {
     try {
-      await runCommand("open", ["-a", "Google Chrome", WHATSAPP_WEB_URL]);
+      await runCommand("open", ["-a", "Google Chrome", RELAY_PORTAL_URL]);
       return { method: "chrome" };
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error("[WAAN] Failed to open WhatsApp Web in Chrome:", error);
+      console.error("[WAAN] Failed to open relay portal in Chrome:", error);
     }
   }
-  await shell.openExternal(WHATSAPP_WEB_URL);
+  await shell.openExternal(RELAY_PORTAL_URL);
   return { method: "default" };
 }
 
@@ -206,7 +206,7 @@ function emitStatusChange(status) {
     status.account &&
     (!previous || previous.status !== "running")
   ) {
-    const name = status.account.pushName || status.account.wid || "WhatsApp";
+    const name = status.account.pushName || status.account.wid || "ChatScope";
     const chatCount = Number(status.chatCount) || 0;
     sendRelayNotification(
       chatCount ? `${name} connected · ${chatCount.toLocaleString()} chats mirrored.` : `${name} connected on WAAN.`
@@ -254,9 +254,9 @@ function buildAppMenu() {
           },
         },
         {
-          label: "Show WhatsApp",
+          label: "Show Relay Portal",
           click: () => {
-            openWhatsAppInBrowser({ preferChrome: true });
+            openRelayPortal({ preferChrome: true });
           },
         },
       ],
@@ -301,22 +301,22 @@ function buildDockMenu() {
       },
     },
     {
-      label: "Show WhatsApp",
+      label: "Show Relay Portal",
       click: () => {
-        openWhatsAppInBrowser({ preferChrome: true });
+        openRelayPortal({ preferChrome: true });
       },
     },
   ]);
   app.dock.setMenu(dockMenu);
 }
 
-ipcMain.handle("whatsapp.open-web", async () => {
+ipcMain.handle("relay.open-portal", async () => {
   try {
-    const result = await openWhatsAppInBrowser({ preferChrome: true });
+    const result = await openRelayPortal({ preferChrome: true });
     return { success: true, ...result };
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error("[WAAN] Unable to launch WhatsApp Web:", error);
+    console.error("[WAAN] Unable to launch relay portal:", error);
     return { success: false, error: error.message };
   }
 });
@@ -329,7 +329,7 @@ ipcMain.handle("relay.status.update", (_event, status) => {
 ipcMain.handle("relay.sync.summary", (_event, payload = {}) => {
   const count = Number(payload.syncedChats);
   if (Number.isFinite(count) && count > 0) {
-    sendRelayNotification(`Synced ${count.toLocaleString()} chats from WhatsApp.`);
+    sendRelayNotification(`Synced ${count.toLocaleString()} chats from the relay.`);
   }
   return true;
 });

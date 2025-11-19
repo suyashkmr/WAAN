@@ -3,7 +3,7 @@
 /**
  * Automatically restores the WAAN data directory from the most recent
  * `waan-data-backup-*.tgz` archive if the current data folder is missing
- * or empty. This ensures historical chat metadata and the WhatsApp session
+ * or empty. This ensures historical chat metadata and the ChatScope session
  * survive reinstallations or clean checkouts.
  */
 

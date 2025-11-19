@@ -266,6 +266,97 @@ header h1 {
     }
 }
 
+.toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.toast {
+    min-width: 240px;
+    max-width: 360px;
+    padding: 0.85rem 1rem;
+    border-radius: var(--shape-medium);
+    box-shadow: 0 18px 35px rgba(4, 6, 12, 0.35);
+    border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    pointer-events: auto;
+    animation: toast-in 0.3s ease;
+}
+
+.toast.toast-dismiss {
+    animation: toast-out 0.15s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast,
+    .toast.toast-dismiss {
+        animation: none;
+    }
+}
+
+.toast::before {
+    content: "";
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    margin-top: 0.35rem;
+}
+
+.toast.success::before {
+    background: var(--positive);
+}
+
+.toast.error::before {
+    background: var(--negative);
+}
+
+.toast.info::before {
+    background: var(--accent);
+}
+
+.toast-message {
+    flex: 1;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toast-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+}
+
 .relay-status-banner {
     margin: 1rem auto 0;
     padding: 1rem 1.5rem;
@@ -618,6 +709,20 @@ main > .card.half-span {
     box-shadow: 0 18px 40px rgba(17, 16, 28, 0.12), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 22%, transparent);
     background-image: linear-gradient(160deg, color-mix(in srgb, var(--surface-tint) 32%, transparent) 0%, transparent 65%);
     background-blend-mode: lighten;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px rgba(15, 18, 32, 0.22), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .card:hover {
+        transition: none;
+        transform: none;
+    }
 }
 
 .card-header {
@@ -774,7 +879,7 @@ main > .card.half-span {
     font-size: 0.9rem;
 }
 
-.whatsapp-qr {
+.relay-qr {
     margin: 0.75rem 0;
     padding: 0.75rem;
     border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
@@ -783,7 +888,7 @@ main > .card.half-span {
     background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
-.whatsapp-qr img {
+.relay-qr img {
     max-width: 220px;
     width: 100%;
     height: auto;
@@ -1360,26 +1465,25 @@ main > .card.half-span {
 
 .guided-insights {
     margin-top: 1.25rem;
-    padding: 1rem 1.25rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.guided-card {
     border-radius: var(--shape-medium);
-    border: 1px dashed var(--border);
-    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+    border: 1px solid var(--border);
+    padding: 0.9rem 1rem;
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.guided-insights strong {
-    display: block;
-    margin-bottom: 0.4rem;
-}
-
-.guided-insights ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    color: var(--muted);
-}
-
-.guided-insights li {
-    margin-bottom: 0.35rem;
-    line-height: 1.5;
+.guided-card .cta-link {
+    align-self: flex-start;
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
 }
 
 .guided-insights-empty {
@@ -1408,6 +1512,18 @@ main > .card.half-span {
     border: 1px solid color-mix(in srgb, var(--highlight-accent, var(--accent)) 28%, var(--border));
     box-shadow: 0 16px 28px rgba(15, 23, 42, 0.12);
     overflow: hidden;
+}
+
+.highlight-card[data-accent="growth"] {
+    --highlight-accent: #7d8aff;
+}
+
+.highlight-card[data-accent="engagement"] {
+    --highlight-accent: #58d4c3;
+}
+
+.highlight-card[data-accent="risk"] {
+    --highlight-accent: #f6c343;
 }
 
 .highlight-card .highlight-label {

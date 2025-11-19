@@ -56,7 +56,7 @@ function normaliseJid(id) {
   return String(id);
 }
 
-function stripWhatsAppSuffix(id) {
+function stripRelaySuffix(id) {
   if (!id) return id;
   return id.replace(/@(?:c|g)\.us$/, "");
 }
@@ -139,7 +139,7 @@ class RelayManager extends EventEmitter {
       lastQr: null,
     });
 
-    const sessionDir = path.join(this.config.dataDir, "whatsapp-session");
+    const sessionDir = path.join(this.config.dataDir, "relay-session");
     const puppeteerArgs = [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -159,13 +159,13 @@ class RelayManager extends EventEmitter {
     });
 
     this.client.on("qr", qr => this.handleQr(qr));
-    this.client.on("authenticated", () => this.log("Authenticated with WhatsApp Web."));
+    this.client.on("authenticated", () => this.log("Authenticated with ChatScope Web."));
     this.client.on("auth_failure", message => this.handleAuthFailure(message));
     this.client.on("ready", () => this.handleReady());
     this.client.on("change_state", state => this.log(`Client state changed: ${state}`));
     this.client.on("disconnected", reason => this.handleDisconnect(reason));
     this.client.on("loading_screen", (percent, message) => {
-      this.log(`Loading WhatsApp… ${percent || 0}% ${message || ""}`.trim());
+      this.log(`Loading ChatScope… ${percent || 0}% ${message || ""}`.trim());
     });
     this.client.on("message", message => {
       this.handleIncomingMessage(message).catch(error => {
@@ -189,7 +189,7 @@ class RelayManager extends EventEmitter {
       try {
         await this.client.destroy();
       } catch (error) {
-        this.logger.warn("Failed to destroy WhatsApp client: %s", error.message);
+        this.logger.warn("Failed to destroy ChatScope client: %s", error.message);
       }
       this.client = null;
     }
@@ -208,7 +208,7 @@ class RelayManager extends EventEmitter {
     if (this.client && typeof this.client.logout === "function") {
       try {
         await this.client.logout();
-        this.log("WhatsApp session logged out.");
+        this.log("ChatScope session logged out.");
       } catch (error) {
         this.logger.warn("Failed to logout session: %s", error.message);
       }
@@ -228,7 +228,7 @@ class RelayManager extends EventEmitter {
     this.syncingChats = true;
     this.emit("status", this.getStatus());
     try {
-      this.log("Synchronising chat list from WhatsApp…");
+      this.log("Synchronising chat list from ChatScope…");
       const chats = await client.getChats();
       for (const chat of chats) {
         await this.persistChatMeta(chat);
@@ -252,7 +252,7 @@ class RelayManager extends EventEmitter {
     const limit = Number(options.limit) || DEFAULT_MESSAGE_LIMIT;
     const chat = await client.getChatById(targetId);
     if (!chat) {
-      throw new Error(`Chat ${targetId} not found on WhatsApp`);
+      throw new Error(`Chat ${targetId} not found on ChatScope`);
     }
     await this.persistChatMeta(chat);
     this.log(`Fetching ${limit} messages for ${chat.name || targetId}…`);
@@ -266,7 +266,7 @@ class RelayManager extends EventEmitter {
         return aTime - bTime;
       });
     await this.store.replaceEntries(targetId, entries, {
-      name: chat.name || chat.formattedTitle || stripWhatsAppSuffix(targetId),
+      name: chat.name || chat.formattedTitle || stripRelaySuffix(targetId),
       isGroup: Boolean(chat.isGroup),
       unreadCount: Number(chat.unreadCount) || 0,
     });
@@ -291,7 +291,7 @@ class RelayManager extends EventEmitter {
       throw new Error("Relay is running in headless mode. Set WAAN_RELAY_HEADLESS=false to enable the browser UI.");
     }
     if (!client.pupBrowser || typeof client.pupBrowser.process !== "function") {
-      throw new Error("WhatsApp browser not available yet.");
+      throw new Error("ChatScope browser not available yet.");
     }
     const browserProcess = client.pupBrowser.process();
     if (!browserProcess) {
@@ -302,7 +302,7 @@ class RelayManager extends EventEmitter {
         browserProcess.spawnfile ||
         (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
       if (!executable) {
-        throw new Error("Unable to resolve WhatsApp browser executable.");
+        throw new Error("Unable to resolve ChatScope browser executable.");
       }
       const macosSegment = "/Contents/MacOS/";
       let appPath = executable;
@@ -319,7 +319,7 @@ class RelayManager extends EventEmitter {
         browserProcess.spawnfile ||
         (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
       if (!executable) {
-        throw new Error("Unable to resolve WhatsApp browser executable.");
+        throw new Error("Unable to resolve ChatScope browser executable.");
       }
       await runCommand("cmd", ["/c", "start", "", executable]);
       return;
@@ -329,12 +329,12 @@ class RelayManager extends EventEmitter {
         browserProcess.spawnfile ||
         (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
       if (!executable) {
-        throw new Error("Unable to resolve WhatsApp browser executable.");
+        throw new Error("Unable to resolve ChatScope browser executable.");
       }
       await runCommand("xdg-open", [executable]);
       return;
     }
-    throw new Error("Showing the WhatsApp browser is not supported on this platform.");
+    throw new Error("Showing the ChatScope browser is not supported on this platform.");
   }
 
   async handleReady() {
@@ -344,7 +344,7 @@ class RelayManager extends EventEmitter {
       lastQr: null,
       account: this.extractAccountInfo(),
     });
-    this.log("WhatsApp relay is ready.");
+    this.log("ChatScope relay is ready.");
     await this.syncChats();
   }
 
@@ -366,20 +366,20 @@ class RelayManager extends EventEmitter {
   }
 
   handleDisconnect(reason) {
-    this.log(`WhatsApp disconnected: ${reason}`);
+    this.log(`ChatScope disconnected: ${reason}`);
     this.stop().catch(err => {
       this.logger.error("Failed to stop relay after disconnect: %s", err.message);
     });
   }
 
   handleFatalError(error) {
-    this.logger.error("WhatsApp relay error: %s", error.message);
+    this.logger.error("ChatScope relay error: %s", error.message);
     this.state.lastError = error.message;
     this.emit("status", this.getStatus());
   }
 
   async handleQr(qr) {
-    this.log("WhatsApp requests a QR code scan.");
+    this.log("ChatScope requests a QR code scan.");
     try {
       const dataUrl = await QRCode.toDataURL(qr, { margin: 2, width: 320 });
       this.updateState({
@@ -421,7 +421,7 @@ class RelayManager extends EventEmitter {
       chat.formattedTitle ||
       chat.pushname ||
       (chat.contact && (chat.contact.name || chat.contact.pushname)) ||
-      stripWhatsAppSuffix(chatId);
+      stripRelaySuffix(chatId);
     const lastMessageTimestamp = chat.timestamp
       ? new Date(chat.timestamp * 1000).toISOString()
       : null;
@@ -446,7 +446,7 @@ class RelayManager extends EventEmitter {
           participant?.pushname ||
           participant?.shortName ||
           participant?.notifyName ||
-          stripWhatsAppSuffix(participantId || "");
+          stripRelaySuffix(participantId || "");
         if (label) {
           this.contactCache.set(participantId, label);
           participants.push({
@@ -585,7 +585,7 @@ class RelayManager extends EventEmitter {
     if (this.contactCache.has(authorId)) {
       return this.contactCache.get(authorId);
     }
-    const fallback = stripWhatsAppSuffix(authorId);
+    const fallback = stripRelaySuffix(authorId);
     this.contactCache.set(authorId, fallback);
     return fallback;
   }

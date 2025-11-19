@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Chat Overview</title>
+    <title>ChatScope Conversation Overview</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Whatsapp Group Chat Analytics</h1>
+        <h1>ChatScope Conversation Analytics</h1>
     </header>
 
     <div id="global-progress" aria-live="polite" hidden>
@@ -25,7 +25,7 @@
         <div class="relay-banner-actions">
             <button type="button" class="ghost-button small" id="relay-banner-connect">Connect</button>
             <button type="button" class="ghost-button small" id="relay-banner-disconnect" disabled>Disconnect</button>
-            <button type="button" class="ghost-button small" id="relay-banner-show">Show WhatsApp</button>
+            <button type="button" class="ghost-button small" id="relay-banner-show">Show relay portal</button>
         </div>
     </section>
 
@@ -108,16 +108,16 @@
 
         <p id="data-status" class="status full-span"></p>
 
-        <section id="whatsapp-live-card" class="card full-span live-card">
+        <section id="relay-live-card" class="card full-span live-card">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Connect to WhatsApp</h2>
-                    <p class="card-subtitle">Mirror your chats with whatsapp-web.js.</p>
+                    <h2>Connect to ChatScope Relay</h2>
+                    <p class="card-subtitle">Mirror your chats with the ChatScope relay engine.</p>
                 </div>
                 <div class="card-header-actions">
-                    <button type="button" class="ghost-button small" id="whatsapp-refresh" disabled>Refresh chats</button>
-                    <button type="button" class="ghost-button small" id="whatsapp-reload-all" disabled>Reload all chats</button>
-                    <button type="button" class="ghost-button small danger" id="whatsapp-clear-storage" disabled>Clear cached chats</button>
+                    <button type="button" class="ghost-button small" id="relay-refresh" disabled>Refresh chats</button>
+                    <button type="button" class="ghost-button small" id="relay-reload-all" disabled>Reload all chats</button>
+                    <button type="button" class="ghost-button small danger" id="relay-clear-storage" disabled>Clear cached chats</button>
                 </div>
             </div>
             <div class="card-content">
@@ -133,31 +133,31 @@
                         <span class="relay-step-index">2</span>
                         <div>
                             <p class="relay-step-title">Scan QR code</p>
-                            <p class="relay-step-detail">Link your phone in WhatsApp.</p>
+                            <p class="relay-step-detail">Link your phone via the relay portal.</p>
                         </div>
                     </div>
                     <div class="relay-step" data-step-id="sync" role="listitem">
                         <span class="relay-step-index">3</span>
                         <div>
                             <p class="relay-step-title">Sync chats</p>
-                            <p class="relay-step-detail">Pull messages into WAAN.</p>
+                            <p class="relay-step-detail">Pull messages into ChatScope.</p>
                         </div>
                     </div>
                 </div>
-                <p id="whatsapp-connection-status" class="live-status"></p>
+                <p id="relay-connection-status" class="live-status"></p>
                 <div class="live-actions">
-                    <button type="button" class="ghost-button" id="whatsapp-start">Connect</button>
+                    <button type="button" class="ghost-button" id="relay-start">Connect</button>
                     <div class="live-button-group">
-                        <button type="button" class="ghost-button" id="whatsapp-stop" disabled>Disconnect</button>
-                        <button type="button" class="ghost-button danger" id="whatsapp-logout" disabled>Log out</button>
+                        <button type="button" class="ghost-button" id="relay-stop" disabled>Disconnect</button>
+                        <button type="button" class="ghost-button danger" id="relay-logout" disabled>Log out</button>
                     </div>
                 </div>
-                <p id="whatsapp-account-name" class="live-account"></p>
-                <div id="whatsapp-qr-container" class="whatsapp-qr hidden" aria-live="polite">
-                    <img id="whatsapp-qr-image" alt="Scan this QR code with WhatsApp → Linked devices">
-                    <p>Open WhatsApp → Settings → Linked devices → Link a device, then scan this code.</p>
+                <p id="relay-account-name" class="live-account"></p>
+                <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
+                    <img id="relay-qr-image" alt="Scan this QR code to link your device">
+                    <p>Open the ChatScope Relay app → Device linking → Link a device, then scan this code.</p>
                 </div>
-                <p id="whatsapp-help-text" class="live-help">
+                <p id="relay-help-text" class="live-help">
                     Run <code>npm start --workspace apps/server</code> in another terminal, then press Connect.
                 </p>
             </div>
@@ -657,3 +657,4 @@
     <script type="module" src="js/main.js"></script>
   </body>
 </html>
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>

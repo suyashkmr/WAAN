@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Utility to parse a WhatsApp chat export into structured data.
+Utility to parse a ChatScope chat export into structured data.
 
 The parser groups multi-line messages, preserves poll content, and distinguishes
 between user messages and system events (e.g. join/leave notifications).  The
@@ -74,7 +74,7 @@ def is_system_content(content: str) -> bool:
 
 
 def parse_timestamp(date_text: str, time_text: str, period: Optional[str]) -> Optional[str]:
-    """Convert WhatsApp date/time fragments into an ISO 8601 string."""
+    """Convert ChatScope date/time fragments into an ISO 8601 string."""
     time_fragment = time_text
     timestamp_text = f"{date_text} {time_fragment}"
     formats: List[str]
@@ -197,7 +197,7 @@ def print_summary(entries: List[ChatEntry], limit: Optional[int]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Parse a WhatsApp chat export.")
+    parser = argparse.ArgumentParser(description="Parse a ChatScope chat export.")
     parser.add_argument("chat", type=Path, help="Path to the exported chat text file.")
     parser.add_argument("--json", type=Path, help="Write parsed messages to this JSON file.")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output.")

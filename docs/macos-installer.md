@@ -37,7 +37,7 @@ Navigate to `http://localhost:4173` and use the dashboard as usual.
 
 ## Troubleshooting
 
-- **Uploads fail**: Make sure WhatsApp exports are generated "Without media" so
+- **Uploads fail**: Make sure ChatScope exports are generated "Without media" so
   the parser can match the expected timestamp format.
 - **Browser blocks file access**: Some hardened corporate browsers forbid
   `file://` origins. Serve the folder over `http-server` or any static host

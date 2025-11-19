@@ -12,7 +12,7 @@ const { createHttpServers } = require("./server");
 async function main() {
   program
     .name("waan-server")
-    .description("WhatsApp Analytics relay server")
+    .description("ChatScope analytics relay server")
     .option("--data-dir <path>", "Directory to store relay data")
     .option("--api-port <number>", "API port", parseInt, 3334)
     .option("--relay-port <number>", "Relay control port", parseInt)
