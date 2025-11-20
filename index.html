@@ -8,7 +8,13 @@
 </head>
 <body>
     <header>
-        <h1>ChatScope Conversation Analytics</h1>
+        <div class="brand-heading">
+            <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="lazy">
+            <div class="brand-copy">
+                <h1>ChatScope Conversation Analytics</h1>
+                <p class="subtitle">Link the relay, load a chat, and follow the simple guidance on each card.</p>
+            </div>
+        </div>
     </header>
 
     <div id="global-progress" aria-live="polite" hidden>
@@ -22,31 +28,13 @@
             <p class="relay-banner-status" id="relay-status-message">Relay status unknown.</p>
             <p class="relay-banner-meta" id="relay-status-meta">Start the relay to begin mirroring chats.</p>
         </div>
-        <div class="relay-banner-actions">
-            <button type="button" class="ghost-button small" id="relay-banner-connect">Connect</button>
-            <button type="button" class="ghost-button small" id="relay-banner-disconnect" disabled>Disconnect</button>
-            <button type="button" class="ghost-button small" id="relay-banner-show">Show relay portal</button>
-        </div>
-    </section>
+            <div class="relay-banner-actions">
+                <button type="button" class="ghost-button small" id="relay-banner-connect">Connect</button>
+                <button type="button" class="ghost-button small" id="relay-banner-disconnect" disabled>Disconnect</button>
+            </div>
+        </section>
 
     <main>
-        <nav class="section-nav full-span" aria-label="Section shortcuts">
-            <div class="section-nav-inner">
-                <a href="#summary">Overview</a>
-                <a href="#insight-highlights">Highlights</a>
-                <a href="#participants">Participants</a>
-                <a href="#hourly-activity">Hourly Activity</a>
-                <a href="#daily-activity">Day by Day</a>
-                <a href="#weekly-trend">Week by Week</a>
-                <a href="#weekday-trend">Day of the Week</a>
-                <a href="#timeofday-trend">Time of Day</a>
-                <a href="#sentiment-overview">Mood</a>
-                <a href="#message-types">Message Mix</a>
-                <a href="#polls-card">Polls</a>
-                <a href="#saved-views-card">Saved Setups</a>
-                <a href="#search-panel">Search Messages</a>
-            </div>
-        </nav>
 
         <section class="actions-toolbar full-span" aria-label="Dataset actions">
             <div class="toolbar-group primary">
@@ -54,14 +42,6 @@
                 <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
                 <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
                 <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
-                <label class="export-theme-control" for="export-theme">
-                    <span>Report style</span>
-                    <select id="export-theme">
-                        <option value="aurora">Aurora</option>
-                        <option value="midnight">Midnight</option>
-                        <option value="canyon">Canyon</option>
-                    </select>
-                </label>
             </div>
             <div class="toolbar-group secondary">
                 <div class="theme-toggle">
@@ -115,6 +95,25 @@
         </div>
 
         <p id="data-status" class="status full-span"></p>
+
+        <nav class="section-nav full-span" aria-label="Section shortcuts">
+            <div class="section-nav-inner">
+                <a href="#summary">Overview</a>
+                <a href="#insight-highlights">Highlights</a>
+                <a href="#participants">Participants</a>
+                <a href="#hourly-activity">Hourly Activity</a>
+                <a href="#daily-activity">Day by Day</a>
+                <a href="#weekly-trend">Week by Week</a>
+                <a href="#weekday-trend">Day of the Week</a>
+                <a href="#timeofday-trend">Time of Day</a>
+                <a href="#sentiment-overview">Mood</a>
+                <a href="#message-types">Message Mix</a>
+                <a href="#polls-card">Polls</a>
+                <a href="#saved-views-card">Saved Views</a>
+                <a href="#search-panel">Search Messages</a>
+                <a href="#faq-card">FAQ</a>
+            </div>
+        </nav>
 
         <section id="relay-live-card" class="card full-span live-card">
             <div class="card-header">
@@ -477,7 +476,7 @@
             <div class="card-content" id="message-types-content">
                 <p class="section-note">Shows each type of message and how it has changed since last week.</p>
                 <div class="message-type-summary" id="message-type-summary"></div>
-                <p class="message-type-note" id="message-type-note"></p>
+                <p class="message-type-note" id="message-types-note"></p>
                 <div class="card-grid stats message-basics">
                     <div class="stat" data-stat="media">
                         <span class="stat-value" id="media-count">0</span>
@@ -640,6 +639,51 @@
                 </form>
                 <div class="search-results-summary" id="search-results-summary">Add filters to search messages.</div>
                 <div class="search-results-list" id="search-results-list"></div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="faq-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2>FAQ</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="faq-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="faq-content">
+                <ul class="faq-list">
+                    <li>
+                        <h3>How do I connect the relay?</h3>
+                        <p>Press Connect, scan the QR code from WhatsApp → Linked Devices, then choose a chat from “Loaded chats”. Once linked, the relay stays active until you disconnect.</p>
+                    </li>
+                    <li>
+                        <h3>Do I need my phone online?</h3>
+                        <p>Yes. Keep your phone connected to the internet like you would for WhatsApp Web. If the phone goes offline, the relay pauses until it reconnects.</p>
+                    </li>
+                    <li>
+                        <h3>Which windows should I close first?</h3>
+                        <p>The relay launches a visible WhatsApp window. Close that Chromium window first so the session ends safely, then quit the main desktop app.</p>
+                    </li>
+                    <li>
+                        <h3>Why are export buttons disabled?</h3>
+                        <p>Exports only work after a chat is loaded. Connect the relay and pick a chat—once data appears, the buttons unlock automatically.</p>
+                    </li>
+                    <li>
+                        <h3>Where is my data stored?</h3>
+                        <p>Chats are processed locally in the “ChatScope” folder inside your user Library. Nothing is uploaded to the cloud unless you choose to share it.</p>
+                    </li>
+                    <li>
+                        <h3>What are saved views?</h3>
+                        <p>A saved view remembers the filters, date range, and chart state you’re looking at. Name it, apply it later, or compare two views side-by-side.</p>
+                    </li>
+                    <li>
+                        <h3>How can I troubleshoot a stuck relay?</h3>
+                        <p>Use the “View relay logs” button to check the live log drawer. If you see repeated errors, hit Disconnect, close the Chromium window, then Connect again.</p>
+                    </li>
+                    <li>
+                        <h3>Can I run the relay without the dashboard?</h3>
+                        <p>Yes. Start it via the command line with <code>npm start --workspace apps/server</code>. Then open the desktop app and hit Connect to link it.</p>
+                    </li>
+                </ul>
             </div>
         </section>
     </main>

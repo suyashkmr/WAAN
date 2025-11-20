@@ -228,11 +228,34 @@ header {
     background: color-mix(in srgb, var(--card-bg) 85%, transparent);
     border-bottom-left-radius: var(--shape-large);
     border-bottom-right-radius: var(--shape-large);
+    box-shadow: 0 35px 80px rgba(5, 7, 16, 0.55);
 }
 
 header h1 {
     font-size: clamp(2.4rem, 5vw, 3.4rem);
     letter-spacing: -0.015em;
+}
+
+.brand-heading {
+    display: inline-flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.brand-mark {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.2) 70%);
+    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.45);
+    padding: 0.5rem;
+    object-fit: contain;
+}
+
+.brand-copy {
+    text-align: left;
 }
 
 #global-progress {
@@ -506,27 +529,6 @@ header h1 {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.export-theme-control {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 160px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.export-theme-control select {
-    height: 34px;
-    border-radius: 999px;
-    border: 1px solid var(--border-strong);
-    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-    color: var(--text);
-    padding: 0 1rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.1);
 }
 
 #theme-system,
@@ -3038,6 +3040,9 @@ main > .card.half-span {
     font-size: 0.95rem;
     align-self: center;
     box-shadow: 0 12px 24px rgba(12, 16, 32, 0.2);
+    display: block;
+    position: relative;
+    z-index: 6;
 }
 
 
@@ -3219,6 +3224,20 @@ main > .card.half-span {
     outline-offset: 2px;
 }
 
+.notifications-panel {
+    margin: 0.75rem 0;
+    position: sticky;
+    top: 4.5rem;
+    z-index: 200;
+    pointer-events: none;
+}
+
+.notifications-panel .status {
+    width: 100%;
+    pointer-events: auto;
+    box-shadow: 0 20px 40px rgba(4, 6, 12, 0.45);
+}
+
 .page-actions .ghost-button {
     min-width: 150px;
     justify-content: center;
@@ -3240,14 +3259,13 @@ main > .card.half-span {
 }
 .section-nav {
     position: sticky;
-    top: 0;
-    z-index: 95;
+    top: 5.5rem;
+    z-index: 30;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 0;
     padding: 0.75rem 0 0.5rem;
-
 }
 
 .section-nav-inner {

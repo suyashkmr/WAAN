@@ -34,3 +34,4 @@ apps/client/.erb
 *.pkg
 *.dmg
 *.zip
+.DS_Store

@@ -64,29 +64,27 @@ const RELAY_CLIENT_LABEL = "ChatScope Relay";
 const RELAY_POLL_INTERVAL_MS = 5000;
 const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
 const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
-const EXPORT_THEME_STORAGE_KEY = "waan-export-theme";
-const DEFAULT_EXPORT_THEME = "aurora";
-const EXPORT_THEMES = {
-  aurora: {
-    label: "Aurora",
-    tagline: "Calm gradients inspired by polar skies.",
-    accent: "#4c6ef5",
-    accentSoft: "#dbeafe",
+const EXPORT_THEME_STYLES = {
+  light: {
+    label: "Light mode",
+    tagline: "Clean daylight palette to match the dashboard.",
+    accent: "#4f46e5",
+    accentSoft: "#ede9fe",
     text: "#0f172a",
     muted: "#475569",
     surface: "#ffffff",
-    canvas: "#f7fbff",
+    canvas: "#f1f5f9",
     border: "rgba(15, 23, 42, 0.12)",
-    coverGradient: "linear-gradient(135deg, #4338ca 0%, #0ea5e9 60%, #22d3ee 100%)",
-    coverPattern: "radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%)",
+    coverGradient: "linear-gradient(135deg, #312e81 0%, #4f46e5 45%, #06b6d4 100%)",
+    coverPattern: "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.35), transparent 45%)",
     coverText: "#f8fafc",
-    badge: "#bae6fd",
-    cardShadow: "0 25px 60px rgba(15, 23, 42, 0.18)",
+    badge: "#dbeafe",
+    cardShadow: "0 25px 60px rgba(15, 23, 42, 0.15)",
     dark: false,
   },
-  midnight: {
-    label: "Midnight",
-    tagline: "Deep blues with neon accents for high contrast decks.",
+  dark: {
+    label: "Night mode",
+    tagline: "High-contrast look aligned with the dark UI.",
     accent: "#38bdf8",
     accentSoft: "rgba(56, 189, 248, 0.2)",
     text: "#e2e8f0",
@@ -95,28 +93,11 @@ const EXPORT_THEMES = {
     canvas: "#020617",
     border: "rgba(148, 163, 184, 0.25)",
     coverGradient: "linear-gradient(135deg, #020617 0%, #0f172a 45%, #1d4ed8 80%, #14b8a6 100%)",
-    coverPattern: "radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.35), transparent 55%)",
+    coverPattern: "radial-gradient(circle at 80% 20%, rgba(56,189,248,0.35), transparent 55%)",
     coverText: "#e2e8f0",
     badge: "rgba(20, 184, 166, 0.4)",
     cardShadow: "0 25px 60px rgba(2, 6, 23, 0.65)",
     dark: true,
-  },
-  canyon: {
-    label: "Canyon",
-    tagline: "Warm desert hues for story-driven shareouts.",
-    accent: "#f97316",
-    accentSoft: "#fed7aa",
-    text: "#2b190f",
-    muted: "#7c4a1d",
-    surface: "#fff7ed",
-    canvas: "#fff3e7",
-    border: "rgba(176, 115, 71, 0.35)",
-    coverGradient: "linear-gradient(135deg, #9a3412 0%, #ef4444 35%, #f97316 75%, #fde047 100%)",
-    coverPattern: "radial-gradient(circle at 15% 80%, rgba(253, 224, 71, 0.45), transparent 50%)",
-    coverText: "#fffdf8",
-    badge: "#fed7aa",
-    cardShadow: "0 25px 60px rgba(121, 85, 72, 0.35)",
-    dark: false,
   },
 };
 
@@ -259,7 +240,6 @@ const relayBannerMessage = document.getElementById("relay-status-message");
 const relayBannerMeta = document.getElementById("relay-status-meta");
 const relayBannerConnectButton = document.getElementById("relay-banner-connect");
 const relayBannerDisconnectButton = document.getElementById("relay-banner-disconnect");
-const relayBannerShowButton = document.getElementById("relay-banner-show");
 const relayOnboardingSteps = document.querySelectorAll(".relay-step");
 const summaryEl = document.getElementById("summary");
 const participantsBody = document.querySelector("#top-senders tbody");
@@ -275,7 +255,6 @@ const relayLogoutButton = document.getElementById("relay-logout");
 const relayRefreshButton = document.getElementById("relay-refresh");
 const relayReloadAllButton = document.getElementById("relay-reload-all");
 const relayClearStorageButton = document.getElementById("relay-clear-storage");
-const RELAY_PORTAL_URL = "https://relay.chatscope.app";
 const relayQrContainer = document.getElementById("relay-qr-container");
 const relayQrImage = document.getElementById("relay-qr-image");
 const relayHelpText = document.getElementById("relay-help-text");
@@ -294,10 +273,16 @@ const weekdayToggleOffhours = document.getElementById("weekday-toggle-offhours")
 const weekdayHourStartInput = document.getElementById("weekday-hour-start");
 const weekdayHourEndInput = document.getElementById("weekday-hour-end");
 const messageTypeSummaryEl = document.getElementById("message-type-summary");
-const messageTypeNoteEl = document.getElementById("message-type-note");
+const messageTypeNoteEl = document.getElementById("message-types-note");
 const downloadPdfButton = document.getElementById("download-pdf");
 const downloadTimeOfDayButton = document.getElementById("download-timeofday");
-const exportThemeSelect = document.getElementById("export-theme");
+const downloadParticipantsButton = document.getElementById("download-participants");
+const downloadHourlyButton = document.getElementById("download-hourly");
+const downloadDailyButton = document.getElementById("download-daily");
+const downloadWeeklyButton = document.getElementById("download-weekly");
+const downloadWeekdayButton = document.getElementById("download-weekday");
+const downloadMessageTypesButton = document.getElementById("download-message-types");
+const downloadSentimentButton = document.getElementById("download-sentiment");
 const sentimentSummaryEl = document.getElementById("sentiment-summary");
 const sentimentTrendNote = document.getElementById("sentiment-trend-note");
 const sentimentDailyChart = document.getElementById("sentiment-daily-chart");
@@ -308,6 +293,7 @@ const saveViewButton = document.getElementById("save-view");
 const savedViewList = document.getElementById("saved-view-list");
 const applySavedViewButton = document.getElementById("apply-saved-view");
 const deleteSavedViewButton = document.getElementById("delete-saved-view");
+const savedViewPlaceholder = savedViewNameInput?.getAttribute("placeholder") || "";
 const savedViewGallery = document.getElementById("saved-view-gallery");
 const compareViewASelect = document.getElementById("compare-view-a");
 const compareViewBSelect = document.getElementById("compare-view-b");
@@ -325,7 +311,6 @@ const searchResultsList = document.getElementById("search-results-list");
 const highlightList = document.getElementById("highlight-list");
 const guidedInsightsEl = document.getElementById("guided-insights");
 const heroPillButtons = [];
-const shareSnapshotButton = document.getElementById("share-snapshot");
 const downloadMarkdownButton = document.getElementById("download-markdown-report");
 const downloadSlidesButton = document.getElementById("download-slides-report");
 const logDrawerToggleButton = document.getElementById("log-drawer-toggle");
@@ -342,6 +327,16 @@ const onboardingOverlay = document.getElementById("onboarding-overlay");
 const onboardingCopyEl = document.getElementById("onboarding-copy");
 const onboardingSkipButton = document.getElementById("onboarding-skip");
 const onboardingNextButton = document.getElementById("onboarding-next");
+const hourlyNote = document.getElementById("hourly-note");
+const dailyNote = document.getElementById("daily-note");
+const weeklyNote = document.getElementById("weekly-note");
+const weekdayNote = document.getElementById("weekday-note");
+const timeOfDayNote = document.getElementById("timeofday-note");
+const sentimentNote = document.getElementById("sentiment-note");
+const searchNote = document.getElementById("search-note");
+const datasetEmptyCallout = document.getElementById("dataset-empty-callout");
+const datasetEmptyHeading = document.getElementById("dataset-empty-heading");
+const datasetEmptyCopy = document.getElementById("dataset-empty-copy");
 const TOASTS = [];
 const MAX_TOASTS = 4;
 const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
@@ -398,6 +393,7 @@ const relayUiState = {
   pollTimer: null,
   status: null,
   lastErrorNotice: null,
+  lastStatusKind: null,
 };
 const relayLogState = {
   entries: [],
@@ -408,6 +404,9 @@ const relayLogState = {
 };
 const MAX_LOG_ENTRIES = 400;
 let globalBusyCount = 0;
+self.windowToasts = [];
+let dataAvailable = false;
+self.windowToasts = [];
 self.windowToasts = [];
 const themeState = {
   preference: "system",
@@ -650,6 +649,62 @@ function setDashboardLoadingState(isLoading) {
   dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
 }
 
+function setDatasetEmptyMessage(headingText, copyText) {
+  if (datasetEmptyHeading && headingText) {
+    datasetEmptyHeading.textContent = headingText;
+  }
+  if (datasetEmptyCopy && copyText) {
+    datasetEmptyCopy.textContent = copyText;
+  }
+}
+
+function setDataAvailabilityState(hasData) {
+  dataAvailable = Boolean(hasData);
+  const buttons = [
+    downloadPdfButton,
+    downloadMarkdownButton,
+    downloadSlidesButton,
+    downloadChatJsonButton,
+    downloadParticipantsButton,
+    downloadHourlyButton,
+    downloadDailyButton,
+    downloadWeeklyButton,
+    downloadWeekdayButton,
+    downloadTimeOfDayButton,
+    downloadMessageTypesButton,
+    downloadSentimentButton,
+    downloadSearchButton,
+  ];
+  buttons.forEach(button => {
+    if (!button) return;
+    button.disabled = !dataAvailable;
+    if (button.tagName === "BUTTON") {
+      if (!dataAvailable) {
+        button.setAttribute("title", "Load a chat to enable this action.");
+      } else {
+        button.removeAttribute("title");
+      }
+    }
+  });
+  if (savedViewNameInput) {
+    savedViewNameInput.placeholder = dataAvailable
+      ? savedViewPlaceholder
+      : "Load a chat to save a view";
+    if (!dataAvailable) savedViewNameInput.value = "";
+  }
+  if (datasetEmptyCallout) {
+    datasetEmptyCallout.classList.toggle("hidden", dataAvailable);
+  }
+  if (!dataAvailable) {
+    setDatasetEmptyMessage(
+      "No chat loaded yet.",
+      `Press Connect, scan the QR code from WhatsApp → Linked Devices, then choose a chat from “Loaded chats”.`,
+    );
+    updateSectionNarratives(null);
+  }
+  refreshSavedViewsUI();
+}
+
 function formatRelativeTime(isoString) {
   if (!isoString) return null;
   const timestamp = Date.parse(isoString);
@@ -851,35 +906,19 @@ function initThemeControls() {
   }
 }
 
-function getStoredExportThemeId() {
-  const saved = localStorage.getItem(EXPORT_THEME_STORAGE_KEY);
-  if (saved && EXPORT_THEMES[saved]) return saved;
-  return DEFAULT_EXPORT_THEME;
+function getInterfaceColorScheme() {
+  const root = document.documentElement;
+  const scheme = root?.dataset.colorScheme === "light" ? "light" : "dark";
+  return scheme === "light" ? "light" : "dark";
 }
 
-function setStoredExportThemeId(value) {
-  const applied = EXPORT_THEMES[value] ? value : DEFAULT_EXPORT_THEME;
-  localStorage.setItem(EXPORT_THEME_STORAGE_KEY, applied);
-  return applied;
-}
-
-function getExportThemeConfig(themeId) {
-  const key = themeId && EXPORT_THEMES[themeId] ? themeId : getStoredExportThemeId();
+function getExportThemeConfig() {
+  const scheme = getInterfaceColorScheme();
+  const theme = EXPORT_THEME_STYLES[scheme] || EXPORT_THEME_STYLES.dark;
   return {
-    id: key,
-    ...EXPORT_THEMES[key],
+    id: scheme,
+    ...theme,
   };
-}
-
-function initExportThemeControl() {
-  if (!exportThemeSelect) return;
-  exportThemeSelect.value = getStoredExportThemeId();
-  exportThemeSelect.addEventListener("change", () => {
-    const applied = setStoredExportThemeId(exportThemeSelect.value);
-    exportThemeSelect.value = applied;
-    const theme = getExportThemeConfig(applied);
-    showToast(`Report exports now use the ${theme.label} style.`, "info", { duration: 2800 });
-  });
 }
 
 function formatLocalChatLabel(chat) {
@@ -1096,8 +1135,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initRelayControls();
   setupLogDrawerControls();
   initThemeControls();
-  initExportThemeControl();
   initCompactMode();
+  setDataAvailabilityState(false);
   onboardingSkipButton?.addEventListener("click", skipOnboarding);
   onboardingNextButton?.addEventListener("click", advanceOnboarding);
   setTimeout(() => startOnboarding(), 500);
@@ -1155,40 +1194,32 @@ function attachEventHandlers() {
     });
   }
 
-  const downloadParticipants = document.getElementById("download-participants");
-  const downloadHourly = document.getElementById("download-hourly");
-  const downloadDaily = document.getElementById("download-daily");
-  const downloadWeekly = document.getElementById("download-weekly");
-  const downloadWeekday = document.getElementById("download-weekday");
-  const downloadMessageTypes = document.getElementById("download-message-types");
-  const downloadSentiment = document.getElementById("download-sentiment");
-
-  if (downloadParticipants) {
-    downloadParticipants.addEventListener("click", exportParticipants);
+  if (downloadParticipantsButton) {
+    downloadParticipantsButton.addEventListener("click", exportParticipants);
   }
-  if (downloadHourly) {
-    downloadHourly.addEventListener("click", exportHourly);
+  if (downloadHourlyButton) {
+    downloadHourlyButton.addEventListener("click", exportHourly);
   }
-  if (downloadDaily) {
-    downloadDaily.addEventListener("click", exportDaily);
+  if (downloadDailyButton) {
+    downloadDailyButton.addEventListener("click", exportDaily);
   }
-  if (downloadWeekly) {
-    downloadWeekly.addEventListener("click", exportWeekly);
+  if (downloadWeeklyButton) {
+    downloadWeeklyButton.addEventListener("click", exportWeekly);
   }
-  if (downloadWeekday) {
-    downloadWeekday.addEventListener("click", exportWeekday);
+  if (downloadWeekdayButton) {
+    downloadWeekdayButton.addEventListener("click", exportWeekday);
   }
   if (downloadTimeOfDayButton) {
     downloadTimeOfDayButton.addEventListener("click", exportTimeOfDay);
   }
-  if (downloadMessageTypes) {
-    downloadMessageTypes.addEventListener("click", exportMessageTypes);
+  if (downloadMessageTypesButton) {
+    downloadMessageTypesButton.addEventListener("click", exportMessageTypes);
   }
   if (downloadChatJsonButton) {
     downloadChatJsonButton.addEventListener("click", exportChatJson);
   }
-  if (downloadSentiment) {
-    downloadSentiment.addEventListener("click", exportSentiment);
+  if (downloadSentimentButton) {
+    downloadSentimentButton.addEventListener("click", exportSentiment);
   }
   document.querySelectorAll(".stat-download").forEach(button => {
     button.addEventListener("click", () => {
@@ -1209,10 +1240,6 @@ function attachEventHandlers() {
   }
   if (downloadPdfButton) {
     downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
-  }
-  if (shareSnapshotButton) {
-    shareSnapshotButton.disabled = true;
-    shareSnapshotButton.addEventListener("click", handleShareSnapshot);
   }
 
   if (participantsTopSelect) {
@@ -1340,43 +1367,9 @@ function initRelayControls() {
   relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
   relayBannerConnectButton?.addEventListener("click", startRelaySession);
   relayBannerDisconnectButton?.addEventListener("click", stopRelaySession);
-  relayBannerShowButton?.addEventListener("click", handleOpenRelayPortal);
   refreshRelayStatus({ silent: true }).finally(() => {
     scheduleRelayStatusPolling();
   });
-}
-
-async function handleOpenRelayPortal() {
-  if (relayBannerShowButton) relayBannerShowButton.disabled = true;
-  const fallbackMessage =
-    "We couldn't open the relay portal automatically. Open the relay URL manually.";
-  try {
-    await fetchJson(`${RELAY_BASE}/relay/show-browser`, { method: "POST" });
-    updateStatus("Opening the relay browser…", "info");
-    return;
-  } catch (error) {
-    console.error(error);
-    try {
-      if (window.electronAPI?.openRelayPortal) {
-        const result = await window.electronAPI.openRelayPortal();
-        if (result && result.success) {
-          const method =
-            result.method === "chrome"
-              ? "Opening portal in Chrome…"
-              : "Opening portal in your default browser…";
-          updateStatus(method, "info");
-          return;
-        }
-      }
-      window.open(RELAY_PORTAL_URL, "_blank", "noopener");
-      updateStatus("Opening relay portal in your browser…", "info");
-    } catch (fallbackError) {
-      console.error(fallbackError);
-      updateStatus("We couldn't open the relay portal automatically. Visit the relay URL manually.", "warning");
-    }
-  } finally {
-    if (relayBannerShowButton) relayBannerShowButton.disabled = false;
-  }
 }
 
 function scheduleRelayStatusPolling() {
@@ -1544,7 +1537,7 @@ function applyRelayStatus(status) {
     if (relayQrImage) relayQrImage.removeAttribute("src");
     if (relayHelpText) {
       relayHelpText.textContent =
-        "Run `npm start --workspace apps/server` then press Connect to load chats from your phone.";
+        "Press Connect, scan the QR code from WhatsApp → Linked Devices, then choose a chat from “Loaded chats”.";
     }
     if (relayStartButton) relayStartButton.disabled = false;
     if (relayStopButton) relayStopButton.disabled = true;
@@ -1553,10 +1546,15 @@ function applyRelayStatus(status) {
     if (relayClearStorageButton) relayClearStorageButton.disabled = false;
     if (relayBannerConnectButton) relayBannerConnectButton.disabled = false;
     if (relayBannerDisconnectButton) relayBannerDisconnectButton.disabled = true;
-    if (relayBannerShowButton) relayBannerShowButton.disabled = true;
     setRemoteChatList([]);
+    relayUiState.lastStatusKind = "offline";
     refreshChatSelector();
     setDashboardLoadingState(true);
+    setDatasetEmptyMessage(
+      "No chat loaded yet.",
+      "Press Connect, scan the QR code, then choose a chat from “Loaded chats”.",
+    );
+    setDataAvailabilityState(false);
     return;
   }
 
@@ -1607,8 +1605,15 @@ function applyRelayStatus(status) {
   if (relayBannerDisconnectButton) {
     relayBannerDisconnectButton.disabled = !running && !waiting;
   }
-  if (relayBannerShowButton) {
-    relayBannerShowButton.disabled = !status || (!running && !waiting);
+  if (!dataAvailable) {
+    if (running) {
+      setDatasetEmptyMessage(
+        "Pick a chat",
+        "Select any conversation from “Loaded chats” to see its insights.",
+      );
+    } else if (waiting) {
+      setDatasetEmptyMessage("Scan the QR code", "Link your phone to start mirroring messages.");
+    }
   }
 
   if (running) {
@@ -1617,10 +1622,22 @@ function applyRelayStatus(status) {
     if (needsRefresh) {
       refreshRemoteChats({ silent: true });
     }
+    if (relayUiState.lastStatusKind !== "running") {
+      const accountLabel = formatRelayAccount(status.account) || "your account";
+      updateStatus(`Connected as ${accountLabel}.`, "success");
+      relayUiState.lastStatusKind = "running";
+    }
   } else {
     setRemoteChatList([]);
     refreshChatSelector();
     setDashboardLoadingState(true);
+    if (waiting && relayUiState.lastStatusKind !== "waiting") {
+      updateStatus("Scan the QR code shown below to finish linking your phone.", "info");
+      relayUiState.lastStatusKind = "waiting";
+    } else if (status.status === "starting" && relayUiState.lastStatusKind !== "starting") {
+      updateStatus(`Starting ${RELAY_SERVICE_NAME}…`, "info");
+      relayUiState.lastStatusKind = "starting";
+    }
   }
 }
 
@@ -1724,6 +1741,13 @@ function setupLogDrawerControls() {
   logDrawerToggleButton?.addEventListener("click", openLogDrawer);
   logDrawerCloseButton?.addEventListener("click", closeLogDrawer);
   logDrawerClearButton?.addEventListener("click", handleLogClear);
+  document.addEventListener("click", event => {
+    if (!relayLogState.drawerOpen) return;
+    const target = event.target;
+    if (!logDrawerEl || logDrawerEl.contains(target)) return;
+    if (logDrawerToggleButton && logDrawerToggleButton.contains(target)) return;
+    closeLogDrawer();
+  });
   initRelayLogStream();
 }
 
@@ -2081,9 +2105,8 @@ function renderDashboard(analytics) {
   scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
   updateHeroPanel(analytics);
   scheduleDeferredRender(() => renderGuidedInsights(analytics), currentToken);
-  if (shareSnapshotButton) {
-    shareSnapshotButton.disabled = snapshotMode || !analytics;
-  }
+  setDataAvailabilityState(Boolean(analytics));
+  updateSectionNarratives(analytics);
 }
 
 function renderSummaryCards(analytics, label) {
@@ -2703,23 +2726,14 @@ function refreshSavedViewsUI() {
   renderComparisonSummary();
   renderSavedViewGallery(views);
 
-  if (snapshotMode) {
-    if (savedViewNameInput) savedViewNameInput.disabled = true;
-    if (savedViewList) savedViewList.disabled = true;
-    if (applySavedViewButton) applySavedViewButton.disabled = true;
-    if (deleteSavedViewButton) deleteSavedViewButton.disabled = true;
-    if (compareViewASelect) compareViewASelect.disabled = true;
-    if (compareViewBSelect) compareViewBSelect.disabled = true;
-    if (compareViewsButton) compareViewsButton.disabled = true;
-  } else {
-    if (savedViewNameInput) savedViewNameInput.disabled = false;
-    if (savedViewList) savedViewList.disabled = false;
-    if (applySavedViewButton) applySavedViewButton.disabled = false;
-    if (deleteSavedViewButton) deleteSavedViewButton.disabled = false;
-    if (compareViewASelect) compareViewASelect.disabled = false;
-    if (compareViewBSelect) compareViewBSelect.disabled = false;
-    if (compareViewsButton) compareViewsButton.disabled = false;
-  }
+  const controlsDisabled = snapshotMode || !dataAvailable;
+  if (savedViewNameInput) savedViewNameInput.disabled = controlsDisabled;
+  if (savedViewList) savedViewList.disabled = controlsDisabled;
+  if (applySavedViewButton) applySavedViewButton.disabled = controlsDisabled;
+  if (deleteSavedViewButton) deleteSavedViewButton.disabled = controlsDisabled;
+  if (compareViewASelect) compareViewASelect.disabled = controlsDisabled;
+  if (compareViewBSelect) compareViewBSelect.disabled = controlsDisabled;
+  if (compareViewsButton) compareViewsButton.disabled = controlsDisabled;
 }
 
 function renderSavedViewGallery(views) {
@@ -2727,20 +2741,20 @@ function renderSavedViewGallery(views) {
   const list = Array.isArray(views) ? views : [];
   if (!list.length) {
     savedViewGallery.innerHTML =
-      '<p class="saved-view-gallery-empty">Save setups to see quick previews here.</p>';
+      '<p class="saved-view-gallery-empty">Save views to see quick previews here.</p>';
     savedViewGallery.dataset.interactive = "false";
     return;
   }
   const cards = list.map(view => buildSavedViewCard(view)).join("");
   savedViewGallery.innerHTML = cards;
-  savedViewGallery.dataset.interactive = snapshotMode ? "false" : "true";
+  savedViewGallery.dataset.interactive = snapshotMode || !dataAvailable ? "false" : "true";
 }
 
 function buildSavedViewCard(view) {
   if (!view) return "";
   const snapshot = ensureViewSnapshot(view);
   const viewId = String(view?.id ?? "");
-  const viewName = view?.name || "Untitled setup";
+  const viewName = view?.name || "Untitled view";
   const rangeLabel = view.rangeLabel || formatViewRange(view);
   const createdAtLabel = view.createdAt ? formatTimestampDisplay(view.createdAt) : "";
   const totalMessages = snapshot ? formatNumber(snapshot.totalMessages ?? 0) : "—";
@@ -2765,7 +2779,7 @@ function buildSavedViewCard(view) {
     sharePercent !== null ? Math.min(100, Math.max(0, sharePercent)) : 8;
   const interactive = !snapshotMode;
   const accessibilityAttributes = interactive
-    ? `role="button" tabindex="0" aria-label="Apply saved setup ${escapeHtml(viewName)}"`
+    ? `role="button" tabindex="0" aria-label="Apply saved view ${escapeHtml(viewName)}"`
     : `role="button" aria-disabled="true" tabindex="-1"`;
   return `
     <article class="saved-view-card${interactive ? "" : " disabled"}" data-view-id="${escapeHtml(
@@ -2842,9 +2856,13 @@ async function handleSavedViewGalleryKeydown(event) {
 
 async function useSavedViewFromCard(viewId) {
   if (!viewId) return;
+  if (!dataAvailable) {
+    updateStatus("Load a chat before applying a saved view.", "warning");
+    return;
+  }
   const view = getSavedViewById(viewId);
   if (!view) {
-    updateStatus("That saved setup is missing.", "error");
+    updateStatus("That saved view is missing.", "error");
     refreshSavedViewsUI();
     return;
   }
@@ -3035,8 +3053,8 @@ function renderComparisonSummary(primaryId, secondaryId) {
 
   compareSummaryEl.innerHTML = `
     <div class="compare-summary-grid">
-      ${renderColumn("Setup A", primaryView, primarySnapshot)}
-      ${renderColumn("Setup B", secondaryView, secondarySnapshot)}
+      ${renderColumn("View A", primaryView, primarySnapshot)}
+      ${renderColumn("View B", secondaryView, secondarySnapshot)}
       ${renderDiffColumn(metrics, primarySnapshot, secondarySnapshot)}
     </div>
   `;
@@ -3044,42 +3062,42 @@ function renderComparisonSummary(primaryId, secondaryId) {
 
 function handleSaveView() {
   if (snapshotMode) {
-    updateStatus("Saved setups aren't available in shared link view.", "warning");
+    updateStatus("Saved views aren't available in shared link view.", "warning");
     return;
   }
   const entries = getDatasetEntries();
   if (!entries.length) {
-    updateStatus("Load a chat file before saving a setup.", "warning");
+    updateStatus("Load a chat file before saving a view.", "warning");
     return;
   }
   const rawName = savedViewNameInput?.value.trim();
-  const fallbackName = `Setup ${getSavedViews().length + 1}`;
+  const fallbackName = `View ${getSavedViews().length + 1}`;
   const name = rawName || fallbackName;
   const view = captureCurrentView(name);
   if (!view) {
-    updateStatus("Couldn't save the current setup. Try again after the data loads.", "error");
+    updateStatus("Couldn't save the current view. Try again after the data loads.", "error");
     return;
   }
   const record = addSavedView(view);
   refreshSavedViewsUI();
   if (savedViewList) savedViewList.value = record.id;
   if (savedViewNameInput) savedViewNameInput.value = "";
-  updateStatus(`Saved setup "${name}".`, "success");
+  updateStatus(`Saved view "${name}".`, "success");
 }
 
 async function handleApplySavedView() {
   if (snapshotMode) {
-    updateStatus("Saved setups aren't available in shared link view.", "warning");
+    updateStatus("Saved views aren't available in shared link view.", "warning");
     return;
   }
   const id = savedViewList?.value;
   if (!id) {
-    updateStatus("Choose a saved setup to use.", "warning");
+    updateStatus("Choose a saved view to use.", "warning");
     return;
   }
   const view = getSavedViewById(id);
   if (!view) {
-    updateStatus("That saved setup is missing.", "error");
+    updateStatus("That saved view is missing.", "error");
     refreshSavedViewsUI();
     return;
   }
@@ -3116,28 +3134,28 @@ async function applySavedView(view) {
   syncWeekdayControlsWithState();
 
   await applyRangeAndRender(rangeValue);
-  updateStatus(`Applied saved setup "${view.name}".`, "success");
+  updateStatus(`Applied saved view "${view.name}".`, "success");
 }
 
 function handleDeleteSavedView() {
   if (snapshotMode) {
-    updateStatus("Saved setups aren't available in shared link view.", "warning");
+    updateStatus("Saved views aren't available in shared link view.", "warning");
     return;
   }
   const id = savedViewList?.value;
   if (!id) {
-    updateStatus("Choose a saved setup to remove.", "warning");
+    updateStatus("Choose a saved view to remove.", "warning");
     return;
   }
   const removed = removeSavedView(id);
   if (!removed) {
-    updateStatus("Couldn't remove that saved setup.", "error");
+    updateStatus("Couldn't remove that saved view.", "error");
     return;
   }
   refreshSavedViewsUI();
   renderComparisonSummary();
   if (savedViewList) savedViewList.value = "";
-  updateStatus("Saved setup removed.", "success");
+  updateStatus("Saved view removed.", "success");
 }
 
 function handleCompareViews() {
@@ -3148,11 +3166,11 @@ function handleCompareViews() {
   const primaryId = compareViewASelect?.value;
   const secondaryId = compareViewBSelect?.value;
   if (!primaryId || !secondaryId) {
-    updateStatus("Pick two saved setups to compare.", "warning");
+    updateStatus("Pick two saved views to compare.", "warning");
     return;
   }
   if (primaryId === secondaryId) {
-    updateStatus("Pick two different setups to compare.", "warning");
+    updateStatus("Pick two different views to compare.", "warning");
     return;
   }
   setCompareSelection(primaryId, secondaryId);
@@ -3856,6 +3874,139 @@ function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
   return lines.join("\n");
 }
 
+function updateSectionNarratives(analytics) {
+  const defaultCopy = {
+    hourly: `Connect to ${RELAY_SERVICE_NAME} to see when conversations spike each hour.`,
+    daily: "Load a chat to highlight which days are most active.",
+    weekly: "Weekly trend appears here once a chat is selected.",
+    weekday: "Toggle weekdays vs. weekends to compare behaviors.",
+    timeOfDay: "Average messages per hour will appear after loading a chat.",
+    sentiment: "Sentiment analysis shows up after messages are scored.",
+    messageTypes: "You'll see the mix of media types once a chat loads.",
+    search: "Search works after a chat is selected — add keywords or participants.",
+  };
+  const setText = (node, text) => {
+    if (node) node.textContent = text;
+  };
+  if (!analytics) {
+    setText(hourlyNote, defaultCopy.hourly);
+    setText(dailyNote, defaultCopy.daily);
+    setText(weeklyNote, defaultCopy.weekly);
+    setText(weekdayNote, defaultCopy.weekday);
+    setText(timeOfDayNote, defaultCopy.timeOfDay);
+    setText(sentimentNote, defaultCopy.sentiment);
+    if (messageTypeNoteEl) messageTypeNoteEl.textContent = defaultCopy.messageTypes;
+    setText(searchNote, defaultCopy.search);
+    return;
+  }
+  const topHour = analytics.hourly_summary?.topHour;
+  if (topHour && Number.isFinite(topHour.count)) {
+    const weekday = WEEKDAY_LONG[topHour.dayIndex] ?? `Day ${topHour.dayIndex + 1}`;
+    const hourLabel = `${weekday} ${String(topHour.hour).padStart(2, "0")}:00`;
+    setText(
+      hourlyNote,
+      `${hourLabel} is the busiest window (${formatNumber(topHour.count)} msgs). Use the toggles to compare other days.`,
+    );
+  } else {
+    setText(hourlyNote, defaultCopy.hourly);
+  }
+  const dailyCounts = Array.isArray(analytics.daily_counts) ? analytics.daily_counts : [];
+  const busiestDay = dailyCounts.reduce(
+    (max, entry) => (Number(entry?.count) > Number(max?.count || 0) ? entry : max),
+    null,
+  );
+  if (busiestDay?.count) {
+    setText(
+      dailyNote,
+      `${formatDisplayDate(busiestDay.date)} peaked with ${formatNumber(busiestDay.count)} messages.`,
+    );
+  } else {
+    setText(dailyNote, defaultCopy.daily);
+  }
+  const weeklySummary = analytics.weekly_summary || {};
+  if (Number.isFinite(weeklySummary.averagePerWeek)) {
+    const delta = typeof weeklySummary.latestDeltaPercent === "number"
+      ? `${weeklySummary.latestDeltaPercent >= 0 ? "+" : ""}${formatFloat(weeklySummary.latestDeltaPercent * 100, 1)}% vs. prior week`
+      : null;
+    setText(
+      weeklyNote,
+      `Averages ${formatFloat(weeklySummary.averagePerWeek, 1)} messages per week${delta ? ` (${delta})` : ""}.`,
+    );
+  } else {
+    setText(weeklyNote, defaultCopy.weekly);
+  }
+  const weekdayDistribution = Array.isArray(analytics.weekday_distribution)
+    ? analytics.weekday_distribution
+    : [];
+  const busiestWeekday = weekdayDistribution.reduce(
+    (max, entry) => (Number(entry?.count) > Number(max?.count || 0) ? entry : max),
+    null,
+  );
+  if (busiestWeekday?.count) {
+    const label =
+      busiestWeekday.label ||
+      WEEKDAY_LONG[busiestWeekday.dayIndex] ||
+      `Day ${Number(busiestWeekday.dayIndex) + 1}`;
+    setText(
+      weekdayNote,
+      `${label} tends to lead with ${formatNumber(busiestWeekday.count)} messages.`,
+    );
+  } else {
+    setText(weekdayNote, defaultCopy.weekday);
+  }
+  if (Number.isFinite(analytics.hourly_summary?.averagePerDay)) {
+    setText(
+      timeOfDayNote,
+      `This chat averages ${formatFloat(analytics.hourly_summary.averagePerDay, 1)} messages per day — use the chart to spot quiet hours.`,
+    );
+  } else {
+    setText(timeOfDayNote, defaultCopy.timeOfDay);
+  }
+  const sentimentTotals = analytics.sentiment?.totals;
+  if (sentimentTotals) {
+    const total =
+      Number(sentimentTotals.positive || 0) +
+      Number(sentimentTotals.neutral || 0) +
+      Number(sentimentTotals.negative || 0);
+    if (total > 0) {
+      const positiveShare = (sentimentTotals.positive || 0) / total;
+      const negativeShare = (sentimentTotals.negative || 0) / total;
+      const tone =
+        positiveShare >= negativeShare
+          ? `${formatFloat(positiveShare * 100, 1)}% of messages feel upbeat`
+          : `${formatFloat(negativeShare * 100, 1)}% sound critical`;
+      setText(sentimentNote, `${tone}. Use the legend to see who drives the mood.`);
+    } else {
+      setText(sentimentNote, defaultCopy.sentiment);
+    }
+  } else {
+    setText(sentimentNote, defaultCopy.sentiment);
+  }
+  const messageSummary = Array.isArray(analytics.message_types?.summary)
+    ? analytics.message_types.summary
+    : [];
+  if (messageSummary.length && messageTypeNoteEl) {
+    const topType = messageSummary.reduce(
+      (max, entry) => (Number(entry?.count) > Number(max?.count || 0) ? entry : max),
+      null,
+    );
+    if (topType) {
+      messageTypeNoteEl.textContent = `${sanitizeText(
+        topType.label || "Messages",
+      )} lead the conversation (${formatNumber(topType.count)} messages).`;
+    } else {
+      messageTypeNoteEl.textContent = defaultCopy.messageTypes;
+    }
+  } else if (messageTypeNoteEl) {
+    messageTypeNoteEl.textContent = defaultCopy.messageTypes;
+  }
+  if (searchNote) {
+    searchNote.textContent = `Search across ${formatNumber(
+      analytics.total_messages ?? 0,
+    )} messages by keyword, participant, or date filter.`;
+  }
+}
+
 function buildSlidesHtml(analytics, theme = getExportThemeConfig()) {
   const title = escapeHtml(getDatasetLabel() || "ChatScope conversation report");
   const generatedAt = new Date().toLocaleString();
@@ -4338,7 +4489,6 @@ function disableInteractiveControlsForSnapshot() {
   if (compareViewASelect) compareViewASelect.disabled = true;
   if (compareViewBSelect) compareViewBSelect.disabled = true;
   if (compareViewsButton) compareViewsButton.disabled = true;
-  if (shareSnapshotButton) shareSnapshotButton.disabled = true;
   if (customApplyButton) customApplyButton.disabled = true;
   if (customStartInput) customStartInput.disabled = true;
   if (customEndInput) customEndInput.disabled = true;
