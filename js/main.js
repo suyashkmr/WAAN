@@ -64,6 +64,8 @@ const RELAY_CLIENT_LABEL = "ChatScope Relay";
 const RELAY_POLL_INTERVAL_MS = 5000;
 const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
 const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
+const STATUS_AUTO_HIDE_DELAY_MS = 3500;
+const STATUS_EXIT_DURATION_MS = 220;
 const EXPORT_THEME_STYLES = {
   light: {
     label: "Light mode",
@@ -100,6 +102,24 @@ const EXPORT_THEME_STYLES = {
     dark: true,
   },
 };
+
+const motionPreferenceQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+let reduceMotionPreferred = Boolean(motionPreferenceQuery?.matches);
+
+if (motionPreferenceQuery) {
+  const motionListener = event => {
+    reduceMotionPreferred = event.matches;
+  };
+  if (typeof motionPreferenceQuery.addEventListener === "function") {
+    motionPreferenceQuery.addEventListener("change", motionListener);
+  } else if (typeof motionPreferenceQuery.addListener === "function") {
+    motionPreferenceQuery.addListener(motionListener);
+  }
+}
+
+function prefersReducedMotion() {
+  return reduceMotionPreferred;
+}
 
 function normalizeJid(value) {
   if (!value) return "";
@@ -457,6 +477,8 @@ const onboardingSteps = [
 ];
 let onboardingIndex = 0;
 let onboardingHighlight = null;
+let statusHideTimer = null;
+let statusExitTimer = null;
 
 const deferRenderTask =
   typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
@@ -927,6 +949,12 @@ function applyTheme(preference) {
 function animateCardSection(content, expand) {
   if (!content) return;
   content.classList.add("collapsible");
+  if (prefersReducedMotion()) {
+    content.style.display = expand ? "" : "none";
+    content.style.maxHeight = "";
+    content.style.opacity = "";
+    return;
+  }
   if (expand) {
     content.style.display = "";
     const height = content.scrollHeight;
@@ -957,6 +985,42 @@ function animateCardSection(content, expand) {
     };
     content.addEventListener("transitionend", onEnd, { once: true });
   }
+}
+
+function showStatusMessage(message, tone) {
+  if (!statusEl) return;
+  statusEl.classList.remove("hidden", "is-exiting", "success", "warning", "error");
+  if (tone) {
+    statusEl.classList.add(tone);
+  }
+  statusEl.textContent = message;
+  if (statusHideTimer) {
+    clearTimeout(statusHideTimer);
+    statusHideTimer = null;
+  }
+  if (statusExitTimer) {
+    clearTimeout(statusExitTimer);
+    statusExitTimer = null;
+  }
+  requestAnimationFrame(() => {
+    statusEl.classList.add("is-active");
+  });
+  statusHideTimer = window.setTimeout(() => beginStatusExit(), STATUS_AUTO_HIDE_DELAY_MS);
+}
+
+function beginStatusExit() {
+  if (!statusEl) return;
+  statusEl.classList.add("is-exiting");
+  if (statusExitTimer) {
+    clearTimeout(statusExitTimer);
+  }
+  statusExitTimer = window.setTimeout(() => finalizeStatusExit(), STATUS_EXIT_DURATION_MS);
+}
+
+function finalizeStatusExit() {
+  if (!statusEl) return;
+  statusEl.classList.remove("is-active", "is-exiting", "success", "warning", "error");
+  statusEl.classList.add("hidden");
 }
 
 function initThemeControls() {
@@ -1199,10 +1263,7 @@ function buildParticipantDetail(entry) {
 
 setStatusCallback((message, tone) => {
   if (!statusEl) return;
-  statusEl.classList.remove("hidden");
-  statusEl.classList.remove("success", "warning", "error");
-  if (tone) statusEl.classList.add(tone);
-  statusEl.textContent = message;
+  showStatusMessage(message, tone);
   if (tone === "success" || tone === "warning" || tone === "error") {
     showToast(message, tone);
   }

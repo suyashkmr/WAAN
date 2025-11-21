@@ -64,6 +64,27 @@
     --calendar-level-2: rgba(125, 138, 255, 0.32);
     --calendar-level-3: rgba(125, 138, 255, 0.5);
     --calendar-level-4: rgba(125, 138, 255, 0.75);
+
+    --motion-duration-fast: 180ms;
+    --motion-duration-medium: 320ms;
+    --motion-duration-slow: 560ms;
+    --motion-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --motion-ease-emphasis: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --motion-duration-fast: 0ms;
+        --motion-duration-medium: 0ms;
+        --motion-duration-slow: 0ms;
+    }
+    html {
+        scroll-behavior: auto;
+    }
 }
 
 @media (prefers-color-scheme: light) {
@@ -232,6 +253,16 @@ body {
     color: var(--text);
 }
 
+input,
+select,
+textarea {
+    transition:
+        background var(--motion-duration-fast) var(--motion-ease-out),
+        border-color var(--motion-duration-fast) var(--motion-ease-out),
+        color var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out);
+}
+
 .ambient-field {
     position: fixed;
     inset: 0;
@@ -254,6 +285,12 @@ body {
     100% {
         transform: translate3d(-2%, 1%, 0) scale(1.05);
         opacity: 0.75;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ambient-field {
+        animation: none;
     }
 }
 
@@ -559,6 +596,10 @@ h6 {
     backdrop-filter: blur(var(--glass-blur));
     position: relative;
     z-index: 1;
+    transition:
+        border-color var(--motion-duration-medium) var(--motion-ease-out),
+        box-shadow var(--motion-duration-medium) var(--motion-ease-out),
+        background var(--motion-duration-medium) var(--motion-ease-out);
 }
 
 .relay-banner-indicator {
@@ -567,6 +608,10 @@ h6 {
     border-radius: 999px;
     background: var(--muted);
     position: relative;
+    transition:
+        background var(--motion-duration-fast) var(--motion-ease-out),
+        transform var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 .relay-banner-indicator::after {
@@ -575,14 +620,17 @@ h6 {
     inset: -6px;
     border-radius: 999px;
     border: 1px solid transparent;
+    opacity: 0;
 }
 
 .relay-status-banner[data-status="running"] .relay-banner-indicator {
     background: var(--positive);
+    animation: relayIndicatorPulse 2.6s var(--motion-ease-emphasis) infinite;
 }
 
 .relay-status-banner[data-status="running"] .relay-banner-indicator::after {
     border-color: color-mix(in srgb, var(--positive) 40%, transparent);
+    animation: relayIndicatorWave 2.6s var(--motion-ease-emphasis) infinite;
 }
 
 .relay-status-banner[data-status="waiting_qr"] .relay-banner-indicator {
@@ -591,6 +639,54 @@ h6 {
 
 .relay-status-banner[data-status="error"] .relay-banner-indicator {
     background: var(--negative);
+}
+
+.relay-status-banner[data-status="running"] {
+    border-color: color-mix(in srgb, var(--positive) 35%, var(--glass-border));
+    box-shadow: 0 30px 55px color-mix(in srgb, var(--positive) 22%, rgba(5, 7, 16, 0.35));
+}
+
+.relay-status-banner[data-status="waiting_qr"] {
+    border-color: color-mix(in srgb, #f9a825 35%, var(--glass-border));
+}
+
+.relay-status-banner[data-status="error"] {
+    border-color: color-mix(in srgb, var(--negative) 35%, var(--glass-border));
+    box-shadow: 0 30px 55px color-mix(in srgb, var(--negative) 25%, rgba(5, 7, 16, 0.3));
+}
+
+@keyframes relayIndicatorPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--positive) 35%, transparent);
+    }
+    50% {
+        transform: scale(1.15);
+        box-shadow: 0 0 12px color-mix(in srgb, var(--positive) 30%, transparent);
+    }
+}
+
+@keyframes relayIndicatorWave {
+    0% {
+        opacity: 0.65;
+        transform: scale(0.8);
+    }
+    60% {
+        opacity: 0;
+        transform: scale(1.6);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.7);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .relay-status-banner[data-status="running"] .relay-banner-indicator,
+    .relay-status-banner[data-status="running"] .relay-banner-indicator::after {
+        animation: none;
+    }
 }
 
 .relay-banner-status {
@@ -733,12 +829,22 @@ h6 {
     cursor: pointer;
     font-size: 0.8rem;
     color: var(--muted);
+    transition:
+        background var(--motion-duration-fast) var(--motion-ease-out),
+        color var(--motion-duration-fast) var(--motion-ease-out),
+        border-color var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 .theme-toggle input:checked + label {
     background: var(--accent-soft);
     border-color: color-mix(in srgb, var(--accent) 40%, transparent);
     color: var(--text);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.theme-toggle input:focus-visible + label {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 #log-drawer-toggle[data-has-unread="true"]::after {
@@ -913,7 +1019,9 @@ main > .card.half-span {
     box-shadow: 0 18px 40px rgba(17, 16, 28, 0.12), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 22%, transparent);
     background-image: linear-gradient(160deg, color-mix(in srgb, var(--surface-tint) 32%, transparent) 0%, transparent 65%);
     background-blend-mode: lighten;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform var(--motion-duration-medium) var(--motion-ease-out),
+        box-shadow var(--motion-duration-medium) var(--motion-ease-out);
 }
 
 .card[data-accent] {
@@ -995,7 +1103,9 @@ main > .card.half-span {
     height: 2rem;
     border-radius: 999px;
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition:
+        transform var(--motion-duration-fast) var(--motion-ease-out),
+        background var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 .card-toggle:hover,
@@ -1018,7 +1128,9 @@ main > .card.half-span {
 
 .card-content.collapsible {
     overflow: hidden;
-    transition: max-height 0.25s ease, opacity 0.25s ease;
+    transition:
+        max-height var(--motion-duration-medium) var(--motion-ease-out),
+        opacity var(--motion-duration-medium) var(--motion-ease-out);
 }
 
 main.is-loading .card-content {
@@ -1047,7 +1159,13 @@ main.is-loading .card-content {
     font-weight: 600;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    transition:
+        background var(--motion-duration-fast) var(--motion-ease-out),
+        color var(--motion-duration-fast) var(--motion-ease-out),
+        border-color var(--motion-duration-fast) var(--motion-ease-out),
+        transform var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out);
+    box-shadow: 0 6px 16px rgba(8, 9, 16, 0.2);
 }
 
 .ghost-button.primary {
@@ -1065,7 +1183,8 @@ main.is-loading .card-content {
 .ghost-button:hover {
     background: color-mix(in srgb, var(--accent) 18%, transparent);
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 16px 32px color-mix(in srgb, var(--accent) 18%, rgba(10, 12, 20, 0.3));
 }
 
 .ghost-button:focus {
@@ -1077,12 +1196,33 @@ main.is-loading .card-content {
     opacity: 0.45;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .ghost-button[aria-pressed="true"] {
     background: color-mix(in srgb, var(--accent) 25%, transparent);
     color: var(--md-on-primary-container);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+#compact-toggle[aria-pressed="true"] {
+    animation: compactPulse 3.2s var(--motion-ease-out) infinite;
+}
+
+@keyframes compactPulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+    50% {
+        box-shadow: 0 0 22px 0 color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #compact-toggle[aria-pressed="true"] {
+        animation: none;
+    }
 }
 
 .ghost-button.small {
@@ -3282,6 +3422,23 @@ main.is-loading .card-content {
     justify-content: center;
     gap: 0.4rem;
     backdrop-filter: blur(var(--glass-blur));
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    pointer-events: none;
+    transition:
+        opacity var(--motion-duration-fast) var(--motion-ease-out),
+        transform var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.status-snackbar.is-active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.status-snackbar.is-exiting {
+    opacity: 0;
+    transform: translateY(-0.4rem);
 }
 
 
@@ -3595,7 +3752,7 @@ main.is-loading .card-content {
 .section-nav {
     position: sticky;
     top: 0.5rem;
-    z-index: 250;
+    z-index: 320;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3607,6 +3764,10 @@ main.is-loading .card-content {
     border: 1px solid var(--glass-border);
     box-shadow: 0 25px 45px rgba(5, 7, 16, 0.35);
     backdrop-filter: blur(var(--glass-blur));
+    transition:
+        background var(--motion-duration-medium) var(--motion-ease-out),
+        box-shadow var(--motion-duration-medium) var(--motion-ease-out),
+        border-color var(--motion-duration-medium) var(--motion-ease-out);
 }
 
 .section-nav-inner {
@@ -3615,6 +3776,7 @@ main.is-loading .card-content {
     flex-wrap: wrap;
     justify-content: center;
     padding: 0.2rem 0.4rem;
+    scroll-behavior: smooth;
 }
 
 
@@ -3627,7 +3789,12 @@ main.is-loading .card-content {
     color: var(--muted);
     padding: 0.28rem 0.75rem;
     border-radius: 999px;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    transition:
+        background var(--motion-duration-fast) var(--motion-ease-out),
+        color var(--motion-duration-fast) var(--motion-ease-out),
+        transform var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
 .section-nav a.active {
@@ -3642,11 +3809,21 @@ main.is-loading .card-content {
     background: color-mix(in srgb, var(--accent) 28%, transparent);
     outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
     outline-offset: 2px;
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 12px 25px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .section-nav a:active {
     transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .section-nav a:hover,
+    .section-nav a:focus-visible,
+    .section-nav a:active {
+        transform: none;
+        box-shadow: none;
+    }
 }
 
 [data-nav-target] {
