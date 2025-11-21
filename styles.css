@@ -220,16 +220,53 @@ body {
     margin: 0;
     min-height: 100vh;
     padding: 0;
+    position: relative;
+    overflow-x: hidden;
     font-family: var(--font-family-base);
     font-size: var(--font-size-md);
     line-height: 1.55;
     letter-spacing: -0.005em;
     font-weight: var(--font-weight-regular);
     background:
-        radial-gradient(160% 160% at 20% -20%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 62%),
-        radial-gradient(140% 160% at 100% -40%, color-mix(in srgb, #38bdf8 20%, transparent) 0%, transparent 58%),
-        linear-gradient(135deg, color-mix(in srgb, var(--bg) 92%, #000000), color-mix(in srgb, var(--bg) 85%, #000000));
+        linear-gradient(135deg, color-mix(in srgb, var(--bg) 96%, #010409), color-mix(in srgb, var(--bg) 85%, #0a0a12));
     color: var(--text);
+}
+
+.ambient-field {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 20% 20%, color-mix(in srgb, #7d8aff 35%, transparent) 0%, transparent 50%),
+        radial-gradient(circle at 80% 10%, color-mix(in srgb, #38bdf8 30%, transparent) 0%, transparent 55%),
+        radial-gradient(circle at 50% 80%, color-mix(in srgb, #f472b6 25%, transparent) 0%, transparent 50%);
+    filter: blur(40px);
+    opacity: 0.6;
+    animation: ambientPulse 16s ease-in-out infinite alternate;
+}
+
+@keyframes ambientPulse {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 0.55;
+    }
+    100% {
+        transform: translate3d(-2%, 1%, 0) scale(1.05);
+        opacity: 0.75;
+    }
+}
+
+@keyframes floatSphere {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+        transform: translate3d(4px, -6px, 0) scale(1.03);
+    }
+    100% {
+        transform: translate3d(-3px, 4px, 0) scale(0.97);
+    }
 }
 
 h1,
@@ -264,6 +301,8 @@ h6 {
 .hero-shell {
     padding: var(--space-5) var(--space-3) var(--space-4);
     background: transparent;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-layout {
@@ -309,6 +348,7 @@ h6 {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 .brand-mark {
@@ -512,10 +552,13 @@ h6 {
     grid-template-columns: auto 1fr auto;
     gap: 1rem;
     align-items: center;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: var(--shape-medium);
-    box-shadow: 0 15px 35px rgba(4, 6, 12, 0.18);
+    box-shadow: 0 25px 45px rgba(5, 7, 16, 0.3);
+    backdrop-filter: blur(var(--glass-blur));
+    position: relative;
+    z-index: 1;
 }
 
 .relay-banner-indicator {
@@ -839,6 +882,8 @@ main {
     max-width: 1100px;
     margin: 0 auto;
     grid-template-columns: repeat(12, minmax(0, 1fr));
+    position: relative;
+    z-index: 1;
 }
 
 main > .page-controls {
@@ -3457,10 +3502,11 @@ main.is-loading .card-content {
     align-items: center;
     gap: 1.25rem;
     padding: 1.25rem 1.5rem;
-    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-    border: 1px dashed color-mix(in srgb, var(--border) 65%, transparent);
+    background: color-mix(in srgb, var(--glass-bg) 92%, transparent);
+    border: 1px solid var(--glass-border);
     border-radius: var(--shape-large);
     box-shadow: 0 18px 40px rgba(6, 10, 20, 0.18);
+    backdrop-filter: blur(var(--glass-blur));
 }
 
 .dataset-empty.hidden {
@@ -3495,6 +3541,7 @@ main.is-loading .card-content {
     display: block;
     border-radius: 999px;
     opacity: 0.8;
+    animation: floatSphere 12s ease-in-out infinite alternate;
 }
 
 .empty-illustration span:nth-child(1) {
@@ -3511,6 +3558,7 @@ main.is-loading .card-content {
     bottom: 12px;
     right: 16px;
     background: color-mix(in srgb, var(--accent) 60%, transparent);
+    animation-duration: 10s;
 }
 
 .empty-illustration span:nth-child(3) {
@@ -3519,6 +3567,7 @@ main.is-loading .card-content {
     top: 12px;
     right: 32px;
     background: color-mix(in srgb, var(--accent) 30%, transparent);
+    animation-duration: 14s;
 }
 
 .empty-illustration.small {
@@ -4028,6 +4077,8 @@ footer {
     flex-direction: column;
     gap: 0.5rem;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 .footer-brand {
@@ -4502,8 +4553,15 @@ body[data-compact="true"] .dataset-empty {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    background: color-mix(in srgb, var(--section-accent, var(--accent)) 20%, transparent);
     color: var(--md-on-primary-container);
     font-size: 1rem;
     box-shadow: 0 8px 16px rgba(5, 7, 16, 0.35);
+    line-height: 0;
+}
+
+.section-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
 }
