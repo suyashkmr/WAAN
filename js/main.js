@@ -310,7 +310,6 @@ const searchResultsSummary = document.getElementById("search-results-summary");
 const searchResultsList = document.getElementById("search-results-list");
 const highlightList = document.getElementById("highlight-list");
 const guidedInsightsEl = document.getElementById("guided-insights");
-const heroPillButtons = [];
 const downloadMarkdownButton = document.getElementById("download-markdown-report");
 const downloadSlidesButton = document.getElementById("download-slides-report");
 const logDrawerToggleButton = document.getElementById("log-drawer-toggle");
@@ -327,6 +326,8 @@ const onboardingOverlay = document.getElementById("onboarding-overlay");
 const onboardingCopyEl = document.getElementById("onboarding-copy");
 const onboardingSkipButton = document.getElementById("onboarding-skip");
 const onboardingNextButton = document.getElementById("onboarding-next");
+const heroStatusBadge = document.getElementById("hero-status-badge");
+const heroStatusCopy = document.getElementById("hero-status-copy");
 const hourlyNote = document.getElementById("hourly-note");
 const dailyNote = document.getElementById("daily-note");
 const weeklyNote = document.getElementById("weekly-note");
@@ -340,7 +341,28 @@ const datasetEmptyCopy = document.getElementById("dataset-empty-copy");
 const TOASTS = [];
 const MAX_TOASTS = 4;
 const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
-const sectionNavLinks = Array.from(document.querySelectorAll(".section-nav a"));
+const sectionNavInner = document.querySelector(".section-nav-inner");
+const SECTION_NAV_ITEMS = [
+  { id: "hero-panel", label: "Hero" },
+  { id: "relay-status-banner", label: "Relay Status" },
+  { id: "actions-toolbar", label: "Actions" },
+  { id: "summary", label: "Overview" },
+  { id: "insight-highlights", label: "Highlights" },
+  { id: "participants", label: "Participants" },
+  { id: "hourly-activity", label: "Hourly Activity" },
+  { id: "daily-activity", label: "Day by Day" },
+  { id: "weekly-trend", label: "Week by Week" },
+  { id: "weekday-trend", label: "Day of Week" },
+  { id: "timeofday-trend", label: "Time of Day" },
+  { id: "sentiment-overview", label: "Mood" },
+  { id: "message-types", label: "Message Mix" },
+  { id: "polls-card", label: "Polls" },
+  { id: "saved-views-card", label: "Saved Views" },
+  { id: "search-panel", label: "Search Messages" },
+  { id: "faq-card", label: "FAQ" },
+];
+let sectionNavLinks = [];
+let sectionNavItems = [];
 const downloadChatJsonButton = document.getElementById("download-chat-json");
 const timeOfDayWeekdayToggle = document.getElementById("timeofday-toggle-weekdays");
 const timeOfDayWeekendToggle = document.getElementById("timeofday-toggle-weekends");
@@ -487,6 +509,23 @@ function terminateAnalyticsWorker() {
   }
 }
 
+function buildSectionNav() {
+  if (!sectionNavInner) return;
+  sectionNavInner.innerHTML = "";
+  sectionNavLinks = [];
+  sectionNavItems = [];
+  SECTION_NAV_ITEMS.forEach(item => {
+    const targetEl = document.getElementById(item.id);
+    if (!targetEl) return;
+    const link = document.createElement("a");
+    link.href = `#${item.id}`;
+    link.textContent = item.label;
+    sectionNavInner.appendChild(link);
+    sectionNavLinks.push(link);
+    sectionNavItems.push({ link, target: targetEl, id: item.id });
+  });
+}
+
 function setActiveSectionNav(targetId) {
   if (!targetId || activeSectionId === targetId) return;
   activeSectionId = targetId;
@@ -497,25 +536,18 @@ function setActiveSectionNav(targetId) {
 }
 
 function setupSectionNavTracking() {
-  if (!sectionNavLinks.length || typeof window === "undefined" || !("IntersectionObserver" in window)) {
+  if (!sectionNavItems.length || typeof window === "undefined" || !("IntersectionObserver" in window)) {
     return;
   }
 
-  const navItems = [];
+  const navItems = sectionNavItems.slice();
 
-  sectionNavLinks.forEach(link => {
-    const targetId = link.getAttribute("href")?.replace(/^#/, "");
-    if (!targetId) return;
-    const targetEl = document.getElementById(targetId);
-    if (!targetEl) return;
-    const item = { link, target: targetEl, id: targetId };
-    navItems.push(item);
-
+  navItems.forEach(({ link, id }) => {
     link.addEventListener("click", () => {
-      setActiveSectionNav(targetId);
+      setActiveSectionNav(id);
     });
     link.addEventListener("focus", () => {
-      setActiveSectionNav(targetId);
+      setActiveSectionNav(id);
     });
     link.addEventListener("keydown", event => {
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
@@ -698,7 +730,7 @@ function setDataAvailabilityState(hasData) {
   if (!dataAvailable) {
     setDatasetEmptyMessage(
       "No chat loaded yet.",
-      `Press Connect, scan the QR code from WhatsApp → Linked Devices, then choose a chat from “Loaded chats”.`,
+      "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.",
     );
     updateSectionNarratives(null);
   }
@@ -1149,6 +1181,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  buildSectionNav();
   setupSectionNavTracking();
   Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
     toggle.addEventListener("click", () => {
@@ -1171,7 +1204,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!viewingSnapshot) {
     updateStatus(`Connect to ${RELAY_SERVICE_NAME} to start mirroring chats.`, "info");
   }
-  updateHeroPanel(viewingSnapshot ? getDatasetAnalytics() : null);
 });
 
 function attachEventHandlers() {
@@ -1398,6 +1430,7 @@ async function startRelaySession() {
       updateStatus(`Starting ${RELAY_SERVICE_NAME}…`, "info");
       await refreshRelayStatus({ silent: true });
     }, `Starting ${RELAY_SERVICE_NAME}…`);
+    window.electronAPI?.setRelayAutostart?.(true);
   } catch (error) {
     console.error(error);
     updateStatus(
@@ -1421,6 +1454,7 @@ async function stopRelaySession() {
       await refreshChatSelector();
       await refreshRelayStatus({ silent: true });
     }, `Stopping ${RELAY_SERVICE_NAME}…`);
+    window.electronAPI?.setRelayAutostart?.(false);
   } catch (error) {
     console.error(error);
     updateStatus(`We couldn't stop ${RELAY_SERVICE_NAME}.`, "warning");
@@ -1441,6 +1475,7 @@ async function logoutRelaySession() {
       await refreshChatSelector();
       await refreshRelayStatus({ silent: true });
     }, "Logging out of the relay…");
+    window.electronAPI?.setRelayAutostart?.(false);
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't log out from the relay.", "warning");
@@ -1526,6 +1561,7 @@ async function refreshRelayStatus({ silent = false } = {}) {
 }
 
 function applyRelayStatus(status) {
+  updateHeroRelayStatus(status);
   window.electronAPI?.updateRelayStatus?.(status);
   if (!relayStatusEl) return;
   updateRelayBanner(status);
@@ -1537,7 +1573,7 @@ function applyRelayStatus(status) {
     if (relayQrImage) relayQrImage.removeAttribute("src");
     if (relayHelpText) {
       relayHelpText.textContent =
-        "Press Connect, scan the QR code from WhatsApp → Linked Devices, then choose a chat from “Loaded chats”.";
+        "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.";
     }
     if (relayStartButton) relayStartButton.disabled = false;
     if (relayStopButton) relayStopButton.disabled = true;
@@ -1552,7 +1588,7 @@ function applyRelayStatus(status) {
     setDashboardLoadingState(true);
     setDatasetEmptyMessage(
       "No chat loaded yet.",
-      "Press Connect, scan the QR code, then choose a chat from “Loaded chats”.",
+      "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.",
     );
     setDataAvailabilityState(false);
     return;
@@ -1664,7 +1700,7 @@ function updateRelayBanner(status) {
   if (!status) {
     relayBannerEl.dataset.status = "offline";
     relayBannerMessage.textContent = "Relay offline.";
-    relayBannerMeta.textContent = "Start the relay to mirror chats from your phone.";
+    relayBannerMeta.textContent = "Press Connect to mirror chats from your phone.";
     return;
   }
   relayBannerEl.dataset.status = status.status || "unknown";
@@ -1696,15 +1732,19 @@ function updateRelayOnboarding(status) {
     if (id === "start") {
       if (!status) value = "pending";
       else if (state === "starting") value = "active";
-      else value = "complete";
+      else if (state === "running" || state === "waiting_qr") value = "complete";
+      else value = "pending";
       const detail = step.querySelector(".relay-step-detail");
       if (detail) {
-        detail.textContent =
-          value === "complete"
-            ? "Relay is running."
-            : value === "active"
-              ? "Launching the service…"
-              : "Launch the background service.";
+        if (value === "complete") {
+          detail.textContent = "Relay is running.";
+        } else if (value === "active") {
+          detail.textContent = "Launching the service…";
+        } else if (state === "error") {
+          detail.textContent = "Relay failed to launch. Retry.";
+        } else {
+          detail.textContent = "Open the ChatScope Relay app and press Start.";
+        }
       }
     } else if (id === "qr") {
       if (!status) value = "pending";
@@ -1714,10 +1754,10 @@ function updateRelayOnboarding(status) {
       if (detail) {
         detail.textContent =
           value === "complete"
-            ? "Device linked."
+            ? "Phone linked."
             : value === "active"
-              ? "Scan the QR code."
-              : "Link your phone via the relay portal.";
+              ? "Scan the QR code shown below."
+              : "Open WhatsApp → Linked Devices on your phone and scan the code.";
       }
     } else if (id === "sync") {
       if (state === "running" && chatCount === 0) value = "active";
@@ -1730,7 +1770,7 @@ function updateRelayOnboarding(status) {
             ? "Chats synced."
             : value === "active"
               ? "Syncing chats…"
-              : "Sync chats into WAAN.";
+              : "Sync chats into ChatScope.";
       }
     }
     step.dataset.state = value;
@@ -2103,7 +2143,6 @@ function renderDashboard(analytics) {
   scheduleDeferredRender(populateSearchParticipants, currentToken);
   scheduleDeferredRender(renderSearchResults, currentToken);
   scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
-  updateHeroPanel(analytics);
   scheduleDeferredRender(() => renderGuidedInsights(analytics), currentToken);
   setDataAvailabilityState(Boolean(analytics));
   updateSectionNarratives(analytics);
@@ -3632,8 +3671,30 @@ function renderGuidedInsights(analytics) {
   });
 }
 
-function updateHeroPanel(analytics) {
-  // hero removed in current phase; keep placeholder for future use
+function updateHeroRelayStatus(status) {
+  if (!heroStatusBadge || !heroStatusCopy) return;
+  if (!status) {
+    heroStatusBadge.textContent = "Relay offline";
+    heroStatusCopy.textContent = "Press Connect to start mirroring chats.";
+    return;
+  }
+  if (status.status === "running") {
+    heroStatusBadge.textContent = status.account
+      ? `Connected • ${formatRelayAccount(status.account)}`
+      : "Relay connected";
+    heroStatusCopy.textContent = status.chatCount
+      ? `${formatNumber(status.chatCount)} chats indexed.`
+      : "Syncing chats now…";
+  } else if (status.status === "waiting_qr") {
+    heroStatusBadge.textContent = "Waiting for QR";
+    heroStatusCopy.textContent = "Open WhatsApp on your phone (Linked Devices) and scan this code.";
+  } else if (status.status === "starting") {
+    heroStatusBadge.textContent = "Starting relay";
+    heroStatusCopy.textContent = "Launching the service…";
+  } else {
+    heroStatusBadge.textContent = "Relay offline";
+    heroStatusCopy.textContent = "Press Connect to start mirroring chats.";
+  }
 }
 
 function buildGuidedInsights(analytics) {

@@ -7,13 +7,82 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <div class="brand-heading">
-            <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="lazy">
-            <div class="brand-copy">
-                <h1>ChatScope Conversation Analytics</h1>
-                <p class="subtitle">Link the relay, load a chat, and follow the simple guidance on each card.</p>
+    <nav class="section-nav" aria-label="Section shortcuts">
+        <div class="section-nav-inner"></div>
+    </nav>
+
+    <header class="hero-shell" id="hero-panel" data-nav-target="hero">
+        <div class="hero-layout">
+            <div class="hero-blurb">
+                <div class="hero-brand">
+                    <div class="hero-logo">
+                        <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="lazy">
+                    </div>
+                    <div class="hero-brand-copy">
+                        <p class="eyebrow">ChatScope Relay</p>
+                        <h1>ChatScope Conversation Analytics</h1>
+                        <p class="subtitle">Connect the relay, pick a chat, and follow the friendly tips on every card.</p>
+                    </div>
+                </div>
+                <div class="hero-status">
+                    <span class="hero-status-badge" id="hero-status-badge">Relay offline</span>
+                    <p class="hero-status-copy" id="hero-status-copy">Press Connect to start mirroring chats.</p>
+                </div>
             </div>
+            <section id="relay-live-card" class="card hero-live-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <h2>Connect to ChatScope Relay</h2>
+                        <p class="card-subtitle">Start the relay service to mirror your chats into ChatScope.</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button small" id="relay-refresh" disabled>Refresh chats</button>
+                        <button type="button" class="ghost-button small" id="relay-reload-all" disabled>Reload all chats</button>
+                        <button type="button" class="ghost-button small danger" id="relay-clear-storage" disabled>Clear cached chats</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="relay-onboarding" role="list">
+                        <div class="relay-step" data-step-id="start" role="listitem">
+                            <span class="relay-step-index">1</span>
+                            <div>
+                                <p class="relay-step-title">Start relay</p>
+                                <p class="relay-step-detail">Open the ChatScope Relay app and press Start.</p>
+                            </div>
+                        </div>
+                        <div class="relay-step" data-step-id="qr" role="listitem">
+                            <span class="relay-step-index">2</span>
+                            <div>
+                                <p class="relay-step-title">Scan QR code</p>
+                                <p class="relay-step-detail">On your phone, open WhatsApp → Linked Devices and scan the code.</p>
+                            </div>
+                        </div>
+                        <div class="relay-step" data-step-id="sync" role="listitem">
+                            <span class="relay-step-index">3</span>
+                            <div>
+                                <p class="relay-step-title">Sync chats</p>
+                                <p class="relay-step-detail">Let ChatScope copy your chats for analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="relay-connection-status" class="live-status"></p>
+                    <div class="live-actions">
+                        <button type="button" class="ghost-button" id="relay-start">Connect</button>
+                        <div class="live-button-group">
+                            <button type="button" class="ghost-button" id="relay-stop" disabled>Disconnect</button>
+                            <button type="button" class="ghost-button danger" id="relay-logout" disabled>Log out</button>
+                        </div>
+                    </div>
+                    <p id="relay-account-name" class="live-account"></p>
+                    <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
+                        <img id="relay-qr-image" alt="Scan this QR code to link your device">
+                        <p>Open the ChatScope Relay app → Device linking → Link a device, then scan this code.</p>
+                    </div>
+                    <p id="relay-help-text" class="live-help">
+                        If you start the relay manually, run <code>npm start --workspace apps/server</code> first, then press Connect.
+                    </p>
+                </div>
+            </section>
         </div>
     </header>
 
@@ -22,11 +91,11 @@
         <span id="global-progress-label">Working…</span>
     </div>
 
-    <section class="relay-status-banner full-span" id="relay-status-banner" aria-live="polite">
+    <section class="relay-status-banner full-span" id="relay-status-banner" aria-live="polite" data-nav-target="relay-status">
         <div class="relay-banner-indicator" id="relay-status-dot" aria-hidden="true"></div>
         <div class="relay-banner-text">
             <p class="relay-banner-status" id="relay-status-message">Relay status unknown.</p>
-            <p class="relay-banner-meta" id="relay-status-meta">Start the relay to begin mirroring chats.</p>
+            <p class="relay-banner-meta" id="relay-status-meta">Press Connect to begin mirroring your chats.</p>
         </div>
             <div class="relay-banner-actions">
                 <button type="button" class="ghost-button small" id="relay-banner-connect">Connect</button>
@@ -36,10 +105,9 @@
 
     <main>
 
-        <section class="actions-toolbar full-span" aria-label="Dataset actions">
+        <section class="actions-toolbar full-span" aria-label="Dataset actions" id="actions-toolbar" data-nav-target="actions">
             <div class="toolbar-group primary">
                 <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
-                <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
                 <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
                 <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
             </div>
@@ -96,83 +164,9 @@
 
         <p id="data-status" class="status full-span"></p>
 
-        <nav class="section-nav full-span" aria-label="Section shortcuts">
-            <div class="section-nav-inner">
-                <a href="#summary">Overview</a>
-                <a href="#insight-highlights">Highlights</a>
-                <a href="#participants">Participants</a>
-                <a href="#hourly-activity">Hourly Activity</a>
-                <a href="#daily-activity">Day by Day</a>
-                <a href="#weekly-trend">Week by Week</a>
-                <a href="#weekday-trend">Day of the Week</a>
-                <a href="#timeofday-trend">Time of Day</a>
-                <a href="#sentiment-overview">Mood</a>
-                <a href="#message-types">Message Mix</a>
-                <a href="#polls-card">Polls</a>
-                <a href="#saved-views-card">Saved Views</a>
-                <a href="#search-panel">Search Messages</a>
-                <a href="#faq-card">FAQ</a>
-            </div>
-        </nav>
+        <section id="summary" class="card-grid summary full-span" data-nav-target="overview"></section>
 
-        <section id="relay-live-card" class="card full-span live-card">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <h2>Connect to ChatScope Relay</h2>
-                    <p class="card-subtitle">Mirror your chats with the ChatScope relay engine.</p>
-                </div>
-                <div class="card-header-actions">
-                    <button type="button" class="ghost-button small" id="relay-refresh" disabled>Refresh chats</button>
-                    <button type="button" class="ghost-button small" id="relay-reload-all" disabled>Reload all chats</button>
-                    <button type="button" class="ghost-button small danger" id="relay-clear-storage" disabled>Clear cached chats</button>
-                </div>
-            </div>
-            <div class="card-content">
-                <div class="relay-onboarding" role="list">
-                    <div class="relay-step" data-step-id="start" role="listitem">
-                        <span class="relay-step-index">1</span>
-                        <div>
-                            <p class="relay-step-title">Start relay</p>
-                            <p class="relay-step-detail">Launch the background service.</p>
-                        </div>
-                    </div>
-                    <div class="relay-step" data-step-id="qr" role="listitem">
-                        <span class="relay-step-index">2</span>
-                        <div>
-                            <p class="relay-step-title">Scan QR code</p>
-                            <p class="relay-step-detail">Link your phone via the relay portal.</p>
-                        </div>
-                    </div>
-                    <div class="relay-step" data-step-id="sync" role="listitem">
-                        <span class="relay-step-index">3</span>
-                        <div>
-                            <p class="relay-step-title">Sync chats</p>
-                            <p class="relay-step-detail">Pull messages into ChatScope.</p>
-                        </div>
-                    </div>
-                </div>
-                <p id="relay-connection-status" class="live-status"></p>
-                <div class="live-actions">
-                    <button type="button" class="ghost-button" id="relay-start">Connect</button>
-                    <div class="live-button-group">
-                        <button type="button" class="ghost-button" id="relay-stop" disabled>Disconnect</button>
-                        <button type="button" class="ghost-button danger" id="relay-logout" disabled>Log out</button>
-                    </div>
-                </div>
-                <p id="relay-account-name" class="live-account"></p>
-                <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
-                    <img id="relay-qr-image" alt="Scan this QR code to link your device">
-                    <p>Open the ChatScope Relay app → Device linking → Link a device, then scan this code.</p>
-                </div>
-                <p id="relay-help-text" class="live-help">
-                    Run <code>npm start --workspace apps/server</code> in another terminal, then press Connect.
-                </p>
-            </div>
-        </section>
-
-        <section id="summary" class="card-grid summary full-span"></section>
-
-        <section class="card full-span highlights" id="insight-highlights">
+        <section class="card full-span highlights" id="insight-highlights" data-nav-target="highlights">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Highlights</h2>
@@ -185,7 +179,7 @@
             </div>
         </section>
 
-        <section class="card full-span participants" id="participants">
+        <section class="card full-span participants" id="participants" data-nav-target="participants">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Participants</h2>
@@ -225,7 +219,7 @@
             </div>
         </section>
 
-        <section class="card full-span" id="hourly-activity">
+        <section class="card full-span" id="hourly-activity" data-nav-target="hourly-activity">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Hourly Activity</h2>
@@ -274,7 +268,7 @@
             </div>
         </section>
 
-        <section class="card full-span" id="daily-activity">
+        <section class="card full-span" id="daily-activity" data-nav-target="daily-activity">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Day by Day</h2>
@@ -296,7 +290,7 @@
             </div>
         </section>
 
-        <section class="card full-span" id="weekly-trend">
+        <section class="card full-span" id="weekly-trend" data-nav-target="weekly-trend">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Week by Week</h2>
@@ -327,7 +321,7 @@
             </div>
         </section>
 
-        <section class="card full-span" id="weekday-trend">
+        <section class="card full-span" id="weekday-trend" data-nav-target="weekday-trend">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Day of the Week</h2>
@@ -380,7 +374,7 @@
             </div>
         </section>
 
-        <section class="card full-span" id="timeofday-trend">
+        <section class="card full-span" id="timeofday-trend" data-nav-target="timeofday-trend">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Time of Day</h2>
@@ -425,7 +419,7 @@
             </div>
         </section>
 
-        <section class="card full-span sentiment" id="sentiment-overview">
+        <section class="card full-span sentiment" id="sentiment-overview" data-nav-target="sentiment-overview">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Mood</h2>
@@ -461,8 +455,7 @@
                 </div>
             </div>
         </section>
-
-        <section class="card full-span message-types" id="message-types">
+        <section class="card full-span message-types" id="message-types" data-nav-target="message-types">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Message Mix</h2>
@@ -539,7 +532,7 @@
                 </div>
             </div>
         </section>
-        <section class="card full-span" id="polls-card">
+        <section class="card full-span" id="polls-card" data-nav-target="polls">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Polls</h2>
@@ -562,7 +555,7 @@
             </div>
         </section>
 
-        <section class="card full-span saved-views" id="saved-views-card">
+        <section class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Saved Setups</h2>
@@ -601,7 +594,7 @@
             </div>
         </section>
 
-        <section class="card full-span search-panel" id="search-panel">
+        <section class="card full-span search-panel" id="search-panel" data-nav-target="search">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>Search Messages</h2>
@@ -642,7 +635,7 @@
             </div>
         </section>
 
-        <section class="card full-span" id="faq-card">
+        <section class="card full-span" id="faq-card" data-nav-target="faq">
             <div class="card-header">
                 <div class="card-title-group">
                     <h2>FAQ</h2>

@@ -22,6 +22,43 @@ let staticServer = null;
 let mainWindow = null;
 const preloadPath = path.join(__dirname, "preload.js");
 let cachedRelayStatus = null;
+let cachedRelayAutostart = true;
+let cachedPreferences = null;
+
+function getPreferencesPath() {
+  return path.join(app.getPath("userData"), "preferences.json");
+}
+
+function loadPreferences() {
+  if (cachedPreferences) return cachedPreferences;
+  try {
+    cachedPreferences = JSON.parse(fs.readFileSync(getPreferencesPath(), "utf8"));
+  } catch (error) {
+    cachedPreferences = {};
+  }
+  return cachedPreferences;
+}
+
+function savePreferences(prefs) {
+  const prefPath = getPreferencesPath();
+  fs.mkdirSync(path.dirname(prefPath), { recursive: true });
+  fs.writeFileSync(prefPath, JSON.stringify(prefs, null, 2));
+  cachedPreferences = prefs;
+}
+
+function initAutostartPreference() {
+  const prefs = loadPreferences();
+  const value = typeof prefs.autostartRelay === "boolean" ? prefs.autostartRelay : true;
+  cachedRelayAutostart = value;
+  return value;
+}
+
+function persistAutostartPreference(value) {
+  const prefs = loadPreferences();
+  prefs.autostartRelay = Boolean(value);
+  savePreferences(prefs);
+  cachedRelayAutostart = prefs.autostartRelay;
+}
 
 const getRuntimeRoot = () =>
   app.isPackaged ? path.join(process.resourcesPath, "waan") : path.resolve(__dirname, "..");
@@ -73,9 +110,12 @@ function runRestoreScript() {
   });
 }
 
-function startRelayProcess() {
+function startRelayProcess({ autostart = true } = {}) {
   const entry = path.join(getServerRoot(), "src", "index.js");
-  const args = ["--auto-start"];
+  const args = [];
+  if (autostart) {
+    args.push("--auto-start");
+  }
   relayProcess = spawnNode(entry, args, {
     cwd: getServerRoot(),
     env: {
@@ -122,7 +162,7 @@ function startStaticServer() {
 async function startBackend() {
   await runRestoreScript();
   await startStaticServer();
-  startRelayProcess();
+  startRelayProcess({ autostart: cachedRelayAutostart });
   buildAppMenu();
 }
 
@@ -333,11 +373,17 @@ ipcMain.handle("relay.sync.summary", (_event, payload = {}) => {
   }
   return true;
 });
+ipcMain.handle("relay.autostart.get", () => cachedRelayAutostart);
+ipcMain.handle("relay.autostart.set", (_event, value) => {
+  persistAutostartPreference(Boolean(value));
+  return cachedRelayAutostart;
+});
 
 app
   .whenReady()
   .then(async () => {
     try {
+      initAutostartPreference();
       await startBackend();
       createWindow();
     } catch (error) {

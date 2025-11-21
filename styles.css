@@ -22,6 +22,21 @@
     --md-on-surface-variant: #b6bfdc;
     --surface-tint: rgba(125, 138, 255, 0.22);
 
+    --font-family-base: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-size-xs: 0.78rem;
+    --font-size-sm: 0.88rem;
+    --font-size-md: 0.98rem;
+    --font-size-lg: 1.2rem;
+    --font-size-xl: clamp(1.6rem, 3vw, 3rem);
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --space-1: 0.5rem;
+    --space-2: 0.75rem;
+    --space-3: 1rem;
+    --space-4: 1.5rem;
+    --space-5: 2.25rem;
+
     --bg: var(--md-surface);
     --card-bg: color-mix(in srgb, var(--md-surface-container) 92%, transparent);
     --text: var(--md-on-surface);
@@ -198,12 +213,26 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
-    letter-spacing: 0.01em;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    font-weight: var(--font-weight-regular);
     background: radial-gradient(160% 160% at 20% -20%, rgba(125, 138, 255, 0.18) 0%, transparent 62%), radial-gradient(140% 160% at 100% -40%, rgba(88, 212, 195, 0.16) 0%, transparent 58%), var(--bg);
     color: var(--text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
 }
 
 body.onboarding-active {
@@ -222,45 +251,127 @@ h6 {
     color: var(--text);
 }
 
-header {
-    padding: 2.75rem 1.5rem 1.75rem;
-    text-align: center;
-    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
-    border-bottom-left-radius: var(--shape-large);
-    border-bottom-right-radius: var(--shape-large);
-    box-shadow: 0 35px 80px rgba(5, 7, 16, 0.55);
+.hero-shell {
+    padding: var(--space-5) var(--space-3) var(--space-4);
+    background: radial-gradient(120% 140% at 10% -20%, rgba(125, 138, 255, 0.2), transparent),
+        radial-gradient(100% 140% at 90% -40%, rgba(88, 212, 195, 0.18), transparent),
+        var(--bg);
 }
 
-header h1 {
-    font-size: clamp(2.4rem, 5vw, 3.4rem);
-    letter-spacing: -0.015em;
+.hero-layout {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    display: grid;
+    gap: var(--space-4);
 }
 
-.brand-heading {
-    display: inline-flex;
-    gap: 1rem;
+@media (min-width: 900px) {
+    .hero-layout {
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+        align-items: stretch;
+    }
+}
+
+.hero-blurb {
+    border-radius: calc(var(--shape-large) + 8px);
+    padding: var(--space-5);
+    border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--card-bg) 95%, transparent), color-mix(in srgb, var(--card-bg) 70%, transparent));
+    box-shadow: 0 30px 65px rgba(3, 5, 14, 0.6), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 25%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.hero-brand {
+    display: flex;
+    gap: var(--space-3);
     align-items: center;
+}
+
+.hero-logo {
+    width: 86px;
+    height: 86px;
+    border-radius: 26px;
+    padding: 0.4rem;
+    background: radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.35)),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.45), 0 18px 48px rgba(8, 10, 26, 0.5);
+    display: flex;
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: center;
 }
 
 .brand-mark {
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.2) 70%);
-    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.45);
-    padding: 0.5rem;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
     object-fit: contain;
+    filter: drop-shadow(0 12px 28px rgba(8, 10, 26, 0.4));
 }
 
-.brand-copy {
+.hero-brand-copy {
     text-align: left;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin: 0 0 0.4rem;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: var(--font-size-md);
+    margin-top: var(--space-2);
+}
+
+.hero-status {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.hero-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.95rem;
+    border-radius: var(--shape-full);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, var(--card-bg));
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.35);
+}
+
+.hero-status-copy {
+    margin: 0;
+    color: var(--muted);
+    font-size: var(--font-size-sm);
+}
+
+.hero-live-card {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.hero-live-card .card-content {
+    flex: 1;
 }
 
 #global-progress {
     position: sticky;
     top: 0;
+    z-index: 80;
     margin: 0.5rem auto 0;
     display: inline-flex;
     gap: 0.5rem;
@@ -708,8 +819,7 @@ main {
     grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
-main > .page-controls,
-main > nav.section-nav {
+main > .page-controls {
     grid-column: span 12;
 }
 
@@ -832,6 +942,18 @@ main > .card.half-span {
     padding: 0.5rem 1rem;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.ghost-button.primary {
+    background: var(--accent);
+    color: var(--md-on-primary);
+    border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    box-shadow: 0 20px 40px rgba(76, 75, 205, 0.35);
+}
+
+.ghost-button.primary:hover {
+    background: color-mix(in srgb, var(--accent) 85%, white);
+    color: var(--md-on-primary);
 }
 
 .ghost-button:hover {
@@ -3042,7 +3164,7 @@ main > .card.half-span {
     box-shadow: 0 12px 24px rgba(12, 16, 32, 0.2);
     display: block;
     position: relative;
-    z-index: 6;
+    z-index: 50;
 }
 
 
@@ -3259,21 +3381,22 @@ main > .card.half-span {
 }
 .section-nav {
     position: sticky;
-    top: 5.5rem;
-    z-index: 30;
+    top: 0.5rem;
+    z-index: 250;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0;
-    padding: 0.75rem 0 0.5rem;
+    width: min(1100px, calc(100% - 1.5rem));
+    margin: 0.75rem auto 1.25rem;
+    padding: 0.35rem 0 0.25rem;
 }
 
 .section-nav-inner {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.55rem;
     flex-wrap: wrap;
     justify-content: center;
-    padding: 0.75rem 1.2rem;
+    padding: 0.6rem 1rem;
     border-radius: 999px;
     background: color-mix(in srgb, var(--card-bg) 88%, transparent);
     border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
@@ -3284,12 +3407,12 @@ main > .card.half-span {
 
 .section-nav a {
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     color: var(--muted);
-    padding: 0.35rem 0.85rem;
+    padding: 0.28rem 0.75rem;
     border-radius: 999px;
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
@@ -3313,7 +3436,7 @@ main > .card.half-span {
     transform: translateY(0);
 }
 
-.card[id] {
+[data-nav-target] {
     scroll-margin-top: 7rem;
 }
 
@@ -3728,7 +3851,6 @@ footer {
         grid-template-columns: repeat(8, minmax(0, 1fr));
     }
 
-    main > nav.section-nav,
     main > .page-controls,
     main > .card,
     main > .card.half-span,
@@ -3830,7 +3952,6 @@ footer {
         width: 100%;
     }
 
-    main > nav.section-nav,
     main > .page-controls,
     main > .card,
     main > .card.half-span,
@@ -3893,7 +4014,6 @@ footer {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    main > nav.section-nav,
     main > .page-controls,
     main > .card,
     main > .card.half-span,

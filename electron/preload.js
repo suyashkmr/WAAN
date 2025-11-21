@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   updateRelayStatus: status => ipcRenderer.invoke("relay.status.update", status),
   notifySyncSummary: payload => ipcRenderer.invoke("relay.sync.summary", payload),
+  getRelayAutostart: () => ipcRenderer.invoke("relay.autostart.get"),
+  setRelayAutostart: value => ipcRenderer.invoke("relay.autostart.set", value),
 });
