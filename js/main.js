@@ -105,10 +105,16 @@ const EXPORT_THEME_STYLES = {
 
 const motionPreferenceQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
 let reduceMotionPreferred = Boolean(motionPreferenceQuery?.matches);
+let reduceMotionPreference = null; // "reduce" | "standard" | null (follow system)
 
 if (motionPreferenceQuery) {
   const motionListener = event => {
     reduceMotionPreferred = event.matches;
+    if (reduceMotionPreference === null) {
+      syncReduceMotionState();
+    } else {
+      updateMotionToggleUI();
+    }
   };
   if (typeof motionPreferenceQuery.addEventListener === "function") {
     motionPreferenceQuery.addEventListener("change", motionListener);
@@ -117,8 +123,14 @@ if (motionPreferenceQuery) {
   }
 }
 
-function prefersReducedMotion() {
+function shouldReduceMotion() {
+  if (reduceMotionPreference === "reduce") return true;
+  if (reduceMotionPreference === "standard") return false;
   return reduceMotionPreferred;
+}
+
+function prefersReducedMotion() {
+  return shouldReduceMotion();
 }
 
 function normalizeJid(value) {
@@ -278,6 +290,8 @@ const relayClearStorageButton = document.getElementById("relay-clear-storage");
 const relayQrContainer = document.getElementById("relay-qr-container");
 const relayQrImage = document.getElementById("relay-qr-image");
 const relayHelpText = document.getElementById("relay-help-text");
+const reduceMotionToggle = document.getElementById("reduce-motion-toggle");
+const highContrastToggle = document.getElementById("high-contrast-toggle");
 const customControls = document.getElementById("custom-range-controls");
 const customStartInput = document.getElementById("custom-start");
 const customEndInput = document.getElementById("custom-end");
@@ -457,6 +471,8 @@ const themeState = {
 };
 const COMPACT_STORAGE_KEY = "waan-compact-mode";
 const ONBOARDING_STORAGE_KEY = "waan-onboarding-dismissed";
+const REDUCE_MOTION_STORAGE_KEY = "waan-reduce-motion";
+const HIGH_CONTRAST_STORAGE_KEY = "waan-high-contrast";
 const onboardingSteps = [
   {
     copy: "Use the relay banner to connect and keep an eye on status messages.",
@@ -922,6 +938,113 @@ function initCompactMode() {
   });
 }
 
+function updateMotionToggleUI() {
+  if (!reduceMotionToggle) return;
+  const shouldReduce = shouldReduceMotion();
+  let text = "Motion: Standard";
+  let title = "Animations and depth effects are enabled.";
+  let ariaPressed = "mixed";
+  if (reduceMotionPreference === "reduce") {
+    text = "Motion: Reduced";
+    title = "Animations and blurs are minimized for accessibility.";
+    ariaPressed = "true";
+  } else if (reduceMotionPreference === "standard") {
+    text = "Motion: Standard";
+    title = "Animations and depth effects are enabled.";
+    ariaPressed = "false";
+  } else {
+    text = shouldReduce ? "Motion: System (reduced)" : "Motion: System";
+    title = shouldReduce
+      ? "Following your OS preference to limit animations."
+      : "Following your OS preference.";
+    ariaPressed = "mixed";
+  }
+  reduceMotionToggle.setAttribute("aria-pressed", ariaPressed);
+  reduceMotionToggle.textContent = text;
+  reduceMotionToggle.title = title;
+}
+
+function syncReduceMotionState() {
+  const shouldReduce = shouldReduceMotion();
+  if (document.body) {
+    if (shouldReduce) {
+      document.body.dataset.reduceMotion = "true";
+    } else {
+      delete document.body.dataset.reduceMotion;
+    }
+  }
+  updateMotionToggleUI();
+}
+
+function applyReduceMotionPreference(mode, { persist = true } = {}) {
+  if (mode !== "reduce" && mode !== "standard") {
+    reduceMotionPreference = null;
+  } else {
+    reduceMotionPreference = mode;
+  }
+  if (persist) {
+    if (reduceMotionPreference) {
+      localStorage.setItem(REDUCE_MOTION_STORAGE_KEY, reduceMotionPreference);
+    } else {
+      localStorage.removeItem(REDUCE_MOTION_STORAGE_KEY);
+    }
+  }
+  syncReduceMotionState();
+}
+
+function applyHighContrastPreference(enabled, { persist = true } = {}) {
+  if (document.body) {
+    if (enabled) {
+      document.body.dataset.contrast = "high";
+    } else {
+      delete document.body.dataset.contrast;
+    }
+  }
+  if (highContrastToggle) {
+    highContrastToggle.setAttribute("aria-pressed", String(enabled));
+    highContrastToggle.textContent = enabled ? "Contrast: Boosted" : "Contrast: Standard";
+    highContrastToggle.title = enabled
+      ? "Colors switch to a higher-contrast palette for easier reading."
+      : "Standard contrast restored.";
+  }
+  if (persist) {
+    localStorage.setItem(HIGH_CONTRAST_STORAGE_KEY, enabled ? "true" : "false");
+  }
+}
+
+function initAccessibilityControls() {
+  const savedMotion = localStorage.getItem(REDUCE_MOTION_STORAGE_KEY);
+  const initialMotion = savedMotion === "reduce" || savedMotion === "standard" ? savedMotion : null;
+  applyReduceMotionPreference(initialMotion, { persist: false });
+  reduceMotionToggle?.addEventListener("click", () => {
+    let nextPreference;
+    if (reduceMotionPreference === null) {
+      nextPreference = "reduce";
+    } else if (reduceMotionPreference === "reduce") {
+      nextPreference = "standard";
+    } else {
+      nextPreference = null;
+    }
+    applyReduceMotionPreference(nextPreference);
+    const toastMessage = nextPreference === "reduce"
+      ? "Animations simplified."
+      : nextPreference === "standard"
+        ? "Full motion restored."
+        : "Following your system preference for motion.";
+    showToast(toastMessage, "info", { duration: 2500 });
+  });
+
+  const contrastSaved = localStorage.getItem(HIGH_CONTRAST_STORAGE_KEY) === "true";
+  applyHighContrastPreference(contrastSaved, { persist: false });
+  highContrastToggle?.addEventListener("click", () => {
+    const next = !(document.body?.dataset.contrast === "high");
+    applyHighContrastPreference(next);
+    showToast(next ? "High-contrast mode on." : "Standard contrast mode.", next ? "success" : "info", {
+      duration: 2500,
+    });
+  });
+}
+
 function syncHeroPillsWithRange() {}
 
 function applyHeroRange(rangeValue) {
@@ -1275,6 +1398,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupLogDrawerControls();
   initThemeControls();
   initCompactMode();
+  initAccessibilityControls();
   setDataAvailabilityState(false);
   onboardingSkipButton?.addEventListener("click", skipOnboarding);
   onboardingNextButton?.addEventListener("click", advanceOnboarding);

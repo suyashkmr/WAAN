@@ -134,6 +134,10 @@
                         <label for="theme-dark">Dark</label>
                     </div>
                 </div>
+                <div class="a11y-controls" aria-label="Accessibility options">
+                    <button type="button" class="ghost-button small" id="reduce-motion-toggle" aria-pressed="mixed">Motion: Standard</button>
+                    <button type="button" class="ghost-button small" id="high-contrast-toggle" aria-pressed="false">Contrast: Standard</button>
+                </div>
                 <button type="button" class="ghost-button" id="log-drawer-toggle">View relay logs</button>
             </div>
         </section>
@@ -739,7 +743,7 @@
 
     <footer>
         <div class="footer-brand">
-            <img src="tpg.png" alt="" aria-hidden="true" loading="lazy">
+            <img src="tpg.png" alt="ChatScope logo" class="brand-mark brand-mark--small" loading="lazy">
             <div>
                 <p>ChatScope Relay</p>
                 <small>Conversation intelligence for your WhatsApp chats.</small>

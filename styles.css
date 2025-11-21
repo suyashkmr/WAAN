@@ -1,3 +1,43 @@
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./fonts/plus-jakarta/plus-jakarta-sans-v12-latin-regular.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("./fonts/plus-jakarta/plus-jakarta-sans-v12-latin-500.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/plus-jakarta/plus-jakarta-sans-v12-latin-600.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./fonts/plus-jakarta/plus-jakarta-sans-v12-latin-700.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Clash Display";
+    font-style: normal;
+    font-weight: 500 700;
+    font-display: swap;
+    src: url("./fonts/ClashDisplay-Variable.ttf") format("truetype");
+}
+
 :root {
     color-scheme: dark;
     --md-primary: #7d8aff;
@@ -22,7 +62,8 @@
     --md-on-surface-variant: #b6bfdc;
     --surface-tint: rgba(125, 138, 255, 0.22);
 
-    --font-family-base: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-base: "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-display: "Clash Display", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-size-xs: 0.78rem;
     --font-size-sm: 0.88rem;
     --font-size-md: 0.98rem;
@@ -85,6 +126,66 @@ html {
     html {
         scroll-behavior: auto;
     }
+}
+
+body[data-reduce-motion="true"] {
+    --motion-duration-fast: 0ms;
+    --motion-duration-medium: 0ms;
+    --motion-duration-slow: 0ms;
+    --glass-blur: 8px;
+    scroll-behavior: auto;
+}
+
+body[data-reduce-motion="true"] .ambient-field {
+    animation: none;
+    opacity: 0.35;
+}
+
+body[data-reduce-motion="true"] .toast,
+body[data-reduce-motion="true"] .toast.toast-dismiss,
+body[data-reduce-motion="true"] #compact-toggle[aria-pressed="true"],
+body[data-reduce-motion="true"] .relay-status-banner[data-status="running"] .relay-banner-indicator,
+body[data-reduce-motion="true"] .relay-status-banner[data-status="running"] .relay-banner-indicator::after,
+body[data-reduce-motion="true"] .card,
+body[data-reduce-motion="true"] .section-nav a,
+body[data-reduce-motion="true"] .ghost-button,
+body[data-reduce-motion="true"] .status-snackbar {
+    animation: none;
+    transition: none;
+}
+
+body[data-contrast="high"] {
+    --bg: #010409;
+    --card-bg: #0f1729;
+    --text: #f9fbff;
+    --muted: #cfd8ff;
+    --accent: #ffd166;
+    --accent-soft: rgba(255, 209, 102, 0.32);
+    --border: #94b7ff;
+    --glass-bg: rgba(3, 7, 18, 0.92);
+    --glass-border: rgba(255, 255, 255, 0.35);
+    --positive: #3be884;
+    --negative: #ff5f7a;
+    color: var(--text);
+}
+
+body[data-contrast="high"] .card,
+body[data-contrast="high"] .section-nav,
+body[data-contrast="high"] .relay-status-banner,
+body[data-contrast="high"] .actions-toolbar,
+body[data-contrast="high"] footer {
+    border-width: 2px;
+}
+
+body[data-contrast="high"] .section-icon {
+    color: var(--md-on-primary);
+}
+
+body[data-contrast="high"] .hero-status-badge,
+body[data-contrast="high"] .relay-banner-indicator,
+body[data-contrast="high"] .stat-value,
+body[data-contrast="high"] .card-title-group h2 {
+    color: var(--text);
 }
 
 @media (prefers-color-scheme: light) {
@@ -251,6 +352,28 @@ body {
     background:
         linear-gradient(135deg, color-mix(in srgb, var(--bg) 96%, #010409), color-mix(in srgb, var(--bg) 85%, #0a0a12));
     color: var(--text);
+    text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+.card-header h2,
+.hero-status-badge,
+.section-nav a,
+.stat-value,
+.footer-brand p,
+.footer-brand small {
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.section-nav a {
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-weight: 600;
 }
 
 input,
@@ -394,6 +517,12 @@ h6 {
     border-radius: 20px;
     object-fit: contain;
     filter: drop-shadow(0 12px 28px rgba(8, 10, 26, 0.4));
+}
+
+.brand-mark--small {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
 }
 
 .hero-brand-copy {
@@ -798,6 +927,13 @@ h6 {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+}
+
+.a11y-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
 }
 
 #theme-system,
