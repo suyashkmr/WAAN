@@ -324,6 +324,7 @@ const toastContainer = document.getElementById("toast-container");
 const compactToggleButton = document.getElementById("compact-toggle");
 const onboardingOverlay = document.getElementById("onboarding-overlay");
 const onboardingCopyEl = document.getElementById("onboarding-copy");
+const onboardingStepLabel = document.getElementById("onboarding-step-label");
 const onboardingSkipButton = document.getElementById("onboarding-skip");
 const onboardingNextButton = document.getElementById("onboarding-next");
 const heroStatusBadge = document.getElementById("hero-status-badge");
@@ -343,7 +344,7 @@ const MAX_TOASTS = 4;
 const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
 const sectionNavInner = document.querySelector(".section-nav-inner");
 const SECTION_NAV_ITEMS = [
-  { id: "hero-panel", label: "Hero" },
+  { id: "hero-panel", label: "Home" },
   { id: "relay-status-banner", label: "Relay Status" },
   { id: "actions-toolbar", label: "Actions" },
   { id: "summary", label: "Overview" },
@@ -438,12 +439,16 @@ const COMPACT_STORAGE_KEY = "waan-compact-mode";
 const ONBOARDING_STORAGE_KEY = "waan-onboarding-dismissed";
 const onboardingSteps = [
   {
-    copy: "Use the relay banner to connect and monitor status.",
+    copy: "Use the relay banner to connect and keep an eye on status messages.",
     target: "#relay-status-banner",
   },
   {
-    copy: "Track connection details and sync activity in the log drawer.",
+    copy: "Track connection details and sync activity with the relay log drawer.",
     target: "#log-drawer-toggle",
+  },
+  {
+    copy: "Need extra breathing room? Toggle Compact mode right from the toolbar.",
+    target: "#compact-toggle",
   },
   {
     copy: "Guided insights highlight notable trends for your dataset.",
@@ -829,6 +834,9 @@ function showOnboardingStep(index) {
     return;
   }
   onboardingCopyEl.textContent = step.copy;
+  if (onboardingStepLabel) {
+    onboardingStepLabel.textContent = `Step ${index + 1} of ${onboardingSteps.length}`;
+  }
   highlightTarget(step.target);
   onboardingNextButton.textContent = index === onboardingSteps.length - 1 ? "Done" : "Next";
 }
@@ -867,6 +875,7 @@ function finishOnboarding() {
   }
   onboardingOverlay?.setAttribute("aria-hidden", "true");
   document.body.classList.remove("onboarding-active");
+  if (onboardingStepLabel) onboardingStepLabel.textContent = "";
   localStorage.setItem(ONBOARDING_STORAGE_KEY, "done");
 }
 
@@ -912,6 +921,41 @@ function applyTheme(preference) {
     root.dataset.colorScheme = "dark";
   } else {
     root.dataset.colorScheme = "light";
+  }
+}
+
+function animateCardSection(content, expand) {
+  if (!content) return;
+  content.classList.add("collapsible");
+  if (expand) {
+    content.style.display = "";
+    const height = content.scrollHeight;
+    content.style.maxHeight = "0px";
+    content.style.opacity = "0";
+    requestAnimationFrame(() => {
+      content.style.maxHeight = `${height}px`;
+      content.style.opacity = "1";
+    });
+    const onEnd = () => {
+      content.style.maxHeight = "";
+      content.style.opacity = "";
+      content.removeEventListener("transitionend", onEnd);
+    };
+    content.addEventListener("transitionend", onEnd, { once: true });
+  } else {
+    const height = content.scrollHeight;
+    content.style.maxHeight = `${height}px`;
+    requestAnimationFrame(() => {
+      content.style.maxHeight = "0px";
+      content.style.opacity = "0";
+    });
+    const onEnd = () => {
+      content.style.display = "none";
+      content.style.maxHeight = "";
+      content.style.opacity = "";
+      content.removeEventListener("transitionend", onEnd);
+    };
+    content.addEventListener("transitionend", onEnd, { once: true });
   }
 }
 
@@ -1155,7 +1199,9 @@ function buildParticipantDetail(entry) {
 
 setStatusCallback((message, tone) => {
   if (!statusEl) return;
-  statusEl.className = `status full-span ${tone}`;
+  statusEl.classList.remove("hidden");
+  statusEl.classList.remove("success", "warning", "error");
+  if (tone) statusEl.classList.add(tone);
   statusEl.textContent = message;
   if (tone === "success" || tone === "warning" || tone === "error") {
     showToast(message, tone);
@@ -1189,9 +1235,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const targetId = toggle.dataset.target;
       const content = targetId ? document.getElementById(targetId) : null;
       const card = toggle.closest(".card");
-      toggle.setAttribute("aria-expanded", String(!expanded));
-      if (content) content.style.display = expanded ? "none" : "";
-      if (card) card.classList.toggle("collapsed", expanded);
+      const next = !expanded;
+      toggle.setAttribute("aria-expanded", String(next));
+      if (content) animateCardSection(content, next);
+      if (card) card.classList.toggle("collapsed", !next);
     });
   });
   applySearchStateToForm();
@@ -2780,7 +2827,7 @@ function renderSavedViewGallery(views) {
   const list = Array.isArray(views) ? views : [];
   if (!list.length) {
     savedViewGallery.innerHTML =
-      '<p class="saved-view-gallery-empty">Save views to see quick previews here.</p>';
+      '<div class="empty-state small"><div class="empty-illustration small" aria-hidden="true"><span></span><span></span><span></span></div><p class="saved-view-gallery-empty">Save views to see quick previews here.</p></div>';
     savedViewGallery.dataset.interactive = "false";
     return;
   }
@@ -3687,7 +3734,11 @@ function updateHeroRelayStatus(status) {
       : "Syncing chats now…";
   } else if (status.status === "waiting_qr") {
     heroStatusBadge.textContent = "Waiting for QR";
-    heroStatusCopy.textContent = "Open WhatsApp on your phone (Linked Devices) and scan this code.";
+    if (status.lastQr) {
+      heroStatusCopy.textContent = "Open WhatsApp on your phone (Linked Devices) and scan this code.";
+    } else {
+      heroStatusCopy.textContent = "Press Connect to reopen the relay browser and display a new QR code.";
+    }
   } else if (status.status === "starting") {
     heroStatusBadge.textContent = "Starting relay";
     heroStatusCopy.textContent = "Launching the service…";

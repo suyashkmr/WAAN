@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatScope Conversation Overview</title>
+    <link rel="icon" type="image/png" href="tpg.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -29,10 +30,10 @@
                     <p class="hero-status-copy" id="hero-status-copy">Press Connect to start mirroring chats.</p>
                 </div>
             </div>
-            <section id="relay-live-card" class="card hero-live-card">
+            <section id="relay-live-card" class="card hero-live-card" data-accent="relay">
                 <div class="card-header">
                     <div class="card-title-group">
-                        <h2>Connect to ChatScope Relay</h2>
+                        <h2><span class="section-icon" aria-hidden="true">🔌</span>Connect to ChatScope Relay</h2>
                         <p class="card-subtitle">Start the relay service to mirror your chats into ChatScope.</p>
                     </div>
                     <div class="card-header-actions">
@@ -112,6 +113,7 @@
                 <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
             </div>
             <div class="toolbar-group secondary">
+                <button type="button" class="ghost-button" id="compact-toggle" aria-pressed="false" title="Switch between compact and comfort layouts">Compact mode</button>
                 <div class="theme-toggle">
                     <span>Theme</span>
                     <div class="segmented-option">
@@ -162,14 +164,26 @@
             </div>
         </div>
 
-        <p id="data-status" class="status full-span"></p>
+        <div id="dataset-empty-callout" class="dataset-empty full-span hidden" aria-live="polite">
+            <div class="empty-illustration" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="dataset-empty-copy">
+                <h3 id="dataset-empty-heading">No chat loaded yet.</h3>
+                <p id="dataset-empty-copy">Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.</p>
+            </div>
+        </div>
+
+        <div id="data-status" class="status-snackbar full-span hidden" aria-live="polite"></div>
 
         <section id="summary" class="card-grid summary full-span" data-nav-target="overview"></section>
 
-        <section class="card full-span highlights" id="insight-highlights" data-nav-target="highlights">
+        <section class="card full-span highlights" id="insight-highlights" data-nav-target="highlights" data-accent="highlights">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Highlights</h2>
+                    <h2><span class="section-icon" aria-hidden="true">✨</span>Highlights</h2>
                     <button type="button" class="card-toggle" aria-expanded="true" data-target="insight-highlights-content">▾</button>
                 </div>
             </div>
@@ -179,10 +193,10 @@
             </div>
         </section>
 
-        <section class="card full-span participants" id="participants" data-nav-target="participants">
+        <section class="card full-span participants" id="participants" data-nav-target="participants" data-accent="participants">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Participants</h2>
+                    <h2><span class="section-icon" aria-hidden="true">👥</span>Participants</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-participants">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="participants-content">▾</button>
@@ -219,10 +233,10 @@
             </div>
         </section>
 
-        <section class="card full-span" id="hourly-activity" data-nav-target="hourly-activity">
+        <section class="card full-span" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Hourly Activity</h2>
+                    <h2><span class="section-icon" aria-hidden="true">🕒</span>Hourly Activity</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-hourly">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="hourly-activity-content">▾</button>
@@ -268,10 +282,10 @@
             </div>
         </section>
 
-        <section class="card full-span" id="daily-activity" data-nav-target="daily-activity">
+        <section class="card full-span" id="daily-activity" data-nav-target="daily-activity" data-accent="daily">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Day by Day</h2>
+                    <h2><span class="section-icon" aria-hidden="true">📅</span>Day by Day</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-daily">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="daily-activity-content">▾</button>
@@ -290,10 +304,10 @@
             </div>
         </section>
 
-        <section class="card full-span" id="weekly-trend" data-nav-target="weekly-trend">
+        <section class="card full-span" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Week by Week</h2>
+                    <h2><span class="section-icon" aria-hidden="true">📈</span>Week by Week</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-weekly">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="weekly-trend-content">▾</button>
@@ -321,10 +335,10 @@
             </div>
         </section>
 
-        <section class="card full-span" id="weekday-trend" data-nav-target="weekday-trend">
+        <section class="card full-span" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Day of the Week</h2>
+                    <h2><span class="section-icon" aria-hidden="true">🗓</span>Day of the Week</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-weekday">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="weekday-trend-content">▾</button>
@@ -374,10 +388,10 @@
             </div>
         </section>
 
-        <section class="card full-span" id="timeofday-trend" data-nav-target="timeofday-trend">
+        <section class="card full-span" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Time of Day</h2>
+                    <h2><span class="section-icon" aria-hidden="true">🌗</span>Time of Day</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-timeofday">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="timeofday-trend-content">▾</button>
@@ -419,10 +433,10 @@
             </div>
         </section>
 
-        <section class="card full-span sentiment" id="sentiment-overview" data-nav-target="sentiment-overview">
+        <section class="card full-span sentiment" id="sentiment-overview" data-nav-target="sentiment-overview" data-accent="sentiment">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Mood</h2>
+                    <h2><span class="section-icon" aria-hidden="true">😊</span>Mood</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-sentiment">Download CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="sentiment-overview-content">▾</button>
@@ -455,10 +469,10 @@
                 </div>
             </div>
         </section>
-        <section class="card full-span message-types" id="message-types" data-nav-target="message-types">
+        <section class="card full-span message-types" id="message-types" data-nav-target="message-types" data-accent="message-types">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Message Mix</h2>
+                    <h2><span class="section-icon" aria-hidden="true">💬</span>Message Mix</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-message-types">Download CSV</button>
                         <button type="button" class="ghost-button" id="download-chat-json">Download chat JSON</button>
@@ -532,10 +546,10 @@
                 </div>
             </div>
         </section>
-        <section class="card full-span" id="polls-card" data-nav-target="polls">
+        <section class="card full-span" id="polls-card" data-nav-target="polls" data-accent="polls">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Polls</h2>
+                    <h2><span class="section-icon" aria-hidden="true">📊</span>Polls</h2>
                     <button type="button" class="card-toggle" aria-expanded="true" data-target="polls-content">▾</button>
                 </div>
             </div>
@@ -555,10 +569,10 @@
             </div>
         </section>
 
-        <section class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views">
+        <section class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views" data-accent="saved-views">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Saved Setups</h2>
+                    <h2><span class="section-icon" aria-hidden="true">💾</span>Saved Setups</h2>
                     <button type="button" class="card-toggle" aria-expanded="true" data-target="saved-views-content">▾</button>
                 </div>
             </div>
@@ -594,10 +608,10 @@
             </div>
         </section>
 
-        <section class="card full-span search-panel" id="search-panel" data-nav-target="search">
+        <section class="card full-span search-panel" id="search-panel" data-nav-target="search" data-accent="search">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Search Messages</h2>
+                    <h2><span class="section-icon" aria-hidden="true">🔍</span>Search Messages</h2>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button" id="download-search-results">Save CSV</button>
                         <button type="button" class="card-toggle" aria-expanded="true" data-target="search-panel-content">▾</button>
@@ -635,14 +649,19 @@
             </div>
         </section>
 
-        <section class="card full-span" id="faq-card" data-nav-target="faq">
+        <section class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>FAQ</h2>
+                    <h2><span class="section-icon" aria-hidden="true">❓</span>FAQ</h2>
                     <button type="button" class="card-toggle" aria-expanded="true" data-target="faq-content">▾</button>
                 </div>
             </div>
             <div class="card-content" id="faq-content">
+                <div class="faq-illustration" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
                 <ul class="faq-list">
                     <li>
                         <h3>How do I connect the relay?</h3>
@@ -702,6 +721,7 @@
     <div class="onboarding-overlay" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="onboarding-panel">
             <h2>Welcome to ChatScope</h2>
+            <p class="onboarding-step-label" id="onboarding-step-label"></p>
             <p id="onboarding-copy">Link the relay to start mirroring chats.</p>
             <div class="onboarding-actions">
                 <button type="button" class="ghost-button" id="onboarding-skip">Skip</button>
@@ -711,6 +731,16 @@
     </div>
 
     <footer>
+        <div class="footer-brand">
+            <img src="tpg.png" alt="" aria-hidden="true" loading="lazy">
+            <div>
+                <p>ChatScope Relay</p>
+                <small>Conversation intelligence for your WhatsApp chats.</small>
+            </div>
+        </div>
+        <p class="footer-meta">
+            Crafted with care · <span class="footer-dot">•</span> <a href="https://relay.chatscope.app" target="_blank" rel="noopener">relay.chatscope.app</a>
+        </p>
     </footer>
 
     <script type="module" src="js/main.js"></script>
