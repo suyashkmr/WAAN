@@ -61,6 +61,11 @@ import {
   renderSummaryCards as renderSummarySection,
   renderParticipants as renderParticipantsSection,
 } from "./analytics/summary.js";
+import {
+  renderTimeOfDayPanel,
+  formatHourLabel,
+  computeTimeOfDayDataset,
+} from "./analytics/activity.js";
 import { renderSentimentSection } from "./analytics/sentiment.js";
 import {
   API_BASE,
@@ -382,6 +387,7 @@ const timeOfDayHourEndLabel = document.getElementById("timeofday-hour-end-label"
 const timeOfDaySparklineEl = document.getElementById("timeofday-sparkline");
 const timeOfDayBandsEl = document.getElementById("timeofday-bands");
 const timeOfDayCalloutsEl = document.getElementById("timeofday-callouts");
+const timeOfDayChartContainer = document.getElementById("timeofday-chart");
 const pollsNote = document.getElementById("polls-note");
 const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
@@ -1961,7 +1967,16 @@ function renderDashboard(analytics) {
     currentToken,
   );
   renderWeekdayPanel(analytics);
-  scheduleDeferredRender(() => renderTimeOfDayPanel(analytics), currentToken);
+  scheduleDeferredRender(
+    () =>
+      renderTimeOfDayPanel(analytics, {
+        container: timeOfDayChartContainer,
+        sparklineEl: timeOfDaySparklineEl,
+        bandsEl: timeOfDayBandsEl,
+        calloutsEl: timeOfDayCalloutsEl,
+      }),
+    currentToken,
+  );
   scheduleDeferredRender(() => renderMessageTypes(analytics.message_types ?? null), currentToken);
   scheduleDeferredRender(() => renderPolls(analytics.polls ?? null), currentToken);
   renderStatistics(analytics);
@@ -4131,382 +4146,6 @@ function renderWeekdayPanel(analytics) {
   renderWeekdayChart();
 }
 
-function formatHourLabel(hour) {
-  return `${String(hour).padStart(2, "0")}:00`;
-}
-
-function computeTimeOfDayDataset(analytics) {
-  const state = getHourlyState();
-  const heatmap = state.heatmap;
-  const includeWeekdays = state.filters.weekdays;
-  const includeWeekends = state.filters.weekends;
-
-  const totals = Array(24).fill(0);
-  const weekdayTotals = Array(24).fill(0);
-  const weekendTotals = Array(24).fill(0);
-
-  if (Array.isArray(heatmap) && heatmap.length) {
-    heatmap.forEach((hours, dayIdx) => {
-      const isWeekend = dayIdx === 0 || dayIdx === 6;
-      hours.forEach((count, hour) => {
-        const value = Number(count) || 0;
-        totals[hour] += value;
-        if (isWeekend) weekendTotals[hour] += value;
-        else weekdayTotals[hour] += value;
-      });
-    });
-  } else if (Array.isArray(analytics?.hourly_distribution)) {
-    analytics.hourly_distribution.forEach(entry => {
-      const hour = Number(entry.hour);
-      const value = Number(entry.count) || 0;
-      if (!Number.isFinite(hour)) return;
-      totals[hour] = value;
-      if (includeWeekdays && !includeWeekends) {
-        weekdayTotals[hour] = value;
-      } else if (!includeWeekdays && includeWeekends) {
-        weekendTotals[hour] = value;
-      } else {
-        weekdayTotals[hour] = value;
-        weekendTotals[hour] = value;
-      }
-    });
-  }
-
-  const points = totals.map((total, hour) => {
-    const weekday = weekdayTotals[hour] || 0;
-    const weekend = weekendTotals[hour] || 0;
-    let active = 0;
-    if (includeWeekdays) active += weekday;
-    if (includeWeekends) active += weekend;
-    if (!includeWeekdays && !includeWeekends) active = total;
-    return {
-      hour,
-      total: active,
-      weekday,
-      weekend,
-    };
-  });
-
-  const totalWeekday = includeWeekdays
-    ? weekdayTotals.reduce((sum, value) => sum + value, 0)
-    : 0;
-  const totalWeekend = includeWeekends
-    ? weekendTotals.reduce((sum, value) => sum + value, 0)
-    : 0;
-  const grandTotal = points.reduce((sum, point) => sum + point.total, 0);
-  const maxValue = points.reduce((max, point) => Math.max(max, point.total), 0);
-  const average = points.length ? grandTotal / points.length : 0;
-
-  points.forEach(point => {
-    point.share = grandTotal ? point.total / grandTotal : 0;
-    point.weekdayShare = totalWeekday ? point.weekday / totalWeekday : 0;
-    point.weekendShare = totalWeekend ? point.weekend / totalWeekend : 0;
-  });
-
-  return {
-    points,
-    total: grandTotal,
-    max: maxValue || 1,
-    average,
-    includeWeekdays,
-    includeWeekends,
-    brush: { ...state.brush },
-    totals: {
-      weekday: totalWeekday,
-      weekend: totalWeekend,
-    },
-  };
-}
-
-function renderTimeOfDayPanel(analytics) {
-  const dataset = computeTimeOfDayDataset(analytics);
-  renderTimeOfDayChart(dataset);
-}
-
-function renderTimeOfDayChart(dataset) {
-  const container = document.getElementById("timeofday-chart");
-  if (!container || !timeOfDaySparklineEl || !timeOfDayBandsEl || !timeOfDayCalloutsEl) return;
-
-  timeOfDaySparklineEl.innerHTML = "";
-  timeOfDayBandsEl.innerHTML = "";
-  timeOfDayCalloutsEl.innerHTML = "";
-
-  if (!dataset || !dataset.points.length || !dataset.total) {
-    container.classList.add("empty");
-    const empty = document.createElement("div");
-    empty.className = "timeofday-summary";
-    empty.textContent = "No time-of-day data yet.";
-    timeOfDaySparklineEl.appendChild(empty);
-    return;
-  }
-
-  container.classList.remove("empty");
-
-  const points = dataset.points;
-  const maxValue = dataset.max || 1;
-  const topPoint = points.reduce((top, current) => (current.total > (top?.total ?? -Infinity) ? current : top), null);
-  const focusTotal = points
-    .filter(point => point.hour >= dataset.brush.start && point.hour <= dataset.brush.end)
-    .reduce((sum, point) => sum + point.total, 0);
-  const focusShare = dataset.total ? (focusTotal / dataset.total) * 100 : 0;
-
-  const summary = document.createElement("div");
-  summary.className = "timeofday-summary";
-  if (topPoint) {
-    const shareText = topPoint.share ? ` (${formatFloat(topPoint.share * 100, 1)}% of messages)` : "";
-    summary.innerHTML = `<strong>Peak hour:</strong> ${formatHourLabel(topPoint.hour)} · ${formatNumber(
-      topPoint.total,
-    )}${shareText}<br><span>Focus window ${formatHourLabel(dataset.brush.start)} – ${formatHourLabel(
-      dataset.brush.end,
-    )} covers ${formatFloat(focusShare, 1)}% of messages.</span>`;
-  }
-  timeOfDaySparklineEl.appendChild(summary);
-
-  const width = timeOfDaySparklineEl.clientWidth || 480;
-  const height = 160;
-  const margin = { top: 26, right: 18, bottom: 26, left: 18 };
-  const chartWidth = Math.max(width - margin.left - margin.right, 1);
-  const chartHeight = Math.max(height - margin.top - margin.bottom, 1);
-  const svgNS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");
-
-  const gradientId = `todGradient-${renderTaskToken}`;
-  const defs = document.createElementNS(svgNS, "defs");
-  const gradient = document.createElementNS(svgNS, "linearGradient");
-  gradient.setAttribute("id", gradientId);
-  gradient.setAttribute("x1", "0");
-  gradient.setAttribute("y1", "0");
-  gradient.setAttribute("x2", "0");
-  gradient.setAttribute("y2", "1");
-  const stopTop = document.createElementNS(svgNS, "stop");
-  stopTop.setAttribute("offset", "0%");
-  stopTop.setAttribute("stop-color", "rgba(34, 211, 238, 0.35)");
-  const stopBottom = document.createElementNS(svgNS, "stop");
-  stopBottom.setAttribute("offset", "100%");
-  stopBottom.setAttribute("stop-color", "rgba(34, 211, 238, 0)");
-  gradient.append(stopTop, stopBottom);
-  defs.appendChild(gradient);
-  svg.appendChild(defs);
-
-  const toCoord = hourIndex =>
-    margin.left + chartWidth * (hourIndex / Math.max(points.length - 1, 1));
-  const coords = points.map((point, index) => {
-    const x = toCoord(index);
-    const ratio = point.total / maxValue;
-    const y = margin.top + chartHeight * (1 - (Number.isFinite(ratio) ? ratio : 0));
-    return { x, y, point };
-  });
-
-  const areaPath = [
-    `M ${coords[0].x.toFixed(2)} ${(margin.top + chartHeight).toFixed(2)}`,
-    ...coords.map(coord => `L ${coord.x.toFixed(2)} ${coord.y.toFixed(2)}`),
-    `L ${coords[coords.length - 1].x.toFixed(2)} ${(margin.top + chartHeight).toFixed(2)}`,
-    "Z",
-  ].join(" ");
-
-  const linePath = coords
-    .map((coord, index) => `${index ? "L" : "M"} ${coord.x.toFixed(2)} ${coord.y.toFixed(2)}`)
-    .join(" ");
-
-  const weekendAvailable = dataset.includeWeekends && dataset.totals.weekend > 0;
-  let weekendPath = "";
-  if (weekendAvailable) {
-    weekendPath = coords
-      .map((coord, index) => {
-        const weekendValue = points[index].weekend;
-        const ratio = weekendValue / maxValue;
-        const y = margin.top + chartHeight * (1 - (Number.isFinite(ratio) ? ratio : 0));
-        return `${index ? "L" : "M"} ${coord.x.toFixed(2)} ${y.toFixed(2)}`;
-      })
-      .join(" ");
-  }
-
-  if (dataset.brush.start !== 0 || dataset.brush.end !== 23) {
-    const focusStartRatio = dataset.brush.start / 23;
-    const focusEndRatio = dataset.brush.end / 23;
-    const focusX = margin.left + chartWidth * focusStartRatio;
-    const focusWidth = chartWidth * Math.max(focusEndRatio - focusStartRatio, 0);
-    const focusRect = document.createElementNS(svgNS, "rect");
-    focusRect.setAttribute("class", "focus-band");
-    focusRect.setAttribute("x", focusX.toFixed(2));
-    focusRect.setAttribute("y", margin.top.toFixed(2));
-    focusRect.setAttribute("width", Math.max(focusWidth, 0).toFixed(2));
-    focusRect.setAttribute("height", chartHeight.toFixed(2));
-    svg.appendChild(focusRect);
-  }
-
-  const area = document.createElementNS(svgNS, "path");
-  area.setAttribute("class", "sparkline-fill");
-  area.setAttribute("d", areaPath);
-  area.setAttribute("fill", `url(#${gradientId})`);
-  svg.appendChild(area);
-
-  const line = document.createElementNS(svgNS, "path");
-  line.setAttribute("class", "sparkline-line");
-  line.setAttribute("d", linePath);
-  svg.appendChild(line);
-
-  if (weekendAvailable && weekendPath) {
-    const weekendLine = document.createElementNS(svgNS, "path");
-    weekendLine.setAttribute("class", "weekend-line");
-    weekendLine.setAttribute("d", weekendPath);
-    svg.appendChild(weekendLine);
-  }
-
-  if (dataset.average > 0) {
-    const avgRatio = dataset.average / maxValue;
-    const avgY = margin.top + chartHeight * (1 - (Number.isFinite(avgRatio) ? avgRatio : 0));
-    const baseline = document.createElementNS(svgNS, "line");
-    baseline.setAttribute("class", "baseline");
-    baseline.setAttribute("x1", margin.left.toFixed(2));
-    baseline.setAttribute("x2", (margin.left + chartWidth).toFixed(2));
-    baseline.setAttribute("y1", avgY.toFixed(2));
-    baseline.setAttribute("y2", avgY.toFixed(2));
-    svg.appendChild(baseline);
-  }
-
-  const axisGroup = document.createElementNS(svgNS, "g");
-  axisGroup.setAttribute("class", "axis");
-  const axisY = margin.top + chartHeight;
-  const axisLine = document.createElementNS(svgNS, "line");
-  axisLine.setAttribute("class", "axis-line");
-  axisLine.setAttribute("x1", margin.left.toFixed(2));
-  axisLine.setAttribute("x2", (margin.left + chartWidth).toFixed(2));
-  axisLine.setAttribute("y1", axisY.toFixed(2));
-  axisLine.setAttribute("y2", axisY.toFixed(2));
-  axisGroup.appendChild(axisLine);
-
-  const axisTicks = [0, 6, 12, 18, 23];
-  axisTicks.forEach(tick => {
-    const x = margin.left + chartWidth * (tick / 23);
-    const tickLine = document.createElementNS(svgNS, "line");
-    tickLine.setAttribute("class", "axis-tick");
-    tickLine.setAttribute("x1", x.toFixed(2));
-    tickLine.setAttribute("x2", x.toFixed(2));
-    tickLine.setAttribute("y1", axisY.toFixed(2));
-    tickLine.setAttribute("y2", (axisY + 6).toFixed(2));
-    axisGroup.appendChild(tickLine);
-
-    const tickLabel = document.createElementNS(svgNS, "text");
-    tickLabel.setAttribute("class", "axis-label");
-    tickLabel.setAttribute("x", x.toFixed(2));
-    tickLabel.setAttribute("y", (axisY + 16).toFixed(2));
-    tickLabel.setAttribute("text-anchor", "middle");
-    tickLabel.textContent = formatHourLabel(tick);
-    axisGroup.appendChild(tickLabel);
-  });
-
-  svg.appendChild(axisGroup);
-
-  const topHours = [...points]
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 3)
-    .map(point => point.hour);
-  coords.forEach(coord => {
-    if (!topHours.includes(coord.point.hour)) return;
-    const circle = document.createElementNS(svgNS, "circle");
-    circle.setAttribute("class", "sparkline-peak");
-    circle.setAttribute("cx", coord.x.toFixed(2));
-    circle.setAttribute("cy", coord.y.toFixed(2));
-    circle.setAttribute("r", "3.5");
-    svg.appendChild(circle);
-  });
-
-  timeOfDaySparklineEl.appendChild(svg);
-
-  const legend = document.createElement("div");
-  legend.className = "timeofday-legend";
-  const makeLegendItem = (swatchClass, label) => {
-    const item = document.createElement("span");
-    item.className = "legend-item";
-    const swatch = document.createElement("span");
-    swatch.className = `legend-swatch ${swatchClass}`;
-    const text = document.createElement("span");
-    text.textContent = label;
-    item.append(swatch, text);
-    return item;
-  };
-  legend.appendChild(makeLegendItem("main", "All days"));
-  if (weekendAvailable) {
-    legend.appendChild(makeLegendItem("weekend", "Weekends"));
-  }
-  if (dataset.average > 0) {
-    legend.appendChild(makeLegendItem("baseline", "Daily average"));
-  }
-  if (dataset.brush.start !== 0 || dataset.brush.end !== 23) {
-    legend.appendChild(makeLegendItem("focus", "Focus range"));
-  }
-  timeOfDaySparklineEl.appendChild(legend);
-
-  const bands = TIME_OF_DAY_BANDS.map(band => {
-    const bandHours = points.filter(point => point.hour >= band.start && point.hour <= band.end);
-    const count = bandHours.reduce((sum, point) => sum + point.total, 0);
-    const share = dataset.total ? count / dataset.total : 0;
-    const focusOverlap = dataset.brush.start <= band.end && dataset.brush.end >= band.start;
-    return {
-      ...band,
-      count,
-      share,
-      focusOverlap,
-    };
-  });
-
-  const topBand = bands.reduce((top, band) => (band.count > (top?.count ?? -Infinity) ? band : top), null);
-  bands.forEach(band => {
-    const bandItem = document.createElement("div");
-    bandItem.className = "timeofday-band";
-    if (topBand && band.id === topBand.id) bandItem.classList.add("top");
-    const focusLabel = band.focusOverlap ? " · In focus" : "";
-    bandItem.innerHTML = `
-      <span class="band-label">${band.label}</span>
-      <span class="band-count">${formatNumber(band.count)}</span>
-      <span class="band-share">${formatFloat(band.share * 100, 1)}% of messages${focusLabel}</span>
-    `;
-    timeOfDayBandsEl.appendChild(bandItem);
-  });
-
-  const windowSize = Math.min(TIME_OF_DAY_SPAN_WINDOW, points.length);
-  const spans = [];
-  for (let i = 0; i <= points.length - windowSize; i += 1) {
-    const windowPoints = points.slice(i, i + windowSize);
-    const count = windowPoints.reduce((sum, point) => sum + point.total, 0);
-    const weekendCount = windowPoints.reduce((sum, point) => sum + point.weekend, 0);
-    const spanStartHour = windowPoints[0].hour;
-    const spanEndHour = windowPoints[windowPoints.length - 1].hour;
-    const inFocus = windowPoints.some(point => point.hour >= dataset.brush.start && point.hour <= dataset.brush.end);
-    spans.push({
-      startHour: spanStartHour,
-      endHour: spanEndHour,
-      count,
-      weekendCount,
-      inFocus,
-    });
-  }
-
-  spans.sort((a, b) => b.count - a.count);
-  const topSpans = spans.slice(0, 3);
-  topSpans.forEach((span, index) => {
-    const callout = document.createElement("div");
-    callout.className = "timeofday-callout";
-    if (span.inFocus) callout.classList.add("focus");
-    const spanShare = dataset.total ? (span.count / dataset.total) * 100 : 0;
-    const weekendShare = dataset.totals.weekend
-      ? (span.weekendCount / dataset.totals.weekend) * 100
-      : 0;
-    const endLabel = span.endHour === 23 ? "00:00" : formatHourLabel(span.endHour + 1);
-    callout.innerHTML = `
-      <span class="badge">#${index + 1}</span>
-      <strong>${formatHourLabel(span.startHour)} – ${endLabel}</strong>
-      <span>${formatNumber(span.count)} messages (${formatFloat(spanShare, 1)}% of total)</span>
-      ${dataset.includeWeekends ? `<span>Weekend share: ${formatFloat(weekendShare, 1)}%</span>` : ""}
-      ${span.inFocus ? `<span>Overlaps focus window</span>` : ""}
-    `;
-    timeOfDayCalloutsEl.appendChild(callout);
-  });
-}
-
 function renderStatistics(analytics) {
   const setText = (id, value) => {
     const node = document.getElementById(id);
@@ -5522,7 +5161,12 @@ function rerenderHourlyFromState() {
   renderHourlyHeatmap(state.heatmap, state.summary, state.details, state.distribution);
   const analytics = getDatasetAnalytics();
   if (analytics) {
-    renderTimeOfDayPanel(analytics);
+    renderTimeOfDayPanel(analytics, {
+      container: timeOfDayChartContainer,
+      sparklineEl: timeOfDaySparklineEl,
+      bandsEl: timeOfDayBandsEl,
+      calloutsEl: timeOfDayCalloutsEl,
+    });
   }
 }
 
