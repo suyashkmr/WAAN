@@ -33,9 +33,25 @@
 @font-face {
     font-family: "Clash Display";
     font-style: normal;
-    font-weight: 500 700;
+    font-weight: 500;
     font-display: swap;
-    src: url("./fonts/ClashDisplay-Variable.ttf") format("truetype");
+    src: url("./fonts/ClashDisplay-500.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Clash Display";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/ClashDisplay-600.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Clash Display";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./fonts/ClashDisplay-700.woff2") format("woff2");
 }
 
 :root {
