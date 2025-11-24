@@ -71,6 +71,8 @@ import {
   renderWeekdaySection,
 } from "./analytics/activity.js";
 import { renderSentimentSection } from "./analytics/sentiment.js";
+import { renderMessageTypesSection } from "./analytics/messageTypes.js";
+import { renderPollsSection } from "./analytics/polls.js";
 import {
   API_BASE,
   RELAY_BASE,
@@ -1990,8 +1992,30 @@ function renderDashboard(analytics) {
       }),
     currentToken,
   );
-  scheduleDeferredRender(() => renderMessageTypes(analytics.message_types ?? null), currentToken);
-  scheduleDeferredRender(() => renderPolls(analytics.polls ?? null), currentToken);
+  scheduleDeferredRender(
+    () =>
+      renderMessageTypesSection({
+        data: analytics.message_types ?? null,
+        elements: {
+          summaryEl: messageTypeSummaryEl,
+          noteEl: messageTypeNoteEl,
+        },
+      }),
+    currentToken,
+  );
+  scheduleDeferredRender(
+    () =>
+      renderPollsSection({
+        data: analytics.polls ?? null,
+        elements: {
+          listEl: pollsListEl,
+          totalsEl: pollsTotalEl,
+          creatorsEl: pollsCreatorsEl,
+          noteEl: pollsNote,
+        },
+      }),
+    currentToken,
+  );
   renderStatistics(analytics);
   scheduleDeferredRender(populateSearchParticipants, currentToken);
   scheduleDeferredRender(renderSearchResults, currentToken);
@@ -2013,35 +2037,6 @@ function renderParticipants(analytics) {
       participantView = Array.isArray(next) ? next : [];
     },
   });
-}
-
-function renderMessageTypes(messageTypes) {
-  if (!messageTypeSummaryEl) return;
-
-  const summary = Array.isArray(messageTypes?.summary) ? messageTypes.summary : [];
-  messageTypeSummaryEl.innerHTML = "";
-
-  if (!summary.length) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = "No message categories for this range.";
-    messageTypeSummaryEl.appendChild(empty);
-    if (messageTypeNoteEl) messageTypeNoteEl.textContent = "";
-    return;
-  }
-
-  const shareSnippets = summary
-    .map(entry => `${entry.label}: ${formatFloat((entry.share || 0) * 100, 1)}%`)
-    .join(" · ");
-
-  const summaryText = document.createElement("p");
-  summaryText.className = "message-type-share-summary";
-  summaryText.textContent = `Share by type → ${shareSnippets}.`;
-  messageTypeSummaryEl.appendChild(summaryText);
-
-  if (messageTypeNoteEl) {
-    messageTypeNoteEl.textContent = "";
-  }
 }
 
 function renderHourlyPanel(analytics) {
@@ -4204,69 +4199,6 @@ function renderStatistics(analytics) {
   }
   setText("avg-chars", formatFloat(analytics.averages.characters, 1));
   setText("avg-words", formatFloat(analytics.averages.words, 1));
-}
-
-function renderPolls(polls) {
-  if (!pollsListEl) return;
-
-  const totalPolls = pollCount => (Number.isFinite(pollCount) && pollCount > 0 ? pollCount : 0);
-  const uniqueCreators = count => (Number.isFinite(count) && count > 0 ? count : 0);
-  const total = totalPolls(polls?.total);
-  const creators = uniqueCreators(polls?.unique_creators);
-
-  if (pollsTotalEl) pollsTotalEl.textContent = formatNumber(total);
-  if (pollsCreatorsEl) pollsCreatorsEl.textContent = formatNumber(creators);
-
-  const entries = Array.isArray(polls?.entries) ? polls.entries.slice(0, 5) : [];
-
-  if (!entries.length) {
-    pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
-    if (pollsNote) {
-      pollsNote.textContent = "Load a chat that includes poll messages to surface them here.";
-    }
-    return;
-  }
-
-  const formatTimestamp = entry => {
-    if (entry.timestamp) return formatDisplayDate(entry.timestamp);
-    if (entry.timestamp_text) return entry.timestamp_text;
-    return "";
-  };
-
-  pollsListEl.innerHTML = entries
-    .map(entry => {
-      const title = sanitizeText(entry.title || "Poll");
-      const sender = entry.sender || "Unknown";
-      const timeLabel = formatTimestamp(entry);
-      const metaParts = [sender ? `By ${sender}` : null, timeLabel || null].filter(Boolean);
-      const options = Array.isArray(entry.options) ? entry.options.slice(0, 6) : [];
-      const optionsMarkup = options.length
-        ? `<div class="poll-item-options">${options
-            .map(option => `<span>${sanitizeText(option)}</span>`)
-            .join("")}</div>`
-        : "";
-      return `
-        <li class="poll-item">
-          <div class="poll-item-title">${title}</div>
-          <div class="poll-item-meta">${metaParts.map(text => sanitizeText(text)).join(" · ")}</div>
-          ${optionsMarkup}
-        </li>
-      `;
-    })
-    .join("");
-
-  if (pollsNote) {
-    const topCreator = Array.isArray(polls?.top_creators) ? polls.top_creators[0] : null;
-    const noteParts = [`${formatNumber(total)} polls recorded`];
-    if (topCreator) {
-      noteParts.push(
-        `Most polls: ${sanitizeText(topCreator.sender || "Unknown")} (${formatNumber(topCreator.count || 0)})`,
-      );
-    } else if (creators) {
-      noteParts.push(`${formatNumber(creators)} people created polls`);
-    }
-    pollsNote.textContent = noteParts.join(" · ");
-  }
 }
 
 async function handleRangeChange() {
