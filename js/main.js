@@ -277,6 +277,9 @@ const summaryEl = document.getElementById("summary");
 const participantsBody = document.querySelector("#top-senders tbody");
 const participantsNote = document.getElementById("participants-note");
 const participantsTopSelect = document.getElementById("participants-top-count");
+const participantsSortSelect = document.getElementById("participants-sort");
+const participantsTimeframeSelect = document.getElementById("participants-timeframe");
+const participantPresetButtons = document.querySelectorAll("[data-participants-preset]");
 const rangeSelect = document.getElementById("global-range");
 const chatSelector = document.getElementById("chat-selector");
 const relayStatusEl = document.getElementById("relay-connection-status");
@@ -333,6 +336,11 @@ const compareViewASelect = document.getElementById("compare-view-a");
 const compareViewBSelect = document.getElementById("compare-view-b");
 const compareViewsButton = document.getElementById("compare-views");
 const compareSummaryEl = document.getElementById("compare-summary");
+const relayPrimaryActionHandlers = {
+  connect: () => startRelaySession(),
+  restart: () => startRelaySession(),
+  resync: () => syncRelayChats({ silent: false }),
+};
 const searchForm = document.getElementById("advanced-search-form");
 const searchKeywordInput = document.getElementById("search-keyword");
 const searchParticipantSelect = document.getElementById("search-participant");
@@ -421,7 +429,21 @@ document.querySelectorAll(".summary-value").forEach(element => {
 let hourlyControlsInitialised = false;
 const participantFilters = {
   topCount: Number(participantsTopSelect?.value ?? 25) || 0,
+  sortMode: participantsSortSelect?.value ?? "most",
+  timeframe: participantsTimeframeSelect?.value ?? "all",
 };
+
+function getExportFilterSummary() {
+  const rangeValue = normalizeRangeValue(getCurrentRange());
+  const rangeLabel = describeRange(rangeValue);
+  const parts = [`Range: ${rangeLabel}`];
+  parts.push(`Participants: ${participantFilters.sortMode === "quiet" ? "Quietest" : "Most active"}`);
+  if (participantFilters.topCount > 0) {
+    parts.push(`Limit: Top ${participantFilters.topCount}`);
+  }
+  parts.push(`Timeframe: ${participantFilters.timeframe === "week" ? "Last 7 days" : "All time"}`);
+  return parts;
+}
 let participantView = [];
 const SEARCH_RESULT_LIMIT = 200;
 const TIME_OF_DAY_BANDS = [
@@ -451,6 +473,8 @@ const relayUiState = {
   status: null,
   lastErrorNotice: null,
   lastStatusKind: null,
+  controlsLocked: false,
+  primaryAction: "connect",
 };
 const relayLogState = {
   entries: [],
@@ -1509,6 +1533,17 @@ function attachEventHandlers() {
   if (participantsTopSelect) {
     participantsTopSelect.addEventListener("change", handleParticipantsTopChange);
   }
+  if (participantsSortSelect) {
+    participantsSortSelect.addEventListener("change", handleParticipantsSortChange);
+  }
+  if (participantsTimeframeSelect) {
+    participantsTimeframeSelect.addEventListener("change", handleParticipantsTimeframeChange);
+  }
+  if (participantPresetButtons?.length) {
+    participantPresetButtons.forEach(button => {
+      button.addEventListener("click", handleParticipantPresetClick);
+    });
+  }
   if (participantsBody) {
     participantsBody.addEventListener("click", handleParticipantRowToggle);
   }
@@ -1623,13 +1658,13 @@ function initRelayControls() {
   if (!relayStartButton || !relayStatusEl) {
     return;
   }
-  relayStartButton.addEventListener("click", startRelaySession);
+  relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
   relayStopButton?.addEventListener("click", stopRelaySession);
   relayLogoutButton?.addEventListener("click", logoutRelaySession);
   relayRefreshButton?.addEventListener("click", () => syncRelayChats({ silent: false }));
   relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
   relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
-  relayBannerConnectButton?.addEventListener("click", startRelaySession);
+  relayBannerConnectButton?.addEventListener("click", handleRelayPrimaryActionClick);
   relayBannerDisconnectButton?.addEventListener("click", stopRelaySession);
   refreshRelayStatus({ silent: true }).finally(() => {
     scheduleRelayStatusPolling();
@@ -1648,9 +1683,23 @@ function scheduleRelayStatusPolling() {
 }
 
 function setRelayControlsDisabled(disabled) {
-  [relayStartButton, relayStopButton, relayRefreshButton, relayLogoutButton, relayReloadAllButton, relayClearStorageButton].forEach(button => {
+  relayUiState.controlsLocked = disabled;
+  [relayStartButton, relayStopButton, relayRefreshButton, relayLogoutButton, relayReloadAllButton, relayClearStorageButton, relayBannerConnectButton].forEach(button => {
     if (button) button.disabled = disabled;
   });
+  if (!disabled) {
+    applyRelayPrimaryAction(relayUiState.status);
+  }
+}
+
+function handleRelayPrimaryActionClick(event) {
+  const target = event.currentTarget;
+  if (!target || target.disabled) {
+    return;
+  }
+  const action = target.dataset?.relayAction || "connect";
+  const handler = relayPrimaryActionHandlers[action] || relayPrimaryActionHandlers.connect;
+  handler();
 }
 
 async function startRelaySession() {
@@ -1795,6 +1844,7 @@ async function refreshRelayStatus({ silent = false } = {}) {
 function applyRelayStatus(status) {
   updateHeroRelayStatus(status);
   window.electronAPI?.updateRelayStatus?.(status);
+  applyRelayPrimaryAction(status);
   if (!relayStatusEl) return;
   updateRelayBanner(status);
   updateRelayOnboarding(status);
@@ -1807,12 +1857,10 @@ function applyRelayStatus(status) {
       relayHelpText.textContent =
         "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.";
     }
-    if (relayStartButton) relayStartButton.disabled = false;
     if (relayStopButton) relayStopButton.disabled = true;
     if (relayRefreshButton) relayRefreshButton.disabled = true;
     if (relayReloadAllButton) relayReloadAllButton.disabled = true;
     if (relayClearStorageButton) relayClearStorageButton.disabled = false;
-    if (relayBannerConnectButton) relayBannerConnectButton.disabled = false;
     if (relayBannerDisconnectButton) relayBannerDisconnectButton.disabled = true;
     setRemoteChatList([]);
     relayUiState.lastStatusKind = "offline";
@@ -1849,9 +1897,6 @@ function applyRelayStatus(status) {
   const running = status.status === "running";
   const waiting = status.status === "waiting_qr" || status.status === "starting";
   const canLogout = running || waiting || Boolean(status.account);
-  if (relayStartButton) {
-    relayStartButton.disabled = running || waiting;
-  }
   if (relayStopButton) {
     relayStopButton.disabled = !running && !waiting;
   }
@@ -1866,9 +1911,6 @@ function applyRelayStatus(status) {
   }
   if (relayClearStorageButton) {
     relayClearStorageButton.disabled = false;
-  }
-  if (relayBannerConnectButton) {
-    relayBannerConnectButton.disabled = running || waiting;
   }
   if (relayBannerDisconnectButton) {
     relayBannerDisconnectButton.disabled = !running && !waiting;
@@ -1925,6 +1967,66 @@ function describeRelayStatus(status) {
     }
   })();
   return { message: baseMessage };
+}
+
+function getRelayPrimaryAction(status) {
+  const defaultAction = {
+    id: "connect",
+    label: "Connect",
+    hint: `Start ${RELAY_SERVICE_NAME} to mirror chats.`,
+    disabled: false,
+  };
+  if (!status) return defaultAction;
+  const state = status.status;
+  if (status.lastError || state === "error") {
+    return {
+      id: "restart",
+      label: "Restart session",
+      hint: "Retry launching the relay and relink your phone.",
+      disabled: false,
+    };
+  }
+  if (state === "running") {
+    return {
+      id: "resync",
+      label: "Resync chats",
+      hint: "Fetch the latest chats from the relay.",
+      disabled: false,
+    };
+  }
+  if (state === "waiting_qr") {
+    return {
+      id: "waiting",
+      label: "Scan QR to continue",
+      hint: "Open WhatsApp → Linked Devices on your phone to finish linking.",
+      disabled: true,
+    };
+  }
+  if (state === "starting") {
+    return {
+      id: "starting",
+      label: "Starting…",
+      hint: `Launching ${RELAY_SERVICE_NAME}…`,
+      disabled: true,
+    };
+  }
+  return defaultAction;
+}
+
+function applyRelayPrimaryAction(status) {
+  const action = getRelayPrimaryAction(status);
+  relayUiState.primaryAction = action.id;
+  [relayStartButton, relayBannerConnectButton].forEach(button => {
+    if (!button) return;
+    button.dataset.relayAction = action.id;
+    button.textContent = action.label;
+    if (action.hint) {
+      button.setAttribute("title", action.hint);
+    } else {
+      button.removeAttribute("title");
+    }
+    button.disabled = relayUiState.controlsLocked || Boolean(action.disabled);
+  });
 }
 
 function updateRelayBanner(status) {
@@ -2311,6 +2413,40 @@ function handleParticipantsTopChange() {
   if (analytics) renderParticipants(analytics);
 }
 
+function handleParticipantsSortChange() {
+  participantFilters.sortMode = participantsSortSelect?.value || "most";
+  const analytics = getDatasetAnalytics();
+  if (analytics) renderParticipants(analytics);
+}
+
+function handleParticipantsTimeframeChange() {
+  participantFilters.timeframe = participantsTimeframeSelect?.value || "all";
+  const analytics = getDatasetAnalytics();
+  if (analytics) renderParticipants(analytics);
+}
+
+function handleParticipantPresetClick(event) {
+  const preset = event.currentTarget?.dataset?.participantsPreset;
+  if (!preset) return;
+  if (preset === "top-week") {
+    if (participantsTopSelect) participantsTopSelect.value = "5";
+    if (participantsSortSelect) participantsSortSelect.value = "most";
+    if (participantsTimeframeSelect) participantsTimeframeSelect.value = "week";
+    participantFilters.topCount = 5;
+    participantFilters.sortMode = "most";
+    participantFilters.timeframe = "week";
+  } else if (preset === "quiet") {
+    if (participantsTopSelect) participantsTopSelect.value = "5";
+    if (participantsSortSelect) participantsSortSelect.value = "quiet";
+    if (participantsTimeframeSelect) participantsTimeframeSelect.value = "all";
+    participantFilters.topCount = 5;
+    participantFilters.sortMode = "quiet";
+    participantFilters.timeframe = "all";
+  }
+  const analytics = getDatasetAnalytics();
+  if (analytics) renderParticipants(analytics);
+}
+
 function handleParticipantRowToggle(event) {
   const toggle = event.target.closest(".participant-toggle");
   if (!toggle) return;
@@ -2423,6 +2559,102 @@ function renderSummaryCards(analytics, label) {
   `).join("");
 }
 
+function computeParticipantTimeframeStats(timeframe, analytics) {
+  if (timeframe !== "week") return null;
+  const entries = getDatasetEntries();
+  if (!entries.length) {
+    return { counts: new Map(), total: 0, label: "Last 7 days", rangeLabel: null };
+  }
+  let endDate = analytics?.date_range?.end ? new Date(analytics.date_range.end) : new Date();
+  if (Number.isNaN(endDate.getTime())) endDate = new Date();
+  endDate = new Date(endDate.getTime());
+  const startDate = new Date(endDate);
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(23, 59, 59, 999);
+  startDate.setDate(startDate.getDate() - 6);
+  const cutoffMs = startDate.getTime();
+  const counts = new Map();
+  let total = 0;
+  entries.forEach(entry => {
+    if (entry.type && entry.type !== "message") return;
+    const ts = getTimestamp(entry);
+    if (!ts || ts.getTime() < cutoffMs) return;
+    const sender = entry.sender || "Unknown";
+    counts.set(sender, (counts.get(sender) || 0) + 1);
+    total += 1;
+  });
+  const rangeLabel = `${formatDisplayDate(startDate.toISOString())} → ${formatDisplayDate(endDate.toISOString())}`;
+  return {
+    counts,
+    total,
+    label: "Last 7 days",
+    rangeLabel,
+  };
+}
+
+function buildParticipantLeaderboard(analytics) {
+  const baseList = analytics.top_senders.map((entry, index) => ({
+    ...entry,
+    id: entry.id || `participant-${index}`,
+  }));
+  let scopeLabel = "All time";
+  let scopeRange = null;
+  let workingList = baseList.map(entry => ({ ...entry }));
+  if (participantFilters.timeframe !== "all") {
+    const stats = computeParticipantTimeframeStats(participantFilters.timeframe, analytics);
+    scopeLabel = stats?.label || scopeLabel;
+    scopeRange = stats?.rangeLabel || scopeRange;
+    if (stats?.counts && stats.total > 0) {
+      workingList = workingList
+        .map(entry => {
+          const overrideCount = stats.counts.get(entry.sender) || 0;
+          if (!overrideCount) return null;
+          return {
+            ...entry,
+            count: overrideCount,
+            share: stats.total ? overrideCount / stats.total : 0,
+          };
+        })
+        .filter(Boolean);
+    } else {
+      workingList = [];
+    }
+  }
+
+  const comparator =
+    participantFilters.sortMode === "quiet"
+      ? (a, b) => {
+          if (a.count === b.count) return a.sender.localeCompare(b.sender);
+          return a.count - b.count;
+        }
+      : (a, b) => {
+          if (b.count === a.count) return a.sender.localeCompare(b.sender);
+          return b.count - a.count;
+        };
+  workingList.sort(comparator);
+  return { list: workingList, scopeLabel, scopeRange };
+}
+
+function updateParticipantPresetStates() {
+  if (!participantPresetButtons?.length) return;
+  participantPresetButtons.forEach(button => {
+    const preset = button.dataset.participantsPreset;
+    let active = false;
+    if (preset === "top-week") {
+      active =
+        participantFilters.timeframe === "week" &&
+        participantFilters.sortMode === "most" &&
+        participantFilters.topCount === 5;
+    } else if (preset === "quiet") {
+      active =
+        participantFilters.timeframe === "all" &&
+        participantFilters.sortMode === "quiet" &&
+        participantFilters.topCount === 5;
+    }
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
 function renderParticipants(analytics) {
   if (!participantsBody) return;
   participantsBody.innerHTML = "";
@@ -2437,16 +2669,13 @@ function renderParticipants(analytics) {
       <td colspan="5" class="empty-state">Connect to ${RELAY_SERVICE_NAME} to see participant details.</td>
     `;
     participantsBody.appendChild(emptyRow);
+    updateParticipantPresetStates();
     return;
   }
 
-  const baseList = analytics.top_senders.map((entry, index) => ({
-    ...entry,
-    id: `participant-${index}`,
-  }));
-
+  const { list: workingList, scopeLabel, scopeRange } = buildParticipantLeaderboard(analytics);
   const limit = participantFilters.topCount;
-  let visible = limit > 0 ? baseList.slice(0, limit) : baseList;
+  let visible = limit > 0 ? workingList.slice(0, limit) : workingList;
 
   if (!visible.length) {
     const emptyRow = document.createElement("tr");
@@ -2458,20 +2687,26 @@ function renderParticipants(analytics) {
     if (participantsNote) {
       participantsNote.textContent = "Adjust the filters to list participants for this view.";
     }
+    updateParticipantPresetStates();
     return;
   }
 
   if (participantsNote) {
-    const baseCount = analytics.top_senders.length;
+    const baseCount = workingList.length || analytics.top_senders.length;
     const showingCount = visible.length;
     const limitedView = participantFilters.topCount > 0 && baseCount > participantFilters.topCount;
     const baseText = limitedView
       ? `Showing top ${formatNumber(showingCount)} of ${formatNumber(baseCount)} participants`
       : `Showing all ${formatNumber(baseCount)} participants`;
-    participantsNote.textContent = `${baseText}.`;
+    const descriptor = participantFilters.sortMode === "quiet" ? "Quietest participants" : "Most active participants";
+    const scopeText = scopeLabel || (participantFilters.timeframe === "week" ? "Last 7 days" : "All time");
+    const parts = [`${descriptor} · ${scopeText}`, baseText];
+    if (scopeRange) parts.splice(1, 0, scopeRange);
+    participantsNote.textContent = `${parts.join(" — ")}.`;
   }
 
   participantView = visible;
+  updateParticipantPresetStates();
 
   visible.forEach((entry, index) => {
     const row = document.createElement("tr");
@@ -4083,6 +4318,7 @@ function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
   const nowIso = new Date().toISOString();
   const title = getDatasetLabel() || `${BRAND_NAME} Chat`;
   const details = collectExportSummary(analytics);
+  const filterDetails = getExportFilterSummary();
   const highlights = details.highlights;
   const topSenders = details.topSenders;
   const messageTypeSummary = analytics.message_types?.summary || [];
@@ -4096,6 +4332,9 @@ function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
   if (details.rangeLabel) {
     lines.push("");
     lines.push(`> **Date range:** ${details.rangeLabel}`);
+  }
+  if (filterDetails.length) {
+    lines.push(`> **Filters:** ${filterDetails.join(" · ")}`);
   }
   lines.push(`> **Report style:** ${theme?.label || "Default"}`);
   lines.push("");
@@ -4363,6 +4602,7 @@ function buildExportDeckMarkup(analytics, theme, { mode = "screen", generatedAt 
     { label: "Date range", value: rangeLabel },
     { label: "Generated", value: generatedAtText },
     { label: "Theme", value: themeLabel },
+    ...getExportFilterSummary().map(info => ({ label: "Filter", value: escapeHtml(info) })),
   ];
   const metaHtml = metaEntries
     .map(
@@ -5505,6 +5745,17 @@ function exportParticipants() {
     updateStatus("No participants fit the current filters to export.", "warning");
     return;
   }
+  const header = [
+    "Rank",
+    "Participant",
+    "Messages",
+    "Share (%)",
+    "Avg Words",
+    "Avg Characters",
+    "Avg Sentiment",
+    "Positive (%)",
+    "Negative (%)",
+  ];
   const rows = participantView.map((entry, idx) => [
     idx + 1,
     entry.sender,
@@ -5522,20 +5773,17 @@ function exportParticipants() {
       ? formatFloat((entry.sentiment.negative / entry.count) * 100, 1)
       : "",
   ]);
+  const filterDetails = getExportFilterSummary();
+  const extraLines = filterDetails.map(info => {
+    const padded = new Array(header.length).fill("");
+    padded[0] = "Note";
+    padded[1] = info;
+    return padded;
+  });
   downloadCSV(
     buildFilename("participants"),
-    [
-      "Rank",
-      "Participant",
-      "Messages",
-      "Share (%)",
-      "Avg Words",
-      "Avg Characters",
-      "Avg Sentiment",
-      "Positive (%)",
-      "Negative (%)",
-    ],
-    rows,
+    header,
+    [...extraLines, ...rows],
   );
 }
 

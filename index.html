@@ -220,12 +220,36 @@
                     <label class="control-group" for="participants-top-count">
                         <span>Show Top</span>
                         <select id="participants-top-count">
+                            <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="25" selected>25</option>
                             <option value="50">50</option>
                             <option value="0">All</option>
                         </select>
                     </label>
+                    <label class="control-group" for="participants-sort">
+                        <span>Sort</span>
+                        <select id="participants-sort">
+                            <option value="most" selected>Most active</option>
+                            <option value="quiet">Quietest</option>
+                        </select>
+                    </label>
+                    <label class="control-group" for="participants-timeframe">
+                        <span>Timeframe</span>
+                        <select id="participants-timeframe">
+                            <option value="all" selected>All time</option>
+                            <option value="week">Last 7 days</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="participants-quick-filters">
+                    <span>Quick filters:</span>
+                    <button type="button" class="ghost-button tiny" data-participants-preset="top-week" aria-pressed="false">
+                        Top 5 this week
+                    </button>
+                    <button type="button" class="ghost-button tiny" data-participants-preset="quiet" aria-pressed="false">
+                        Quietest 5
+                    </button>
                 </div>
                 <div class="table-container scrollable">
                     <table id="top-senders">
