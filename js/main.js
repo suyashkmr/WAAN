@@ -42,9 +42,6 @@ import {
   setCompareSelection,
   getCompareSelection,
   getSearchState,
-  setSearchQuery,
-  setSearchResults,
-  resetSearchState,
   getHourlyState,
   updateHourlyState,
   resetHourlyFilters,
@@ -73,6 +70,8 @@ import {
 import { renderSentimentSection } from "./analytics/sentiment.js";
 import { renderMessageTypesSection } from "./analytics/messageTypes.js";
 import { renderPollsSection } from "./analytics/polls.js";
+import { createSearchController } from "./search.js";
+import { createSavedViewsController } from "./savedViews.js";
 import {
   API_BASE,
   RELAY_BASE,
@@ -321,7 +320,6 @@ const saveViewButton = document.getElementById("save-view");
 const savedViewList = document.getElementById("saved-view-list");
 const applySavedViewButton = document.getElementById("apply-saved-view");
 const deleteSavedViewButton = document.getElementById("delete-saved-view");
-const savedViewPlaceholder = savedViewNameInput?.getAttribute("placeholder") || "";
 const savedViewGallery = document.getElementById("saved-view-gallery");
 const compareViewASelect = document.getElementById("compare-view-a");
 const compareViewBSelect = document.getElementById("compare-view-b");
@@ -408,6 +406,70 @@ const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
 const dashboardRoot = document.querySelector("main");
+
+const searchController = createSearchController({
+  elements: {
+    form: searchForm,
+    keywordInput: searchKeywordInput,
+    participantSelect: searchParticipantSelect,
+    startInput: searchStartInput,
+    endInput: searchEndInput,
+    resetButton: resetSearchButton,
+    resultsSummaryEl: searchResultsSummary,
+    resultsListEl: searchResultsList,
+    insightsEl: searchInsightsEl,
+  },
+  options: { resultLimit: SEARCH_RESULT_LIMIT },
+  getSnapshotMode: () => snapshotMode,
+});
+
+const savedViewsController = createSavedViewsController({
+  elements: {
+    nameInput: savedViewNameInput,
+    saveButton: saveViewButton,
+    listSelect: savedViewList,
+    applyButton: applySavedViewButton,
+    deleteButton: deleteSavedViewButton,
+    gallery: savedViewGallery,
+    compareSelectA: compareViewASelect,
+    compareSelectB: compareViewBSelect,
+    compareButton: compareViewsButton,
+    compareSummaryEl,
+    rangeSelect,
+    customStartInput,
+    customEndInput,
+  },
+  dependencies: {
+    getDatasetEntries,
+    getDatasetAnalytics,
+    getDatasetLabel,
+    getCurrentRange,
+    getCustomRange,
+    setCurrentRange,
+    setCustomRange,
+    showCustomControls,
+    addSavedView,
+    getSavedViews,
+    updateSavedView,
+    removeSavedView,
+    clearSavedViews,
+    getCompareSelection,
+    setCompareSelection,
+    getHourlyState,
+    updateHourlyState,
+    getWeekdayState,
+    updateWeekdayState,
+    applyRangeAndRender,
+    ensureDayFilters,
+    ensureHourFilters,
+    syncHourlyControlsWithState,
+    ensureWeekdayDayFilters,
+    ensureWeekdayHourFilters,
+    syncWeekdayControlsWithState,
+    describeRange,
+    updateStatus,
+  },
+});
 setDashboardLoadingState(true);
 document.querySelectorAll(".summary-value").forEach(element => {
   element.setAttribute("data-skeleton", "value");
@@ -853,12 +915,6 @@ function setDataAvailabilityState(hasData) {
       }
     }
   });
-  if (savedViewNameInput) {
-    savedViewNameInput.placeholder = dataAvailable
-      ? savedViewPlaceholder
-      : "Load a chat to save a view";
-    if (!dataAvailable) savedViewNameInput.value = "";
-  }
   if (datasetEmptyCallout) {
     datasetEmptyCallout.classList.toggle("hidden", dataAvailable);
   }
@@ -869,7 +925,8 @@ function setDataAvailabilityState(hasData) {
     );
     updateSectionNarratives(null);
   }
-  refreshSavedViewsUI();
+  savedViewsController.setDataAvailability(Boolean(hasData));
+  savedViewsController.refreshUI();
 }
 
 function setGlobalBusy(isBusy, message = "Working…") {
@@ -1502,12 +1559,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (card) card.classList.toggle("collapsed", !next);
     });
   });
-  applySearchStateToForm();
-  renderSearchResults();
+  searchController.init();
+  savedViewsController.init();
+  savedViewsController.setDataAvailability(dataAvailable);
+  savedViewsController.setSnapshotMode(snapshotMode);
   const viewingSnapshot = tryLoadSnapshotFromHash();
-  if (!viewingSnapshot) {
-    refreshSavedViewsUI();
-  }
   refreshChatSelector();
   if (!viewingSnapshot) {
     updateStatus(`Start ${RELAY_SERVICE_NAME} to mirror chat app chats here.`, "info");
@@ -1665,28 +1721,6 @@ function attachEventHandlers() {
     timeOfDayHourStartInput.addEventListener("input", updateTimeOfDayBrush);
     timeOfDayHourEndInput.addEventListener("input", updateTimeOfDayBrush);
   }
-  if (searchForm) {
-    searchForm.addEventListener("submit", handleSearchSubmit);
-  }
-  if (resetSearchButton) {
-    resetSearchButton.addEventListener("click", handleSearchReset);
-  }
-  if (saveViewButton) {
-    saveViewButton.addEventListener("click", handleSaveView);
-  }
-  if (applySavedViewButton) {
-    applySavedViewButton.addEventListener("click", handleApplySavedView);
-  }
-  if (deleteSavedViewButton) {
-    deleteSavedViewButton.addEventListener("click", handleDeleteSavedView);
-  }
-  if (savedViewGallery) {
-    savedViewGallery.addEventListener("click", handleSavedViewGalleryClick);
-    savedViewGallery.addEventListener("keydown", handleSavedViewGalleryKeydown);
-  }
-  if (compareViewsButton) {
-    compareViewsButton.addEventListener("click", handleCompareViews);
-  }
   if (weekdayHourStartInput && weekdayHourEndInput) {
     const updateBrush = () => {
       let start = Number(weekdayHourStartInput.value);
@@ -1805,12 +1839,10 @@ async function applyEntriesToApp(entries, label, options = {}) {
   const participantDirectory = createParticipantDirectory(entries, options.participants || []);
   const normalizedEntries = normalizeEntriesWithDirectory(entries, participantDirectory);
   setDatasetEntries(normalizedEntries);
-  clearSavedViews();
-  refreshSavedViewsUI();
+  savedViewsController.resetForNewDataset();
   clearAnalyticsCache();
-  resetSearchState();
-  applySearchStateToForm();
-  renderSearchResults();
+  searchController.resetState();
+  searchController.populateParticipants();
   setDatasetLabel(label);
   setCurrentRange("all");
   setCustomRange(null);
@@ -2017,8 +2049,8 @@ function renderDashboard(analytics) {
     currentToken,
   );
   renderStatistics(analytics);
-  scheduleDeferredRender(populateSearchParticipants, currentToken);
-  scheduleDeferredRender(renderSearchResults, currentToken);
+  scheduleDeferredRender(() => searchController.populateParticipants(), currentToken);
+  scheduleDeferredRender(() => searchController.renderResults(), currentToken);
   scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
   setDataAvailabilityState(Boolean(analytics));
   updateSectionNarratives(analytics);
@@ -2104,718 +2136,6 @@ function renderWeeklyPanel(analytics) {
   });
 }
 
-function captureCurrentView(name) {
-  const entries = getDatasetEntries();
-  if (!entries.length) return null;
-  const range = getCurrentRange();
-  const customRange = getCustomRange();
-  const rangeData =
-    range === "custom" && customRange
-      ? { type: "custom", start: customRange.start, end: customRange.end }
-      : range;
-  const hourly = getHourlyState();
-  const weekday = getWeekdayState();
-  const analytics = getDatasetAnalytics();
-
-  return {
-    name,
-    label: getDatasetLabel(),
-    createdAt: new Date().toISOString(),
-    range,
-    rangeData,
-    rangeLabel: describeRange(rangeData),
-    hourlyFilters: { ...hourly.filters },
-    hourlyBrush: { ...hourly.brush },
-    weekdayFilters: { ...weekday.filters },
-    weekdayBrush: { ...weekday.brush },
-    snapshot: analytics ? buildViewSnapshot(analytics) : null,
-  };
-}
-
-function buildViewSnapshot(analytics) {
-  if (!analytics) return null;
-  const topSender = Array.isArray(analytics.top_senders) ? analytics.top_senders[0] : null;
-  const topHour = analytics.hourly_summary?.topHour || null;
-
-  return {
-    generatedAt: new Date().toISOString(),
-    totalMessages: analytics.total_messages ?? 0,
-    uniqueSenders: analytics.unique_senders ?? 0,
-    systemEvents: analytics.system_summary?.count ?? 0,
-    averageWords: analytics.averages?.words ?? 0,
-    averageChars: analytics.averages?.characters ?? 0,
-    weeklyAverage: analytics.weekly_summary?.averagePerWeek ?? 0,
-    dailyAverage: analytics.hourly_summary?.averagePerDay ?? 0,
-    dateRange: analytics.date_range ?? null,
-    topSender: topSender
-      ? {
-          sender: topSender.sender,
-          count: topSender.count,
-          share: topSender.share ?? null,
-        }
-      : null,
-    topHour: topHour
-      ? {
-          dayIndex: topHour.dayIndex,
-          hour: topHour.hour,
-          count: topHour.count,
-        }
-      : null,
-  };
-}
-
-function getSavedViewById(id) {
-  if (!id) return null;
-  const views = getSavedViews();
-  return views.find(view => view.id === id) || null;
-}
-
-function normalizeRangeValue(rangeValue) {
-  if (!rangeValue) return "all";
-  if (typeof rangeValue === "string") return rangeValue;
-  const start = rangeValue.start;
-  const end = rangeValue.end;
-  return {
-    type: "custom",
-    start,
-    end,
-  };
-}
-
-function computeSnapshotForView(view) {
-  const entries = getDatasetEntries();
-  if (!entries.length) return null;
-  const rangeValue = normalizeRangeValue(view.rangeData ?? view.range);
-  const subset = filterEntriesByRange(entries, rangeValue);
-  if (!subset.length) {
-    return {
-      generatedAt: new Date().toISOString(),
-      totalMessages: 0,
-      uniqueSenders: 0,
-      systemEvents: 0,
-      averageWords: 0,
-      averageChars: 0,
-      weeklyAverage: 0,
-      dailyAverage: 0,
-      dateRange:
-        typeof rangeValue === "object"
-          ? { start: rangeValue.start ?? null, end: rangeValue.end ?? null }
-          : null,
-      topSender: null,
-      topHour: null,
-    };
-  }
-  const analytics = computeAnalytics(subset);
-  return buildViewSnapshot(analytics);
-}
-
-function ensureViewSnapshot(view) {
-  if (!view) return null;
-  if (view.snapshot) return view.snapshot;
-  const snapshot = computeSnapshotForView(view);
-  if (snapshot) {
-    updateSavedView(view.id, { snapshot });
-  }
-  return snapshot;
-}
-
-function populateSavedSelect(select, views, selectedId, placeholder) {
-  if (!select) return;
-  const previous = selectedId ?? select.value;
-  select.innerHTML = "";
-  const placeholderOption = document.createElement("option");
-  placeholderOption.value = "";
-  placeholderOption.textContent = placeholder;
-  select.appendChild(placeholderOption);
-  views.forEach(view => {
-    const option = document.createElement("option");
-    option.value = view.id;
-    option.textContent = `${view.name} · ${view.rangeLabel}`;
-    if (view.id === previous) option.selected = true;
-    select.appendChild(option);
-  });
-  if (select.value && !views.some(view => view.id === select.value)) {
-    select.value = "";
-  }
-}
-
-function refreshSavedViewsUI() {
-  const views = getSavedViews();
-  const compareSelection = getCompareSelection();
-
-  populateSavedSelect(savedViewList, views, savedViewList?.value, "Choose a saved view…");
-  populateSavedSelect(compareViewASelect, views, compareSelection.primary, "Select view A…");
-  populateSavedSelect(compareViewBSelect, views, compareSelection.secondary, "Select view B…");
-
-  const validPrimary = views.some(view => view.id === compareSelection.primary)
-    ? compareSelection.primary
-    : null;
-  const validSecondary = views.some(view => view.id === compareSelection.secondary)
-    ? compareSelection.secondary
-    : null;
-  let primary = validPrimary;
-  let secondary = validSecondary;
-
-  if (views.length >= 2) {
-    if (!primary) primary = views[0].id;
-    if (!secondary || secondary === primary) {
-      const fallback = views.find(view => view.id !== primary);
-      secondary = fallback ? fallback.id : null;
-    }
-  } else {
-    primary = primary ?? null;
-    secondary = secondary ?? null;
-  }
-
-  setCompareSelection(primary, secondary);
-  if (compareViewASelect) compareViewASelect.value = primary ?? "";
-  if (compareViewBSelect) compareViewBSelect.value = secondary ?? "";
-
-  renderComparisonSummary();
-  renderSavedViewGallery(views);
-
-  const controlsDisabled = snapshotMode || !dataAvailable;
-  if (savedViewNameInput) savedViewNameInput.disabled = controlsDisabled;
-  if (savedViewList) savedViewList.disabled = controlsDisabled;
-  if (applySavedViewButton) applySavedViewButton.disabled = controlsDisabled;
-  if (deleteSavedViewButton) deleteSavedViewButton.disabled = controlsDisabled;
-  if (compareViewASelect) compareViewASelect.disabled = controlsDisabled;
-  if (compareViewBSelect) compareViewBSelect.disabled = controlsDisabled;
-  if (compareViewsButton) compareViewsButton.disabled = controlsDisabled;
-}
-
-function renderSavedViewGallery(views) {
-  if (!savedViewGallery) return;
-  const list = Array.isArray(views) ? views : [];
-  if (!list.length) {
-    savedViewGallery.innerHTML =
-      '<div class="empty-state small"><div class="empty-illustration small" aria-hidden="true"><span></span><span></span><span></span></div><p class="saved-view-gallery-empty">Save views to see quick previews here.</p></div>';
-    savedViewGallery.dataset.interactive = "false";
-    return;
-  }
-  const cards = list.map(view => buildSavedViewCard(view)).join("");
-  savedViewGallery.innerHTML = cards;
-  savedViewGallery.dataset.interactive = snapshotMode || !dataAvailable ? "false" : "true";
-}
-
-function buildSavedViewCard(view) {
-  if (!view) return "";
-  const snapshot = ensureViewSnapshot(view);
-  const viewId = String(view?.id ?? "");
-  const viewName = view?.name || "Untitled view";
-  const rangeLabel = view.rangeLabel || formatViewRange(view);
-  const createdAtLabel = view.createdAt ? formatTimestampDisplay(view.createdAt) : "";
-  const totalMessages = snapshot ? formatNumber(snapshot.totalMessages ?? 0) : "—";
-  const participants = snapshot ? formatNumber(snapshot.uniqueSenders ?? 0) : "—";
-  const avgPerDay =
-    snapshot && Number.isFinite(snapshot.dailyAverage)
-      ? `${formatFloat(snapshot.dailyAverage, 1)} / day`
-      : "Not enough data";
-  const topSender = snapshot?.topSender || null;
-  const sharePercent =
-    topSender && typeof topSender.share === "number"
-      ? Math.round(topSender.share * 100)
-      : null;
-  const topSenderShare =
-    topSender && sharePercent !== null ? `${sharePercent}% of messages` : "Share updates soon";
-  const peakHour = formatSavedViewTopHour(snapshot);
-  const peakHourCount =
-    snapshot?.topHour && Number.isFinite(snapshot.topHour.count)
-      ? `${formatNumber(snapshot.topHour.count)} msgs`
-      : "Waiting for hourly data";
-  const barWidth =
-    sharePercent !== null ? Math.min(100, Math.max(0, sharePercent)) : 8;
-  const interactive = !snapshotMode;
-  const accessibilityAttributes = interactive
-    ? `role="button" tabindex="0" aria-label="Apply saved view ${escapeHtml(viewName)}"`
-    : `role="button" aria-disabled="true" tabindex="-1"`;
-  return `
-    <article class="saved-view-card${interactive ? "" : " disabled"}" data-view-id="${escapeHtml(
-      viewId,
-    )}" ${accessibilityAttributes}>
-      <header class="saved-view-card-header">
-        <div>
-          <p class="saved-view-card-title">${escapeHtml(viewName)}</p>
-          <p class="saved-view-card-range">${escapeHtml(rangeLabel)}</p>
-        </div>
-        ${
-          createdAtLabel
-            ? `<span class="saved-view-card-created">${escapeHtml(createdAtLabel)}</span>`
-            : ""
-        }
-      </header>
-      <div class="saved-view-card-metrics">
-        <div class="saved-view-stat">
-          <span class="stat-label">Messages</span>
-          <span class="stat-value">${totalMessages}</span>
-        </div>
-        <div class="saved-view-stat">
-          <span class="stat-label">Participants</span>
-          <span class="stat-value">${participants}</span>
-        </div>
-        <div class="saved-view-stat">
-          <span class="stat-label">Avg pace</span>
-          <span class="stat-value">${escapeHtml(avgPerDay)}</span>
-        </div>
-      </div>
-      <div class="saved-view-card-foot">
-        <div class="saved-view-detail">
-          <span class="detail-label">Top voice</span>
-          <span class="detail-value">${topSender ? escapeHtml(topSender.sender) : "—"}</span>
-          <span class="detail-meta">${escapeHtml(topSenderShare)}</span>
-        </div>
-        <div class="saved-view-detail">
-          <span class="detail-label">Peak hour</span>
-          <span class="detail-value">${escapeHtml(peakHour)}</span>
-          <span class="detail-meta">${escapeHtml(peakHourCount)}</span>
-        </div>
-      </div>
-      <div class="saved-view-share-bar${sharePercent === null ? " is-empty" : ""}">
-        <span style="width:${barWidth}%;"></span>
-      </div>
-    </article>
-  `;
-}
-
-function formatSavedViewTopHour(snapshot) {
-  if (!snapshot?.topHour) {
-    return "No hourly data yet";
-  }
-  const weekday = WEEKDAY_SHORT?.[snapshot.topHour.dayIndex] ?? `Day ${snapshot.topHour.dayIndex + 1}`;
-  return `${weekday} ${String(snapshot.topHour.hour).padStart(2, "0")}:00`;
-}
-
-async function handleSavedViewGalleryClick(event) {
-  if (snapshotMode) return;
-  const card = event.target.closest(".saved-view-card");
-  if (!card) return;
-  const viewId = card.dataset.viewId;
-  await useSavedViewFromCard(viewId);
-}
-
-async function handleSavedViewGalleryKeydown(event) {
-  if (snapshotMode) return;
-  if (event.key !== "Enter" && event.key !== " ") return;
-  const card = event.target.closest(".saved-view-card");
-  if (!card) return;
-  event.preventDefault();
-  await useSavedViewFromCard(card.dataset.viewId);
-}
-
-async function useSavedViewFromCard(viewId) {
-  if (!viewId) return;
-  if (!dataAvailable) {
-    updateStatus("Load a chat before applying a saved view.", "warning");
-    return;
-  }
-  const view = getSavedViewById(viewId);
-  if (!view) {
-    updateStatus("That saved view is missing.", "error");
-    refreshSavedViewsUI();
-    return;
-  }
-  await applySavedView(view);
-  if (savedViewList) savedViewList.value = viewId;
-}
-
-function formatViewRange(view) {
-  if (!view) return "—";
-  if (typeof view.rangeData === "object" && view.rangeData) {
-    const start = view.rangeData.start ? formatDisplayDate(view.rangeData.start) : "—";
-    const end = view.rangeData.end ? formatDisplayDate(view.rangeData.end) : "—";
-    return `${start} → ${end}`;
-  }
-  return describeRange(view.rangeData ?? view.range);
-}
-
-function renderComparisonSummary(primaryId, secondaryId) {
-  if (!compareSummaryEl) return;
-  const allViews = getSavedViews();
-  if (allViews.length < 2) {
-    compareSummaryEl.classList.add("empty");
-    compareSummaryEl.textContent = allViews.length
-      ? "Save one more view to enable comparisons."
-      : "Save a view to start building comparisons.";
-    return;
-  }
-  const selection = getCompareSelection();
-  const primaryView = getSavedViewById(primaryId ?? selection.primary);
-  const secondaryView = getSavedViewById(secondaryId ?? selection.secondary);
-
-  if (!primaryView || !secondaryView) {
-    compareSummaryEl.classList.add("empty");
-    compareSummaryEl.innerHTML =
-      "<p>Pick two saved views to compare their activity side-by-side.</p>";
-    return;
-  }
-
-  const primarySnapshot = ensureViewSnapshot(primaryView);
-  const secondarySnapshot = ensureViewSnapshot(secondaryView);
-
-  if (!primarySnapshot || !secondarySnapshot) {
-    compareSummaryEl.classList.add("empty");
-    compareSummaryEl.innerHTML =
-      "<p>Unable to compute comparison for these views. Try re-saving them.</p>";
-    return;
-  }
-
-  compareSummaryEl.classList.remove("empty");
-  const metrics = [
-    {
-      key: "range",
-      label: "Date Range",
-      get: (snapshot, view) => formatViewRange(view),
-      diff: false,
-    },
-    {
-      key: "totalMessages",
-      label: "Messages",
-      get: snapshot => snapshot.totalMessages,
-      diff: true,
-      digits: 0,
-    },
-    {
-      key: "uniqueSenders",
-      label: "Participants",
-      get: snapshot => snapshot.uniqueSenders,
-      diff: true,
-      digits: 0,
-    },
-    {
-      key: "averageWords",
-      label: "Avg words per message",
-      get: snapshot => snapshot.averageWords,
-      diff: true,
-      digits: 1,
-    },
-    {
-      key: "averageChars",
-      label: "Avg characters per message",
-      get: snapshot => snapshot.averageChars,
-      diff: true,
-      digits: 1,
-    },
-    {
-      key: "weeklyAverage",
-      label: "Avg per week",
-      get: snapshot => snapshot.weeklyAverage,
-      diff: true,
-      digits: 1,
-    },
-    {
-      key: "topSender",
-      label: "Top Sender",
-      get: snapshot =>
-        snapshot.topSender
-          ? `${snapshot.topSender.sender} (${formatNumber(snapshot.topSender.count)} msgs)`
-          : null,
-      diff: false,
-    },
-    {
-      key: "topHour",
-      label: "Top Hour",
-      get: snapshot => {
-        if (!snapshot.topHour) return null;
-        const weekday = WEEKDAY_SHORT[snapshot.topHour.dayIndex] ?? `Day ${snapshot.topHour.dayIndex + 1}`;
-        return `${weekday} ${String(snapshot.topHour.hour).padStart(2, "0")}:00 (${formatNumber(
-          snapshot.topHour.count,
-        )} msgs)`;
-      },
-      diff: false,
-    },
-  ];
-
-  const renderColumn = (heading, view, snapshot) => {
-    const items = metrics
-      .map(metric => {
-        const value = metric.get(snapshot, view);
-        const display =
-          value === null || value === undefined
-            ? "—"
-            : typeof value === "number" && !Number.isNaN(value)
-              ? metric.digits && metric.digits > 0
-                ? formatFloat(value, metric.digits)
-                : formatNumber(value)
-              : sanitizeText(String(value));
-        return `
-          <li>
-            <span class="compare-label">${sanitizeText(metric.label)}</span>
-            <span class="compare-value">${display}</span>
-          </li>
-        `;
-      })
-      .join("");
-    return `
-      <div class="compare-column">
-        <h3>${sanitizeText(heading)} · ${sanitizeText(view.name)}</h3>
-        <ul class="compare-metrics">
-          ${items}
-        </ul>
-      </div>
-    `;
-  };
-
-  const renderDiffColumn = (metricList, snapshotA, snapshotB) => {
-    const rows = metricList
-      .filter(metric => metric.diff)
-      .map(metric => {
-        const valueA = metric.get(snapshotA);
-        const valueB = metric.get(snapshotB);
-        if (valueA === null || valueA === undefined || valueB === null || valueB === undefined) {
-          return `
-            <li>
-              <span class="compare-label">${sanitizeText(metric.label)}</span>
-              <span class="compare-value">—</span>
-            </li>
-          `;
-        }
-        const diff = valueB - valueA;
-        const isPositive = diff > 0;
-        const isNegative = diff < 0;
-        const digits = metric.digits ?? 0;
-        const formatted =
-          Math.abs(diff) < 0.0001
-            ? "0"
-            : digits && digits > 0
-              ? formatFloat(diff, digits)
-              : formatNumber(diff);
-        const prefix = diff > 0 && !formatted.startsWith("+") ? "+" : "";
-        const className = isPositive ? "compare-value compare-diff positive" : isNegative ? "compare-value compare-diff negative" : "compare-value";
-        return `
-          <li>
-            <span class="compare-label">${sanitizeText(metric.label)}</span>
-            <span class="${className}">${sanitizeText(`${prefix}${formatted}`)}</span>
-          </li>
-        `;
-      })
-      .join("");
-    return `
-      <div class="compare-column">
-        <h3>Difference (B - A)</h3>
-        <ul class="compare-metrics">
-          ${rows}
-        </ul>
-      </div>
-    `;
-  };
-
-  compareSummaryEl.innerHTML = `
-    <div class="compare-summary-grid">
-      ${renderColumn("View A", primaryView, primarySnapshot)}
-      ${renderColumn("View B", secondaryView, secondarySnapshot)}
-      ${renderDiffColumn(metrics, primarySnapshot, secondarySnapshot)}
-    </div>
-  `;
-}
-
-function handleSaveView() {
-  if (snapshotMode) {
-    updateStatus("Saved views aren't available in shared link view.", "warning");
-    return;
-  }
-  const entries = getDatasetEntries();
-  if (!entries.length) {
-    updateStatus("Load a chat file before saving a view.", "warning");
-    return;
-  }
-  const rawName = savedViewNameInput?.value.trim();
-  const fallbackName = `View ${getSavedViews().length + 1}`;
-  const name = rawName || fallbackName;
-  const view = captureCurrentView(name);
-  if (!view) {
-    updateStatus("Couldn't save the current view. Try again after the data loads.", "error");
-    return;
-  }
-  const record = addSavedView(view);
-  refreshSavedViewsUI();
-  if (savedViewList) savedViewList.value = record.id;
-  if (savedViewNameInput) savedViewNameInput.value = "";
-  updateStatus(`Saved view "${name}".`, "success");
-}
-
-async function handleApplySavedView() {
-  if (snapshotMode) {
-    updateStatus("Saved views aren't available in shared link view.", "warning");
-    return;
-  }
-  const id = savedViewList?.value;
-  if (!id) {
-    updateStatus("Choose a saved view to use.", "warning");
-    return;
-  }
-  const view = getSavedViewById(id);
-  if (!view) {
-    updateStatus("That saved view is missing.", "error");
-    refreshSavedViewsUI();
-    return;
-  }
-  await applySavedView(view);
-}
-
-async function applySavedView(view) {
-  const rangeValue = normalizeRangeValue(view.rangeData ?? view.range);
-  const isCustom = typeof rangeValue === "object";
-
-  setCurrentRange(isCustom ? "custom" : rangeValue);
-  setCustomRange(isCustom ? rangeValue : null);
-  if (rangeSelect) rangeSelect.value = isCustom ? "custom" : String(rangeValue);
-  showCustomControls(isCustom);
-  if (isCustom) {
-    if (customStartInput) customStartInput.value = rangeValue.start ?? "";
-    if (customEndInput) customEndInput.value = rangeValue.end ?? "";
-  }
-
-  updateHourlyState({
-    filters: { ...view.hourlyFilters },
-    brush: { ...view.hourlyBrush },
-  });
-  ensureDayFilters();
-  ensureHourFilters();
-  syncHourlyControlsWithState();
-
-  updateWeekdayState({
-    filters: { ...view.weekdayFilters },
-    brush: { ...view.weekdayBrush },
-  });
-  ensureWeekdayDayFilters();
-  ensureWeekdayHourFilters();
-  syncWeekdayControlsWithState();
-
-  await applyRangeAndRender(rangeValue);
-  updateStatus(`Applied saved view "${view.name}".`, "success");
-}
-
-function handleDeleteSavedView() {
-  if (snapshotMode) {
-    updateStatus("Saved views aren't available in shared link view.", "warning");
-    return;
-  }
-  const id = savedViewList?.value;
-  if (!id) {
-    updateStatus("Choose a saved view to remove.", "warning");
-    return;
-  }
-  const removed = removeSavedView(id);
-  if (!removed) {
-    updateStatus("Couldn't remove that saved view.", "error");
-    return;
-  }
-  refreshSavedViewsUI();
-  renderComparisonSummary();
-  if (savedViewList) savedViewList.value = "";
-  updateStatus("Saved view removed.", "success");
-}
-
-function handleCompareViews() {
-  if (snapshotMode) {
-    updateStatus("Comparisons aren't available in shared link view.", "warning");
-    return;
-  }
-  const primaryId = compareViewASelect?.value;
-  const secondaryId = compareViewBSelect?.value;
-  if (!primaryId || !secondaryId) {
-    updateStatus("Pick two saved views to compare.", "warning");
-    return;
-  }
-  if (primaryId === secondaryId) {
-    updateStatus("Pick two different views to compare.", "warning");
-    return;
-  }
-  setCompareSelection(primaryId, secondaryId);
-  renderComparisonSummary(primaryId, secondaryId);
-  updateStatus("Comparison updated.", "info");
-}
-
-function applySearchStateToForm() {
-  const state = getSearchState();
-  if (!state) return;
-  if (searchKeywordInput) searchKeywordInput.value = state.query.text ?? "";
-  if (searchParticipantSelect) searchParticipantSelect.value = state.query.participant ?? "";
-  if (searchStartInput) searchStartInput.value = state.query.start ?? "";
-  if (searchEndInput) searchEndInput.value = state.query.end ?? "";
-}
-
-function populateSearchParticipants() {
-  if (!searchParticipantSelect) return;
-  const entries = getDatasetEntries();
-  const senders = new Set();
-  entries.forEach(entry => {
-    if (entry.type === "message" && entry.sender) {
-      senders.add(entry.sender);
-    }
-  });
-
-  const selected = getSearchState().query.participant ?? "";
-  const options = Array.from(senders).sort((a, b) =>
-    a.localeCompare(b, undefined, { sensitivity: "base" }),
-  );
-
-  const previousValue = searchParticipantSelect.value;
-  searchParticipantSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "All participants";
-  searchParticipantSelect.appendChild(placeholder);
-
-  options.forEach(sender => {
-    const option = document.createElement("option");
-    option.value = sender;
-    option.textContent = sender;
-    searchParticipantSelect.appendChild(option);
-  });
-
-  if (selected && !options.includes(selected)) {
-    const extraOption = document.createElement("option");
-    extraOption.value = selected;
-    extraOption.textContent = selected;
-    searchParticipantSelect.appendChild(extraOption);
-  }
-
-  const targetValue = selected || previousValue || "";
-  searchParticipantSelect.value = targetValue;
-  if (searchParticipantSelect.value !== targetValue) {
-    searchParticipantSelect.value = "";
-  }
-  searchParticipantSelect.disabled = snapshotMode || options.length === 0;
-}
-
-function handleSearchSubmit(event) {
-  event.preventDefault();
-  if (snapshotMode) {
-    updateStatus("Search isn't available in shared link view.", "warning");
-    return;
-  }
-  const query = {
-    text: searchKeywordInput?.value.trim() ?? "",
-    participant: searchParticipantSelect?.value ?? "",
-    start: searchStartInput?.value ?? "",
-    end: searchEndInput?.value ?? "",
-  };
-
-  // Allow running a search even when no keywords are supplied; we'll scan the entire dataset if needed.
-
-  if (query.start && query.end && query.start > query.end) {
-    updateStatus("The start date must come before the end date.", "error");
-    return;
-  }
-
-  runAdvancedSearch(query);
-}
-
-function handleSearchReset() {
-  if (snapshotMode) {
-    updateStatus("Search isn't available in shared link view.", "warning");
-    return;
-  }
-  resetSearchState();
-  if (searchKeywordInput) searchKeywordInput.value = "";
-  if (searchParticipantSelect) searchParticipantSelect.value = "";
-  if (searchStartInput) searchStartInput.value = "";
-  if (searchEndInput) searchEndInput.value = "";
-  renderSearchResults();
-  updateStatus("Search filters cleared.", "info");
-}
-
 async function handleShareSnapshot() {
   if (snapshotMode) {
     updateStatus("You're already viewing a shared link. Share this page's address instead.", "info");
@@ -2863,296 +2183,6 @@ async function handleShareSnapshot() {
     console.error(error);
     updateStatus("Couldn't make a share link.", "error");
   }
-}
-
-function runAdvancedSearch(query) {
-  const entries = getDatasetEntries();
-  if (!entries.length) {
-    updateStatus("Load a chat file before searching.", "warning");
-    return;
-  }
-
-  const tokens = query.text
-    ? query.text
-        .toLowerCase()
-        .split(/\s+/)
-        .map(token => token.trim())
-        .filter(Boolean)
-    : [];
-  const participant = query.participant || "";
-  const participantLower = participant.toLowerCase();
-
-  const startDate = parseDateInput(query.start, false);
-  const endDate = parseDateInput(query.end, true);
-  if (query.start && !startDate) {
-    updateStatus("The search start date isn't valid.", "error");
-    return;
-  }
-  if (query.end && !endDate) {
-    updateStatus("The search end date isn't valid.", "error");
-    return;
-  }
-
-  setSearchQuery(query);
-
-  const results = [];
-  let totalMatches = 0;
-  const dayCounts = new Map();
-  const participantCounts = new Map();
-
-  entries.forEach(entry => {
-    if (entry.type !== "message") return;
-    const sender = entry.sender || "";
-    if (participant && sender.toLowerCase() !== participantLower) return;
-
-    const timestamp = getTimestamp(entry);
-    if (startDate && (!timestamp || timestamp < startDate)) return;
-    if (endDate && (!timestamp || timestamp > endDate)) return;
-
-    const message = entry.message || "";
-    if (tokens.length) {
-      const messageLower = message.toLowerCase();
-      const matchesTokens = tokens.every(token => messageLower.includes(token));
-      if (!matchesTokens) return;
-    }
-
-    totalMatches += 1;
-    const dayKey = timestamp ? toISODate(timestamp) : null;
-    if (dayKey) {
-      dayCounts.set(dayKey, (dayCounts.get(dayKey) || 0) + 1);
-    }
-    const senderKey = sender || "[Unknown]";
-    participantCounts.set(senderKey, (participantCounts.get(senderKey) || 0) + 1);
-    if (results.length < SEARCH_RESULT_LIMIT) {
-      results.push({
-        sender,
-        message,
-        timestamp: timestamp ? timestamp.toISOString() : null,
-      });
-    }
-  });
-
-  const summary = totalMatches
-    ? buildSearchSummary({ query, dayCounts, participantCounts, total: totalMatches, truncated: totalMatches > results.length })
-    : null;
-  setSearchResults(results, totalMatches, summary);
-  renderSearchResults();
-
-  if (!totalMatches) {
-    updateStatus("No messages matched those filters.", "info");
-  } else if (totalMatches > SEARCH_RESULT_LIMIT) {
-    updateStatus(
-      `Showing the first ${SEARCH_RESULT_LIMIT} matches out of ${formatNumber(totalMatches)}. Narrow your filters for a closer look.`,
-      "info",
-    );
-  } else {
-    updateStatus(`Found ${formatNumber(totalMatches)} matching messages.`, "success");
-  }
-}
-
-function renderSearchResults() {
-  if (!searchResultsSummary || !searchResultsList) return;
-  const state = getSearchState();
-  const query = state?.query ?? {};
-  const results = state?.results ?? [];
-  const total = state?.total ?? 0;
-  const summary = state?.summary ?? null;
-
-  const hasFilters = Boolean(query.text || query.participant || query.start || query.end);
-
-  if (!hasFilters) {
-    searchResultsSummary.textContent = "Add keywords, choose a participant, or set dates to search this chat.";
-  } else if (!total) {
-    searchResultsSummary.textContent = "No messages matched these filters. Try another keyword, participant, or date range.";
-  } else if (total > results.length) {
-    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (first ${SEARCH_RESULT_LIMIT} shown). Narrow further to see more.`;
-  } else {
-    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} match${results.length === 1 ? "" : "es"}.`;
-  }
-
-  searchResultsList.innerHTML = "";
-
-  if (!total) {
-    const empty = document.createElement("div");
-    empty.className = "search-results-empty";
-    empty.textContent = hasFilters
-      ? "No matching messages. Try other names, words, or dates."
-      : "Add filters above to search the chat history.";
-    searchResultsList.appendChild(empty);
-    renderSearchInsights(null, query);
-    return;
-  }
-
-  const tokens = query.text
-    ? query.text
-        .toLowerCase()
-        .split(/\s+/)
-        .map(token => token.trim())
-        .filter(Boolean)
-    : [];
-
-  const fragment = document.createDocumentFragment();
-  results.forEach(result => {
-    fragment.appendChild(buildSearchResultItem(result, tokens));
-  });
-  searchResultsList.appendChild(fragment);
-
-  if (total > results.length) {
-    const note = document.createElement("div");
-    note.className = "search-results-empty";
-    note.textContent = "Narrow your filters to see more matches.";
-    searchResultsList.appendChild(note);
-  }
-
-  renderSearchInsights(summary, query);
-}
-
-function buildSearchResultItem(result, tokens) {
-  const item = document.createElement("div");
-  item.className = "search-result";
-
-  const header = document.createElement("div");
-  header.className = "search-result-header";
-
-  const senderEl = document.createElement("span");
-  senderEl.className = "search-result-sender";
-  senderEl.textContent = result.sender || "[Unknown]";
-  header.appendChild(senderEl);
-
-  const timestampEl = document.createElement("span");
-  timestampEl.textContent = formatTimestampDisplay(result.timestamp);
-  header.appendChild(timestampEl);
-
-  const messageEl = document.createElement("div");
-  messageEl.className = "search-result-message";
-  messageEl.innerHTML = highlightKeywords(result.message || "", tokens);
-
-  item.append(header, messageEl);
-  return item;
-}
-
-function highlightKeywords(text, tokens) {
-  if (!text) return "";
-  let output = sanitizeText(text);
-  if (!tokens || !tokens.length) return output;
-  tokens.forEach(token => {
-    if (!token) return;
-    const escaped = escapeRegExp(sanitizeText(token));
-    const regex = new RegExp(`(${escaped})`, "gi");
-    output = output.replace(regex, "<mark>$1</mark>");
-  });
-  return output;
-}
-
-function buildSearchSummary({ query, dayCounts, participantCounts, total, truncated }) {
-  const hitsPerDay = Array.from(dayCounts.entries())
-    .map(([date, count]) => ({ date, count }))
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
-  const topParticipants = Array.from(participantCounts.entries())
-    .map(([sender, count]) => ({ sender, count, share: total ? count / total : 0 }))
-    .sort((a, b) => b.count - a.count || a.sender.localeCompare(b.sender))
-    .slice(0, 5);
-  return {
-    total,
-    truncated: Boolean(truncated),
-    hitsPerDay,
-    topParticipants,
-    filters: describeSearchFilters(query),
-  };
-}
-
-function describeSearchFilters(query) {
-  const details = [];
-  if (query?.text) details.push(`Keywords: "${query.text}"`);
-  if (query?.participant) details.push(`Participant: ${query.participant}`);
-  if (query?.start || query?.end) {
-    const start = query.start ? formatDisplayDate(query.start) : "Any";
-    const end = query.end ? formatDisplayDate(query.end) : "Any";
-    details.push(`Dates: ${start} → ${end}`);
-  }
-  if (!details.length) details.push("Filters: none (all messages)");
-  return details;
-}
-
-function renderSearchInsights(summary) {
-  if (!searchInsightsEl) return;
-  if (!summary || !summary.total) {
-    searchInsightsEl.classList.add("hidden");
-    searchInsightsEl.innerHTML = "";
-    return;
-  }
-  const hitsList = summary.hitsPerDay.length
-    ? summary.hitsPerDay
-        .map(
-          item => `
-            <li>
-              <span class="search-insight-label">${sanitizeText(formatDisplayDate(item.date))}</span>
-              <span>${formatNumber(item.count)}</span>
-            </li>
-          `,
-        )
-        .join("")
-    : "<li><span class=\"search-insight-label\">No daily data</span><span>—</span></li>";
-  const participantList = summary.topParticipants.length
-    ? summary.topParticipants
-        .map(
-          item => `
-            <li>
-              <span class="search-insight-label">${sanitizeText(item.sender)}</span>
-              <span>${formatNumber(item.count)}</span>
-            </li>
-          `,
-        )
-        .join("")
-    : "<li><span class=\"search-insight-label\">No matches yet</span><span>—</span></li>";
-  const filtersList = summary.filters
-    .map(filter => `<li><span class="search-insight-label">${sanitizeText(filter)}</span></li>`)
-    .join("");
-  const noteText = summary.truncated
-    ? `Showing first ${SEARCH_RESULT_LIMIT} of ${formatNumber(summary.total)} matches.`
-    : `Total matches: ${formatNumber(summary.total)}.`;
-  searchInsightsEl.classList.remove("hidden");
-  searchInsightsEl.innerHTML = `
-    <div class="search-insight-card">
-      <h4>Hits per day</h4>
-      <ul class="search-insight-list">${hitsList}</ul>
-    </div>
-    <div class="search-insight-card">
-      <h4>Top participants</h4>
-      <ul class="search-insight-list">${participantList}</ul>
-    </div>
-    <div class="search-insight-card">
-      <h4>Search filters</h4>
-      <ul class="search-insight-list">${filtersList}</ul>
-      <p class="search-insight-note">${noteText}</p>
-    </div>
-  `;
-}
-
-function parseDateInput(value, endOfDay = false) {
-  if (!value) return null;
-  const parts = value.split("-");
-  if (parts.length !== 3) return null;
-  const [yearStr, monthStr, dayStr] = parts;
-  const year = Number(yearStr);
-  const month = Number(monthStr);
-  const day = Number(dayStr);
-  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
-  const date = new Date(
-    year,
-    month - 1,
-    day,
-    endOfDay ? 23 : 0,
-    endOfDay ? 59 : 0,
-    endOfDay ? 59 : 0,
-    endOfDay ? 999 : 0,
-  );
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function renderHighlights(highlights) {
@@ -4123,8 +3153,8 @@ function formatSnapshotTimestamp(value) {
 function enterSnapshotMode(snapshot) {
   snapshotMode = true;
   terminateAnalyticsWorker();
-  clearSavedViews();
-  refreshSavedViewsUI();
+  savedViewsController.resetForNewDataset();
+  savedViewsController.setSnapshotMode(true);
   clearAnalyticsCache();
   disableInteractiveControlsForSnapshot();
   setDatasetEntries([]);
@@ -4135,8 +3165,7 @@ function enterSnapshotMode(snapshot) {
   }
   showCustomControls(false);
   renderDashboard(snapshot.analytics);
-  applySearchStateToForm();
-  renderSearchResults();
+  searchController.resetState();
   if (searchResultsSummary) {
     searchResultsSummary.textContent = "Search isn't available in shared link view.";
   }
@@ -4295,6 +3324,15 @@ async function applyRangeAndRender(range) {
       updateStatus("We couldn't calculate stats for this range.", "error");
     }
   }
+}
+
+function normalizeRangeValue(range) {
+  if (!range || range === "all") return "all";
+  if (typeof range === "string") return range;
+  if (typeof range === "object" && range.type === "custom") {
+    return { type: "custom", start: range.start ?? null, end: range.end ?? null };
+  }
+  return range;
 }
 
 function filterEntriesByRange(entries, range) {
