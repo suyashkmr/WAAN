@@ -14,6 +14,13 @@ export const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 
 export const STATUS_AUTO_HIDE_DELAY_MS = 3500;
 export const STATUS_EXIT_DURATION_MS = 220;
 
+export const motionPreferenceQuery =
+  typeof window !== "undefined" && window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)")
+    : null;
+
+export const initialReduceMotionPreferred = Boolean(motionPreferenceQuery?.matches);
+
 export function getRuntimeConfig() {
   return runtimeConfig;
 }
