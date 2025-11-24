@@ -54,54 +54,20 @@ import {
   setCachedAnalytics,
   clearAnalyticsCache,
 } from "./state.js";
-
-const runtimeConfig = window.WAAN_CONFIG || {};
-const API_BASE = runtimeConfig.apiBase || "http://127.0.0.1:3334/api";
-const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4546";
-const BRAND_NAME = "ChatScope";
-const RELAY_SERVICE_NAME = "ChatScope Relay";
-const RELAY_CLIENT_LABEL = "ChatScope Relay";
-const RELAY_POLL_INTERVAL_MS = 5000;
-const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
-const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
-const STATUS_AUTO_HIDE_DELAY_MS = 3500;
-const STATUS_EXIT_DURATION_MS = 220;
-const EXPORT_THEME_STYLES = {
-  light: {
-    label: "Light mode",
-    tagline: "Clean daylight palette to match the dashboard.",
-    accent: "#4f46e5",
-    accentSoft: "#ede9fe",
-    text: "#0f172a",
-    muted: "#475569",
-    surface: "#ffffff",
-    canvas: "#f1f5f9",
-    border: "rgba(15, 23, 42, 0.12)",
-    coverGradient: "linear-gradient(135deg, #312e81 0%, #4f46e5 45%, #06b6d4 100%)",
-    coverPattern: "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.35), transparent 45%)",
-    coverText: "#f8fafc",
-    badge: "#dbeafe",
-    cardShadow: "0 25px 60px rgba(15, 23, 42, 0.15)",
-    dark: false,
-  },
-  dark: {
-    label: "Night mode",
-    tagline: "High-contrast look aligned with the dark UI.",
-    accent: "#38bdf8",
-    accentSoft: "rgba(56, 189, 248, 0.2)",
-    text: "#e2e8f0",
-    muted: "#94a3b8",
-    surface: "#0f172a",
-    canvas: "#020617",
-    border: "rgba(148, 163, 184, 0.25)",
-    coverGradient: "linear-gradient(135deg, #020617 0%, #0f172a 45%, #1d4ed8 80%, #14b8a6 100%)",
-    coverPattern: "radial-gradient(circle at 80% 20%, rgba(56,189,248,0.35), transparent 55%)",
-    coverText: "#e2e8f0",
-    badge: "rgba(20, 184, 166, 0.4)",
-    cardShadow: "0 25px 60px rgba(2, 6, 23, 0.65)",
-    dark: true,
-  },
-};
+import { createExporters } from "./exporters.js";
+import {
+  API_BASE,
+  RELAY_BASE,
+  BRAND_NAME,
+  RELAY_SERVICE_NAME,
+  RELAY_CLIENT_LABEL,
+  RELAY_POLL_INTERVAL_MS,
+  REMOTE_CHAT_REFRESH_INTERVAL_MS,
+  REMOTE_MESSAGE_LIMIT,
+  STATUS_AUTO_HIDE_DELAY_MS,
+  STATUS_EXIT_DURATION_MS,
+} from "./config.js";
+import { EXPORT_THEME_STYLES } from "./theme.js";
 
 const motionPreferenceQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
 let reduceMotionPreferred = Boolean(motionPreferenceQuery?.matches);
@@ -270,8 +236,6 @@ const statusEl = document.getElementById("data-status");
 const relayBannerEl = document.getElementById("relay-status-banner");
 const relayBannerMessage = document.getElementById("relay-status-message");
 const relayBannerMeta = document.getElementById("relay-status-meta");
-const relayBannerConnectButton = document.getElementById("relay-banner-connect");
-const relayBannerDisconnectButton = document.getElementById("relay-banner-disconnect");
 const relayOnboardingSteps = document.querySelectorAll(".relay-step");
 const summaryEl = document.getElementById("summary");
 const participantsBody = document.querySelector("#top-senders tbody");
@@ -287,7 +251,6 @@ const relayAccountEl = document.getElementById("relay-account-name");
 const relayStartButton = document.getElementById("relay-start");
 const relayStopButton = document.getElementById("relay-stop");
 const relayLogoutButton = document.getElementById("relay-logout");
-const relayRefreshButton = document.getElementById("relay-refresh");
 const relayReloadAllButton = document.getElementById("relay-reload-all");
 const relayClearStorageButton = document.getElementById("relay-clear-storage");
 const relayQrContainer = document.getElementById("relay-qr-container");
@@ -338,7 +301,7 @@ const compareViewsButton = document.getElementById("compare-views");
 const compareSummaryEl = document.getElementById("compare-summary");
 const relayPrimaryActionHandlers = {
   connect: () => startRelaySession(),
-  restart: () => startRelaySession(),
+  reconnect: () => startRelaySession(),
   resync: () => syncRelayChats({ silent: false }),
 };
 const searchForm = document.getElementById("advanced-search-form");
@@ -350,8 +313,8 @@ const resetSearchButton = document.getElementById("reset-search");
 const downloadSearchButton = document.getElementById("download-search-results");
 const searchResultsSummary = document.getElementById("search-results-summary");
 const searchResultsList = document.getElementById("search-results-list");
+const searchInsightsEl = document.getElementById("search-insights");
 const highlightList = document.getElementById("highlight-list");
-const guidedInsightsEl = document.getElementById("guided-insights");
 const downloadMarkdownButton = document.getElementById("download-markdown-report");
 const downloadSlidesButton = document.getElementById("download-slides-report");
 const logDrawerToggleButton = document.getElementById("log-drawer-toggle");
@@ -455,12 +418,49 @@ const TIME_OF_DAY_BANDS = [
   { id: "late-evening", label: "Late Evening", start: 21, end: 23 },
 ];
 const TIME_OF_DAY_SPAN_WINDOW = 3;
+let snapshotMode = false;
+
+const {
+  exportParticipants,
+  exportHourly,
+  exportDaily,
+  exportWeekly,
+  exportWeekday,
+  exportTimeOfDay,
+  exportMessageTypes,
+  exportChatJson,
+  exportSentiment,
+  exportSearchResults,
+  handleDownloadMarkdownReport,
+  handleDownloadSlidesReport,
+  exportMessageSubtype,
+} = createExporters({
+  getDatasetAnalytics,
+  getDatasetEntries,
+  getDatasetLabel,
+  getCurrentRange,
+  getParticipantView: () => participantView,
+  getExportFilterSummary,
+  getSearchState,
+  updateStatus,
+  formatNumber,
+  formatFloat,
+  formatTimestampDisplay,
+  computeTimeOfDayDataset,
+  formatHourLabel,
+  describeRange,
+  filterEntriesByRange,
+  normalizeRangeValue,
+  snapshotModeGetter: () => snapshotMode,
+  buildMarkdownReport,
+  buildSlidesHtml,
+  getExportThemeConfig,
+});
 
 let analyticsWorkerInstance = null;
 let analyticsWorkerRequestId = 0;
 const analyticsWorkerRequests = new Map();
 let activeAnalyticsRequest = 0;
-let snapshotMode = false;
 let sectionNavObserver = null;
 let activeSectionId = null;
 let renderTaskToken = 0;
@@ -796,8 +796,8 @@ function setDataAvailabilityState(hasData) {
   }
   if (!dataAvailable) {
     setDatasetEmptyMessage(
-      "No chat loaded yet.",
-      "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.",
+      "No chat is selected yet.",
+      "Start the relay desktop app, press Connect, scan the QR code, then choose a mirrored chat from “Loaded chats”.",
     );
     updateSectionNarratives(null);
   }
@@ -1458,7 +1458,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   refreshChatSelector();
   if (!viewingSnapshot) {
-    updateStatus(`Connect to ${RELAY_SERVICE_NAME} to start mirroring chats.`, "info");
+    updateStatus(`Start ${RELAY_SERVICE_NAME} to mirror chat app chats here.`, "info");
   }
 });
 
@@ -1661,11 +1661,8 @@ function initRelayControls() {
   relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
   relayStopButton?.addEventListener("click", stopRelaySession);
   relayLogoutButton?.addEventListener("click", logoutRelaySession);
-  relayRefreshButton?.addEventListener("click", () => syncRelayChats({ silent: false }));
   relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
   relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
-  relayBannerConnectButton?.addEventListener("click", handleRelayPrimaryActionClick);
-  relayBannerDisconnectButton?.addEventListener("click", stopRelaySession);
   refreshRelayStatus({ silent: true }).finally(() => {
     scheduleRelayStatusPolling();
   });
@@ -1684,7 +1681,7 @@ function scheduleRelayStatusPolling() {
 
 function setRelayControlsDisabled(disabled) {
   relayUiState.controlsLocked = disabled;
-  [relayStartButton, relayStopButton, relayRefreshButton, relayLogoutButton, relayReloadAllButton, relayClearStorageButton, relayBannerConnectButton].forEach(button => {
+  [relayStartButton, relayStopButton, relayLogoutButton, relayReloadAllButton, relayClearStorageButton].forEach(button => {
     if (button) button.disabled = disabled;
   });
   if (!disabled) {
@@ -1715,7 +1712,7 @@ async function startRelaySession() {
   } catch (error) {
     console.error(error);
     updateStatus(
-      `We couldn't start ${RELAY_SERVICE_NAME}. Run \`npm start --workspace apps/server\` in another terminal.`,
+      `We couldn't start ${RELAY_SERVICE_NAME}. Launch the desktop relay (or run \`npm start --workspace apps/server\`) and try again.`,
       "error"
     );
   } finally {
@@ -1769,7 +1766,7 @@ async function syncRelayChats({ silent = true } = {}) {
   if (!RELAY_BASE) return;
   if (!relayUiState.status || relayUiState.status.status !== "running") {
     if (!silent) {
-      updateStatus(`Connect ${RELAY_SERVICE_NAME} before refreshing chats.`, "warning");
+      updateStatus(`Start ${RELAY_SERVICE_NAME} and link your phone before syncing chats.`, "warning");
     }
     return;
   }
@@ -1815,7 +1812,7 @@ async function refreshRemoteChats({ silent = true } = {}) {
     console.error(error);
     setRemoteChatList([]);
     if (!silent) {
-      updateStatus("Couldn't load chats from the relay. Is it running?", "warning");
+      updateStatus("Couldn't load chats from the relay. Make sure the desktop relay is running and connected.", "warning");
     }
   } finally {
     await refreshChatSelector();
@@ -1832,7 +1829,10 @@ async function refreshRelayStatus({ silent = false } = {}) {
     return status;
   } catch (error) {
     if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
-      updateStatus(`${RELAY_SERVICE_NAME} is offline. Start \`apps/server\` to enable live loading.`, "warning");
+      updateStatus(
+        `${RELAY_SERVICE_NAME} is offline. Launch the desktop relay and press Connect to enable live loading.`,
+        "warning"
+      );
       relayUiState.lastErrorNotice = Date.now();
     }
     relayUiState.status = null;
@@ -1849,26 +1849,24 @@ function applyRelayStatus(status) {
   updateRelayBanner(status);
   updateRelayOnboarding(status);
   if (!status) {
-    relayStatusEl.textContent = `Relay offline. Start the server to link ${BRAND_NAME}.`;
+    relayStatusEl.textContent = `Relay offline. Launch the desktop relay to link ${BRAND_NAME}.`;
     if (relayAccountEl) relayAccountEl.textContent = "";
     if (relayQrContainer) relayQrContainer.classList.add("hidden");
     if (relayQrImage) relayQrImage.removeAttribute("src");
     if (relayHelpText) {
       relayHelpText.textContent =
-        "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.";
+        "Press Connect, open chat app on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.";
     }
     if (relayStopButton) relayStopButton.disabled = true;
-    if (relayRefreshButton) relayRefreshButton.disabled = true;
     if (relayReloadAllButton) relayReloadAllButton.disabled = true;
     if (relayClearStorageButton) relayClearStorageButton.disabled = false;
-    if (relayBannerDisconnectButton) relayBannerDisconnectButton.disabled = true;
     setRemoteChatList([]);
     relayUiState.lastStatusKind = "offline";
     refreshChatSelector();
     setDashboardLoadingState(true);
     setDatasetEmptyMessage(
-      "No chat loaded yet.",
-      "Press Connect, open WhatsApp on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.",
+      "No chat is selected yet.",
+      "Start the relay desktop app, press Connect, scan the QR code, then choose a mirrored chat from “Loaded chats”.",
     );
     setDataAvailabilityState(false);
     return;
@@ -1884,8 +1882,8 @@ function applyRelayStatus(status) {
   if (relayHelpText) {
     relayHelpText.textContent =
       status.status === "running"
-        ? `Your ${BRAND_NAME} chats now appear under “Loaded chats”. Pick one to analyse it.`
-        : "Scan the QR code after pressing Connect to mirror your chats without exporting files.";
+        ? `Your mirrored ${BRAND_NAME} chats now appear under “Loaded chats”. Pick one to explore insights.`
+        : "Open chat app on your phone, go to Linked Devices, tap “Link a device”, and scan the QR code shown here.";
   }
   if (status.lastQr && relayQrContainer && relayQrImage) {
     relayQrImage.src = status.lastQr;
@@ -1903,17 +1901,11 @@ function applyRelayStatus(status) {
   if (relayLogoutButton) {
     relayLogoutButton.disabled = !canLogout;
   }
-  if (relayRefreshButton) {
-    relayRefreshButton.disabled = !running;
-  }
   if (relayReloadAllButton) {
     relayReloadAllButton.disabled = !running;
   }
   if (relayClearStorageButton) {
     relayClearStorageButton.disabled = false;
-  }
-  if (relayBannerDisconnectButton) {
-    relayBannerDisconnectButton.disabled = !running && !waiting;
   }
   if (!dataAvailable) {
     if (running) {
@@ -1955,15 +1947,15 @@ function describeRelayStatus(status) {
   const baseMessage = (() => {
     switch (status.status) {
       case "starting":
-        return `Connecting to ${RELAY_SERVICE_NAME}…`;
+        return `Starting ${RELAY_SERVICE_NAME}. Launching the relay browser…`;
       case "waiting_qr":
-        return "Scan the QR code in the relay client.";
+        return "Waiting for you to scan the QR code from your phone.";
       case "running":
         return status.account
           ? `Connected as ${formatRelayAccount(status.account)}.`
           : `Connected to ${BRAND_NAME}.`;
       default:
-        return "Relay stopped.";
+        return "Relay is offline.";
     }
   })();
   return { message: baseMessage };
@@ -1972,17 +1964,17 @@ function describeRelayStatus(status) {
 function getRelayPrimaryAction(status) {
   const defaultAction = {
     id: "connect",
-    label: "Connect",
-    hint: `Start ${RELAY_SERVICE_NAME} to mirror chats.`,
+    label: "Connect relay",
+    hint: `Launch the desktop relay and press Connect to sync chats.`,
     disabled: false,
   };
   if (!status) return defaultAction;
   const state = status.status;
   if (status.lastError || state === "error") {
     return {
-      id: "restart",
-      label: "Restart session",
-      hint: "Retry launching the relay and relink your phone.",
+      id: "reconnect",
+      label: "Reconnect relay",
+      hint: "Restart the relay browser and relink your phone.",
       disabled: false,
     };
   }
@@ -1998,7 +1990,7 @@ function getRelayPrimaryAction(status) {
     return {
       id: "waiting",
       label: "Scan QR to continue",
-      hint: "Open WhatsApp → Linked Devices on your phone to finish linking.",
+      hint: "Open chat app → Linked Devices on your phone to finish linking.",
       disabled: true,
     };
   }
@@ -2016,17 +2008,15 @@ function getRelayPrimaryAction(status) {
 function applyRelayPrimaryAction(status) {
   const action = getRelayPrimaryAction(status);
   relayUiState.primaryAction = action.id;
-  [relayStartButton, relayBannerConnectButton].forEach(button => {
-    if (!button) return;
-    button.dataset.relayAction = action.id;
-    button.textContent = action.label;
-    if (action.hint) {
-      button.setAttribute("title", action.hint);
-    } else {
-      button.removeAttribute("title");
-    }
-    button.disabled = relayUiState.controlsLocked || Boolean(action.disabled);
-  });
+  if (!relayStartButton) return;
+  relayStartButton.dataset.relayAction = action.id;
+  relayStartButton.textContent = action.label;
+  if (action.hint) {
+    relayStartButton.setAttribute("title", action.hint);
+  } else {
+    relayStartButton.removeAttribute("title");
+  }
+  relayStartButton.disabled = relayUiState.controlsLocked || Boolean(action.disabled);
 }
 
 function updateRelayBanner(status) {
@@ -2034,7 +2024,7 @@ function updateRelayBanner(status) {
   if (!status) {
     relayBannerEl.dataset.status = "offline";
     relayBannerMessage.textContent = "Relay offline.";
-    relayBannerMeta.textContent = "Press Connect to mirror chats from your phone.";
+    relayBannerMeta.textContent = "Launch the relay desktop app, press Connect, then pick a mirrored chat.";
     return;
   }
   relayBannerEl.dataset.status = status.status || "unknown";
@@ -2091,7 +2081,7 @@ function updateRelayOnboarding(status) {
             ? "Phone linked."
             : value === "active"
               ? "Scan the QR code shown below."
-              : "Open WhatsApp → Linked Devices on your phone and scan the code.";
+              : "Open chat app → Linked Devices on your phone and scan the code.";
       }
     } else if (id === "sync") {
       if (state === "running" && chatCount === 0) value = "active";
@@ -2209,12 +2199,12 @@ function renderRelayLogs() {
 function initRelayLogStream() {
   if (!RELAY_BASE || typeof EventSource === "undefined") return;
   if (relayLogState.eventSource) return;
-  updateRelayLogConnectionStatus("Connecting…");
+  updateRelayLogConnectionStatus("Connecting to relay logs…");
   const source = new EventSource(`${RELAY_BASE}/relay/logs/stream`);
   relayLogState.eventSource = source;
   source.onopen = () => {
     relayLogState.connected = true;
-    updateRelayLogConnectionStatus("Live · streaming logs");
+    updateRelayLogConnectionStatus("Live log stream");
   };
   source.onmessage = event => {
     if (!event.data) return;
@@ -2229,7 +2219,7 @@ function initRelayLogStream() {
   };
   source.onerror = () => {
     relayLogState.connected = false;
-    updateRelayLogConnectionStatus("Disconnected. Retrying…");
+    updateRelayLogConnectionStatus("Log stream disconnected. Retrying…");
     source.close();
     relayLogState.eventSource = null;
     if (!relayLogState.reconnectTimer) {
@@ -2246,9 +2236,11 @@ async function handleLogClear() {
   try {
     await fetchJson(`${RELAY_BASE}/relay/logs/clear`, { method: "POST" });
     relayLogState.entries = [];
+    logDrawerToggleButton?.removeAttribute("data-has-unread");
     renderRelayLogs();
   } catch (error) {
-    console.error(error);
+    console.error("Failed to clear logs", error);
+    updateStatus("Couldn't clear the relay logs.", "warning");
   }
 }
 
@@ -2277,7 +2269,7 @@ async function handleClearStorageClick() {
     await clearStoredChatsOnServer();
     setRemoteChatList([]);
     await refreshChatSelector();
-    updateStatus("Cleared cached chats. Click Refresh to sync them again.", "info");
+    updateStatus('Cleared cached chats. Press "Reload all chats" to download them again.', "info");
   } catch (error) {
     console.error(error);
     updateStatus("We couldn't clear the cached chats.", "error");
@@ -2320,9 +2312,9 @@ async function loadRemoteChat(chatId, options = {}) {
   await withGlobalBusy(async () => {
     updateStatus("Fetching messages directly from the relay…", "info");
     try {
-    const payload = await fetchJson(endpoint);
-    const entries = Array.isArray(payload.entries) ? payload.entries : [];
-    const label = payload.label || `${BRAND_NAME} chat`;
+      const payload = await fetchJson(endpoint);
+      const entries = Array.isArray(payload.entries) ? payload.entries : [];
+      const label = payload.label || `${BRAND_NAME} chat`;
       await applyEntriesToApp(entries, label, {
         datasetId: `remote-${chatId}`,
         selectionValue: encodeChatSelectorValue("remote", chatId),
@@ -2332,10 +2324,10 @@ async function loadRemoteChat(chatId, options = {}) {
       });
     } catch (error) {
       console.error(error);
-    updateStatus(
-      `We couldn't reach ${RELAY_SERVICE_NAME}. Make sure the server workspace is running (\`npm start --workspace apps/server\`).`,
-      "error"
-    );
+      updateStatus(
+        `We couldn't reach ${RELAY_SERVICE_NAME}. Make sure the desktop relay is running (or start it with \`npm start --workspace apps/server\`).`,
+        "error"
+      );
       throw error;
     }
   }, "Fetching messages…");
@@ -2511,7 +2503,6 @@ function renderDashboard(analytics) {
   scheduleDeferredRender(populateSearchParticipants, currentToken);
   scheduleDeferredRender(renderSearchResults, currentToken);
   scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
-  scheduleDeferredRender(() => renderGuidedInsights(analytics), currentToken);
   setDataAvailabilityState(Boolean(analytics));
   updateSectionNarratives(analytics);
 }
@@ -2660,13 +2651,14 @@ function renderParticipants(analytics) {
   participantsBody.innerHTML = "";
   participantView = [];
   if (participantsNote) {
-    participantsNote.textContent = "Everyone listed by how many messages they have sent.";
+    participantsNote.textContent =
+      "See who speaks the most, and filter to spotlight the quietest members or recent activity.";
   }
 
   if (!analytics || !analytics.top_senders.length) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
-      <td colspan="5" class="empty-state">Connect to ${RELAY_SERVICE_NAME} to see participant details.</td>
+      <td colspan="5" class="empty-state">Run the relay and load a chat to see participant details.</td>
     `;
     participantsBody.appendChild(emptyRow);
     updateParticipantPresetStates();
@@ -3781,10 +3773,7 @@ function handleSearchSubmit(event) {
     end: searchEndInput?.value ?? "",
   };
 
-  if (!query.text && !query.participant && !query.start && !query.end) {
-    updateStatus("Add at least one filter before you search.", "warning");
-    return;
-  }
+  // Allow running a search even when no keywords are supplied; we'll scan the entire dataset if needed.
 
   if (query.start && query.end && query.start > query.end) {
     updateStatus("The start date must come before the end date.", "error");
@@ -3889,6 +3878,8 @@ function runAdvancedSearch(query) {
 
   const results = [];
   let totalMatches = 0;
+  const dayCounts = new Map();
+  const participantCounts = new Map();
 
   entries.forEach(entry => {
     if (entry.type !== "message") return;
@@ -3907,6 +3898,12 @@ function runAdvancedSearch(query) {
     }
 
     totalMatches += 1;
+    const dayKey = timestamp ? toISODate(timestamp) : null;
+    if (dayKey) {
+      dayCounts.set(dayKey, (dayCounts.get(dayKey) || 0) + 1);
+    }
+    const senderKey = sender || "[Unknown]";
+    participantCounts.set(senderKey, (participantCounts.get(senderKey) || 0) + 1);
     if (results.length < SEARCH_RESULT_LIMIT) {
       results.push({
         sender,
@@ -3916,7 +3913,10 @@ function runAdvancedSearch(query) {
     }
   });
 
-  setSearchResults(results, totalMatches);
+  const summary = totalMatches
+    ? buildSearchSummary({ query, dayCounts, participantCounts, total: totalMatches, truncated: totalMatches > results.length })
+    : null;
+  setSearchResults(results, totalMatches, summary);
   renderSearchResults();
 
   if (!totalMatches) {
@@ -3937,17 +3937,18 @@ function renderSearchResults() {
   const query = state?.query ?? {};
   const results = state?.results ?? [];
   const total = state?.total ?? 0;
+  const summary = state?.summary ?? null;
 
   const hasFilters = Boolean(query.text || query.participant || query.start || query.end);
 
   if (!hasFilters) {
-    searchResultsSummary.textContent = "Add filters to search messages.";
+    searchResultsSummary.textContent = "Add keywords, choose a participant, or set dates to search this chat.";
   } else if (!total) {
-    searchResultsSummary.textContent = "No messages matched these filters. Try different options.";
+    searchResultsSummary.textContent = "No messages matched these filters. Try another keyword, participant, or date range.";
   } else if (total > results.length) {
-    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (limit ${SEARCH_RESULT_LIMIT} shown).`;
+    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (first ${SEARCH_RESULT_LIMIT} shown). Narrow further to see more.`;
   } else {
-    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} matching message${results.length === 1 ? "" : "s"}.`;
+    searchResultsSummary.textContent = `Showing ${formatNumber(results.length)} match${results.length === 1 ? "" : "es"}.`;
   }
 
   searchResultsList.innerHTML = "";
@@ -3959,6 +3960,7 @@ function renderSearchResults() {
       ? "No matching messages. Try other names, words, or dates."
       : "Add filters above to search the chat history.";
     searchResultsList.appendChild(empty);
+    renderSearchInsights(null, query);
     return;
   }
 
@@ -3982,6 +3984,8 @@ function renderSearchResults() {
     note.textContent = "Narrow your filters to see more matches.";
     searchResultsList.appendChild(note);
   }
+
+  renderSearchInsights(summary, query);
 }
 
 function buildSearchResultItem(result, tokens) {
@@ -4019,6 +4023,92 @@ function highlightKeywords(text, tokens) {
     output = output.replace(regex, "<mark>$1</mark>");
   });
   return output;
+}
+
+function buildSearchSummary({ query, dayCounts, participantCounts, total, truncated }) {
+  const hitsPerDay = Array.from(dayCounts.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
+  const topParticipants = Array.from(participantCounts.entries())
+    .map(([sender, count]) => ({ sender, count, share: total ? count / total : 0 }))
+    .sort((a, b) => b.count - a.count || a.sender.localeCompare(b.sender))
+    .slice(0, 5);
+  return {
+    total,
+    truncated: Boolean(truncated),
+    hitsPerDay,
+    topParticipants,
+    filters: describeSearchFilters(query),
+  };
+}
+
+function describeSearchFilters(query) {
+  const details = [];
+  if (query?.text) details.push(`Keywords: "${query.text}"`);
+  if (query?.participant) details.push(`Participant: ${query.participant}`);
+  if (query?.start || query?.end) {
+    const start = query.start ? formatDisplayDate(query.start) : "Any";
+    const end = query.end ? formatDisplayDate(query.end) : "Any";
+    details.push(`Dates: ${start} → ${end}`);
+  }
+  if (!details.length) details.push("Filters: none (all messages)");
+  return details;
+}
+
+function renderSearchInsights(summary) {
+  if (!searchInsightsEl) return;
+  if (!summary || !summary.total) {
+    searchInsightsEl.classList.add("hidden");
+    searchInsightsEl.innerHTML = "";
+    return;
+  }
+  const hitsList = summary.hitsPerDay.length
+    ? summary.hitsPerDay
+        .map(
+          item => `
+            <li>
+              <span class="search-insight-label">${sanitizeText(formatDisplayDate(item.date))}</span>
+              <span>${formatNumber(item.count)}</span>
+            </li>
+          `,
+        )
+        .join("")
+    : "<li><span class=\"search-insight-label\">No daily data</span><span>—</span></li>";
+  const participantList = summary.topParticipants.length
+    ? summary.topParticipants
+        .map(
+          item => `
+            <li>
+              <span class="search-insight-label">${sanitizeText(item.sender)}</span>
+              <span>${formatNumber(item.count)}</span>
+            </li>
+          `,
+        )
+        .join("")
+    : "<li><span class=\"search-insight-label\">No matches yet</span><span>—</span></li>";
+  const filtersList = summary.filters
+    .map(filter => `<li><span class="search-insight-label">${sanitizeText(filter)}</span></li>`)
+    .join("");
+  const noteText = summary.truncated
+    ? `Showing first ${SEARCH_RESULT_LIMIT} of ${formatNumber(summary.total)} matches.`
+    : `Total matches: ${formatNumber(summary.total)}.`;
+  searchInsightsEl.classList.remove("hidden");
+  searchInsightsEl.innerHTML = `
+    <div class="search-insight-card">
+      <h4>Hits per day</h4>
+      <ul class="search-insight-list">${hitsList}</ul>
+    </div>
+    <div class="search-insight-card">
+      <h4>Top participants</h4>
+      <ul class="search-insight-list">${participantList}</ul>
+    </div>
+    <div class="search-insight-card">
+      <h4>Search filters</h4>
+      <ul class="search-insight-list">${filtersList}</ul>
+      <p class="search-insight-note">${noteText}</p>
+    </div>
+  `;
 }
 
 function parseDateInput(value, endOfDay = false) {
@@ -4106,43 +4196,12 @@ function renderHighlights(highlights) {
   });
 }
 
-function renderGuidedInsights(analytics) {
-  if (!guidedInsightsEl) return;
-  guidedInsightsEl.innerHTML = "";
-  if (!analytics) {
-    guidedInsightsEl.innerHTML = '<p class="guided-insights-empty">Load a chat to see guided insights.</p>';
-    return;
-  }
-  const insights = buildGuidedInsights(analytics);
-  if (!insights.length) {
-    guidedInsightsEl.innerHTML = '<p class="guided-insights-empty">Insights will show up after the chat loads.</p>';
-    return;
-  }
-  insights.forEach(insight => {
-    const card = document.createElement("div");
-    card.className = "guided-card";
-    const body = document.createElement("p");
-    body.textContent = insight.text;
-    card.appendChild(body);
-    if (insight.ctaLabel && insight.ctaTarget) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "ghost-button small cta-link";
-      button.textContent = insight.ctaLabel;
-      button.addEventListener("click", () => {
-        document.querySelector(insight.ctaTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-      card.appendChild(button);
-    }
-    guidedInsightsEl.appendChild(card);
-  });
-}
 
 function updateHeroRelayStatus(status) {
   if (!heroStatusBadge || !heroStatusCopy) return;
   if (!status) {
-    heroStatusBadge.textContent = "Relay offline";
-    heroStatusCopy.textContent = "Press Connect to start mirroring chats.";
+    heroStatusBadge.textContent = "Not connected";
+    heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
     return;
   }
   if (status.status === "running") {
@@ -4153,18 +4212,18 @@ function updateHeroRelayStatus(status) {
       ? `${formatNumber(status.chatCount)} chats indexed.`
       : "Syncing chats now…";
   } else if (status.status === "waiting_qr") {
-    heroStatusBadge.textContent = "Waiting for QR";
+    heroStatusBadge.textContent = "Scan the QR code";
     if (status.lastQr) {
-      heroStatusCopy.textContent = "Open WhatsApp on your phone (Linked Devices) and scan this code.";
+      heroStatusCopy.textContent = "On your phone: chat app → Linked Devices → Link a device → scan this code.";
     } else {
-      heroStatusCopy.textContent = "Press Connect to reopen the relay browser and display a new QR code.";
+      heroStatusCopy.textContent = "Press Connect to reopen the relay browser and show a QR code.";
     }
   } else if (status.status === "starting") {
     heroStatusBadge.textContent = "Starting relay";
-    heroStatusCopy.textContent = "Launching the service…";
+    heroStatusCopy.textContent = "Launching the relay browser…";
   } else {
-    heroStatusBadge.textContent = "Relay offline";
-    heroStatusCopy.textContent = "Press Connect to start mirroring chats.";
+    heroStatusBadge.textContent = "Not connected";
+    heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
   }
 }
 
@@ -4412,14 +4471,14 @@ function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
 
 function updateSectionNarratives(analytics) {
   const defaultCopy = {
-    hourly: `Connect to ${RELAY_SERVICE_NAME} to see when conversations spike each hour.`,
-    daily: "Load a chat to highlight which days are most active.",
-    weekly: "Weekly trend appears here once a chat is selected.",
-    weekday: "Toggle weekdays vs. weekends to compare behaviors.",
-    timeOfDay: "Average messages per hour will appear after loading a chat.",
-    sentiment: "Sentiment analysis shows up after messages are scored.",
-    messageTypes: "You'll see the mix of media types once a chat loads.",
-    search: "Search works after a chat is selected — add keywords or participants.",
+    hourly: `Run the relay and load a chat to see the hourly rhythm.`,
+    daily: "Once a chat is loaded you’ll see which days are busiest.",
+    weekly: "Load a chat to reveal week-by-week trends.",
+    weekday: "Load a chat to compare weekdays, weekends, and work hours.",
+    timeOfDay: "Load a chat to show average messages for each hour of the day.",
+    sentiment: "Sentiment appears after a chat is loaded and messages are scored.",
+    messageTypes: "Load a chat to see the mix of media types and system events.",
+    search: "Load a chat to search by keywords, participants, or dates.",
   };
   const setText = (node, text) => {
     if (node) node.textContent = text;
@@ -5515,7 +5574,7 @@ function renderPolls(polls) {
   if (!entries.length) {
     pollsListEl.innerHTML = `<li class="empty-state">No polls captured yet.</li>`;
     if (pollsNote) {
-    pollsNote.textContent = "Connect to a chat that includes poll messages to see them here.";
+      pollsNote.textContent = "Load a chat that includes poll messages to surface them here.";
     }
     return;
   }
@@ -5735,319 +5794,6 @@ function showCustomControls(visible) {
   }
 }
 
-function exportParticipants() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics || !analytics.top_senders.length) {
-    updateStatus("No participant data to export right now.", "warning");
-    return;
-  }
-  if (!participantView.length) {
-    updateStatus("No participants fit the current filters to export.", "warning");
-    return;
-  }
-  const header = [
-    "Rank",
-    "Participant",
-    "Messages",
-    "Share (%)",
-    "Avg Words",
-    "Avg Characters",
-    "Avg Sentiment",
-    "Positive (%)",
-    "Negative (%)",
-  ];
-  const rows = participantView.map((entry, idx) => [
-    idx + 1,
-    entry.sender,
-    entry.count,
-    Number.isFinite(entry.share) ? formatFloat(entry.share * 100, 2) : "",
-    Number.isFinite(entry.avg_words) ? formatFloat(entry.avg_words, 2) : "",
-    Number.isFinite(entry.avg_chars) ? formatFloat(entry.avg_chars, 2) : "",
-    entry.sentiment && Number.isFinite(entry.sentiment.average)
-      ? formatFloat(entry.sentiment.average, 2)
-      : "",
-    entry.sentiment && entry.count
-      ? formatFloat((entry.sentiment.positive / entry.count) * 100, 1)
-      : "",
-    entry.sentiment && entry.count
-      ? formatFloat((entry.sentiment.negative / entry.count) * 100, 1)
-      : "",
-  ]);
-  const filterDetails = getExportFilterSummary();
-  const extraLines = filterDetails.map(info => {
-    const padded = new Array(header.length).fill("");
-    padded[0] = "Note";
-    padded[1] = info;
-    return padded;
-  });
-  downloadCSV(
-    buildFilename("participants"),
-    header,
-    [...extraLines, ...rows],
-  );
-}
-
-function exportHourly() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics || !analytics.hourly_distribution) {
-    updateStatus("No hourly activity to export right now.", "warning");
-    return;
-  }
-  const rows = analytics.hourly_distribution.map(entry => [
-    `${String(entry.hour).padStart(2, "0")}:00`,
-    entry.count,
-  ]);
-  downloadCSV(buildFilename("hourly"), ["Hour", "Messages"], rows);
-}
-
-function exportDaily() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics || !analytics.daily_counts.length) {
-    updateStatus("No daily activity to export right now.", "warning");
-    return;
-  }
-  const rows = analytics.daily_counts.map(entry => [entry.date, entry.count]);
-  downloadCSV(buildFilename("daily"), ["Date", "Messages"], rows);
-}
-
-function exportWeekly() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics || !analytics.weekly_counts.length) {
-    updateStatus("No weekly trends to export right now.", "warning");
-    return;
-  }
-  const rows = analytics.weekly_counts.map(entry => [
-    entry.week,
-    entry.count,
-    entry.cumulative,
-  ]);
-  downloadCSV(buildFilename("weekly"), ["Week", "Messages", "Cumulative"], rows);
-}
-
-function exportWeekday() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics || !analytics.weekday_distribution.length) {
-    updateStatus("No weekday data to export right now.", "warning");
-    return;
-  }
-  const rows = analytics.weekday_distribution.map(entry => [
-    entry.label,
-    entry.count,
-    entry.share ? formatFloat(entry.share * 100, 2) : "",
-    entry.deviation ? formatFloat(entry.deviation, 2) : "",
-  ]);
-  downloadCSV(
-    buildFilename("weekday"),
-    ["Weekday", "Messages", "Share (%)", "Std Dev"],
-    rows,
-  );
-}
-
-function exportTimeOfDay() {
-  const analytics = getDatasetAnalytics();
-  const dataset = computeTimeOfDayDataset(analytics);
-  if (!dataset || !dataset.points.length || !dataset.total) {
-    updateStatus("No time-of-day data to export right now.", "warning");
-    return;
-  }
-  const headers = ["Hour", "Messages", "Share (%)", "Weekday Messages", "Weekend Messages"];
-  const rows = dataset.points.map(point => [
-    formatHourLabel(point.hour),
-    point.total,
-    formatFloat(point.share * 100, 2),
-    dataset.includeWeekdays ? point.weekday : "",
-    dataset.includeWeekends ? point.weekend : "",
-  ]);
-  downloadCSV(buildFilename("time-of-day"), headers, rows);
-}
-
-function exportMessageTypes() {
-  const analytics = getDatasetAnalytics();
-  const data = analytics?.message_types;
-
-  if (!data) {
-    updateStatus("No message type data to export right now.", "warning");
-    return;
-  }
-
-  const headers = ["Group", "Type", "Messages", "Share (%)"];
-  const rows = [];
-
-  (data.summary ?? []).forEach(entry => {
-    rows.push([
-      "Summary",
-      entry.label,
-      entry.count,
-      formatFloat((entry.share || 0) * 100, 2),
-    ]);
-  });
-
-  if (!rows.length) {
-    updateStatus("No message type data to export right now.", "warning");
-    return;
-  }
-
-  downloadCSV(buildFilename("message-types"), headers, rows);
-}
-
-function formatEntryTimestamp(entry) {
-  if (!entry) return "";
-  if (entry.timestamp) {
-    const formatted = formatTimestampDisplay(entry.timestamp);
-    if (formatted) return formatted;
-  }
-  if (entry.timestamp_text) return entry.timestamp_text;
-  return "";
-}
-
-function exportChatJson() {
-  const entries = getDatasetEntries();
-  if (!entries.length) {
-    updateStatus("Load a chat summary before downloading the JSON.", "warning");
-    return;
-  }
-
-  const rangeValue = normalizeRangeValue(getCurrentRange());
-  const subset = filterEntriesByRange(entries, rangeValue);
-  const payload = subset.length ? subset : entries;
-
-  const dataStr = JSON.stringify(payload, null, 2);
-  const dataBlob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(dataBlob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = buildFilename("chat-summary") + ".json";
-  link.click();
-
-  URL.revokeObjectURL(url);
-  const label = describeRange(rangeValue);
-  updateStatus(
-    `Saved ${formatNumber(payload.length)} entries from ${getDatasetLabel()} (${label}).`,
-    "success",
-  );
-}
-
-function exportSentiment() {
-  const analytics = getDatasetAnalytics();
-  const sentiment = analytics?.sentiment;
-  if (!sentiment) {
-    updateStatus("No sentiment data to export right now.", "warning");
-    return;
-  }
-
-  const rows = (sentiment.daily || [])
-    .filter(entry => (entry.count || 0) > 0)
-    .map(entry => [
-      entry.date,
-      entry.count,
-      entry.positive ?? 0,
-      entry.neutral ?? 0,
-      entry.negative ?? 0,
-      formatFloat(entry.average ?? 0, 3),
-    ]);
-
-  if (!rows.length) {
-    updateStatus("No sentiment data to export right now.", "warning");
-    return;
-  }
-
-  downloadCSV(
-    buildFilename("sentiment"),
-    ["Date", "Messages", "Positive", "Neutral", "Negative", "Average Score"],
-    rows,
-  );
-}
-
-function exportSearchResults() {
-  if (snapshotMode) {
-    updateStatus("Can't export search results while viewing a shared link.", "warning");
-    return;
-  }
-  const state = getSearchState();
-  const results = state?.results ?? [];
-  if (!results.length) {
-    updateStatus("Run a search before exporting.", "warning");
-    return;
-  }
-
-  const rows = results.map(result => [
-    formatTimestampDisplay(result.timestamp),
-    result.sender || "",
-    (result.message || "").replace(/\r?\n/g, " "),
-  ]);
-
-  downloadCSV(
-    buildFilename("search"),
-    ["Timestamp", "Participant", "Message"],
-    rows,
-  );
-}
-
-function handleDownloadMarkdownReport() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics) {
-    updateStatus("Load the chat summary before exporting a report.", "warning");
-    return;
-  }
-  const theme = getExportThemeConfig();
-  const markdown = buildMarkdownReport(analytics, theme);
-  downloadTextFile(buildReportFilename("report", "md"), markdown, "text/markdown;charset=utf-8;");
-  updateStatus(`Saved the ${theme.label} text report.`, "success");
-}
-
-function handleDownloadSlidesReport() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics) {
-    updateStatus("Load the chat summary before exporting a report.", "warning");
-    return;
-  }
-  const theme = getExportThemeConfig();
-  const html = buildSlidesHtml(analytics, theme);
-  downloadTextFile(buildReportFilename("slides", "html"), html, "text/html;charset=utf-8;");
-  updateStatus(`Saved the ${theme.label} slide deck.`, "success");
-}
-
-function buildFilename(suffix) {
-  const label = (getDatasetLabel() || "relay-chat")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const range = describeRange(getCurrentRange());
-  return `${label}_${range.replace(/[^a-z0-9]+/gi, "-")}_${suffix}.csv`;
-}
-
-function buildReportFilename(suffix, extension) {
-  const label = (getDatasetLabel() || "relay-chat")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const range = describeRange(getCurrentRange());
-  const sanitizedRange = range.replace(/[^a-z0-9]+/gi, "-");
-  return `${label}_${sanitizedRange}_${suffix}.${extension}`;
-}
-
-function downloadCSV(filename, headers, rows) {
-  if (!rows.length) return;
-  const escape = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
-  const csvLines = [
-    headers.map(escape).join(","),
-    ...rows.map(row => row.map(escape).join(",")),
-  ];
-  downloadTextFile(filename, csvLines.join("\r\n"), "text/csv;charset=utf-8;");
-}
-
-function downloadTextFile(filename, content, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
 
 function updateCustomRangeBounds() {
   if (!customStartInput || !customEndInput) return;

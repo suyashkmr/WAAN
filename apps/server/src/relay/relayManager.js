@@ -345,7 +345,38 @@ class RelayManager extends EventEmitter {
       account: this.extractAccountInfo(),
     });
     this.log("ChatScope relay is ready.");
+    await this.refreshContacts();
     await this.syncChats();
+  }
+
+  async refreshContacts() {
+    if (!this.client || typeof this.client.getContacts !== "function") {
+      return;
+    }
+    try {
+      const contacts = await this.client.getContacts();
+      let mapped = 0;
+      contacts.forEach(contact => {
+        const contactId = normaliseJid(contact?.id);
+        if (!contactId) return;
+        const label =
+          contact?.name ||
+          contact?.pushname ||
+          contact?.shortName ||
+          contact?.formattedName ||
+          contact?.displayName ||
+          stripRelaySuffix(contactId);
+        if (label) {
+          this.contactCache.set(contactId, label);
+          mapped += 1;
+        }
+      });
+      if (mapped) {
+        this.log(`Loaded ${mapped} contacts from ChatScope Web.`);
+      }
+    } catch (error) {
+      this.logger.warn("Failed to load contacts: %s", error.message);
+    }
   }
 
   async handleIncomingMessage(message) {
