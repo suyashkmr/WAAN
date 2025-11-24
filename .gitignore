@@ -30,6 +30,9 @@ apps/client/.erb
 .Spotlight-V100
 .Trashes
 
+# Ignored directories
+_IGNORE_waan/
+
 # Build artifacts
 *.pkg
 *.dmg
