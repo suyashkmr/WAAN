@@ -554,7 +554,8 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     if (!account) return null;
     const name = account.name || account.pushName || account.pushname || account.displayName;
     const number = account.id || account.me || account.jid || "";
-    return name ? `${name} (${number})` : number || RELAY_CLIENT_LABEL;
+    if (name && number) return `${name} (${number})`;
+    return name || number || RELAY_CLIENT_LABEL;
   }
 
   async function loadRemoteChat(chatId, options = {}) {
