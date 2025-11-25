@@ -17,8 +17,14 @@ app.use(
   express.static(ROOT, {
     extensions: ["html"],
     etag: false,
-    setHeaders: res => {
+    setHeaders: (res, filePath) => {
       res.setHeader("Cache-Control", "no-store");
+      // Ensure font files are served with correct MIME type
+      if (filePath.endsWith('.woff2')) {
+        res.setHeader("Content-Type", "font/woff2");
+      } else if (filePath.endsWith('.woff')) {
+        res.setHeader("Content-Type", "font/woff");
+      }
     },
   })
 );
