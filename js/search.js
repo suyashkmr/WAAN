@@ -223,7 +223,8 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     if (!tokens || !tokens.length) return output;
     tokens.forEach(token => {
       if (!token) return;
-      const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapedToken = sanitizeText(token);
+      const escaped = escapedToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(`(${escaped})`, "gi");
       output = output.replace(regex, "<mark>$1</mark>");
     });

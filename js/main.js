@@ -468,6 +468,8 @@ const savedViewsController = createSavedViewsController({
     syncWeekdayControlsWithState,
     describeRange,
     updateStatus,
+    filterEntriesByRange,
+    normalizeRangeValue,
   },
 });
 setDashboardLoadingState(true);
