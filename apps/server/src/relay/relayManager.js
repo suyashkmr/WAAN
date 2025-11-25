@@ -477,6 +477,7 @@ class RelayManager extends EventEmitter {
           participant?.pushname ||
           participant?.shortName ||
           participant?.notifyName ||
+          this.contactCache.get(participantId) ||
           stripRelaySuffix(participantId || "");
         if (label) {
           this.contactCache.set(participantId, label);

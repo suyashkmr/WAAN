@@ -88,6 +88,7 @@ import {
 } from "./config.js";
 import { EXPORT_THEME_STYLES } from "./theme.js";
 
+const SEARCH_RESULT_LIMIT = 200;
 let reduceMotionPreferred = initialReduceMotionPreferred;
 let reduceMotionPreference = null; // "reduce" | "standard" | null (follow system)
 
@@ -496,7 +497,6 @@ function getExportFilterSummary() {
   return parts;
 }
 let participantView = [];
-const SEARCH_RESULT_LIMIT = 200;
 const TIME_OF_DAY_BANDS = [
   { id: "late-night", label: "Late Night", start: 0, end: 4 },
   { id: "early-morning", label: "Early Morning", start: 5, end: 7 },
@@ -655,16 +655,16 @@ let statusExitTimer = null;
 const deferRenderTask =
   typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
     ? callback =>
-        window.requestIdleCallback(
-          deadline => {
-            if (deadline.timeRemaining() > 8) {
-              callback();
-            } else {
-              setTimeout(callback, 0);
-            }
-          },
-          { timeout: 500 },
-        )
+      window.requestIdleCallback(
+        deadline => {
+          if (deadline.timeRemaining() > 8) {
+            callback();
+          } else {
+            setTimeout(callback, 0);
+          }
+        },
+        { timeout: 500 },
+      )
     : callback => setTimeout(callback, 0);
 
 function scheduleDeferredRender(task, token) {
@@ -1177,7 +1177,7 @@ function initAccessibilityControls() {
   });
 }
 
-function syncHeroPillsWithRange() {}
+function syncHeroPillsWithRange() { }
 
 function applyHeroRange(rangeValue) {
   if (!rangeSelect || !rangeValue) return;
@@ -2386,10 +2386,9 @@ function collectExportSummary(analytics) {
     `Average per day: ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`,
     `Average per week: ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`,
     analytics.hourly_summary?.topHour
-      ? `Busiest hour: ${
-          WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex] ??
-          `Day ${analytics.hourly_summary.topHour.dayIndex + 1}`
-        } ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
+      ? `Busiest hour: ${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex] ??
+      `Day ${analytics.hourly_summary.topHour.dayIndex + 1}`
+      } ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
       : null,
   ].filter(Boolean);
   const systemItems = [
@@ -2471,11 +2470,10 @@ function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
   lines.push("## Everyday numbers");
   lines.push(`- **Average per day:** ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`);
   lines.push(`- **Average per week:** ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`);
-  lines.push(`- **Busiest hour:** ${
-    analytics.hourly_summary?.topHour
-      ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
-      : "—"
-  }`);
+  lines.push(`- **Busiest hour:** ${analytics.hourly_summary?.topHour
+    ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
+    : "—"
+    }`);
   lines.push(`- **Join requests logged:** ${formatNumber(systemSummary.join_requests || 0)}`);
   lines.push("");
 
@@ -2484,9 +2482,8 @@ function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
     lines.push("| Rank | Participant | Messages | Share | Avg words | Avg chars |");
     lines.push("| --- | --- | ---: | ---: | ---: | ---: |");
     topSenders.forEach((entry, index) => {
-      lines.push(`| ${index + 1} | ${entry.sender} | ${formatNumber(entry.count)} | ${
-        entry.share ? `${formatFloat(entry.share * 100, 1)}%` : "—"
-      } | ${entry.avg_words ? formatFloat(entry.avg_words, 1) : "—"} | ${entry.avg_chars ? formatFloat(entry.avg_chars, 1) : "—"} |`);
+      lines.push(`| ${index + 1} | ${entry.sender} | ${formatNumber(entry.count)} | ${entry.share ? `${formatFloat(entry.share * 100, 1)}%` : "—"
+        } | ${entry.avg_words ? formatFloat(entry.avg_words, 1) : "—"} | ${entry.avg_chars ? formatFloat(entry.avg_chars, 1) : "—"} |`);
     });
   } else {
     lines.push("No participant activity recorded.");
@@ -2680,24 +2677,22 @@ function buildExportDeckMarkup(analytics, theme, { mode = "screen", generatedAt 
   const highlightEntries = details.highlights.slice(0, 6);
   const highlightList = highlightEntries.length
     ? highlightEntries
-        .map(
-          item =>
-            `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${
-              item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""
-            }</li>`,
-        )
-        .join("")
+      .map(
+        item =>
+          `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""
+          }</li>`,
+      )
+      .join("")
     : "<li>Highlights will show once there's enough data.</li>";
   const participantEntries = details.topSenders.slice(0, 6);
   const participantList = participantEntries.length
     ? participantEntries
-        .map(
-          entry =>
-            `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages${
-              entry.share ? ` (${formatFloat(entry.share * 100, 1)}%)` : ""
-            }</li>`,
-        )
-        .join("")
+      .map(
+        entry =>
+          `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages${entry.share ? ` (${formatFloat(entry.share * 100, 1)}%)` : ""
+          }</li>`,
+      )
+      .join("")
     : "<li>No participant activity recorded.</li>";
   const overviewList = details.overviewItems.length
     ? `<ul>${details.overviewItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
