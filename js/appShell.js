@@ -322,6 +322,10 @@ const downloadSearchButton = domCache.getById("download-search-results");
 const searchResultsSummary = domCache.getById("search-results-summary");
 const searchResultsList = domCache.getById("search-results-list");
 const searchInsightsEl = domCache.getById("search-insights");
+const searchProgressEl = domCache.getById("search-progress");
+const searchProgressTrack = domCache.getById("search-progress-track");
+const searchProgressBar = domCache.getById("search-progress-bar");
+const searchProgressLabel = domCache.getById("search-progress-label");
 const highlightList = domCache.getById("highlight-list");
 const downloadMarkdownButton = domCache.getById("download-markdown-report");
 const downloadSlidesButton = domCache.getById("download-slides-report");
@@ -408,6 +412,10 @@ const searchController = createSearchController({
     resultsSummaryEl: searchResultsSummary,
     resultsListEl: searchResultsList,
     insightsEl: searchInsightsEl,
+    progressEl: searchProgressEl,
+    progressTrackEl: searchProgressTrack,
+    progressBarEl: searchProgressBar,
+    progressLabelEl: searchProgressLabel,
   },
   options: { resultLimit: SEARCH_RESULT_LIMIT },
   getSnapshotMode: () => snapshotMode,

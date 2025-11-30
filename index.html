@@ -874,6 +874,13 @@
                 </form>
                 <div class="search-results-summary" id="search-results-summary">Enter keywords, choose a participant, or
                     set dates to search this chat. Leave keywords blank to filter by participant/dates only.</div>
+                <div class="search-progress" id="search-progress" aria-live="polite">
+                    <div class="search-progress-track" id="search-progress-track" role="progressbar" aria-valuemin="0"
+                        aria-valuemax="100" aria-valuenow="0" aria-label="Search progress">
+                        <div class="search-progress-bar" id="search-progress-bar"></div>
+                    </div>
+                    <div class="search-progress-label" id="search-progress-label"></div>
+                </div>
                 <div class="search-insights hidden" id="search-insights" aria-live="polite"></div>
                 <div class="search-results-list" id="search-results-list"></div>
             </div>

@@ -1993,6 +1993,47 @@ main.is-loading .card-content {
     max-width: 65ch;
 }
 
+.search-progress {
+    margin: 0;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    transition:
+        opacity var(--motion-duration-fast) var(--motion-ease-out),
+        max-height var(--motion-duration-fast) var(--motion-ease-out),
+        margin var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.search-progress.is-active {
+    margin: 0.6rem 0;
+    opacity: 1;
+    max-height: 120px;
+}
+
+.search-progress-track {
+    width: 100%;
+    height: 0.5rem;
+    border-radius: var(--shape-full);
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+    overflow: hidden;
+}
+
+.search-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 65%, #fff));
+    transition: width var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.search-progress-label {
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--muted) 75%, transparent);
+}
+
 .search-insights {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
