@@ -2139,10 +2139,30 @@ function renderHighlights(highlights) {
     const card = document.createElement("div");
     card.className = `highlight-card ${sanitizeText(highlight.type || "")}`;
 
+    const labelRow = document.createElement("div");
+    labelRow.className = "highlight-label-row";
     const label = document.createElement("span");
     label.className = "highlight-label";
     label.textContent = highlight.label || "Highlight";
-    card.appendChild(label);
+    labelRow.appendChild(label);
+    if (highlight.tooltip) {
+      const tooltipButton = document.createElement("button");
+      tooltipButton.type = "button";
+      tooltipButton.className = "info-note-button info-note-inline";
+      tooltipButton.setAttribute("aria-label", highlight.tooltip);
+      tooltipButton.setAttribute("title", highlight.tooltip);
+      tooltipButton.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>';
+      labelRow.appendChild(tooltipButton);
+    }
+    card.appendChild(labelRow);
+
+    if (highlight.headline) {
+      const headline = document.createElement("p");
+      headline.className = "highlight-headline";
+      headline.textContent = highlight.headline;
+      card.appendChild(headline);
+    }
 
     const value = document.createElement("span");
     value.className = "highlight-value";
@@ -2179,6 +2199,14 @@ function renderHighlights(highlights) {
     if (highlight.theme || highlight.type) {
       card.dataset.accent = highlight.theme || highlight.type;
     }
+
+    if (highlight.meta) {
+      const meta = document.createElement("span");
+      meta.className = "highlight-meta";
+      meta.textContent = highlight.meta;
+      card.appendChild(meta);
+    }
+
     highlightList.appendChild(card);
   });
 }

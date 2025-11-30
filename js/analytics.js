@@ -1389,13 +1389,13 @@ function buildHighlights({ dailyCounts, weeklyCounts, weekdayDetails, topSenders
 
   const engagementToday = buildEngagementForecastHighlight(dailyCounts, {
     offsetDays: 0,
-    label: "Activity outlook",
+    label: "Today’s activity outlook",
   });
   if (engagementToday) highlights.push(engagementToday);
 
   const engagementTomorrow = buildEngagementForecastHighlight(dailyCounts, {
     offsetDays: 1,
-    label: "Activity outlook (day after session)",
+    label: "Tomorrow’s activity outlook",
   });
   if (engagementTomorrow) highlights.push(engagementTomorrow);
 
@@ -1551,16 +1551,28 @@ function buildNextBusiestWeekdayHighlight(dailyCounts) {
   const nextDateLabel = formatHighlightDate(nextDate.toISOString());
   const windowLabel = recent.length === 1 ? "last day" : `last ${recent.length} days`;
   const weekdayName = WEEKDAY_LONG[bestIndex] ?? `Day ${bestIndex + 1}`;
+  const friendlyHeadline = (() => {
+    if (bestIndex === 0 || bestIndex === 6) return "Weekend spike ahead";
+    if (bestIndex === 2 || bestIndex === 3) return "Mid-week spike ahead";
+    return `Expect a ${weekdayName} surge`;
+  })();
+  const referenceWindow = recent.length === 1 ? "the last day" : `the last ${recent.length} days`;
+  const tooltip = `Based on ${referenceWindow} of weekday activity (≈${occurrences[bestIndex]} ${weekdayName} samples).`;
 
   return {
     type: "weekday-forecast",
-    label: "Next Busy Weekday",
+    label: "Next Busy Day",
+    headline: friendlyHeadline,
     value: `${weekdayName} · ≈ ${formatHighlightCount(Math.round(bestAverage), "message")}/day`,
     descriptor: `${windowLabel} · About ${formatHighlightPercent(share, 1)} of recent messages · Next ${weekdayName} falls on ${nextDateLabel}.`,
+    tooltip,
   };
 }
 
-function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label = "Activity outlook" } = {}) {
+function buildEngagementForecastHighlight(
+  dailyCounts,
+  { offsetDays = 0, label = "Activity outlook" } = {},
+) {
   if (!Array.isArray(dailyCounts) || dailyCounts.length < 5) return null;
   const sorted = [...dailyCounts]
     .filter(entry => Number.isFinite(entry?.count))
@@ -1573,11 +1585,36 @@ function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label =
   for (let i = 1; i < values.length; i += 1) {
     smoothed = alpha * values[i] + (1 - alpha) * smoothed;
   }
-  const forecast = smoothed;
-  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
-  const variance = values.reduce((sum, value) => sum + Math.pow(value - avg, 2), 0) / values.length;
+
+  const weekdayBuckets = Array.from({ length: 7 }, () => []);
+  sorted.forEach(entry => {
+    if (!entry?.date) return;
+    const date = new Date(entry.date);
+    if (Number.isNaN(date.getTime())) return;
+    const day = date.getDay();
+    weekdayBuckets[day].push(Number(entry.count) || 0);
+  });
+
+  const targetDate = new Date();
+  if (Number.isFinite(offsetDays)) {
+    targetDate.setDate(targetDate.getDate() + offsetDays);
+  }
+  const targetWeekday = targetDate.getDay();
+  const targetSeries = weekdayBuckets[targetWeekday];
+  const targetRecent = targetSeries.slice(-3);
+  const weekdayAvg = targetSeries.length
+    ? targetSeries.reduce((sum, value) => sum + value, 0) / targetSeries.length
+    : smoothed;
+  const forecast = targetRecent.length
+    ? targetRecent.reduce((sum, value) => sum + value, 0) / targetRecent.length
+    : smoothed;
+
+  const overallAvg = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const baselineSeries = targetSeries.length >= 2 ? targetSeries : values;
+  const baseline = targetSeries.length >= 2 ? weekdayAvg : overallAvg;
+  const variance = baselineSeries.reduce((sum, value) => sum + Math.pow(value - baseline, 2), 0) / baselineSeries.length;
   const std = Math.sqrt(variance);
-  const diff = forecast - avg;
+  const diff = forecast - baseline;
   const threshold = (std || 1) * 0.6;
   let classification;
   if (diff > threshold) classification = "More than usual";
@@ -1585,19 +1622,23 @@ function buildEngagementForecastHighlight(dailyCounts, { offsetDays = 0, label =
   else classification = "About the same";
   const trendSymbol = diff > threshold ? "↑" : diff < -threshold ? "↓" : "→";
 
-  const forecastDate = new Date();
-  if (Number.isFinite(offsetDays)) {
-    forecastDate.setDate(forecastDate.getDate() + offsetDays);
-  }
+  const weekdayLabel = WEEKDAY_LONG[targetWeekday] ?? `Day ${targetWeekday + 1}`;
+  const descriptor = `${formatHighlightDate(targetDate.toISOString())} · Expect about ${formatHighlightCount(
+    Math.round(forecast),
+    "message",
+  )}. ${targetSeries.length >= 2 ? `Typical ${weekdayLabel}s see` : "Overall average"} ${formatHighlightCount(
+    Math.round(baseline),
+    "message",
+  )}.`;
+  const context = targetSeries.length >= 3 ? `Recent ${weekdayLabel}s · ${targetRecent.join(", ")}` : null;
 
   return {
     type: "engagement",
     label,
     value: `${trendSymbol} ${classification}`,
-    descriptor: `${formatHighlightDate(forecastDate.toISOString())} · Expect about ${formatHighlightCount(
-      Math.round(forecast),
-      "message",
-    )} (typical is ${formatHighlightCount(Math.round(avg), "message")})`,
+    descriptor,
+    meta: context,
+    tooltip: "Forecast compares this weekday’s recent activity against its typical average.",
   };
 }
 
