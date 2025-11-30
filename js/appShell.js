@@ -59,6 +59,7 @@ import {
   setCachedAnalytics,
   clearAnalyticsCache,
   setDatasetFingerprint,
+  getDatasetFingerprint,
   setDatasetParticipantDirectory,
   computeDatasetFingerprint,
 } from "./state.js";
@@ -639,6 +640,7 @@ const {
   generateMarkdownReport: generateMarkdownReportAsync,
   generateSlidesHtml: generateSlidesHtmlAsync,
   getExportThemeConfig,
+  getDatasetFingerprint,
 });
 
 let analyticsWorkerInstance = null;

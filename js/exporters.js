@@ -19,7 +19,39 @@ export function createExporters({
   generateMarkdownReport,
   generateSlidesHtml,
   getExportThemeConfig,
+  getDatasetFingerprint = () => null,
 }) {
+  const exportCache = new Map();
+  let cacheFingerprint = null;
+  let cacheRangeKey = null;
+
+  function getFingerprintKey() {
+    const fingerprint = typeof getDatasetFingerprint === "function" ? getDatasetFingerprint() : null;
+    const rangeKey = typeof getCurrentRange === "function" ? JSON.stringify(normalizeRangeValue(getCurrentRange())) : null;
+    if (fingerprint !== cacheFingerprint || rangeKey !== cacheRangeKey) {
+      exportCache.clear();
+      cacheFingerprint = fingerprint ?? null;
+      cacheRangeKey = rangeKey ?? null;
+    }
+    if (cacheFingerprint == null || cacheRangeKey == null) return null;
+    return `${cacheFingerprint}|${cacheRangeKey}`;
+  }
+
+  function cacheSection(section, extraKey = "", builder) {
+    const fingerprintKey = getFingerprintKey();
+    if (fingerprintKey == null) {
+      return builder();
+    }
+    const key = `${section}|${fingerprintKey}|${extraKey || ""}`;
+    if (exportCache.has(key)) {
+      return exportCache.get(key);
+    }
+    const value = builder();
+    if (typeof value !== "undefined") {
+      exportCache.set(key, value);
+    }
+    return value;
+  }
   function buildFilename(suffix) {
     const label = (getDatasetLabel() || "relay-chat")
       .toLowerCase()
@@ -116,53 +148,65 @@ export function createExporters({
 
   function exportHourly() {
     const analytics = getDatasetAnalytics();
-    if (!analytics || !analytics.hourly_distribution) {
+    const rows = cacheSection("hourly", "", () => {
+      if (!analytics || !analytics.hourly_distribution) return undefined;
+      return analytics.hourly_distribution.map(entry => [
+        `${String(entry.hour).padStart(2, "0")}:00`,
+        entry.count,
+      ]);
+    });
+    if (!rows || !rows.length) {
       updateStatus("No hourly activity to export right now.", "warning");
       return;
     }
-    const rows = analytics.hourly_distribution.map(entry => [
-      `${String(entry.hour).padStart(2, "0")}:00`,
-      entry.count,
-    ]);
     downloadCSV(buildFilename("hourly"), ["Hour", "Messages"], rows);
   }
 
   function exportDaily() {
     const analytics = getDatasetAnalytics();
-    if (!analytics || !analytics.daily_counts.length) {
+    const rows = cacheSection("daily", "", () => {
+      if (!analytics || !analytics.daily_counts?.length) return undefined;
+      return analytics.daily_counts.map(entry => [entry.date, entry.count]);
+    });
+    if (!rows || !rows.length) {
       updateStatus("No daily activity to export right now.", "warning");
       return;
     }
-    const rows = analytics.daily_counts.map(entry => [entry.date, entry.count]);
     downloadCSV(buildFilename("daily"), ["Date", "Messages"], rows);
   }
 
   function exportWeekly() {
     const analytics = getDatasetAnalytics();
-    if (!analytics || !analytics.weekly_counts.length) {
+    const rows = cacheSection("weekly", "", () => {
+      if (!analytics || !analytics.weekly_counts?.length) return undefined;
+      return analytics.weekly_counts.map(entry => [
+        entry.week,
+        entry.count,
+        entry.cumulative,
+      ]);
+    });
+    if (!rows || !rows.length) {
       updateStatus("No weekly trends to export right now.", "warning");
       return;
     }
-    const rows = analytics.weekly_counts.map(entry => [
-      entry.week,
-      entry.count,
-      entry.cumulative,
-    ]);
     downloadCSV(buildFilename("weekly"), ["Week", "Messages", "Cumulative"], rows);
   }
 
   function exportWeekday() {
     const analytics = getDatasetAnalytics();
-    if (!analytics || !analytics.weekday_distribution.length) {
+    const rows = cacheSection("weekday", "", () => {
+      if (!analytics || !analytics.weekday_distribution?.length) return undefined;
+      return analytics.weekday_distribution.map(entry => [
+        entry.label,
+        entry.count,
+        entry.share ? formatFloat(entry.share * 100, 2) : "",
+        entry.deviation ? formatFloat(entry.deviation, 2) : "",
+      ]);
+    });
+    if (!rows || !rows.length) {
       updateStatus("No weekday data to export right now.", "warning");
       return;
     }
-    const rows = analytics.weekday_distribution.map(entry => [
-      entry.label,
-      entry.count,
-      entry.share ? formatFloat(entry.share * 100, 2) : "",
-      entry.deviation ? formatFloat(entry.deviation, 2) : "",
-    ]);
     downloadCSV(
       buildFilename("weekday"),
       ["Weekday", "Messages", "Share (%)", "Std Dev"],
@@ -172,43 +216,45 @@ export function createExporters({
 
   function exportTimeOfDay() {
     const analytics = getDatasetAnalytics();
-    const dataset = computeTimeOfDayDataset(analytics);
-    if (!dataset || !dataset.points.length || !dataset.total) {
+    if (!analytics) {
+      updateStatus("No time-of-day data to export right now.", "warning");
+      return;
+    }
+    const data = computeTimeOfDayDataset(analytics);
+    if (!data || !data.points.length || !data.total) {
       updateStatus("No time-of-day data to export right now.", "warning");
       return;
     }
     const headers = ["Hour", "Messages", "Share (%)", "Weekday Messages", "Weekend Messages"];
-    const rows = dataset.points.map(point => [
+    const rows = data.points.map(point => [
       formatHourLabel(point.hour),
       point.total,
       formatFloat(point.share * 100, 2),
-      dataset.includeWeekdays ? point.weekday : "",
-      dataset.includeWeekends ? point.weekend : "",
+      data.includeWeekdays ? point.weekday : "",
+      data.includeWeekends ? point.weekend : "",
     ]);
     downloadCSV(buildFilename("time-of-day"), headers, rows);
   }
 
   function exportMessageTypes() {
     const analytics = getDatasetAnalytics();
-    const data = analytics?.message_types;
-    if (!data) {
-      updateStatus("No message type data to export right now.", "warning");
-      return;
-    }
-    const headers = ["Group", "Type", "Messages", "Share (%)"];
-    const rows = [];
-    (data.summary ?? []).forEach(entry => {
-      rows.push([
+    const rows = cacheSection("message-types", "", () => {
+      const data = analytics?.message_types;
+      if (!data) return undefined;
+      const summary = data.summary ?? [];
+      if (!summary.length) return undefined;
+      return summary.map(entry => [
         "Summary",
         entry.label,
         entry.count,
         formatFloat((entry.share || 0) * 100, 2),
       ]);
     });
-    if (!rows.length) {
+    if (!rows || !rows.length) {
       updateStatus("No message type data to export right now.", "warning");
       return;
     }
+    const headers = ["Group", "Type", "Messages", "Share (%)"];
     downloadCSV(buildFilename("message-types"), headers, rows);
   }
 
@@ -268,8 +314,11 @@ export function createExporters({
       return;
     }
 
-    const rows = typeConfig.entries?.map(typeConfig.mapRow).filter(Boolean) || [];
-    if (!rows.length) {
+    const rows = cacheSection("message-subtype", type, () => {
+      const mapped = typeConfig.entries?.map(typeConfig.mapRow).filter(Boolean) || [];
+      return mapped.length ? mapped : undefined;
+    });
+    if (!rows || !rows.length) {
       updateStatus(`No ${typeConfig.label} to export right now.`, "warning");
       return;
     }

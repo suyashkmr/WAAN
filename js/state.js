@@ -243,6 +243,7 @@ const searchState = {
   total: 0,
   lastRun: null,
   summary: null,
+  lastRunHasFilters: false,
 };
 
 export function getSearchState() {
@@ -253,11 +254,12 @@ export function setSearchQuery(query) {
   searchState.query = { ...defaultSearchQuery, ...(query || {}) };
 }
 
-export function setSearchResults(results, total, summary) {
+export function setSearchResults(results, total, summary, meta = {}) {
   searchState.results = Array.isArray(results) ? results : [];
   searchState.total = Number.isFinite(total) ? total : 0;
   searchState.lastRun = new Date().toISOString();
   searchState.summary = summary ?? null;
+  searchState.lastRunHasFilters = Boolean(meta.hasFilters);
 }
 
 export function resetSearchState() {
@@ -266,6 +268,7 @@ export function resetSearchState() {
   searchState.total = 0;
   searchState.lastRun = null;
   searchState.summary = null;
+  searchState.lastRunHasFilters = false;
 }
 
 const analyticsCache = new Map();

@@ -14,7 +14,6 @@ import {
   updateStatus,
 } from "./state.js";
 import { getTimestamp } from "./analytics.js";
-import { createVirtualList } from "./virtualList.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
@@ -34,20 +33,6 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     progressBarEl,
     progressLabelEl,
   } = elements;
-
-  let searchResultsVirtualList = null;
-  let searchResultsTailNote = null;
-  if (resultsListEl) {
-    searchResultsTailNote = document.createElement("div");
-    searchResultsTailNote.className = "search-results-note hidden";
-    resultsListEl.insertAdjacentElement("afterend", searchResultsTailNote);
-    searchResultsVirtualList = createVirtualList({
-      container: resultsListEl,
-      estimatedItemHeight: 120,
-      overscan: 6,
-      renderItem: item => buildSearchResultItem(item),
-    });
-  }
 
   const resultLimit = Number.isFinite(options.resultLimit) ? options.resultLimit : DEFAULT_RESULT_LIMIT;
   let activeSearchRequest = 0;
@@ -259,71 +244,50 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     const results = state?.results ?? [];
     const total = state?.total ?? 0;
     const summary = state?.summary ?? null;
+    const hasRunSearch = Boolean(state?.lastRun);
+    const lastRunFiltered = Boolean(state?.lastRunHasFilters);
 
     const hasFilters = Boolean(query.text || query.participant || query.start || query.end);
-
-    if (!hasFilters) {
-      resultsSummaryEl.textContent = "Add keywords, choose a participant, or set dates to search this chat.";
+    if (!hasRunSearch) {
+      resultsSummaryEl.textContent =
+        "Add keywords, choose a participant, or set dates to search this chat. Leave filters blank to list everything.";
     } else if (!total) {
-      resultsSummaryEl.textContent = "No messages matched these filters. Try another keyword, participant, or date range.";
+      resultsSummaryEl.textContent = lastRunFiltered
+        ? "No messages matched these filters. Try another keyword, participant, or date range."
+        : "This chat doesn't have any messages yet.";
+    } else if (!lastRunFiltered) {
+      resultsSummaryEl.textContent = `Showing all ${formatNumber(results.length)} messages in this chat.`;
     } else if (total > results.length) {
       resultsSummaryEl.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (first ${resultLimit} shown). Narrow further to see more.`;
     } else {
       resultsSummaryEl.textContent = `Showing ${formatNumber(results.length)} match${results.length === 1 ? "" : "es"}.`;
     }
 
-    if (!searchResultsVirtualList) {
-      resultsListEl.innerHTML = "";
-      if (!total) {
-        const emptyLegacy = document.createElement("div");
-        emptyLegacy.className = "search-results-empty";
-        emptyLegacy.textContent = hasFilters
-          ? "No matching messages. Try other names, words, or dates."
-          : "Add filters above to search the chat history.";
-        resultsListEl.appendChild(emptyLegacy);
-        renderSearchInsights(null);
-        return;
-      }
-      const fragment = document.createDocumentFragment();
-      results.forEach(result => {
-        fragment.appendChild(buildSearchResultItem(result));
-      });
-      resultsListEl.appendChild(fragment);
-      if (total > results.length) {
-        const note = document.createElement("div");
-        note.className = "search-results-empty";
-        note.textContent = "Narrow your filters to see more matches.";
-        resultsListEl.appendChild(note);
-      }
-      renderSearchInsights(summary);
-      return;
-    }
-
+    resultsListEl.innerHTML = "";
     if (!total) {
-      searchResultsVirtualList.setEmptyRenderer(() => {
-        const empty = document.createElement("div");
-        empty.className = "search-results-empty";
-        empty.textContent = hasFilters
-          ? "No matching messages. Try other names, words, or dates."
-          : "Add filters above to search the chat history.";
-        return empty;
-      });
-      searchResultsVirtualList.setItems([]);
-      if (searchResultsTailNote) searchResultsTailNote.classList.add("hidden");
+      const empty = document.createElement("div");
+      empty.className = "search-results-empty";
+      empty.textContent = hasFilters
+        ? "No matching messages. Try other names, words, or dates."
+        : "Add filters above to search the chat history.";
+      resultsListEl.appendChild(empty);
       renderSearchInsights(null);
       return;
     }
 
-    searchResultsVirtualList.setEmptyRenderer(null);
-    searchResultsVirtualList.setItems(results);
-    if (searchResultsTailNote) {
-      if (total > results.length) {
-        searchResultsTailNote.textContent = "Narrow your filters to see more matches.";
-        searchResultsTailNote.classList.remove("hidden");
-      } else {
-        searchResultsTailNote.classList.add("hidden");
-      }
+    const fragment = document.createDocumentFragment();
+    results.forEach(result => {
+      fragment.appendChild(buildSearchResultItem(result));
+    });
+    resultsListEl.appendChild(fragment);
+
+    if (lastRunFiltered && total > results.length) {
+      const note = document.createElement("div");
+      note.className = "search-results-empty";
+      note.textContent = "Narrow your filters to see more matches.";
+      resultsListEl.appendChild(note);
     }
+
     renderSearchInsights(summary);
   }
 
@@ -401,6 +365,8 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
 
     const startBound = startDate ? startDate.getTime() : null;
     const endBound = endDate ? endDate.getTime() : null;
+    const requestHasFilters = Boolean(query.text || query.participant || query.start || query.end);
+    const requestLimit = requestHasFilters ? resultLimit : entries.length;
 
     return new Promise((resolve, reject) => {
       searchWorkerRequests.set(requestId, {
@@ -418,7 +384,7 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
         payload: {
           entries,
           query,
-          resultLimit,
+          resultLimit: requestLimit,
           startMs: startBound,
           endMs: endBound,
         },
@@ -438,17 +404,22 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
           })),
           total,
           summary,
+          { hasFilters: requestHasFilters },
         );
         renderResults();
         if (!total) {
-          updateStatus("No messages matched those filters.", "info");
-        } else if (total > resultLimit) {
           updateStatus(
-            `Showing the first ${resultLimit} matches out of ${formatNumber(total)}. Narrow your filters for a closer look.`,
+            requestHasFilters ? "No messages matched those filters." : "This chat doesn't have any messages yet.",
+            "info",
+          );
+        } else if (requestHasFilters && total > requestLimit) {
+          updateStatus(
+            `Showing the first ${requestLimit} matches out of ${formatNumber(total)}. Narrow your filters for a closer look.`,
             "info",
           );
         } else {
-          updateStatus(`Found ${formatNumber(total)} matching messages.`, "success");
+          const prefix = requestHasFilters ? "Found" : "Listed";
+          updateStatus(`${prefix} ${formatNumber(total)} messages.`, "success");
         }
       })
       .catch(error => {

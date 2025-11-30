@@ -129,6 +129,13 @@
     --shape-large: 28px;
     --shape-full: 999px;
 
+    --shadow-soft: 0 8px 18px rgba(4, 6, 12, 0.18);
+    --shadow-float: 0 18px 35px rgba(4, 6, 12, 0.35);
+    --shadow-card: 0 12px 28px rgba(15, 23, 42, 0.12);
+    --shadow-card-strong: 0 14px 28px rgba(15, 23, 42, 0.12);
+    --shadow-card-deep: 0 16px 28px rgba(15, 23, 42, 0.12);
+    --shadow-chip: 0 10px 18px rgba(15, 23, 42, 0.12);
+
     --calendar-level-0: rgba(143, 151, 206, 0.12);
     --calendar-level-1: rgba(125, 138, 255, 0.18);
     --calendar-level-2: rgba(125, 138, 255, 0.32);
@@ -497,4 +504,3 @@ h6 {
     font-weight: 600;
     color: var(--text);
 }
-
