@@ -15,7 +15,6 @@ export function createExporters({
   describeRange,
   filterEntriesByRange,
   normalizeRangeValue,
-  snapshotModeGetter,
   generateMarkdownReport,
   generateSlidesHtml,
   getExportThemeConfig,
@@ -394,10 +393,6 @@ export function createExporters({
   }
 
   function exportSearchResults() {
-    if (snapshotModeGetter()) {
-      updateStatus("Can't export search results while viewing a shared link.", "warning");
-      return;
-    }
     const state = getSearchState();
     const results = state?.results ?? [];
     if (!results.length) {

@@ -94,7 +94,7 @@ function spawnNode(scriptPath, args = [], { cwd, env } = {}) {
 }
 
 function runRestoreScript() {
-  const scriptPath = path.join(getScriptsRoot(), "restore-waandata.js");
+  const scriptPath = path.join(getScriptsRoot(), "restore-waandata.cjs");
   if (!fs.existsSync(scriptPath)) {
     return Promise.resolve();
   }

@@ -3,7 +3,6 @@ import {
   formatDisplayDate,
   formatTimestampDisplay,
   sanitizeText,
-  toISODate,
 } from "./utils.js";
 import {
   getDatasetEntries,
@@ -13,11 +12,10 @@ import {
   resetSearchState,
   updateStatus,
 } from "./state.js";
-import { getTimestamp } from "./analytics.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
-export function createSearchController({ elements = {}, options = {}, getSnapshotMode = () => false } = {}) {
+export function createSearchController({ elements = {}, options = {} } = {}) {
   const {
     form,
     keywordInput,
@@ -39,7 +37,6 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
   let searchWorkerInstance = null;
   let searchWorkerRequestId = 0;
   const searchWorkerRequests = new Map();
-  let activeSearchToken = 0;
 
   function applyStateToForm() {
     const state = getSearchState();
@@ -130,7 +127,7 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     if (participantSelect.value !== targetValue) {
       participantSelect.value = "";
     }
-    participantSelect.disabled = getSnapshotMode() || options.length === 0;
+    participantSelect.disabled = options.length === 0;
   }
 
   function parseDateInput(value, endOfDay = false) {
@@ -432,10 +429,6 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
 
   function handleSubmit(event) {
     event?.preventDefault();
-    if (getSnapshotMode()) {
-      updateStatus("Search isn't available in shared link view.", "warning");
-      return;
-    }
     const query = {
       text: keywordInput?.value.trim() ?? "",
       participant: participantSelect?.value ?? "",
@@ -462,10 +455,6 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
 
   function handleReset(event) {
     event?.preventDefault();
-    if (getSnapshotMode()) {
-      updateStatus("Search isn't available in shared link view.", "warning");
-      return;
-    }
     resetFilters(true);
   }
 

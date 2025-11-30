@@ -1,5 +1,4 @@
 import {
-  SYSTEM_PREFIXES,
   SYSTEM_PATTERNS,
   SYSTEM_JOIN_TEXT_PATTERNS,
   SYSTEM_JOIN_REQUEST_TEXT_PATTERNS,
@@ -106,12 +105,6 @@ export function getTimestamp(entry) {
     if (!Number.isNaN(parsed.getTime())) return parsed;
   }
   return parseTimestampText(entry.timestamp_text);
-}
-
-function isSystemContent(content) {
-  const trimmed = (content || "").trimStart();
-  if (SYSTEM_PREFIXES.some(prefix => trimmed.startsWith(prefix))) return true;
-  return SYSTEM_PATTERNS.some(pattern => pattern.test(trimmed));
 }
 
 function countAffectedParticipants(message, verbs = ["added"]) {
@@ -436,27 +429,6 @@ function containsWord(text, word) {
   return pattern.test(text);
 }
 
-function isAddSystemEntry(entry) {
-  if (!entry) return false;
-  if (entry.system_subtype && SYSTEM_ADD_SUBTYPES.has(entry.system_subtype)) return true;
-  const lower = (entry.message || "").toLowerCase();
-  return containsWord(lower, "added") || containsWord(lower, "invited");
-}
-
-function isLeaveSystemEntry(entry) {
-  if (!entry) return false;
-  if (entry.system_subtype && SYSTEM_LEAVE_SUBTYPES.has(entry.system_subtype)) return true;
-  const lower = (entry.message || "").toLowerCase();
-  return containsWord(lower, "left");
-}
-
-function isRemoveSystemEntry(entry) {
-  if (!entry) return false;
-  if (entry.system_subtype && SYSTEM_REMOVE_SUBTYPES.has(entry.system_subtype)) return true;
-  const lower = (entry.message || "").toLowerCase();
-  return containsWord(lower, "removed");
-}
-
 function isChangeSystemEntry(entry) {
   if (!entry) return false;
   if (entry.system_subtype && SYSTEM_CHANGE_SUBTYPES.has(entry.system_subtype)) return true;
@@ -563,8 +535,6 @@ export function computeAnalytics(entries = []) {
   const messageById = new Map();
   messages.forEach(entry => {
     const trimmedMessage = (entry.message || "").trim();
-    const lowerMessage = trimmedMessage.toLowerCase();
-    const snapshot = buildMessageSnapshot(entry);
     const sentimentScore = scoreSentiment(entry.message);
     const sentimentLabel = sentimentScore > 0 ? "positive" : sentimentScore < 0 ? "negative" : "neutral";
     const fromMe = getBooleanFlag(entry, ["from_me", "fromMe"]);
@@ -1640,50 +1610,4 @@ function buildEngagementForecastHighlight(
     meta: context,
     tooltip: "Forecast compares this weekday’s recent activity against its typical average.",
   };
-}
-
-function hourlyDistributionFromDaily(dailyCounts) {
-  return Array.isArray(dailyCounts) ? dailyCounts.map(entry => entry.count || 0) : [];
-}
-
-function computeHourSpikeHighlights(hourlyDistribution) {
-  if (!Array.isArray(hourlyDistribution) || hourlyDistribution.length < 24) return [];
-
-  // Create normalized per-hour averages for each hour position across days.
-  const hourBuckets = Array.from({ length: 24 }, () => []);
-  hourlyDistribution.forEach((count, index) => {
-    const hour = index % 24;
-    hourBuckets[hour].push(Number(count) || 0);
-  });
-
-  const hourStats = hourBuckets.map((bucket, hour) => {
-    if (!bucket.length) {
-      return { hour, mean: 0, std: 0, latest: 0 };
-    }
-    const mean = bucket.reduce((sum, value) => sum + value, 0) / bucket.length;
-    const variance = bucket.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / bucket.length;
-    const std = Math.sqrt(variance);
-    return { hour, mean, std, latest: bucket[bucket.length - 1] };
-  });
-
-  const spikes = hourStats
-    .map(stat => {
-      const deviation = stat.std ? (stat.latest - stat.mean) / stat.std : 0;
-      return {
-        hour: stat.hour,
-        count: stat.latest,
-        share: stat.mean ? stat.latest / (stat.mean * 24) : 0,
-        deviation,
-      };
-    })
-    .filter(item => item.deviation > 2)
-    .sort((a, b) => b.deviation - a.deviation)
-    .slice(0, 3)
-    .map(item => ({
-      label: `${String(item.hour).padStart(2, "0")}:00`,
-      count: Math.round(item.count),
-      share: item.share,
-    }));
-
-  return spikes;
 }

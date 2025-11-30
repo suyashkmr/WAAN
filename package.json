@@ -2,18 +2,29 @@
   "name": "waan-suite",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "WAAN macOS distribution containing the offline ChatScope analytics dashboard.",
   "workspaces": [
     "apps/server"
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces",
-    "lint": "echo \"No root lint configured\"",
+    "lint": "eslint js",
+    "test": "vitest --run",
+    "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },
   "author": "WAAN",
   "license": "MIT",
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "happy-dom": "^20.0.11",
+    "vitest": "^4.0.14"
   }
 }

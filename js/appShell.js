@@ -1,25 +1,15 @@
-import {
-  computeAnalytics,
-  getTimestamp,
-} from "./analytics.js";
+import { getTimestamp } from "./analytics.js";
 import {
   formatNumber,
   formatFloat,
   sanitizeText,
   toISODate,
   formatDisplayDate,
-  formatDateRangeWithTime,
   formatTimestampDisplay,
-  formatRelativeTime,
 } from "./utils.js";
-import {
-  WEEKDAY_LONG,
-  WEEKDAY_SHORT,
-} from "./constants.js";
+import { WEEKDAY_SHORT } from "./constants.js";
 import {
   SECTION_NAV_ITEMS,
-  TIME_OF_DAY_BANDS,
-  TIME_OF_DAY_SPAN_WINDOW,
   SEARCH_RESULT_LIMIT,
   ONBOARDING_STEPS,
 } from "./appConstants.js";
@@ -85,13 +75,8 @@ import { createSearchController } from "./search.js";
 import { createSavedViewsController } from "./savedViews.js";
 import {
   API_BASE,
-  RELAY_BASE,
   BRAND_NAME,
   RELAY_SERVICE_NAME,
-  RELAY_CLIENT_LABEL,
-  RELAY_POLL_INTERVAL_MS,
-  REMOTE_CHAT_REFRESH_INTERVAL_MS,
-  REMOTE_MESSAGE_LIMIT,
   STATUS_AUTO_HIDE_DELAY_MS,
   STATUS_EXIT_DURATION_MS,
   motionPreferenceQuery,
@@ -385,13 +370,6 @@ const onboardingSkipButton = domCache.getById("onboarding-skip");
 const onboardingNextButton = domCache.getById("onboarding-next");
 const heroStatusBadge = domCache.getById("hero-status-badge");
 const heroStatusCopy = domCache.getById("hero-status-copy");
-const hourlyNote = domCache.getById("hourly-note");
-const dailyNote = domCache.getById("daily-note");
-const weeklyNote = domCache.getById("weekly-note");
-const weekdayNote = domCache.getById("weekday-note");
-const timeOfDayNote = domCache.getById("timeofday-note");
-const sentimentNote = domCache.getById("sentiment-note");
-const searchNote = domCache.getById("search-note");
 const datasetEmptyCallout = domCache.getById("dataset-empty-callout");
 const datasetEmptyHeading = domCache.getById("dataset-empty-heading");
 const datasetEmptyCopy = domCache.getById("dataset-empty-copy");
@@ -457,7 +435,6 @@ const searchController = createSearchController({
     progressLabelEl: searchProgressLabel,
   },
   options: { resultLimit: SEARCH_RESULT_LIMIT },
-  getSnapshotMode: () => snapshotMode,
 });
 
 let exportWorkerInstance = null;
@@ -603,7 +580,6 @@ function getExportFilterSummary() {
   return parts;
 }
 let participantView = [];
-let snapshotMode = false;
 
 const {
   exportParticipants,
@@ -636,7 +612,6 @@ const {
   describeRange,
   filterEntriesByRange,
   normalizeRangeValue,
-  snapshotModeGetter: () => snapshotMode,
   generateMarkdownReport: generateMarkdownReportAsync,
   generateSlidesHtml: generateSlidesHtmlAsync,
   getExportThemeConfig,
@@ -671,8 +646,6 @@ const relayController = createRelayController({
     relayBannerMeta,
     relayOnboardingSteps,
     logDrawerToggleButton,
-    logDrawerCloseButton,
-    logDrawerClearButton,
     logDrawerEl,
     logDrawerList,
     logDrawerConnectionLabel,
@@ -706,7 +679,6 @@ const {
   logoutRelaySession,
   handleReloadAllChats,
   syncRelayChats,
-  refreshRemoteChats,
   loadRemoteChat,
   refreshRelayStatus,
   startStatusPolling,
@@ -778,14 +750,6 @@ function ensureAnalyticsWorker() {
     analyticsWorkerRequests.clear();
   };
   return analyticsWorkerInstance;
-}
-
-function terminateAnalyticsWorker() {
-  if (analyticsWorkerInstance) {
-    analyticsWorkerInstance.terminate();
-    analyticsWorkerInstance = null;
-    analyticsWorkerRequests.clear();
-  }
 }
 
 function buildSectionNav() {
@@ -903,47 +867,6 @@ function computeAnalyticsWithWorker(entries) {
   });
 }
 
-function encodeSnapshotPayload(data) {
-  const json = JSON.stringify(data);
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(json);
-  let binary = "";
-  bytes.forEach(byte => {
-    binary += String.fromCharCode(byte);
-  });
-  return encodeURIComponent(btoa(binary));
-}
-
-function decodeSnapshotPayload(encoded) {
-  const decoded = atob(decodeURIComponent(encoded));
-  const bytes = Uint8Array.from(decoded, char => char.charCodeAt(0));
-  const decoder = new TextDecoder();
-  const json = decoder.decode(bytes);
-  return JSON.parse(json);
-}
-
-async function copyTextToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-  const tempInput = document.createElement("textarea");
-  tempInput.value = text;
-  tempInput.setAttribute("readonly", "true");
-  tempInput.style.position = "absolute";
-  tempInput.style.left = "-9999px";
-  document.body.appendChild(tempInput);
-  const selection = document.getSelection();
-  const selected = selection ? selection.rangeCount > 0 ? selection.getRangeAt(0) : null : null;
-  tempInput.select();
-  document.execCommand("copy");
-  document.body.removeChild(tempInput);
-  if (selected && selection) {
-    selection.removeAllRanges();
-    selection.addRange(selected);
-  }
-}
-
 function encodeChatSelectorValue(source, id) {
   return `${source}:${id}`;
 }
@@ -968,7 +891,6 @@ function setDataAvailabilityState(hasData) {
       "No chat is selected yet.",
       "Start the relay desktop app, press Connect, scan the QR code, then choose a mirrored chat from “Loaded chats”.",
     );
-    updateSectionNarratives(null);
   }
   savedViewsController.setDataAvailability(Boolean(hasData));
   savedViewsController.refreshUI();
@@ -1093,14 +1015,6 @@ function finishOnboarding() {
 }
 
 function syncHeroPillsWithRange() { }
-
-function applyHeroRange(rangeValue) {
-  if (!rangeSelect || !rangeValue) return;
-  if (rangeSelect.value !== rangeValue) {
-    rangeSelect.value = rangeValue;
-  }
-  handleRangeChange();
-}
 
 function applyTheme(preference) {
   const root = document.documentElement;
@@ -1293,6 +1207,7 @@ async function refreshChatSelector() {
   }
 
   chatSelector.innerHTML = "";
+  chatSelector.disabled = false;
 
   if (storedChats.length) {
     const storedGroup = document.createElement("optgroup");
@@ -1327,11 +1242,9 @@ async function refreshChatSelector() {
     chatSelector.value = resolvedValue;
     setActiveChatId(resolvedValue);
   }
-  chatSelector.disabled = snapshotMode;
 }
 
 async function handleChatSelectionChange(event) {
-  if (snapshotMode) return;
   const decoded = decodeChatSelectorValue(event.target.value);
   if (!decoded) return;
   if (event.target.value === getActiveChatId()) return;
@@ -1361,80 +1274,8 @@ async function handleChatSelectionChange(event) {
     console.error(error);
     updateStatus("We couldn't switch chats.", "error");
   } finally {
-    if (!snapshotMode) {
-      event.target.disabled = false;
-    }
+    event.target.disabled = false;
   }
-}
-
-function buildParticipantDetail(entry) {
-  const first = entry.first_message
-    ? sanitizeText(formatDisplayDate(entry.first_message))
-    : null;
-  const last = entry.last_message
-    ? sanitizeText(formatDisplayDate(entry.last_message))
-    : null;
-  let rangeText = "—";
-  if (first && last) rangeText = `${first} → ${last}`;
-  else if (first) rangeText = first;
-  else if (last) rangeText = last;
-
-  const shareText = Number.isFinite(entry.share) ? `${formatFloat(entry.share * 100, 1)}%` : "—";
-  const avgWordsText = Number.isFinite(entry.avg_words) ? `${formatFloat(entry.avg_words, 1)} words` : "—";
-  const avgCharsText = Number.isFinite(entry.avg_chars) ? `${formatFloat(entry.avg_chars, 1)} chars` : "—";
-  const sentimentSummary = (() => {
-    if (!entry.sentiment || !Number.isFinite(entry.sentiment.average)) return "—";
-    const positiveShare = entry.count ? formatFloat((entry.sentiment.positive / entry.count) * 100, 0) : null;
-    const negativeShare = entry.count ? formatFloat((entry.sentiment.negative / entry.count) * 100, 0) : null;
-    const parts = [
-      formatSentimentScore(entry.sentiment.average, 2),
-      positiveShare !== null ? `${positiveShare}% positive` : null,
-      negativeShare !== null ? `${negativeShare}% negative` : null,
-    ].filter(Boolean);
-    return parts.join(" · ");
-  })();
-  const rawTopHour = entry.top_hour
-    ? `${String(entry.top_hour.hour).padStart(2, "0")}:00 (${formatNumber(entry.top_hour.count)} msgs)`
-    : "No hourly data yet";
-  const weekdayName = entry.top_weekday
-    ? WEEKDAY_LONG[entry.top_weekday.dayIndex] ?? `Day ${entry.top_weekday.dayIndex + 1}`
-    : null;
-  const rawTopWeekday = weekdayName
-    ? `${weekdayName} (${formatNumber(entry.top_weekday.count)} msgs)`
-    : "No weekday data yet";
-  const topHourText = sanitizeText(rawTopHour);
-  const topWeekdayText = sanitizeText(rawTopWeekday);
-
-  return `
-    <div class="participant-detail">
-      <div class="detail-grid">
-        <div class="detail-item">
-          <span class="detail-label">Active range</span>
-          <span class="detail-value">${rangeText}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Share of messages</span>
-          <span class="detail-value">${shareText}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Average length</span>
-          <span class="detail-value">${avgWordsText} · ${avgCharsText}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Sentiment</span>
-          <span class="detail-value">${sanitizeText(sentimentSummary)}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Top hour</span>
-          <span class="detail-value">${topHourText}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Busiest weekday</span>
-          <span class="detail-value">${topWeekdayText}</span>
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 setStatusCallback((message, tone) => {
@@ -1481,12 +1322,8 @@ document.addEventListener("DOMContentLoaded", () => {
   searchController.init();
   savedViewsController.init();
   savedViewsController.setDataAvailability(dataAvailable);
-  savedViewsController.setSnapshotMode(snapshotMode);
-  const viewingSnapshot = tryLoadSnapshotFromHash();
   refreshChatSelector();
-  if (!viewingSnapshot) {
-    updateStatus(`Start ${RELAY_SERVICE_NAME} to mirror chat app chats here.`, "info");
-  }
+  updateStatus(`Start ${RELAY_SERVICE_NAME} to mirror chat app chats here.`, "info");
 });
 
 function attachEventHandlers() {
@@ -1898,23 +1735,6 @@ function handleParticipantRowToggle(event) {
   }
 }
 
-function formatSystemSummary(summary) {
-  if (!summary) {
-    return "Joins 0 · Added 0 · Left 0 · Removed 0 · Changed 0";
-  }
-  const parts = [
-    `Joins ${formatNumber(summary.joins || 0)}`,
-    `Added ${formatNumber(summary.added || 0)}`,
-    `Left ${formatNumber(summary.left || 0)}`,
-    `Removed ${formatNumber(summary.removed || 0)}`,
-    `Changed ${formatNumber(summary.changed || 0)}`,
-  ];
-  if (summary.other) {
-    parts.push(`Other ${formatNumber(summary.other)}`);
-  }
-  return parts.join(" · ");
-}
-
 function formatSentimentScore(value, digits = 2) {
   if (!Number.isFinite(value)) return "—";
   const abs = Math.abs(value);
@@ -1991,7 +1811,6 @@ function renderDashboard(analytics) {
   scheduleDeferredRender(() => searchController.renderResults(), currentToken);
   scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
   setDataAvailabilityState(Boolean(analytics));
-  updateSectionNarratives(analytics);
 }
 
 function renderParticipants(analytics) {
@@ -2072,55 +1891,6 @@ function renderWeeklyPanel(analytics) {
       if (rangeSelect) rangeSelect.value = "custom";
     },
   });
-}
-
-async function handleShareSnapshot() {
-  if (snapshotMode) {
-    updateStatus("You're already viewing a shared link. Share this page's address instead.", "info");
-    return;
-  }
-  const analytics = getDatasetAnalytics();
-  if (!analytics) {
-    updateStatus("Load the chat summary before sharing a link.", "warning");
-    return;
-  }
-
-  const snapshot = {
-    version: 1,
-    label: getDatasetLabel(),
-    generatedAt: new Date().toISOString(),
-    analytics: buildSnapshotAnalytics(analytics),
-  };
-
-  try {
-    const encoded = encodeSnapshotPayload(snapshot);
-    const baseUrl = window.location.href.split("#")[0];
-    const shareUrl = `${baseUrl}#snapshot=${encoded}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: snapshot.label || "Chat summary",
-          text: `${BRAND_NAME} chat summary`,
-          url: shareUrl,
-        });
-        updateStatus("Shared the view using the device menu.", "success");
-        return;
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.warn("Share dialog failed", error);
-        } else {
-          return;
-        }
-      }
-    }
-
-    await copyTextToClipboard(shareUrl);
-    updateStatus("Copied the share link.", "success");
-  } catch (error) {
-    console.error(error);
-    updateStatus("Couldn't make a share link.", "error");
-  }
 }
 
 function renderHighlights(highlights) {
@@ -2242,720 +2012,6 @@ function updateHeroRelayStatus(status) {
   }
 }
 
-function buildGuidedInsights(analytics) {
-  const insights = [];
-  const topSender = Array.isArray(analytics.top_senders) ? analytics.top_senders[0] : null;
-  if (topSender && topSender.count) {
-    const share = Number.isFinite(topSender.share) ? ` (${formatFloat(topSender.share * 100, 1)}% of messages)` : "";
-    const senderLabel = topSender.sender || topSender.label || "Top participant";
-    insights.push({
-      text: `${senderLabel} leads the conversation with ${formatNumber(topSender.count)} messages${share}.`,
-      ctaLabel: "View participants",
-      ctaTarget: "#participants",
-    });
-  }
-  const busiestDay = Array.isArray(analytics.daily_counts)
-    ? analytics.daily_counts.reduce((max, entry) => (entry.count > (max?.count || 0) ? entry : max), null)
-    : null;
-  if (busiestDay && busiestDay.count) {
-    insights.push({
-      text: `${formatDisplayDate(busiestDay.date)} was the busiest day with ${formatNumber(busiestDay.count)} messages.`,
-      ctaLabel: "Review daily trend",
-      ctaTarget: "#daily-activity",
-    });
-  }
-  const weekdayDetails = Array.isArray(analytics.weekday_distribution) ? analytics.weekday_distribution : [];
-  const busiestWeekday = weekdayDetails.reduce(
-    (max, entry) => (entry.count > (max?.count || 0) ? entry : max),
-    null
-  );
-  if (busiestWeekday && busiestWeekday.count) {
-    insights.push({
-      text: `${busiestWeekday.label || "This weekday"} tends to spike with ${formatNumber(
-        busiestWeekday.count
-      )} messages per week.`,
-      ctaLabel: "Inspect weekday pattern",
-      ctaTarget: "#weekday-trend",
-    });
-  }
-  const sentimentTotals = analytics.sentiment?.totals || null;
-  if (sentimentTotals) {
-    const totalSentiment =
-      Number(sentimentTotals.positive || 0) +
-      Number(sentimentTotals.neutral || 0) +
-      Number(sentimentTotals.negative || 0);
-    if (totalSentiment > 0) {
-      const positiveShare = sentimentTotals.positive / totalSentiment;
-      const negativeShare = sentimentTotals.negative / totalSentiment;
-      const tone =
-        positiveShare > negativeShare
-          ? `${formatFloat(positiveShare * 100, 0)}% of messages feel upbeat`
-          : `${formatFloat(negativeShare * 100, 0)}% of messages feel critical`;
-      insights.push({
-        text: `Overall tone: ${tone}.`,
-        ctaLabel: "Open mood panel",
-        ctaTarget: "#sentiment-overview",
-      });
-    }
-  }
-  const weeklySummary = analytics.weekly_summary || {};
-  if (weeklySummary.latestDeltaPercent !== null && weeklySummary.latestDeltaPercent !== undefined) {
-    const percent = formatFloat(Math.abs(weeklySummary.latestDeltaPercent) * 100, 1);
-    const direction = weeklySummary.latestDeltaPercent > 0 ? "up" : "down";
-    insights.push({
-      text: `Weekly activity is ${direction} ${percent}% compared to the previous period.`,
-      ctaLabel: "View week by week",
-      ctaTarget: "#weekly-trend",
-    });
-  }
-  const topHour = analytics.hourly_summary?.topHour;
-  if (topHour && Number.isFinite(topHour.hour) && topHour.count) {
-    insights.push({
-      text: `Most messages arrive around ${String(topHour.hour).padStart(2, "0")}:00 (${formatNumber(topHour.count)} msgs).`,
-      ctaLabel: "See hourly activity",
-      ctaTarget: "#hourly-activity",
-    });
-  }
-  return insights.slice(0, 4);
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
-  const nowIso = new Date().toISOString();
-  const title = getDatasetLabel() || `${BRAND_NAME} Chat`;
-  const details = collectExportSummary(analytics);
-  const filterDetails = getExportFilterSummary();
-  const highlights = details.highlights;
-  const topSenders = details.topSenders;
-  const messageTypeSummary = analytics.message_types?.summary || [];
-  const systemSummary = details.systemSummary;
-  const weeklySummary = details.weeklySummary;
-
-  const lines = [];
-  lines.push(`# ${title} – Conversation summary`);
-  lines.push(`_${theme?.tagline || "Insights prepared by ChatScope."}_`);
-  lines.push(`*Created ${nowIso} · Styled with the ${theme?.label || "Aurora"} theme*`);
-  if (details.rangeLabel) {
-    lines.push("");
-    lines.push(`> **Date range:** ${details.rangeLabel}`);
-  }
-  if (filterDetails.length) {
-    lines.push(`> **Filters:** ${filterDetails.join(" · ")}`);
-  }
-  lines.push(`> **Report style:** ${theme?.label || "Default"}`);
-  lines.push("");
-  lines.push("---");
-  lines.push("");
-  lines.push("## Quick glance");
-  if (details.overviewItems.length) {
-    details.overviewItems.forEach(item => lines.push(`- ${item}`));
-  } else {
-    lines.push("- Load a dataset to populate this section.");
-  }
-  lines.push("");
-
-  lines.push("## Highlights");
-  if (highlights.length) {
-    highlights.forEach(item => {
-      lines.push(`- **${item.label}:** ${item.value}${item.descriptor ? ` — ${item.descriptor}` : ""}`);
-    });
-  } else {
-    lines.push("- Highlights will show up once there's enough data.");
-  }
-  lines.push("");
-
-  lines.push("## Everyday numbers");
-  lines.push(`- **Average per day:** ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`);
-  lines.push(`- **Average per week:** ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`);
-  lines.push(`- **Busiest hour:** ${analytics.hourly_summary?.topHour
-    ? `${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex]} ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
-    : "—"
-    }`);
-  lines.push(`- **Join requests logged:** ${formatNumber(systemSummary.join_requests || 0)}`);
-  lines.push("");
-
-  lines.push("## Frequent voices");
-  if (topSenders.length) {
-    lines.push("| Rank | Participant | Messages | Share | Avg words | Avg chars |");
-    lines.push("| --- | --- | ---: | ---: | ---: | ---: |");
-    topSenders.forEach((entry, index) => {
-      lines.push(`| ${index + 1} | ${entry.sender} | ${formatNumber(entry.count)} | ${entry.share ? `${formatFloat(entry.share * 100, 1)}%` : "—"
-        } | ${entry.avg_words ? formatFloat(entry.avg_words, 1) : "—"} | ${entry.avg_chars ? formatFloat(entry.avg_chars, 1) : "—"} |`);
-    });
-  } else {
-    lines.push("No participant activity recorded.");
-  }
-  lines.push("");
-
-  lines.push("## Message types");
-  if (messageTypeSummary.length) {
-    messageTypeSummary.forEach(item => {
-      lines.push(`- **${item.label}:** ${formatNumber(item.count)} messages (${formatFloat((item.share || 0) * 100, 1)}%)`);
-    });
-  } else {
-    lines.push("No message type details for this range.");
-  }
-  lines.push("");
-
-  lines.push("## Group activity");
-  lines.push(`- People joined: ${formatNumber(systemSummary.joins || 0)}`);
-  lines.push(`- Join requests: ${formatNumber(systemSummary.join_requests || 0)}`);
-  lines.push(`- Added by admins: ${formatNumber(systemSummary.added || 0)}`);
-  lines.push(`- Left on their own: ${formatNumber(systemSummary.left || 0)}`);
-  lines.push(`- Removed by admins: ${formatNumber(systemSummary.removed || 0)}`);
-  lines.push(`- Settings changes: ${formatNumber(systemSummary.changed || 0)}`);
-  lines.push(`- Other system messages: ${formatNumber(systemSummary.other || 0)}`);
-  lines.push("");
-
-  lines.push("## Helpful next steps");
-  lines.push("- Grab screenshots of charts you want to share.");
-  lines.push("- Add notes or decisions alongside this summary for context.");
-
-  return lines.join("\n");
-}
-
-function updateSectionNarratives(analytics) {
-  const defaultCopy = {
-    hourly: `Run the relay and load a chat to see the hourly rhythm.`,
-    daily: "Once a chat is loaded you’ll see which days are busiest.",
-    weekly: "Load a chat to reveal week-by-week trends.",
-    weekday: "Load a chat to compare weekdays, weekends, and work hours.",
-    timeOfDay: "Load a chat to show average messages for each hour of the day.",
-    sentiment: "Sentiment appears after a chat is loaded and messages are scored.",
-    messageTypes: "Load a chat to see the mix of media types and system events.",
-    search: "Load a chat to search by keywords, participants, or dates.",
-  };
-  const setText = (node, text) => {
-    if (node) node.textContent = text;
-  };
-  if (!analytics) {
-    setText(hourlyNote, defaultCopy.hourly);
-    setText(dailyNote, defaultCopy.daily);
-    setText(weeklyNote, defaultCopy.weekly);
-    setText(weekdayNote, defaultCopy.weekday);
-    setText(timeOfDayNote, defaultCopy.timeOfDay);
-    setText(sentimentNote, defaultCopy.sentiment);
-    if (messageTypeNoteEl) messageTypeNoteEl.textContent = defaultCopy.messageTypes;
-    setText(searchNote, defaultCopy.search);
-    return;
-  }
-  const topHour = analytics.hourly_summary?.topHour;
-  if (topHour && Number.isFinite(topHour.count)) {
-    const weekday = WEEKDAY_LONG[topHour.dayIndex] ?? `Day ${topHour.dayIndex + 1}`;
-    const hourLabel = `${weekday} ${String(topHour.hour).padStart(2, "0")}:00`;
-    setText(
-      hourlyNote,
-      `${hourLabel} is the busiest window (${formatNumber(topHour.count)} msgs). Use the toggles to compare other days.`,
-    );
-  } else {
-    setText(hourlyNote, defaultCopy.hourly);
-  }
-  const dailyCounts = Array.isArray(analytics.daily_counts) ? analytics.daily_counts : [];
-  const busiestDay = dailyCounts.reduce(
-    (max, entry) => (Number(entry?.count) > Number(max?.count || 0) ? entry : max),
-    null,
-  );
-  if (busiestDay?.count) {
-    setText(
-      dailyNote,
-      `${formatDisplayDate(busiestDay.date)} peaked with ${formatNumber(busiestDay.count)} messages.`,
-    );
-  } else {
-    setText(dailyNote, defaultCopy.daily);
-  }
-  const weeklySummary = analytics.weekly_summary || {};
-  if (Number.isFinite(weeklySummary.averagePerWeek)) {
-    const delta = typeof weeklySummary.latestDeltaPercent === "number"
-      ? `${weeklySummary.latestDeltaPercent >= 0 ? "+" : ""}${formatFloat(weeklySummary.latestDeltaPercent * 100, 1)}% vs. prior week`
-      : null;
-    setText(
-      weeklyNote,
-      `Averages ${formatFloat(weeklySummary.averagePerWeek, 1)} messages per week${delta ? ` (${delta})` : ""}.`,
-    );
-  } else {
-    setText(weeklyNote, defaultCopy.weekly);
-  }
-  const weekdayDistribution = Array.isArray(analytics.weekday_distribution)
-    ? analytics.weekday_distribution
-    : [];
-  const busiestWeekday = weekdayDistribution.reduce(
-    (max, entry) => (Number(entry?.count) > Number(max?.count || 0) ? entry : max),
-    null,
-  );
-  if (busiestWeekday?.count) {
-    const label =
-      busiestWeekday.label ||
-      WEEKDAY_LONG[busiestWeekday.dayIndex] ||
-      `Day ${Number(busiestWeekday.dayIndex) + 1}`;
-    setText(
-      weekdayNote,
-      `${label} tends to lead with ${formatNumber(busiestWeekday.count)} messages.`,
-    );
-  } else {
-    setText(weekdayNote, defaultCopy.weekday);
-  }
-  if (Number.isFinite(analytics.hourly_summary?.averagePerDay)) {
-    setText(
-      timeOfDayNote,
-      `This chat averages ${formatFloat(analytics.hourly_summary.averagePerDay, 1)} messages per day — use the chart to spot quiet hours.`,
-    );
-  } else {
-    setText(timeOfDayNote, defaultCopy.timeOfDay);
-  }
-  const sentimentTotals = analytics.sentiment?.totals;
-  if (sentimentTotals) {
-    const total =
-      Number(sentimentTotals.positive || 0) +
-      Number(sentimentTotals.neutral || 0) +
-      Number(sentimentTotals.negative || 0);
-    if (total > 0) {
-      const positiveShare = (sentimentTotals.positive || 0) / total;
-      const negativeShare = (sentimentTotals.negative || 0) / total;
-      const tone =
-        positiveShare >= negativeShare
-          ? `${formatFloat(positiveShare * 100, 1)}% of messages feel upbeat`
-          : `${formatFloat(negativeShare * 100, 1)}% sound critical`;
-      setText(sentimentNote, `${tone}. Use the legend to see who drives the mood.`);
-    } else {
-      setText(sentimentNote, defaultCopy.sentiment);
-    }
-  } else {
-    setText(sentimentNote, defaultCopy.sentiment);
-  }
-  const messageSummary = Array.isArray(analytics.message_types?.summary)
-    ? analytics.message_types.summary
-    : [];
-  if (messageSummary.length && messageTypeNoteEl) {
-    const topType = messageSummary.reduce(
-      (max, entry) => (Number(entry?.count) > Number(max?.count || 0) ? entry : max),
-      null,
-    );
-    if (topType) {
-      messageTypeNoteEl.textContent = `${sanitizeText(
-        topType.label || "Messages",
-      )} lead the conversation (${formatNumber(topType.count)} messages).`;
-    } else {
-      messageTypeNoteEl.textContent = defaultCopy.messageTypes;
-    }
-  } else if (messageTypeNoteEl) {
-    messageTypeNoteEl.textContent = defaultCopy.messageTypes;
-  }
-  if (searchNote) {
-    searchNote.textContent = `Search across ${formatNumber(
-      analytics.total_messages ?? 0,
-    )} messages by keyword, participant, or date filter.`;
-  }
-}
-
-function buildSlidesHtml(analytics, theme = getExportThemeConfig()) {
-  const title = escapeHtml(getDatasetLabel() || "ChatScope conversation report");
-  const generatedAt = new Date().toLocaleString();
-  const styles = buildExportDeckCss(theme, { mode: "screen" });
-  const deckMarkup = buildExportDeckMarkup(analytics, theme, { mode: "screen", generatedAt });
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>${title} – Slides</title>
-  <style>${styles}</style>
-</head>
-<body>
-${deckMarkup}
-</body>
-</html>`;
-}
-
-function buildExportDeckMarkup(analytics, theme, { mode = "screen", generatedAt } = {}) {
-  const details = collectExportSummary(analytics);
-  const generatedAtText = escapeHtml(generatedAt || new Date().toLocaleString());
-  const rangeLabel = escapeHtml(details.rangeLabel || "Entire history");
-  const themeLabel = escapeHtml(theme?.label || "Aurora");
-  const title = escapeHtml(getDatasetLabel() || "ChatScope conversation insights");
-  const highlightEntries = details.highlights.slice(0, 6);
-  const highlightList = highlightEntries.length
-    ? highlightEntries
-      .map(
-        item =>
-          `<li><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}${item.descriptor ? ` — ${escapeHtml(item.descriptor)}` : ""
-          }</li>`,
-      )
-      .join("")
-    : "<li>Highlights will show once there's enough data.</li>";
-  const participantEntries = details.topSenders.slice(0, 6);
-  const participantList = participantEntries.length
-    ? participantEntries
-      .map(
-        entry =>
-          `<li><strong>${escapeHtml(entry.sender)}</strong>: ${formatNumber(entry.count)} messages${entry.share ? ` (${formatFloat(entry.share * 100, 1)}%)` : ""
-          }</li>`,
-      )
-      .join("")
-    : "<li>No participant activity recorded.</li>";
-  const overviewList = details.overviewItems.length
-    ? `<ul>${details.overviewItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : `<p class="empty">${escapeHtml("Add a dataset to populate the overview.")}</p>`;
-  const paceList = details.paceItems.length
-    ? `<ul>${details.paceItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : `<p class="empty">${escapeHtml("Need more activity to estimate pace.")}</p>`;
-  const systemList = details.systemItems.length
-    ? `<ul>${details.systemItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : `<p class="empty">${escapeHtml("No system events recorded.")}</p>`;
-  const metaEntries = [
-    { label: "Date range", value: rangeLabel },
-    { label: "Generated", value: generatedAtText },
-    { label: "Theme", value: themeLabel },
-    ...getExportFilterSummary().map(info => ({ label: "Filter", value: escapeHtml(info) })),
-  ];
-  const metaHtml = metaEntries
-    .map(
-      entry => `
-        <div class="cover-meta-item">
-          <span>${escapeHtml(entry.label)}</span>
-          <strong>${entry.value}</strong>
-        </div>
-      `,
-    )
-    .join("");
-  const quickCards = details.quickStats.slice(0, 4);
-  const quickCardsHtml = quickCards
-    .map(
-      (stat, index) => `
-        <div class="stat-card" data-stat-index="${index}">
-          <span class="stat-label">${escapeHtml(stat.label)}</span>
-          <span class="stat-value">${escapeHtml(String(stat.value ?? "—"))}</span>
-        </div>
-      `,
-    )
-    .join("");
-  const coverClasses = ["slide", "cover-slide"];
-  if (mode === "print") {
-    coverClasses.push("print-page", "print-break");
-  }
-  const bodySlideClass = mode === "print" ? "slide print-page" : "slide";
-  return `
-  <div class="deck" data-mode="${mode}">
-    <section class="${coverClasses.join(" ")}">
-      <div class="cover-content">
-        <p class="cover-tag">${escapeHtml(BRAND_NAME)} · ${themeLabel} theme</p>
-        <h1>${title}</h1>
-        <p class="cover-subtitle">${escapeHtml(theme?.tagline || "Insights prepared by ChatScope.")}</p>
-        <div class="cover-meta">
-          ${metaHtml}
-        </div>
-        <div class="cover-stats">
-          ${quickCardsHtml}
-        </div>
-      </div>
-    </section>
-    <section class="${bodySlideClass}">
-      <div class="slide-header">
-        <p class="eyebrow">At a glance</p>
-        <h2>Highlights</h2>
-      </div>
-      <div class="split-layout">
-        <div class="panel">
-          <h3>Guided highlights</h3>
-          <ul class="bullet-list">
-            ${highlightList}
-          </ul>
-        </div>
-        <div class="panel stack">
-          <div class="callout">
-            <h3>Overview</h3>
-            ${overviewList}
-          </div>
-          <div class="callout">
-            <h3>Chat pace</h3>
-            ${paceList}
-          </div>
-        </div>
-      </div>
-    </section>
-    <section class="${bodySlideClass}">
-      <div class="slide-header">
-        <p class="eyebrow">Participation</p>
-        <h2>Top voices & activity</h2>
-      </div>
-      <div class="split-layout">
-        <div class="panel">
-          <h3>Top voices</h3>
-          <ul class="bullet-list">
-            ${participantList}
-          </ul>
-        </div>
-        <div class="panel stack">
-          <div class="callout">
-            <h3>Group activity</h3>
-            ${systemList}
-          </div>
-          <div class="callout note">
-            <h3>Next steps</h3>
-            <p>Drop this deck into Slides, Keynote, or PowerPoint to add charts, context, and speaker notes.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>`;
-}
-
-function buildExportDeckCss(theme, { mode = "screen" } = {}) {
-  const accent = theme?.accent || "#4c6ef5";
-  const accentSoft = theme?.accentSoft || "rgba(76, 110, 245, 0.2)";
-  const surface = theme?.surface || "#ffffff";
-  const canvas = theme?.canvas || "#f5f7fb";
-  const text = theme?.text || "#0f172a";
-  const muted = theme?.muted || "#475569";
-  const border = theme?.border || "rgba(15, 23, 42, 0.1)";
-  const coverGradient = theme?.coverGradient || `linear-gradient(135deg, ${accent}, ${accent})`;
-  const coverPattern = theme?.coverPattern || "none";
-  const coverText = theme?.coverText || "#f8fafc";
-  const badge = theme?.badge || accentSoft;
-  const shadow = theme?.cardShadow || "0 25px 60px rgba(15, 23, 42, 0.25)";
-  const deckPadding = mode === "print" ? "1in 0.75in" : "3rem 2rem";
-  const slideWidth = mode === "screen" ? "960px" : "100%";
-  const slidePadding = mode === "print" ? "1.75rem 2rem" : "2.75rem 3rem";
-  const deckGap = mode === "print" ? "1.3rem" : "3rem";
-  const fontSize = mode === "print" ? "14px" : "16px";
-  const colorScheme = theme?.dark ? "dark" : "light";
-  return `
-    :root {
-      color-scheme: ${colorScheme};
-      --deck-bg: ${canvas};
-      --deck-surface: ${surface};
-      --deck-text: ${text};
-      --deck-muted: ${muted};
-      --deck-border: ${border};
-      --deck-accent: ${accent};
-      --deck-accent-soft: ${accentSoft};
-      --deck-cover-gradient: ${coverGradient};
-      --deck-cover-pattern: ${coverPattern};
-      --deck-cover-text: ${coverText};
-      --deck-badge: ${badge};
-      --deck-shadow: ${shadow};
-    }
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--deck-bg);
-      color: var(--deck-text);
-      font-size: ${fontSize};
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
-    .deck {
-      display: flex;
-      flex-direction: column;
-      gap: ${deckGap};
-      padding: ${deckPadding};
-      align-items: ${mode === "print" ? "stretch" : "center"};
-    }
-    .slide {
-      width: ${slideWidth};
-      max-width: 100%;
-      background: var(--deck-surface);
-      border-radius: 28px;
-      border: 1px solid var(--deck-border);
-      padding: ${slidePadding};
-      box-shadow: ${mode === "print" ? "none" : "var(--deck-shadow)"};
-      position: relative;
-      overflow: hidden;
-    }
-    .cover-slide {
-      background-image: var(--deck-cover-gradient);
-      color: var(--deck-cover-text);
-      border: none;
-      box-shadow: ${mode === "print" ? "none" : "0 35px 80px rgba(0, 0, 0, 0.35)"};
-    }
-    .cover-slide::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: var(--deck-cover-pattern);
-      opacity: 0.7;
-      pointer-events: none;
-    }
-    .cover-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-    .cover-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      background: var(--deck-badge);
-      color: var(--deck-text);
-      font-weight: 600;
-      width: fit-content;
-    }
-    .cover-subtitle {
-      font-size: 1.15rem;
-      margin: 0;
-      color: inherit;
-    }
-    .cover-meta {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-    }
-    .cover-meta-item span {
-      display: block;
-      font-size: 0.85rem;
-      opacity: 0.8;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .cover-meta-item strong {
-      display: block;
-      font-size: 1.05rem;
-      margin-top: 0.3rem;
-    }
-    .cover-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
-    }
-    .stat-card {
-      padding: 1rem 1.2rem;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, ${theme?.dark ? "0.08" : "0.15"});
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      backdrop-filter: blur(4px);
-    }
-    .stat-label {
-      display: block;
-      font-size: 0.85rem;
-      opacity: 0.85;
-    }
-    .stat-value {
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin-top: 0.2rem;
-    }
-    .slide-header {
-      margin-bottom: 1.5rem;
-    }
-    .eyebrow {
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.08em;
-      color: var(--deck-accent);
-      margin: 0 0 0.25rem 0;
-    }
-    h1, h2, h3 {
-      margin: 0;
-      line-height: 1.2;
-    }
-    h1 {
-      font-size: 2.8rem;
-    }
-    h2 {
-      font-size: 2rem;
-    }
-    h3 {
-      font-size: 1.2rem;
-      margin-bottom: 0.6rem;
-    }
-    .split-layout {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-    .panel {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .panel.stack .callout {
-      flex: 1;
-    }
-    .bullet-list {
-      margin: 0;
-      padding-left: 1.2rem;
-    }
-    .bullet-list li {
-      margin-bottom: 0.6rem;
-      line-height: 1.4;
-    }
-    .callout {
-      border-radius: 20px;
-      border: 1px solid var(--deck-border);
-      padding: 1rem 1.2rem;
-      background: color-mix(in srgb, var(--deck-surface) 85%, var(--deck-accent-soft));
-    }
-    .callout.note {
-      background: color-mix(in srgb, var(--deck-surface) 70%, var(--deck-accent-soft));
-    }
-    .callout p {
-      margin: 0;
-      color: var(--deck-muted);
-    }
-    .empty {
-      margin: 0;
-      color: var(--deck-muted);
-      font-style: italic;
-    }
-    .print-page {
-      page-break-inside: avoid;
-      break-inside: avoid;
-      margin-bottom: 1rem;
-    }
-    .print-break {
-      page-break-after: always;
-      break-after: page;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
-    ${mode === "print" ? `
-    @page {
-      size: A4;
-      margin: 0.5in;
-    }
-    body {
-      background: #fff;
-    }` : ""}
-  `;
-}
-
-function buildPdfDocumentHtml(analytics, theme = getExportThemeConfig()) {
-  const title = escapeHtml(`${getDatasetLabel() || "ChatScope conversation"} – PDF`);
-  const generatedAt = new Date().toLocaleString();
-  const styles = buildExportDeckCss(theme, { mode: "print" });
-  const deckMarkup = buildExportDeckMarkup(analytics, theme, { mode: "print", generatedAt });
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>${title}</title>
-  <style>${styles}</style>
-</head>
-<body>
-${deckMarkup}
-</body>
-</html>`;
-}
-
 async function handleDownloadPdfReport() {
   const analytics = getDatasetAnalytics();
   if (!analytics) {
@@ -3030,80 +2086,6 @@ function launchPrintableDocument(html) {
   }
 }
 
-function disableInteractiveControlsForSnapshot() {
-  if (rangeSelect) rangeSelect.disabled = true;
-  if (chatSelector) chatSelector.disabled = true;
-  if (saveViewButton) saveViewButton.disabled = true;
-  if (savedViewNameInput) savedViewNameInput.disabled = true;
-  if (savedViewList) savedViewList.disabled = true;
-  if (applySavedViewButton) applySavedViewButton.disabled = true;
-  if (deleteSavedViewButton) deleteSavedViewButton.disabled = true;
-  if (compareViewASelect) compareViewASelect.disabled = true;
-  if (compareViewBSelect) compareViewBSelect.disabled = true;
-  if (compareViewsButton) compareViewsButton.disabled = true;
-  if (customApplyButton) customApplyButton.disabled = true;
-  if (customStartInput) customStartInput.disabled = true;
-  if (customEndInput) customEndInput.disabled = true;
-  if (searchKeywordInput) searchKeywordInput.disabled = true;
-  if (searchParticipantSelect) searchParticipantSelect.disabled = true;
-  if (searchStartInput) searchStartInput.disabled = true;
-  if (searchEndInput) searchEndInput.disabled = true;
-  if (resetSearchButton) resetSearchButton.disabled = true;
-  if (downloadSearchButton) downloadSearchButton.disabled = true;
-}
-
-function formatSnapshotTimestamp(value) {
-  if (!value) return "";
-  return formatTimestampDisplay(value);
-}
-
-function enterSnapshotMode(snapshot) {
-  snapshotMode = true;
-  terminateAnalyticsWorker();
-  savedViewsController.resetForNewDataset();
-  savedViewsController.setSnapshotMode(true);
-  clearAnalyticsCache();
-  disableInteractiveControlsForSnapshot();
-  setDatasetEntries([]);
-  setDatasetAnalytics(snapshot.analytics);
-  setDatasetLabel(snapshot.label || "Shared view");
-  if (rangeSelect) {
-    rangeSelect.value = "all";
-  }
-  showCustomControls(false);
-  renderDashboard(snapshot.analytics);
-  searchController.resetState();
-  if (searchResultsSummary) {
-    searchResultsSummary.textContent = "Search isn't available in shared link view.";
-  }
-  if (searchResultsList) {
-    searchResultsList.innerHTML = "";
-    const note = document.createElement("div");
-    note.className = "search-results-empty";
-    note.textContent = "Search isn't available while viewing a shared link.";
-    searchResultsList.appendChild(note);
-  }
-  const timestampInfo = snapshot.generatedAt ? ` · Generated ${formatSnapshotTimestamp(snapshot.generatedAt)}` : "";
-  updateStatus(`Viewing a shared link${timestampInfo}. Controls are read-only.`, "info");
-}
-
-function tryLoadSnapshotFromHash() {
-  const hash = window.location.hash;
-  if (!hash || !hash.includes("snapshot=")) return false;
-  const match = hash.match(/snapshot=([^&]+)/);
-  if (!match) return false;
-  try {
-    const snapshot = decodeSnapshotPayload(match[1]);
-    if (!snapshot || !snapshot.analytics) throw new Error("Invalid snapshot payload");
-    enterSnapshotMode(snapshot);
-    return true;
-  } catch (error) {
-    console.error(error);
-    updateStatus("Couldn't open the shared link.", "error");
-    return false;
-  }
-}
-
 function renderWeekdayPanel(analytics) {
   updateWeekdayState({
     distribution: analytics.weekday_distribution,
@@ -3138,10 +2120,6 @@ function renderStatistics(analytics) {
 }
 
 async function handleRangeChange() {
-  if (snapshotMode) {
-    updateStatus("Range controls are disabled in shared link view.", "warning");
-    return;
-  }
   const value = rangeSelect?.value;
   if (!value) return;
 
@@ -3159,10 +2137,6 @@ async function handleRangeChange() {
 }
 
 async function applyCustomRange(start, end) {
-  if (snapshotMode) {
-    updateStatus("Custom dates are disabled in shared link view.", "warning");
-    return;
-  }
   const startDate = new Date(start);
   const endDate = new Date(end);
   if (Number.isNaN(startDate) || Number.isNaN(endDate)) {
@@ -3183,7 +2157,6 @@ async function applyCustomRange(start, end) {
 }
 
 async function applyRangeAndRender(range) {
-  if (snapshotMode) return;
   const entries = getDatasetEntries();
   if (!entries.length) {
     updateStatus("Load a chat file before picking a range.", "warning");
@@ -3298,13 +2271,6 @@ function describeRange(range) {
 
 function showCustomControls(visible) {
   if (!customControls) return;
-  if (snapshotMode) {
-    customControls.classList.add("hidden");
-    if (customStartInput) customStartInput.disabled = true;
-    if (customEndInput) customEndInput.disabled = true;
-    if (customApplyButton) customApplyButton.disabled = true;
-    return;
-  }
   if (visible) {
     customControls.classList.remove("hidden");
   } else {

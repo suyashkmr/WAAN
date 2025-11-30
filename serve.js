@@ -4,8 +4,12 @@
  * Serves everything from the repo root so the browser can fetch
  * chat.json/analytics.json and JS modules without extra tooling.
  */
-const path = require("path");
-const express = require("express");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import express from "express";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname);
 const PORT = Number(process.env.WAAN_CLIENT_PORT || process.env.PORT || 4173);

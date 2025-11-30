@@ -51,7 +51,7 @@
         "from": "../scripts",
         "to": "waan/scripts",
         "filter": [
-          "restore-waandata.js"
+          "restore-waandata.cjs"
         ]
       }
     ]

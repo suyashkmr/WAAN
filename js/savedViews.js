@@ -59,7 +59,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   } = dependencies;
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
-  let snapshotMode = false;
   let dataAvailable = false;
 
   function buildViewSnapshot(analytics) {
@@ -276,7 +275,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
         ? `${formatNumber(snapshot.topHour.count)} msgs`
         : "Waiting for hourly data";
     const barWidth = sharePercent !== null ? Math.min(100, Math.max(0, sharePercent)) : 8;
-    const interactive = !snapshotMode;
+    const interactive = dataAvailable;
     const accessibility = interactive
       ? `role="button" tabindex="0" aria-label="Apply saved view ${sanitizeText(viewName)}"`
       : "role=\"button\" aria-disabled=\"true\" tabindex=\"-1\"";
@@ -333,7 +332,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     }
     const cards = list.map(view => buildSavedViewCard(view)).join("");
     gallery.innerHTML = cards;
-    gallery.dataset.interactive = snapshotMode || !dataAvailable ? "false" : "true";
+    gallery.dataset.interactive = dataAvailable ? "true" : "false";
   }
 
   function populateSavedSelect(select, views, selectedId, placeholder) {
@@ -357,7 +356,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function updateControlsDisabled() {
-    const disabled = snapshotMode || !dataAvailable;
+    const disabled = !dataAvailable;
     [nameInput, saveButton, listSelect, applyButton, deleteButton, compareSelectA, compareSelectB, compareButton].forEach(el => {
       if (el) el.disabled = disabled;
     });
@@ -584,10 +583,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function handleSaveView() {
-    if (snapshotMode) {
-      updateStatus("Saved views aren't available in shared link view.", "warning");
-      return;
-    }
     if (!dataAvailable) {
       updateStatus("Load a chat file before saving a view.", "warning");
       return;
@@ -608,10 +603,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   async function handleApplySavedView() {
-    if (snapshotMode) {
-      updateStatus("Saved views aren't available in shared link view.", "warning");
-      return;
-    }
     const id = listSelect?.value;
     if (!id) {
       updateStatus("Choose a saved view to use.", "warning");
@@ -627,10 +618,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function handleDeleteSavedView() {
-    if (snapshotMode) {
-      updateStatus("Saved views aren't available in shared link view.", "warning");
-      return;
-    }
     const id = listSelect?.value;
     if (!id) {
       updateStatus("Choose a saved view to remove.", "warning");
@@ -648,10 +635,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function handleCompareViews() {
-    if (snapshotMode) {
-      updateStatus("Comparisons aren't available in shared link view.", "warning");
-      return;
-    }
     const primaryId = compareSelectA?.value;
     const secondaryId = compareSelectB?.value;
     if (!primaryId || !secondaryId) {
@@ -668,7 +651,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   async function handleSavedViewGalleryClick(event) {
-    if (snapshotMode) return;
     const card = event.target.closest(".saved-view-card");
     if (!card) return;
     const viewId = card.dataset.viewId;
@@ -684,7 +666,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   async function handleSavedViewGalleryKeydown(event) {
-    if (snapshotMode) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     const card = event.target.closest(".saved-view-card");
     if (!card) return;
@@ -712,12 +693,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     if (compareButton) compareButton.addEventListener("click", handleCompareViews);
   }
 
-  function setSnapshotModeState(flag) {
-    snapshotMode = Boolean(flag);
-    updateControlsDisabled();
-    renderSavedViewGallery(getSavedViews());
-  }
-
   function setDataAvailabilityState(flag) {
     dataAvailable = Boolean(flag);
     if (nameInput) {
@@ -734,7 +709,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     },
     refreshUI,
     resetForNewDataset,
-    setSnapshotMode: setSnapshotModeState,
     setDataAvailability: setDataAvailabilityState,
   };
 }

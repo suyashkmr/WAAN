@@ -13,8 +13,6 @@ import {
   REMOTE_CHAT_REFRESH_INTERVAL_MS,
   REMOTE_MESSAGE_LIMIT,
 } from "./config.js";
-import { createVirtualList } from "./virtualList.js";
-
 const MAX_LOG_ENTRIES = 400;
 
 export function createRelayController({ elements, helpers, electronAPI = window.electronAPI }) {
@@ -34,8 +32,6 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     relayBannerMeta,
     relayOnboardingSteps,
     logDrawerToggleButton,
-    logDrawerCloseButton,
-    logDrawerClearButton,
     logDrawerEl,
     logDrawerList,
     logDrawerConnectionLabel,
@@ -85,30 +81,6 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     hideTimer: null,
     wasSyncing: false,
   };
-
-  const logVirtualList = logDrawerList
-    ? createVirtualList({
-        container: logDrawerList,
-        estimatedItemHeight: 22,
-        overscan: 8,
-        renderItem: line => {
-          const p = document.createElement("p");
-          p.className = "relay-log-entry";
-          p.textContent = line;
-          return p;
-        },
-      })
-    : null;
-
-  if (logVirtualList) {
-    logVirtualList.setEmptyRenderer(() => {
-      const empty = document.createElement("p");
-      empty.className = "relay-log-empty";
-      empty.textContent = "No relay logs yet.";
-      return empty;
-    });
-    logVirtualList.setItems([]);
-  }
 
   function setSyncStepState(stepEl, metaEl, state, text) {
     if (stepEl && state) {
@@ -451,6 +423,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       relayUiState.status = status;
       return status;
     } catch (error) {
+      console.error("Failed to refresh relay status", error);
       if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
         updateStatus(
           `${RELAY_SERVICE_NAME} is offline. Launch the desktop relay and press Connect to enable live loading.`,
@@ -778,13 +751,6 @@ export function createRelayController({ elements, helpers, electronAPI = window.
   }
 
   function renderRelayLogs() {
-    if (logVirtualList) {
-      logVirtualList.setItems(relayLogState.entries);
-      if (relayLogState.drawerOpen) {
-        logVirtualList.scrollToEnd();
-      }
-      return;
-    }
     if (!logDrawerList) return;
     if (!relayLogState.entries.length) {
       logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
@@ -842,14 +808,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
   }
 
   function appendRelayLog(entry) {
-    if (!logDrawerList && !logVirtualList) return;
-    if (logVirtualList) {
-      logVirtualList.setItems(relayLogState.entries);
-      if (relayLogState.drawerOpen) {
-        logVirtualList.scrollToEnd();
-      }
-      return;
-    }
+    if (!logDrawerList) return;
     if (logDrawerList.firstChild?.classList?.contains?.("relay-log-empty")) {
       logDrawerList.innerHTML = "";
     }
