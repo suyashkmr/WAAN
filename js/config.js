@@ -1,4 +1,7 @@
-const runtimeConfig = window.WAAN_CONFIG || {};
+const runtimeConfig =
+  typeof window !== "undefined" && window?.WAAN_CONFIG
+    ? window.WAAN_CONFIG
+    : {};
 
 export const BRAND_NAME = "ChatScope";
 export const RELAY_SERVICE_NAME = "ChatScope Relay";

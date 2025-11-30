@@ -456,6 +456,76 @@ const searchController = createSearchController({
   getSnapshotMode: () => snapshotMode,
 });
 
+let exportWorkerInstance = null;
+let exportWorkerRequestId = 0;
+const exportWorkerRequests = new Map();
+
+function ensureExportWorker() {
+  if (exportWorkerInstance) return exportWorkerInstance;
+  exportWorkerInstance = new Worker(new URL("./exportWorker.js", import.meta.url), {
+    type: "module",
+  });
+  exportWorkerInstance.onmessage = event => {
+    const { id, type, content, error } = event.data || {};
+    if (typeof id === "undefined") return;
+    const request = exportWorkerRequests.get(id);
+    if (!request) return;
+    exportWorkerRequests.delete(id);
+    if (type === "result") {
+      request.resolve({ content });
+    } else {
+      request.reject(new Error(error || "Export worker failed."));
+    }
+  };
+  exportWorkerInstance.onerror = event => {
+    console.error("Export worker error", event);
+    exportWorkerRequests.forEach(({ reject }) => reject(new Error("Export worker encountered an error.")));
+    exportWorkerRequests.clear();
+    exportWorkerInstance?.terminate();
+    exportWorkerInstance = null;
+  };
+  return exportWorkerInstance;
+}
+
+function requestExportTask(task, payload) {
+  const worker = ensureExportWorker();
+  const id = ++exportWorkerRequestId;
+  return new Promise((resolve, reject) => {
+    exportWorkerRequests.set(id, { resolve, reject });
+    worker.postMessage({ id, task, payload });
+  });
+}
+
+function generateMarkdownReportAsync(analytics, theme) {
+  return requestExportTask("markdown", {
+    analytics,
+    theme,
+    datasetLabel: getDatasetLabel(),
+    filterDetails: getExportFilterSummary(),
+    brandName: BRAND_NAME,
+  });
+}
+
+function generateSlidesHtmlAsync(analytics, theme) {
+  return requestExportTask("slides", {
+    analytics,
+    theme,
+    datasetLabel: getDatasetLabel(),
+    filterDetails: getExportFilterSummary(),
+    brandName: BRAND_NAME,
+  });
+}
+
+function generatePdfDocumentHtmlAsync(analytics, theme) {
+  return requestExportTask("pdf", {
+    analytics,
+    theme,
+    datasetLabel: getDatasetLabel(),
+    filterDetails: getExportFilterSummary(),
+    brandName: BRAND_NAME,
+  });
+}
+
 const savedViewsController = createSavedViewsController({
   elements: {
     nameInput: savedViewNameInput,
@@ -563,8 +633,8 @@ const {
   filterEntriesByRange,
   normalizeRangeValue,
   snapshotModeGetter: () => snapshotMode,
-  buildMarkdownReport,
-  buildSlidesHtml,
+  generateMarkdownReport: generateMarkdownReportAsync,
+  generateSlidesHtml: generateSlidesHtmlAsync,
   getExportThemeConfig,
 });
 
@@ -2222,65 +2292,6 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-function collectExportSummary(analytics) {
-  const highlights = (analytics.highlights || []).map(item => ({
-    label: item.label || "Highlight",
-    value: item.value || "",
-    descriptor: item.descriptor || "",
-  }));
-  const topSenders = (analytics.top_senders || []).slice(0, 10);
-  const systemSummary = analytics.system_summary || {};
-  const weeklySummary = analytics.weekly_summary || {};
-  const range = analytics.date_range || {};
-  const rangeLabel =
-    range.start && range.end ? `${formatDisplayDate(range.start)} → ${formatDisplayDate(range.end)}` : null;
-  const overviewItems = [
-    `Messages in total: ${formatNumber(analytics.total_messages ?? 0)}`,
-    `People who spoke: ${formatNumber(analytics.unique_senders ?? 0)}`,
-    `System notices: ${formatNumber(systemSummary.count || 0)}`,
-    rangeLabel ? `Covers: ${rangeLabel}` : null,
-  ].filter(Boolean);
-  const paceItems = [
-    `Average per day: ${formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1)} messages`,
-    `Average per week: ${formatFloat(weeklySummary.averagePerWeek ?? 0, 1)} messages`,
-    analytics.hourly_summary?.topHour
-      ? `Busiest hour: ${WEEKDAY_LONG[analytics.hourly_summary.topHour.dayIndex] ??
-      `Day ${analytics.hourly_summary.topHour.dayIndex + 1}`
-      } ${String(analytics.hourly_summary.topHour.hour).padStart(2, "0")}:00`
-      : null,
-  ].filter(Boolean);
-  const systemItems = [
-    `People joined: ${formatNumber(systemSummary.joins || 0)}`,
-    `Join requests: ${formatNumber(systemSummary.join_requests || 0)}`,
-    `Added by admins: ${formatNumber(systemSummary.added || 0)}`,
-    `Left on their own: ${formatNumber(systemSummary.left || 0)}`,
-    `Removed by admins: ${formatNumber(systemSummary.removed || 0)}`,
-    `Settings changes: ${formatNumber(systemSummary.changed || 0)}`,
-  ];
-  const quickStats = [
-    { label: "Messages", value: formatNumber(analytics.total_messages ?? 0) },
-    { label: "Participants", value: formatNumber(analytics.unique_senders ?? 0) },
-    { label: "Avg/day", value: formatFloat(analytics.hourly_summary?.averagePerDay ?? 0, 1) },
-    {
-      label: "Top sender",
-      value: topSenders.length
-        ? `${topSenders[0].sender} (${formatNumber(topSenders[0].count)} msgs)`
-        : "Not enough data",
-    },
-  ];
-  return {
-    highlights,
-    topSenders,
-    systemSummary,
-    weeklySummary,
-    overviewItems,
-    paceItems,
-    systemItems,
-    quickStats,
-    rangeLabel,
-  };
-}
-
 function buildMarkdownReport(analytics, theme = getExportThemeConfig()) {
   const nowIso = new Date().toISOString();
   const title = getDatasetLabel() || `${BRAND_NAME} Chat`;
@@ -2909,18 +2920,23 @@ ${deckMarkup}
 </html>`;
 }
 
-function handleDownloadPdfReport() {
+async function handleDownloadPdfReport() {
   const analytics = getDatasetAnalytics();
   if (!analytics) {
     updateStatus("Load the chat summary before exporting a report.", "warning");
     return;
   }
   const theme = getExportThemeConfig();
-  const html = buildPdfDocumentHtml(analytics, theme);
-  const opened = launchPrintableDocument(html);
-  if (opened) {
-    updateStatus(`Opened the ${theme.label} PDF preview — use your print dialog to save it.`, "info");
-  } else {
+  try {
+    const { content } = await generatePdfDocumentHtmlAsync(analytics, theme);
+    const opened = launchPrintableDocument(content);
+    if (opened) {
+      updateStatus(`Opened the ${theme.label} PDF preview — use your print dialog to save it.`, "info");
+    } else {
+      updateStatus("Couldn't prepare the PDF preview.", "error");
+    }
+  } catch (error) {
+    console.error(error);
     updateStatus("Couldn't prepare the PDF preview.", "error");
   }
 }

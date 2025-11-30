@@ -16,7 +16,6 @@ import {
 import { getTimestamp } from "./analytics.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
-const SEARCH_CHUNK_SIZE = 400;
 
 export function createSearchController({ elements = {}, options = {}, getSnapshotMode = () => false } = {}) {
   const {
@@ -35,6 +34,10 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     progressLabelEl,
   } = elements;
   const resultLimit = Number.isFinite(options.resultLimit) ? options.resultLimit : DEFAULT_RESULT_LIMIT;
+  let activeSearchRequest = 0;
+  let searchWorkerInstance = null;
+  let searchWorkerRequestId = 0;
+  const searchWorkerRequests = new Map();
   let activeSearchToken = 0;
 
   function applyStateToForm() {
@@ -48,6 +51,43 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
 
   function getEntries() {
     return getDatasetEntries() || [];
+  }
+
+  function ensureSearchWorker() {
+    if (searchWorkerInstance) return searchWorkerInstance;
+    searchWorkerInstance = new Worker(new URL("./searchWorker.js", import.meta.url), {
+      type: "module",
+    });
+    searchWorkerInstance.onmessage = event => {
+      const { id, type, ...rest } = event.data || {};
+      if (typeof id === "undefined") return;
+      const request = searchWorkerRequests.get(id);
+      if (!request) return;
+      if (type === "progress") {
+        request.onProgress?.(rest);
+        return;
+      }
+      searchWorkerRequests.delete(id);
+      if (type === "result") {
+        request.resolve(rest);
+      } else if (type === "cancelled") {
+        request.resolve({ cancelled: true });
+      } else if (type === "error") {
+        request.reject(new Error(rest.error || "Search failed."));
+      } else {
+        request.reject(new Error("Search worker returned an unknown response."));
+      }
+    };
+    searchWorkerInstance.onerror = event => {
+      console.error("Search worker error", event);
+      searchWorkerRequests.forEach(({ reject }) => {
+        reject(new Error("Search worker encountered an error."));
+      });
+      searchWorkerRequests.clear();
+      searchWorkerInstance?.terminate();
+      searchWorkerInstance = null;
+    };
+    return searchWorkerInstance;
   }
 
   function populateParticipants() {
@@ -113,37 +153,6 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     return Number.isNaN(date.getTime()) ? null : date;
   }
 
-  function describeSearchFilters(query) {
-    const details = [];
-    if (query?.text) details.push(`Keywords: "${query.text}"`);
-    if (query?.participant) details.push(`Participant: ${query.participant}`);
-    if (query?.start || query?.end) {
-      const start = query.start ? formatDisplayDate(query.start) : "Any";
-      const end = query.end ? formatDisplayDate(query.end) : "Any";
-      details.push(`Dates: ${start} → ${end}`);
-    }
-    if (!details.length) details.push("Filters: none (all messages)");
-    return details;
-  }
-
-  function buildSearchSummary({ query, dayCounts, participantCounts, total, truncated }) {
-    const hitsPerDay = Array.from(dayCounts.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
-    const topParticipants = Array.from(participantCounts.entries())
-      .map(([sender, count]) => ({ sender, count, share: total ? count / total : 0 }))
-      .sort((a, b) => b.count - a.count || a.sender.localeCompare(b.sender))
-      .slice(0, 5);
-    return {
-      total,
-      truncated: Boolean(truncated),
-      hitsPerDay,
-      topParticipants,
-      filters: describeSearchFilters(query),
-    };
-  }
-
   function renderSearchInsights(summary) {
     if (!insightsEl) return;
     if (!summary || !summary.total) {
@@ -199,7 +208,7 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     `;
   }
 
-  function buildSearchResultItem(result, tokens) {
+  function buildSearchResultItem(result) {
     const item = document.createElement("div");
     item.className = "search-result";
 
@@ -217,24 +226,14 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
 
     const messageEl = document.createElement("div");
     messageEl.className = "search-result-message";
-    messageEl.innerHTML = highlightKeywords(result.message || "", tokens);
+    if (result.messageHtml) {
+      messageEl.innerHTML = result.messageHtml;
+    } else {
+      messageEl.textContent = result.message || "";
+    }
 
     item.append(header, messageEl);
     return item;
-  }
-
-  function highlightKeywords(text, tokens) {
-    if (!text) return "";
-    let output = sanitizeText(text);
-    if (!tokens || !tokens.length) return output;
-    tokens.forEach(token => {
-      if (!token) return;
-      const escapedToken = sanitizeText(token);
-      const escaped = escapedToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const regex = new RegExp(`(${escaped})`, "gi");
-      output = output.replace(regex, "<mark>$1</mark>");
-    });
-    return output;
   }
 
   function renderResults() {
@@ -270,17 +269,9 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
       return;
     }
 
-    const tokens = query.text
-      ? query.text
-          .toLowerCase()
-          .split(/\s+/)
-          .map(token => token.trim())
-          .filter(Boolean)
-      : [];
-
     const fragment = document.createDocumentFragment();
     results.forEach(result => {
-      fragment.appendChild(buildSearchResultItem(result, tokens));
+      fragment.appendChild(buildSearchResultItem(result));
     });
     resultsListEl.appendChild(fragment);
 
@@ -332,7 +323,10 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
   }
 
   function cancelActiveSearch() {
-    activeSearchToken += 1;
+    if (activeSearchRequest && searchWorkerInstance) {
+      searchWorkerInstance.postMessage({ id: activeSearchRequest, type: "cancel" });
+    }
+    activeSearchRequest = 0;
     hideSearchProgress();
   }
 
@@ -343,16 +337,6 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
       hideSearchProgress();
       return;
     }
-
-    const tokens = query.text
-      ? query.text
-          .toLowerCase()
-          .split(/\s+/)
-          .map(token => token.trim())
-          .filter(Boolean)
-      : [];
-    const participant = query.participant || "";
-    const participantLower = participant.toLowerCase();
 
     const startDate = parseDateInput(query.start, false);
     const endDate = parseDateInput(query.end, true);
@@ -366,87 +350,71 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     }
 
     setSearchQuery(query);
-    const jobToken = ++activeSearchToken;
-    const totalEntries = entries.length;
-    showSearchProgress(totalEntries);
+    cancelActiveSearch();
 
-    const results = [];
-    let totalMatches = 0;
-    const dayCounts = new Map();
-    const participantCounts = new Map();
-    let index = 0;
+    const worker = ensureSearchWorker();
+    const requestId = ++searchWorkerRequestId;
+    activeSearchRequest = requestId;
+    showSearchProgress(entries.length);
 
-    const finalizeSearch = () => {
-      if (jobToken !== activeSearchToken) return;
-      hideSearchProgress();
-      const summary = totalMatches
-        ? buildSearchSummary({
-            query,
-            dayCounts,
-            participantCounts,
-            total: totalMatches,
-            truncated: totalMatches > results.length,
-          })
-        : null;
-      setSearchResults(results, totalMatches, summary);
-      renderResults();
-      if (!totalMatches) {
-        updateStatus("No messages matched those filters.", "info");
-      } else if (totalMatches > resultLimit) {
-        updateStatus(
-          `Showing the first ${resultLimit} matches out of ${formatNumber(totalMatches)}. Narrow your filters for a closer look.`,
-          "info",
+    const startBound = startDate ? startDate.getTime() : null;
+    const endBound = endDate ? endDate.getTime() : null;
+
+    return new Promise((resolve, reject) => {
+      searchWorkerRequests.set(requestId, {
+        resolve,
+        reject,
+        onProgress: data => {
+          if (requestId === activeSearchRequest) {
+            setSearchProgress(data.scanned ?? 0, data.total ?? entries.length);
+          }
+        },
+      });
+      worker.postMessage({
+        id: requestId,
+        type: "search",
+        payload: {
+          entries,
+          query,
+          resultLimit,
+          startMs: startBound,
+          endMs: endBound,
+        },
+      });
+    })
+      .then(payload => {
+        if (!payload || payload.cancelled) return;
+        const { results, total, summary } = payload;
+        if (requestId !== activeSearchRequest) return;
+        hideSearchProgress();
+        setSearchResults(
+          results.map(result => ({
+            sender: result.sender,
+            timestamp: result.timestamp,
+            message: result.message ?? "",
+            messageHtml: result.messageHtml,
+          })),
+          total,
+          summary,
         );
-      } else {
-        updateStatus(`Found ${formatNumber(totalMatches)} matching messages.`, "success");
-      }
-    };
-
-    const processChunk = () => {
-      if (jobToken !== activeSearchToken) return;
-      const end = Math.min(totalEntries, index + SEARCH_CHUNK_SIZE);
-      for (let i = index; i < end; i += 1) {
-        const entry = entries[i];
-        if (entry.type !== "message") continue;
-        const sender = entry.sender || "";
-        if (participant && sender.toLowerCase() !== participantLower) continue;
-
-        const timestamp = getTimestamp(entry);
-        if (startDate && (!timestamp || timestamp < startDate)) continue;
-        if (endDate && (!timestamp || timestamp > endDate)) continue;
-
-        const message = entry.message || "";
-        const searchText = entry.search_text ?? message.toLowerCase();
-        if (tokens.length) {
-          const matchesTokens = tokens.every(token => searchText.includes(token));
-          if (!matchesTokens) continue;
+        renderResults();
+        if (!total) {
+          updateStatus("No messages matched those filters.", "info");
+        } else if (total > resultLimit) {
+          updateStatus(
+            `Showing the first ${resultLimit} matches out of ${formatNumber(total)}. Narrow your filters for a closer look.`,
+            "info",
+          );
+        } else {
+          updateStatus(`Found ${formatNumber(total)} matching messages.`, "success");
         }
-
-        totalMatches += 1;
-        const dayKey = timestamp ? toISODate(timestamp) : null;
-        if (dayKey) {
-          dayCounts.set(dayKey, (dayCounts.get(dayKey) || 0) + 1);
-        }
-        const senderKey = sender || "[Unknown]";
-        participantCounts.set(senderKey, (participantCounts.get(senderKey) || 0) + 1);
-        if (results.length < resultLimit) {
-          results.push({
-            sender,
-            message,
-            timestamp: timestamp ? timestamp.toISOString() : null,
-          });
-        }
-      }
-      index = end;
-      setSearchProgress(index, totalEntries);
-      if (index < totalEntries) {
-        requestAnimationFrame(processChunk);
-      } else {
-        finalizeSearch();
-      }
-    };
-
-    requestAnimationFrame(processChunk);
+      })
+      .catch(error => {
+        if (requestId !== activeSearchRequest) return;
+        hideSearchProgress();
+        console.error(error);
+        updateStatus("Search could not complete.", "error");
+      });
   }
 
   function handleSubmit(event) {

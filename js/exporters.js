@@ -16,8 +16,8 @@ export function createExporters({
   filterEntriesByRange,
   normalizeRangeValue,
   snapshotModeGetter,
-  buildMarkdownReport,
-  buildSlidesHtml,
+  generateMarkdownReport,
+  generateSlidesHtml,
   getExportThemeConfig,
 }) {
   function buildFilename(suffix) {
@@ -367,36 +367,46 @@ export function createExporters({
     );
   }
 
-  function handleDownloadMarkdownReport() {
+  async function handleDownloadMarkdownReport() {
     const analytics = getDatasetAnalytics();
     if (!analytics) {
       updateStatus("Load the chat summary before exporting a report.", "warning");
       return;
     }
     const theme = getExportThemeConfig();
-    const markdown = buildMarkdownReport(analytics, theme);
-    downloadTextFile(
-      buildReportFilename("report", "md"),
-      markdown,
-      "text/markdown;charset=utf-8;",
-    );
-    updateStatus(`Saved the ${theme.label} text report.`, "success");
+    try {
+      const { content } = await generateMarkdownReport(analytics, theme);
+      downloadTextFile(
+        buildReportFilename("report", "md"),
+        content,
+        "text/markdown;charset=utf-8;",
+      );
+      updateStatus(`Saved the ${theme.label} text report.`, "success");
+    } catch (error) {
+      console.error(error);
+      updateStatus("Couldn't build the text report.", "error");
+    }
   }
 
-  function handleDownloadSlidesReport() {
+  async function handleDownloadSlidesReport() {
     const analytics = getDatasetAnalytics();
     if (!analytics) {
       updateStatus("Load the chat summary before exporting a report.", "warning");
       return;
     }
     const theme = getExportThemeConfig();
-    const html = buildSlidesHtml(analytics, theme);
-    downloadTextFile(
-      buildReportFilename("slides", "html"),
-      html,
-      "text/html;charset=utf-8;",
-    );
-    updateStatus(`Saved the ${theme.label} slide deck.`, "success");
+    try {
+      const { content } = await generateSlidesHtml(analytics, theme);
+      downloadTextFile(
+        buildReportFilename("slides", "html"),
+        content,
+        "text/html;charset=utf-8;",
+      );
+      updateStatus(`Saved the ${theme.label} slide deck.`, "success");
+    } catch (error) {
+      console.error(error);
+      updateStatus("Couldn't build the slide deck.", "error");
+    }
   }
 
   return {
