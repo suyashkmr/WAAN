@@ -350,11 +350,33 @@ class RelayManager extends EventEmitter {
   }
 
   async refreshContacts() {
-    if (!this.client || typeof this.client.getContacts !== "function") {
+    if (!this.client || !this.client.pupPage) {
       return;
     }
     try {
-      const contacts = await this.client.getContacts();
+      // Access WhatsApp Web store directly to avoid getIsMyContact error
+      const contacts = await this.client.pupPage.evaluate(() => {
+        if (!window.Store || !window.Store.Contact) {
+          return [];
+        }
+
+        const contactModels = window.Store.Contact.getModelsArray();
+        return contactModels.map(contact => {
+          try {
+            return {
+              id: contact.id?._serialized || contact.id?.user || null,
+              name: contact.name || null,
+              pushname: contact.pushname || null,
+              shortName: contact.shortName || null,
+              formattedName: contact.formattedName || null,
+              displayName: contact.displayName || null,
+            };
+          } catch (err) {
+            return null;
+          }
+        }).filter(Boolean);
+      });
+
       let mapped = 0;
       contacts.forEach(contact => {
         const contactId = normaliseJid(contact?.id);
@@ -477,6 +499,7 @@ class RelayManager extends EventEmitter {
           participant?.pushname ||
           participant?.shortName ||
           participant?.notifyName ||
+          this.contactCache.get(participantId) ||
           stripRelaySuffix(participantId || "");
         if (label) {
           this.contactCache.set(participantId, label);
