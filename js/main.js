@@ -88,7 +88,6 @@ import {
 } from "./config.js";
 import { EXPORT_THEME_STYLES } from "./theme.js";
 
-const SEARCH_RESULT_LIMIT = 200;
 let reduceMotionPreferred = initialReduceMotionPreferred;
 let reduceMotionPreference = null; // "reduce" | "standard" | null (follow system)
 
@@ -407,6 +406,7 @@ const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
 const dashboardRoot = document.querySelector("main");
+
 const SEARCH_RESULT_LIMIT = 200;
 
 const searchController = createSearchController({
