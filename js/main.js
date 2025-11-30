@@ -87,35 +87,13 @@ import {
   initialReduceMotionPreferred,
 } from "./config.js";
 import { EXPORT_THEME_STYLES } from "./theme.js";
-
-let reduceMotionPreferred = initialReduceMotionPreferred;
-let reduceMotionPreference = null; // "reduce" | "standard" | null (follow system)
-
-if (motionPreferenceQuery) {
-  const motionListener = event => {
-    reduceMotionPreferred = event.matches;
-    if (reduceMotionPreference === null) {
-      syncReduceMotionState();
-    } else {
-      updateMotionToggleUI();
-    }
-  };
-  if (typeof motionPreferenceQuery.addEventListener === "function") {
-    motionPreferenceQuery.addEventListener("change", motionListener);
-  } else if (typeof motionPreferenceQuery.addListener === "function") {
-    motionPreferenceQuery.addListener(motionListener);
-  }
-}
-
-function shouldReduceMotion() {
-  if (reduceMotionPreference === "reduce") return true;
-  if (reduceMotionPreference === "standard") return false;
-  return reduceMotionPreferred;
-}
-
-function prefersReducedMotion() {
-  return shouldReduceMotion();
-}
+import {
+  createDomCache,
+  createDatasetEmptyStateManager,
+  createDeferredRenderScheduler,
+  createCompactModeManager,
+  createAccessibilityController,
+} from "./ui.js";
 
 function normalizeJid(value) {
   if (!value) return "";
@@ -250,121 +228,146 @@ function buildParticipantRoster(directory) {
   return roster;
 }
 
-const statusEl = document.getElementById("data-status");
-const relayBannerEl = document.getElementById("relay-status-banner");
-const relayBannerMessage = document.getElementById("relay-status-message");
-const relayBannerMeta = document.getElementById("relay-status-meta");
+const domCache = createDomCache();
+const statusEl = domCache.getById("data-status");
+const relayBannerEl = domCache.getById("relay-status-banner");
+const relayBannerMessage = domCache.getById("relay-status-message");
+const relayBannerMeta = domCache.getById("relay-status-meta");
 const relayOnboardingSteps = document.querySelectorAll(".relay-step");
-const summaryEl = document.getElementById("summary");
+const summaryEl = domCache.getById("summary");
 const participantsBody = document.querySelector("#top-senders tbody");
-const participantsNote = document.getElementById("participants-note");
-const participantsTopSelect = document.getElementById("participants-top-count");
-const participantsSortSelect = document.getElementById("participants-sort");
-const participantsTimeframeSelect = document.getElementById("participants-timeframe");
+const participantsNote = domCache.getById("participants-note");
+const participantsTopSelect = domCache.getById("participants-top-count");
+const participantsSortSelect = domCache.getById("participants-sort");
+const participantsTimeframeSelect = domCache.getById("participants-timeframe");
 const participantPresetButtons = document.querySelectorAll("[data-participants-preset]");
-const rangeSelect = document.getElementById("global-range");
-const chatSelector = document.getElementById("chat-selector");
-const relayStatusEl = document.getElementById("relay-connection-status");
-const relayAccountEl = document.getElementById("relay-account-name");
-const relayStartButton = document.getElementById("relay-start");
-const relayStopButton = document.getElementById("relay-stop");
-const relayLogoutButton = document.getElementById("relay-logout");
-const relayReloadAllButton = document.getElementById("relay-reload-all");
-const relayClearStorageButton = document.getElementById("relay-clear-storage");
-const relayQrContainer = document.getElementById("relay-qr-container");
-const relayQrImage = document.getElementById("relay-qr-image");
-const relayHelpText = document.getElementById("relay-help-text");
-const reduceMotionToggle = document.getElementById("reduce-motion-toggle");
-const highContrastToggle = document.getElementById("high-contrast-toggle");
-const customControls = document.getElementById("custom-range-controls");
-const customStartInput = document.getElementById("custom-start");
-const customEndInput = document.getElementById("custom-end");
-const customApplyButton = document.getElementById("apply-custom-range");
-const hourlyTopHourEl = document.getElementById("hourly-top-hour");
-const brushSummaryEl = document.getElementById("hourly-brush-summary");
-const filterNoteEl = document.getElementById("hourly-filter-note");
-const hourlyChartEl = document.getElementById("hourly-chart");
-const hourlyAnomaliesEl = document.getElementById("hourly-anomalies");
-const dailyChartEl = document.getElementById("daily-chart");
-const dailyAvgDayEl = document.getElementById("daily-avg-day");
-const weeklyChartEl = document.getElementById("weekly-chart");
-const weeklyCumulativeEl = document.getElementById("weekly-cumulative");
-const weeklyRollingEl = document.getElementById("weekly-rolling");
-const weeklyAverageEl = document.getElementById("weekly-average");
-const weekdayChartEl = document.getElementById("weekday-chart");
-const weekdayFilterNote = document.getElementById("weekday-filter-note");
-const weekdayToggleWeekdays = document.getElementById("weekday-toggle-weekdays");
-const weekdayToggleWeekends = document.getElementById("weekday-toggle-weekends");
-const weekdayToggleWorking = document.getElementById("weekday-toggle-working");
-const weekdayToggleOffhours = document.getElementById("weekday-toggle-offhours");
-const weekdayHourStartInput = document.getElementById("weekday-hour-start");
-const weekdayHourEndInput = document.getElementById("weekday-hour-end");
-const messageTypeSummaryEl = document.getElementById("message-type-summary");
-const messageTypeNoteEl = document.getElementById("message-types-note");
-const downloadPdfButton = document.getElementById("download-pdf");
-const downloadTimeOfDayButton = document.getElementById("download-timeofday");
-const downloadParticipantsButton = document.getElementById("download-participants");
-const downloadHourlyButton = document.getElementById("download-hourly");
-const downloadDailyButton = document.getElementById("download-daily");
-const downloadWeeklyButton = document.getElementById("download-weekly");
-const downloadWeekdayButton = document.getElementById("download-weekday");
-const downloadMessageTypesButton = document.getElementById("download-message-types");
-const downloadSentimentButton = document.getElementById("download-sentiment");
-const sentimentSummaryEl = document.getElementById("sentiment-summary");
-const sentimentTrendNote = document.getElementById("sentiment-trend-note");
-const sentimentDailyChart = document.getElementById("sentiment-daily-chart");
-const sentimentPositiveList = document.getElementById("sentiment-top-positive");
-const sentimentNegativeList = document.getElementById("sentiment-top-negative");
-const savedViewNameInput = document.getElementById("saved-view-name");
-const saveViewButton = document.getElementById("save-view");
-const savedViewList = document.getElementById("saved-view-list");
-const applySavedViewButton = document.getElementById("apply-saved-view");
-const deleteSavedViewButton = document.getElementById("delete-saved-view");
-const savedViewGallery = document.getElementById("saved-view-gallery");
-const compareViewASelect = document.getElementById("compare-view-a");
-const compareViewBSelect = document.getElementById("compare-view-b");
-const compareViewsButton = document.getElementById("compare-views");
-const compareSummaryEl = document.getElementById("compare-summary");
-const searchForm = document.getElementById("advanced-search-form");
-const searchKeywordInput = document.getElementById("search-keyword");
-const searchParticipantSelect = document.getElementById("search-participant");
-const searchStartInput = document.getElementById("search-start");
-const searchEndInput = document.getElementById("search-end");
-const resetSearchButton = document.getElementById("reset-search");
-const downloadSearchButton = document.getElementById("download-search-results");
-const searchResultsSummary = document.getElementById("search-results-summary");
-const searchResultsList = document.getElementById("search-results-list");
-const searchInsightsEl = document.getElementById("search-insights");
-const highlightList = document.getElementById("highlight-list");
-const downloadMarkdownButton = document.getElementById("download-markdown-report");
-const downloadSlidesButton = document.getElementById("download-slides-report");
-const logDrawerToggleButton = document.getElementById("log-drawer-toggle");
-const logDrawerEl = document.getElementById("relay-log-drawer");
-const logDrawerCloseButton = document.getElementById("relay-log-close");
-const logDrawerClearButton = document.getElementById("relay-log-clear");
-const logDrawerList = document.getElementById("relay-log-list");
-const logDrawerConnectionLabel = document.getElementById("relay-log-connection");
-const globalProgressEl = document.getElementById("global-progress");
-const globalProgressLabel = document.getElementById("global-progress-label");
-const toastContainer = document.getElementById("toast-container");
-const compactToggleButton = document.getElementById("compact-toggle");
-const onboardingOverlay = document.getElementById("onboarding-overlay");
-const onboardingCopyEl = document.getElementById("onboarding-copy");
-const onboardingStepLabel = document.getElementById("onboarding-step-label");
-const onboardingSkipButton = document.getElementById("onboarding-skip");
-const onboardingNextButton = document.getElementById("onboarding-next");
-const heroStatusBadge = document.getElementById("hero-status-badge");
-const heroStatusCopy = document.getElementById("hero-status-copy");
-const hourlyNote = document.getElementById("hourly-note");
-const dailyNote = document.getElementById("daily-note");
-const weeklyNote = document.getElementById("weekly-note");
-const weekdayNote = document.getElementById("weekday-note");
-const timeOfDayNote = document.getElementById("timeofday-note");
-const sentimentNote = document.getElementById("sentiment-note");
-const searchNote = document.getElementById("search-note");
-const datasetEmptyCallout = document.getElementById("dataset-empty-callout");
-const datasetEmptyHeading = document.getElementById("dataset-empty-heading");
-const datasetEmptyCopy = document.getElementById("dataset-empty-copy");
+const rangeSelect = domCache.getById("global-range");
+const chatSelector = domCache.getById("chat-selector");
+const relayStatusEl = domCache.getById("relay-connection-status");
+const relayAccountEl = domCache.getById("relay-account-name");
+const relayStartButton = domCache.getById("relay-start");
+const relayStopButton = domCache.getById("relay-stop");
+const relayLogoutButton = domCache.getById("relay-logout");
+const relayReloadAllButton = domCache.getById("relay-reload-all");
+const relayClearStorageButton = domCache.getById("relay-clear-storage");
+const relayQrContainer = domCache.getById("relay-qr-container");
+const relayQrImage = domCache.getById("relay-qr-image");
+const relayHelpText = domCache.getById("relay-help-text");
+const reduceMotionToggle = domCache.getById("reduce-motion-toggle");
+const highContrastToggle = domCache.getById("high-contrast-toggle");
+const customControls = domCache.getById("custom-range-controls");
+const customStartInput = domCache.getById("custom-start");
+const customEndInput = domCache.getById("custom-end");
+const customApplyButton = domCache.getById("apply-custom-range");
+const hourlyTopHourEl = domCache.getById("hourly-top-hour");
+const brushSummaryEl = domCache.getById("hourly-brush-summary");
+const filterNoteEl = domCache.getById("hourly-filter-note");
+const hourlyChartEl = domCache.getById("hourly-chart");
+const hourlyAnomaliesEl = domCache.getById("hourly-anomalies");
+const dailyChartEl = domCache.getById("daily-chart");
+const dailyAvgDayEl = domCache.getById("daily-avg-day");
+const weeklyChartEl = domCache.getById("weekly-chart");
+const weeklyCumulativeEl = domCache.getById("weekly-cumulative");
+const weeklyRollingEl = domCache.getById("weekly-rolling");
+const weeklyAverageEl = domCache.getById("weekly-average");
+const weekdayChartEl = domCache.getById("weekday-chart");
+const weekdayFilterNote = domCache.getById("weekday-filter-note");
+const weekdayToggleWeekdays = domCache.getById("weekday-toggle-weekdays");
+const weekdayToggleWeekends = domCache.getById("weekday-toggle-weekends");
+const weekdayToggleWorking = domCache.getById("weekday-toggle-working");
+const weekdayToggleOffhours = domCache.getById("weekday-toggle-offhours");
+const weekdayHourStartInput = domCache.getById("weekday-hour-start");
+const weekdayHourEndInput = domCache.getById("weekday-hour-end");
+const messageTypeSummaryEl = domCache.getById("message-type-summary");
+const messageTypeNoteEl = domCache.getById("message-types-note");
+const downloadPdfButton = domCache.getById("download-pdf");
+const downloadTimeOfDayButton = domCache.getById("download-timeofday");
+const downloadParticipantsButton = domCache.getById("download-participants");
+const downloadHourlyButton = domCache.getById("download-hourly");
+const downloadDailyButton = domCache.getById("download-daily");
+const downloadWeeklyButton = domCache.getById("download-weekly");
+const downloadWeekdayButton = domCache.getById("download-weekday");
+const downloadMessageTypesButton = domCache.getById("download-message-types");
+const downloadSentimentButton = domCache.getById("download-sentiment");
+const downloadChatJsonButton = domCache.getById("download-chat-json");
+const sentimentSummaryEl = domCache.getById("sentiment-summary");
+const sentimentTrendNote = domCache.getById("sentiment-trend-note");
+const sentimentDailyChart = domCache.getById("sentiment-daily-chart");
+const sentimentPositiveList = domCache.getById("sentiment-top-positive");
+const sentimentNegativeList = domCache.getById("sentiment-top-negative");
+const savedViewNameInput = domCache.getById("saved-view-name");
+const saveViewButton = domCache.getById("save-view");
+const savedViewList = domCache.getById("saved-view-list");
+const applySavedViewButton = domCache.getById("apply-saved-view");
+const deleteSavedViewButton = domCache.getById("delete-saved-view");
+const savedViewGallery = domCache.getById("saved-view-gallery");
+const compareViewASelect = domCache.getById("compare-view-a");
+const compareViewBSelect = domCache.getById("compare-view-b");
+const compareViewsButton = domCache.getById("compare-views");
+const compareSummaryEl = domCache.getById("compare-summary");
+const searchForm = domCache.getById("advanced-search-form");
+const searchKeywordInput = domCache.getById("search-keyword");
+const searchParticipantSelect = domCache.getById("search-participant");
+const searchStartInput = domCache.getById("search-start");
+const searchEndInput = domCache.getById("search-end");
+const resetSearchButton = domCache.getById("reset-search");
+const downloadSearchButton = domCache.getById("download-search-results");
+const searchResultsSummary = domCache.getById("search-results-summary");
+const searchResultsList = domCache.getById("search-results-list");
+const searchInsightsEl = domCache.getById("search-insights");
+const highlightList = domCache.getById("highlight-list");
+const downloadMarkdownButton = domCache.getById("download-markdown-report");
+const downloadSlidesButton = domCache.getById("download-slides-report");
+const logDrawerToggleButton = domCache.getById("log-drawer-toggle");
+const logDrawerEl = domCache.getById("relay-log-drawer");
+const logDrawerCloseButton = domCache.getById("relay-log-close");
+const logDrawerClearButton = domCache.getById("relay-log-clear");
+const logDrawerList = domCache.getById("relay-log-list");
+const logDrawerConnectionLabel = domCache.getById("relay-log-connection");
+const globalProgressEl = domCache.getById("global-progress");
+const globalProgressLabel = domCache.getById("global-progress-label");
+const toastContainer = domCache.getById("toast-container");
+const compactToggleButton = domCache.getById("compact-toggle");
+const onboardingOverlay = domCache.getById("onboarding-overlay");
+const onboardingCopyEl = domCache.getById("onboarding-copy");
+const onboardingStepLabel = domCache.getById("onboarding-step-label");
+const onboardingSkipButton = domCache.getById("onboarding-skip");
+const onboardingNextButton = domCache.getById("onboarding-next");
+const heroStatusBadge = domCache.getById("hero-status-badge");
+const heroStatusCopy = domCache.getById("hero-status-copy");
+const hourlyNote = domCache.getById("hourly-note");
+const dailyNote = domCache.getById("daily-note");
+const weeklyNote = domCache.getById("weekly-note");
+const weekdayNote = domCache.getById("weekday-note");
+const timeOfDayNote = domCache.getById("timeofday-note");
+const sentimentNote = domCache.getById("sentiment-note");
+const searchNote = domCache.getById("search-note");
+const datasetEmptyCallout = domCache.getById("dataset-empty-callout");
+const datasetEmptyHeading = domCache.getById("dataset-empty-heading");
+const datasetEmptyCopy = domCache.getById("dataset-empty-copy");
+
+const datasetEmptyStateManager = createDatasetEmptyStateManager({
+  calloutEl: datasetEmptyCallout,
+  headingEl: datasetEmptyHeading,
+  copyEl: datasetEmptyCopy,
+  buttons: [
+    downloadPdfButton,
+    downloadMarkdownButton,
+    downloadSlidesButton,
+    downloadChatJsonButton,
+    downloadParticipantsButton,
+    downloadHourlyButton,
+    downloadDailyButton,
+    downloadWeeklyButton,
+    downloadWeekdayButton,
+    downloadTimeOfDayButton,
+    downloadMessageTypesButton,
+    downloadSentimentButton,
+    downloadSearchButton,
+  ],
+});
+const setDatasetEmptyMessage = datasetEmptyStateManager.setMessage;
+
 const TOASTS = [];
 const MAX_TOASTS = 4;
 const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
@@ -390,21 +393,20 @@ const SECTION_NAV_ITEMS = [
 ];
 let sectionNavLinks = [];
 let sectionNavItems = [];
-const downloadChatJsonButton = document.getElementById("download-chat-json");
-const timeOfDayWeekdayToggle = document.getElementById("timeofday-toggle-weekdays");
-const timeOfDayWeekendToggle = document.getElementById("timeofday-toggle-weekends");
-const timeOfDayHourStartInput = document.getElementById("timeofday-hour-start");
-const timeOfDayHourEndInput = document.getElementById("timeofday-hour-end");
-const timeOfDayHourStartLabel = document.getElementById("timeofday-hour-start-label");
-const timeOfDayHourEndLabel = document.getElementById("timeofday-hour-end-label");
-const timeOfDaySparklineEl = document.getElementById("timeofday-sparkline");
-const timeOfDayBandsEl = document.getElementById("timeofday-bands");
-const timeOfDayCalloutsEl = document.getElementById("timeofday-callouts");
-const timeOfDayChartContainer = document.getElementById("timeofday-chart");
-const pollsNote = document.getElementById("polls-note");
-const pollsTotalEl = document.getElementById("polls-total");
-const pollsCreatorsEl = document.getElementById("polls-creators");
-const pollsListEl = document.getElementById("polls-list");
+const timeOfDayWeekdayToggle = domCache.getById("timeofday-toggle-weekdays");
+const timeOfDayWeekendToggle = domCache.getById("timeofday-toggle-weekends");
+const timeOfDayHourStartInput = domCache.getById("timeofday-hour-start");
+const timeOfDayHourEndInput = domCache.getById("timeofday-hour-end");
+const timeOfDayHourStartLabel = domCache.getById("timeofday-hour-start-label");
+const timeOfDayHourEndLabel = domCache.getById("timeofday-hour-end-label");
+const timeOfDaySparklineEl = domCache.getById("timeofday-sparkline");
+const timeOfDayBandsEl = domCache.getById("timeofday-bands");
+const timeOfDayCalloutsEl = domCache.getById("timeofday-callouts");
+const timeOfDayChartContainer = domCache.getById("timeofday-chart");
+const pollsNote = domCache.getById("polls-note");
+const pollsTotalEl = domCache.getById("polls-total");
+const pollsCreatorsEl = domCache.getById("polls-creators");
+const pollsListEl = domCache.getById("polls-list");
 const dashboardRoot = document.querySelector("main");
 
 const SEARCH_RESULT_LIMIT = 200;
@@ -553,6 +555,7 @@ let activeAnalyticsRequest = 0;
 let sectionNavObserver = null;
 let activeSectionId = null;
 let renderTaskToken = 0;
+const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
 const remoteChatState = {
   list: [],
   lastFetchedAt: 0,
@@ -630,6 +633,24 @@ const COMPACT_STORAGE_KEY = "waan-compact-mode";
 const ONBOARDING_STORAGE_KEY = "waan-onboarding-dismissed";
 const REDUCE_MOTION_STORAGE_KEY = "waan-reduce-motion";
 const HIGH_CONTRAST_STORAGE_KEY = "waan-high-contrast";
+
+const { apply: applyCompactMode, init: initCompactMode } = createCompactModeManager({
+  toggle: compactToggleButton,
+  storageKey: COMPACT_STORAGE_KEY,
+  showToast,
+});
+
+const accessibilityController = createAccessibilityController({
+  reduceMotionToggle,
+  highContrastToggle,
+  motionPreferenceQuery,
+  initialReduceMotionPreferred,
+  showToast,
+  reduceMotionStorageKey: REDUCE_MOTION_STORAGE_KEY,
+  highContrastStorageKey: HIGH_CONTRAST_STORAGE_KEY,
+});
+const { initAccessibilityControls, prefersReducedMotion } = accessibilityController;
+
 const onboardingSteps = [
   {
     copy: "Use the relay banner to connect and keep an eye on status messages.",
@@ -652,28 +673,6 @@ let onboardingIndex = 0;
 let onboardingHighlight = null;
 let statusHideTimer = null;
 let statusExitTimer = null;
-
-const deferRenderTask =
-  typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
-    ? callback =>
-      window.requestIdleCallback(
-        deadline => {
-          if (deadline.timeRemaining() > 8) {
-            callback();
-          } else {
-            setTimeout(callback, 0);
-          }
-        },
-        { timeout: 500 },
-      )
-    : callback => setTimeout(callback, 0);
-
-function scheduleDeferredRender(task, token) {
-  deferRenderTask(() => {
-    if (token !== renderTaskToken) return;
-    task();
-  });
-}
 
 function ensureAnalyticsWorker() {
   if (analyticsWorkerInstance) return analyticsWorkerInstance;
@@ -881,46 +880,9 @@ function setDashboardLoadingState(isLoading) {
   dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
 }
 
-function setDatasetEmptyMessage(headingText, copyText) {
-  if (datasetEmptyHeading && headingText) {
-    datasetEmptyHeading.textContent = headingText;
-  }
-  if (datasetEmptyCopy && copyText) {
-    datasetEmptyCopy.textContent = copyText;
-  }
-}
-
 function setDataAvailabilityState(hasData) {
   dataAvailable = Boolean(hasData);
-  const buttons = [
-    downloadPdfButton,
-    downloadMarkdownButton,
-    downloadSlidesButton,
-    downloadChatJsonButton,
-    downloadParticipantsButton,
-    downloadHourlyButton,
-    downloadDailyButton,
-    downloadWeeklyButton,
-    downloadWeekdayButton,
-    downloadTimeOfDayButton,
-    downloadMessageTypesButton,
-    downloadSentimentButton,
-    downloadSearchButton,
-  ];
-  buttons.forEach(button => {
-    if (!button) return;
-    button.disabled = !dataAvailable;
-    if (button.tagName === "BUTTON") {
-      if (!dataAvailable) {
-        button.setAttribute("title", "Load a chat to enable this action.");
-      } else {
-        button.removeAttribute("title");
-      }
-    }
-  });
-  if (datasetEmptyCallout) {
-    datasetEmptyCallout.classList.toggle("hidden", dataAvailable);
-  }
+  datasetEmptyStateManager.setAvailability(dataAvailable);
   if (!dataAvailable) {
     setDatasetEmptyMessage(
       "No chat is selected yet.",
@@ -1048,134 +1010,6 @@ function finishOnboarding() {
   document.body.classList.remove("onboarding-active");
   if (onboardingStepLabel) onboardingStepLabel.textContent = "";
   localStorage.setItem(ONBOARDING_STORAGE_KEY, "done");
-}
-
-function applyCompactMode(enabled) {
-  document.body.dataset.compact = enabled ? "true" : "false";
-  if (compactToggleButton) {
-    compactToggleButton.setAttribute("aria-pressed", String(enabled));
-    compactToggleButton.textContent = enabled ? "Comfort mode" : "Compact mode";
-  }
-  localStorage.setItem(COMPACT_STORAGE_KEY, enabled ? "true" : "false");
-}
-
-function initCompactMode() {
-  const saved = localStorage.getItem(COMPACT_STORAGE_KEY);
-  const enabled = saved === "true";
-  applyCompactMode(enabled);
-  compactToggleButton?.addEventListener("click", () => {
-    applyCompactMode(!(document.body.dataset.compact === "true"));
-    showToast(document.body.dataset.compact === "true" ? "Compact mode enabled." : "Comfort mode enabled.", "info", {
-      duration: 3000,
-    });
-  });
-}
-
-function updateMotionToggleUI() {
-  if (!reduceMotionToggle) return;
-  const shouldReduce = shouldReduceMotion();
-  let text = "Motion: Standard";
-  let title = "Animations and depth effects are enabled.";
-  let ariaPressed = "mixed";
-  if (reduceMotionPreference === "reduce") {
-    text = "Motion: Reduced";
-    title = "Animations and blurs are minimized for accessibility.";
-    ariaPressed = "true";
-  } else if (reduceMotionPreference === "standard") {
-    text = "Motion: Standard";
-    title = "Animations and depth effects are enabled.";
-    ariaPressed = "false";
-  } else {
-    text = shouldReduce ? "Motion: System (reduced)" : "Motion: System";
-    title = shouldReduce
-      ? "Following your OS preference to limit animations."
-      : "Following your OS preference.";
-    ariaPressed = "mixed";
-  }
-  reduceMotionToggle.setAttribute("aria-pressed", ariaPressed);
-  reduceMotionToggle.textContent = text;
-  reduceMotionToggle.title = title;
-}
-
-function syncReduceMotionState() {
-  const shouldReduce = shouldReduceMotion();
-  if (document.body) {
-    if (shouldReduce) {
-      document.body.dataset.reduceMotion = "true";
-    } else {
-      delete document.body.dataset.reduceMotion;
-    }
-  }
-  updateMotionToggleUI();
-}
-
-function applyReduceMotionPreference(mode, { persist = true } = {}) {
-  if (mode !== "reduce" && mode !== "standard") {
-    reduceMotionPreference = null;
-  } else {
-    reduceMotionPreference = mode;
-  }
-  if (persist) {
-    if (reduceMotionPreference) {
-      localStorage.setItem(REDUCE_MOTION_STORAGE_KEY, reduceMotionPreference);
-    } else {
-      localStorage.removeItem(REDUCE_MOTION_STORAGE_KEY);
-    }
-  }
-  syncReduceMotionState();
-}
-
-function applyHighContrastPreference(enabled, { persist = true } = {}) {
-  if (document.body) {
-    if (enabled) {
-      document.body.dataset.contrast = "high";
-    } else {
-      delete document.body.dataset.contrast;
-    }
-  }
-  if (highContrastToggle) {
-    highContrastToggle.setAttribute("aria-pressed", String(enabled));
-    highContrastToggle.textContent = enabled ? "Contrast: Boosted" : "Contrast: Standard";
-    highContrastToggle.title = enabled
-      ? "Colors switch to a higher-contrast palette for easier reading."
-      : "Standard contrast restored.";
-  }
-  if (persist) {
-    localStorage.setItem(HIGH_CONTRAST_STORAGE_KEY, enabled ? "true" : "false");
-  }
-}
-
-function initAccessibilityControls() {
-  const savedMotion = localStorage.getItem(REDUCE_MOTION_STORAGE_KEY);
-  const initialMotion = savedMotion === "reduce" || savedMotion === "standard" ? savedMotion : null;
-  applyReduceMotionPreference(initialMotion, { persist: false });
-  reduceMotionToggle?.addEventListener("click", () => {
-    let nextPreference;
-    if (reduceMotionPreference === null) {
-      nextPreference = "reduce";
-    } else if (reduceMotionPreference === "reduce") {
-      nextPreference = "standard";
-    } else {
-      nextPreference = null;
-    }
-    applyReduceMotionPreference(nextPreference);
-    const toastMessage = nextPreference === "reduce"
-      ? "Animations simplified."
-      : nextPreference === "standard"
-        ? "Full motion restored."
-        : "Following your system preference for motion.";
-    showToast(toastMessage, "info", { duration: 2500 });
-  });
-
-  const contrastSaved = localStorage.getItem(HIGH_CONTRAST_STORAGE_KEY) === "true";
-  applyHighContrastPreference(contrastSaved, { persist: false });
-  highContrastToggle?.addEventListener("click", () => {
-    const next = !(document.body?.dataset.contrast === "high");
-    applyHighContrastPreference(next);
-    showToast(next ? "High-contrast mode on." : "Standard contrast mode.", next ? "success" : "info", {
-      duration: 2500,
-    });
-  });
 }
 
 function syncHeroPillsWithRange() { }

@@ -54,6 +54,15 @@
     src: url("./fonts/ClashDisplay-700.woff2") format("woff2");
 }
 
+@font-face {
+    font-family: "Clash Display Variable";
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url("./fonts/ClashDisplay-Variable.woff2") format("woff2-variations"),
+        url("./fonts/ClashDisplay-Variable.ttf") format("truetype");
+}
+
 :root {
     color-scheme: dark;
     --md-primary: #7d8aff;
@@ -79,7 +88,7 @@
     --surface-tint: rgba(125, 138, 255, 0.22);
 
     --font-family-base: "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-family-display: "Clash Display", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-display: "Clash Display Variable", "Clash Display", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-size-xs: 0.78rem;
     --font-size-sm: 0.92rem;
     --font-size-md: 1rem;
