@@ -58,6 +58,9 @@ import {
   getCachedAnalytics,
   setCachedAnalytics,
   clearAnalyticsCache,
+  setDatasetFingerprint,
+  setDatasetParticipantDirectory,
+  computeDatasetFingerprint,
 } from "./state.js";
 import { createExporters } from "./exporters.js";
 import { createRelayController } from "./relayControls.js";
@@ -182,6 +185,36 @@ function createParticipantDirectory(entries = [], participants = []) {
   return { records, aliasIndex };
 }
 
+function serializeParticipantDirectory(directory) {
+  if (!directory) return null;
+  return Array.from(directory.records.entries()).map(([id, record]) => ({
+    id,
+    label: record.label ?? null,
+    aliases: Array.from(record.aliases || []),
+  }));
+}
+
+function deserializeParticipantDirectory(snapshot) {
+  if (!Array.isArray(snapshot) || !snapshot.length) return null;
+  const records = new Map();
+  const aliasIndex = new Map();
+  snapshot.forEach(item => {
+    if (!item || !item.id) return;
+    const aliases = Array.isArray(item.aliases) ? item.aliases : [];
+    const record = {
+      id: item.id,
+      label: item.label ?? null,
+      aliases: new Set(aliases),
+    };
+    records.set(record.id, record);
+    aliases.forEach(alias => {
+      if (alias) aliasIndex.set(alias.toLowerCase(), record);
+    });
+    if (record.label) aliasIndex.set(record.label.toLowerCase(), record);
+  });
+  return { records, aliasIndex };
+}
+
 function normalizeEntriesWithDirectory(entries = [], directory) {
   if (!directory) return entries;
   const { records, aliasIndex } = directory;
@@ -215,10 +248,12 @@ function normalizeEntriesWithDirectory(entries = [], directory) {
       (normalizedId && !normalizedId.startsWith("alias:") ? stripJidSuffix(normalizedId) : null) ||
       entry.sender ||
       "Unknown";
+    const baseMessage = typeof entry.message === "string" ? entry.message : "";
     return {
       ...entry,
       sender_id: normalizedId || entry.sender_id || entry.sender,
       sender: displayName,
+      search_text: entry.search_text ?? baseMessage.toLowerCase(),
     };
   });
 }
@@ -1238,6 +1273,8 @@ async function handleChatSelectionChange(event) {
         statusMessage: `Switched to ${dataset.label}.`,
         selectionValue: event.target.value,
         participants: dataset.meta?.participants || [],
+        participantDirectoryData: dataset.participantDirectory ?? null,
+        entriesNormalized: true,
       });
     } else if (source === "remote") {
       await loadRemoteChat(id);
@@ -1640,9 +1677,26 @@ async function handleClearStorageClick() {
 }
 
 async function applyEntriesToApp(entries, label, options = {}) {
-  const participantDirectory = createParticipantDirectory(entries, options.participants || []);
-  const normalizedEntries = normalizeEntriesWithDirectory(entries, participantDirectory);
+  let participantDirectory = null;
+  if (options.participantDirectoryData) {
+    participantDirectory = deserializeParticipantDirectory(options.participantDirectoryData);
+  }
+  if (!participantDirectory) {
+    participantDirectory = createParticipantDirectory(entries, options.participants || []);
+  }
+  const directorySnapshot = serializeParticipantDirectory(participantDirectory);
+  const shouldNormalize = !options.entriesNormalized;
+  const normalizedEntries = shouldNormalize
+    ? normalizeEntriesWithDirectory(entries, participantDirectory)
+    : entries.map(entry => ({
+        ...entry,
+        search_text:
+          entry.search_text ?? (typeof entry.message === "string" ? entry.message.toLowerCase() : ""),
+      }));
+  const fingerprint = computeDatasetFingerprint(normalizedEntries);
   setDatasetEntries(normalizedEntries);
+  setDatasetFingerprint(fingerprint);
+  setDatasetParticipantDirectory(directorySnapshot);
   savedViewsController.resetForNewDataset();
   clearAnalyticsCache();
   searchController.resetState();
@@ -1676,6 +1730,8 @@ async function applyEntriesToApp(entries, label, options = {}) {
       label,
       entries: normalizedEntries,
       analytics,
+      fingerprint,
+      participantDirectory: directorySnapshot,
       meta: {
         messageCount: analytics.total_messages,
         dateRange: analytics.date_range,

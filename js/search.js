@@ -416,9 +416,9 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
         if (endDate && (!timestamp || timestamp > endDate)) continue;
 
         const message = entry.message || "";
+        const searchText = entry.search_text ?? message.toLowerCase();
         if (tokens.length) {
-          const messageLower = message.toLowerCase();
-          const matchesTokens = tokens.every(token => messageLower.includes(token));
+          const matchesTokens = tokens.every(token => searchText.includes(token));
           if (!matchesTokens) continue;
         }
 
