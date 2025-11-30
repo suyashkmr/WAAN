@@ -550,11 +550,30 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     });
   }
 
+  function normalizeAccountId(value) {
+    if (!value) return "";
+    if (typeof value === "string") return value.replace(/@[\w.]+$/, "");
+    if (typeof value === "object") {
+      if (typeof value._serialized === "string") return value._serialized.replace(/@[\w.]+$/, "");
+      if (typeof value.user === "string" && typeof value.server === "string") {
+        return `${value.user}`.replace(/@[\w.]+$/, "");
+      }
+    }
+    return "";
+  }
+
   function formatRelayAccount(account) {
-    if (!account) return null;
-    const name = account.name || account.pushName || account.pushname || account.displayName;
-    const number = account.id || account.me || account.jid || "";
-    return name ? `${name} (${number})` : number || RELAY_CLIENT_LABEL;
+    if (!account) return "";
+    const name =
+      account.name || account.pushName || account.pushname || account.displayName || account.formattedName;
+    const number =
+      normalizeAccountId(account.id) ||
+      normalizeAccountId(account.jid) ||
+      normalizeAccountId(account.me) ||
+      normalizeAccountId(account.wid);
+    if (name && number) return `${name} (${number})`;
+    if (name) return name;
+    return number || RELAY_CLIENT_LABEL;
   }
 
   async function loadRemoteChat(chatId, options = {}) {

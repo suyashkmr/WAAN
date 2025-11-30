@@ -406,6 +406,7 @@ const pollsTotalEl = document.getElementById("polls-total");
 const pollsCreatorsEl = document.getElementById("polls-creators");
 const pollsListEl = document.getElementById("polls-list");
 const dashboardRoot = document.querySelector("main");
+const SEARCH_RESULT_LIMIT = 200;
 
 const searchController = createSearchController({
   elements: {
@@ -496,7 +497,6 @@ function getExportFilterSummary() {
   return parts;
 }
 let participantView = [];
-const SEARCH_RESULT_LIMIT = 200;
 const TIME_OF_DAY_BANDS = [
   { id: "late-night", label: "Late Night", start: 0, end: 4 },
   { id: "early-morning", label: "Early Morning", start: 5, end: 7 },
