@@ -8,9 +8,9 @@ prints a deprecation message.
 If you previously relied on the installer, distribute the project as a static
 payload instead:
 
-1. Copy the web assets from the repository root (`index.html`, `styles.css`,
-   the `js/` directory, and any sample data such as `analytics.json` and
-   `chat.json`).
+1. Copy the web assets from the repository root (`index.html`, `styles.base.css`,
+   `styles.components.css`, the `js/` directory, and any sample data such as
+   `analytics.json` and `chat.json`).
 2. Deliver them as a `.zip` or host them on any HTTPS-capable static site host.
 3. Ask end users to open `index.html` in a modern browser (Chrome, Edge, Safari,
    Firefox) to run the dashboard offline.

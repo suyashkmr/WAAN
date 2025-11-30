@@ -17,6 +17,13 @@ import {
   WEEKDAY_SHORT,
 } from "./constants.js";
 import {
+  SECTION_NAV_ITEMS,
+  TIME_OF_DAY_BANDS,
+  TIME_OF_DAY_SPAN_WINDOW,
+  SEARCH_RESULT_LIMIT,
+  ONBOARDING_STEPS,
+} from "./appConstants.js";
+import {
   setStatusCallback,
   updateStatus,
   getDatasetEntries,
@@ -372,25 +379,6 @@ const TOASTS = [];
 const MAX_TOASTS = 4;
 const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
 const sectionNavInner = document.querySelector(".section-nav-inner");
-const SECTION_NAV_ITEMS = [
-  { id: "hero-panel", label: "Home" },
-  { id: "relay-status-banner", label: "Relay Status" },
-  { id: "actions-toolbar", label: "Actions" },
-  { id: "summary", label: "Overview" },
-  { id: "insight-highlights", label: "Highlights" },
-  { id: "participants", label: "Participants" },
-  { id: "hourly-activity", label: "Hourly Activity" },
-  { id: "daily-activity", label: "Day by Day" },
-  { id: "weekly-trend", label: "Week by Week" },
-  { id: "weekday-trend", label: "Day of Week" },
-  { id: "timeofday-trend", label: "Time of Day" },
-  { id: "sentiment-overview", label: "Mood" },
-  { id: "message-types", label: "Message Mix" },
-  { id: "polls-card", label: "Polls" },
-  { id: "saved-views-card", label: "Saved Views" },
-  { id: "search-panel", label: "Search Messages" },
-  { id: "faq-card", label: "FAQ" },
-];
 let sectionNavLinks = [];
 let sectionNavItems = [];
 const timeOfDayWeekdayToggle = domCache.getById("timeofday-toggle-weekdays");
@@ -408,8 +396,6 @@ const pollsTotalEl = domCache.getById("polls-total");
 const pollsCreatorsEl = domCache.getById("polls-creators");
 const pollsListEl = domCache.getById("polls-list");
 const dashboardRoot = document.querySelector("main");
-
-const SEARCH_RESULT_LIMIT = 200;
 
 const searchController = createSearchController({
   elements: {
@@ -500,15 +486,6 @@ function getExportFilterSummary() {
   return parts;
 }
 let participantView = [];
-const TIME_OF_DAY_BANDS = [
-  { id: "late-night", label: "Late Night", start: 0, end: 4 },
-  { id: "early-morning", label: "Early Morning", start: 5, end: 7 },
-  { id: "morning", label: "Morning", start: 8, end: 11 },
-  { id: "afternoon", label: "Afternoon", start: 12, end: 16 },
-  { id: "evening", label: "Evening", start: 17, end: 20 },
-  { id: "late-evening", label: "Late Evening", start: 21, end: 23 },
-];
-const TIME_OF_DAY_SPAN_WINDOW = 3;
 let snapshotMode = false;
 
 const {
@@ -651,24 +628,6 @@ const accessibilityController = createAccessibilityController({
 });
 const { initAccessibilityControls, prefersReducedMotion } = accessibilityController;
 
-const onboardingSteps = [
-  {
-    copy: "Use the relay banner to connect and keep an eye on status messages.",
-    target: "#relay-status-banner",
-  },
-  {
-    copy: "Track connection details and sync activity with the relay log drawer.",
-    target: "#log-drawer-toggle",
-  },
-  {
-    copy: "Need extra breathing room? Toggle Compact mode right from the toolbar.",
-    target: "#compact-toggle",
-  },
-  {
-    copy: "Guided insights highlight notable trends for your dataset.",
-    target: "#insight-highlights",
-  },
-];
 let onboardingIndex = 0;
 let onboardingHighlight = null;
 let statusHideTimer = null;
@@ -961,17 +920,17 @@ function startOnboarding() {
 
 function showOnboardingStep(index) {
   if (!onboardingOverlay || !onboardingCopyEl) return;
-  const step = onboardingSteps[index];
+  const step = ONBOARDING_STEPS[index];
   if (!step) {
     finishOnboarding();
     return;
   }
   onboardingCopyEl.textContent = step.copy;
   if (onboardingStepLabel) {
-    onboardingStepLabel.textContent = `Step ${index + 1} of ${onboardingSteps.length}`;
+    onboardingStepLabel.textContent = `Step ${index + 1} of ${ONBOARDING_STEPS.length}`;
   }
   highlightTarget(step.target);
-  onboardingNextButton.textContent = index === onboardingSteps.length - 1 ? "Done" : "Next";
+  onboardingNextButton.textContent = index === ONBOARDING_STEPS.length - 1 ? "Done" : "Next";
 }
 
 function highlightTarget(selector) {
@@ -990,7 +949,7 @@ function highlightTarget(selector) {
 
 function advanceOnboarding() {
   onboardingIndex += 1;
-  if (onboardingIndex >= onboardingSteps.length) {
+  if (onboardingIndex >= ONBOARDING_STEPS.length) {
     finishOnboarding();
   } else {
     showOnboardingStep(onboardingIndex);

@@ -1,6 +1,6 @@
 # ChatScope Design Tokens
 
-The ChatScope desktop dashboard now relies on a lightweight token system so UI layers stay cohesive across phases and themes. These tokens live in `styles.css` under the `:root` block, with light and dark overrides via `data-color-scheme`.
+The ChatScope desktop dashboard now relies on a lightweight token system so UI layers stay cohesive across phases and themes. These tokens live in `styles.base.css` under the `:root` block, with light and dark overrides via `data-color-scheme`.
 
 ## Color & Surface Tokens
 

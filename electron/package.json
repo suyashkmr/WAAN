@@ -35,6 +35,8 @@
         "filter": [
           "index.html",
           "styles.css",
+          "styles.base.css",
+          "styles.components.css",
           "styles/**/*",
           "js/**/*",
           "vendor/**/*",
