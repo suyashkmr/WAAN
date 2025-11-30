@@ -13,6 +13,7 @@ import {
   REMOTE_CHAT_REFRESH_INTERVAL_MS,
   REMOTE_MESSAGE_LIMIT,
 } from "./config.js";
+import { createVirtualList } from "./virtualList.js";
 
 const MAX_LOG_ENTRIES = 400;
 
@@ -38,6 +39,9 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     logDrawerEl,
     logDrawerList,
     logDrawerConnectionLabel,
+    relaySyncProgressEl,
+    relaySyncChatsMeta,
+    relaySyncMessagesMeta,
   } = elements;
 
   const {
@@ -56,6 +60,9 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     encodeChatSelectorValue,
   } = helpers;
 
+  const relaySyncChatsStep = relaySyncProgressEl?.querySelector('[data-step="chats"]');
+  const relaySyncMessagesStep = relaySyncProgressEl?.querySelector('[data-step="messages"]');
+
   const relayUiState = {
     status: null,
     controlsLocked: false,
@@ -72,6 +79,109 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     reconnectTimer: null,
     drawerOpen: false,
   };
+
+  const relaySyncUiState = {
+    manualActive: false,
+    hideTimer: null,
+    wasSyncing: false,
+  };
+
+  const logVirtualList = logDrawerList
+    ? createVirtualList({
+        container: logDrawerList,
+        estimatedItemHeight: 22,
+        overscan: 8,
+        renderItem: line => {
+          const p = document.createElement("p");
+          p.className = "relay-log-entry";
+          p.textContent = line;
+          return p;
+        },
+      })
+    : null;
+
+  if (logVirtualList) {
+    logVirtualList.setEmptyRenderer(() => {
+      const empty = document.createElement("p");
+      empty.className = "relay-log-empty";
+      empty.textContent = "No relay logs yet.";
+      return empty;
+    });
+    logVirtualList.setItems([]);
+  }
+
+  function setSyncStepState(stepEl, metaEl, state, text) {
+    if (stepEl && state) {
+      stepEl.dataset.state = state;
+    }
+    if (metaEl && typeof text === "string") {
+      metaEl.textContent = text;
+    }
+  }
+
+  function showRelaySyncProgress() {
+    if (!relaySyncProgressEl) return;
+    relaySyncProgressEl.classList.remove("hidden");
+  }
+
+  function hideRelaySyncProgress() {
+    if (!relaySyncProgressEl) return;
+    relaySyncProgressEl.classList.add("hidden");
+  }
+
+  function beginManualSyncUi() {
+    if (!relaySyncProgressEl) return;
+    clearTimeout(relaySyncUiState.hideTimer);
+    relaySyncUiState.manualActive = true;
+    showRelaySyncProgress();
+    setSyncStepState(relaySyncChatsStep, relaySyncChatsMeta, "active", "Requesting chat list…");
+    setSyncStepState(relaySyncMessagesStep, relaySyncMessagesMeta, "pending", "Waiting to mirror messages…");
+  }
+
+  function markChatsFetched(count) {
+    const label = Number.isFinite(count) && count > 0
+      ? `Loaded ${formatNumber(count)} chats.`
+      : "Chat list loaded.";
+    setSyncStepState(relaySyncChatsStep, relaySyncChatsMeta, "complete", label);
+  }
+
+  function markMessagesActive() {
+    setSyncStepState(relaySyncMessagesStep, relaySyncMessagesMeta, "active", "Mirroring recent messages…");
+  }
+
+  function completeSyncUi() {
+    setSyncStepState(relaySyncMessagesStep, relaySyncMessagesMeta, "complete", "Messages are up to date.");
+    relaySyncUiState.hideTimer = setTimeout(() => {
+      relaySyncUiState.manualActive = false;
+      hideRelaySyncProgress();
+    }, 1800);
+  }
+
+  function updateSyncProgressFromStatus(status) {
+    if (!relaySyncProgressEl) return;
+    const syncing = Boolean(status?.syncingChats);
+    if (syncing) {
+      clearTimeout(relaySyncUiState.hideTimer);
+      relaySyncUiState.wasSyncing = true;
+      showRelaySyncProgress();
+      const chatCount = Number(status?.chatCount ?? 0);
+      const label = chatCount > 0
+        ? `${formatNumber(chatCount)} chats indexed.`
+        : "Fetching chat list…";
+      setSyncStepState(relaySyncChatsStep, relaySyncChatsMeta, chatCount > 0 ? "complete" : "active", label);
+      setSyncStepState(
+        relaySyncMessagesStep,
+        relaySyncMessagesMeta,
+        "active",
+        "Mirroring messages… keep the relay open.",
+      );
+    } else if (relaySyncUiState.wasSyncing || relaySyncUiState.manualActive) {
+      relaySyncUiState.wasSyncing = false;
+      completeSyncUi();
+    } else {
+      hideRelaySyncProgress();
+    }
+  }
 
   function setRelayControlsDisabled(disabled) {
     relayUiState.controlsLocked = disabled;
@@ -251,14 +361,24 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       }
       return;
     }
+    if (!silent) {
+      beginManualSyncUi();
+    }
     const task = async () => {
       try {
         await fetchJson(`${RELAY_BASE}/relay/sync`, { method: "POST" });
-        return await refreshRemoteChats({ silent });
+        const count = await refreshRemoteChats({ silent });
+        if (!silent) {
+          markChatsFetched(count);
+          markMessagesActive();
+        }
+        return count;
       } catch (error) {
         console.error(error);
         if (!silent) {
           updateStatus("We couldn't refresh chats from the relay.", "warning");
+          relaySyncUiState.manualActive = false;
+          hideRelaySyncProgress();
         }
         return 0;
       }
@@ -370,6 +490,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     updateRelayBanner(status);
     updateRelayOnboarding(status);
     if (!status) {
+      updateSyncProgressFromStatus(null);
       relayStatusEl.textContent = `Relay offline. Launch the desktop relay to link ${BRAND_NAME}.`;
       if (relayAccountEl) relayAccountEl.textContent = "";
       if (relayQrContainer) relayQrContainer.classList.add("hidden");
@@ -466,6 +587,8 @@ export function createRelayController({ elements, helpers, electronAPI = window.
         relayUiState.lastStatusKind = "starting";
       }
     }
+
+    updateSyncProgressFromStatus(status);
   }
 
   function updateRelayBanner(status) {
@@ -655,6 +778,13 @@ export function createRelayController({ elements, helpers, electronAPI = window.
   }
 
   function renderRelayLogs() {
+    if (logVirtualList) {
+      logVirtualList.setItems(relayLogState.entries);
+      if (relayLogState.drawerOpen) {
+        logVirtualList.scrollToEnd();
+      }
+      return;
+    }
     if (!logDrawerList) return;
     if (!relayLogState.entries.length) {
       logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
@@ -712,7 +842,14 @@ export function createRelayController({ elements, helpers, electronAPI = window.
   }
 
   function appendRelayLog(entry) {
-    if (!logDrawerList) return;
+    if (!logDrawerList && !logVirtualList) return;
+    if (logVirtualList) {
+      logVirtualList.setItems(relayLogState.entries);
+      if (relayLogState.drawerOpen) {
+        logVirtualList.scrollToEnd();
+      }
+      return;
+    }
     if (logDrawerList.firstChild?.classList?.contains?.("relay-log-empty")) {
       logDrawerList.innerHTML = "";
     }

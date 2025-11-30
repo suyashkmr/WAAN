@@ -232,9 +232,12 @@ export function renderParticipants({
   participantsNote,
   participantPresetButtons,
   setParticipantView,
+  participantsVirtualizer,
 }) {
   if (!participantsBody || !analytics) return;
-  participantsBody.innerHTML = "";
+  if (!participantsVirtualizer) {
+    participantsBody.innerHTML = "";
+  }
   if (typeof setParticipantView === "function") {
     setParticipantView([]);
   }
@@ -243,12 +246,21 @@ export function renderParticipants({
       "See who speaks the most, and filter to spotlight the quietest members or recent activity.";
   }
 
-  if (!analytics.top_senders?.length) {
+  const handleEmptyState = message => {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
-      <td colspan="5" class="empty-state">Run the relay and load a chat to see participant details.</td>
+      <td colspan="5" class="empty-state">${message}</td>
     `;
-    participantsBody.appendChild(emptyRow);
+    if (participantsVirtualizer) {
+      participantsVirtualizer.setEmptyRenderer(() => emptyRow.cloneNode(true));
+      participantsVirtualizer.setItems([]);
+    } else {
+      participantsBody.appendChild(emptyRow);
+    }
+  };
+
+  if (!analytics.top_senders?.length) {
+    handleEmptyState("Run the relay and load a chat to see participant details.");
     updateParticipantPresetStates(participantFilters, participantPresetButtons);
     return;
   }
@@ -262,11 +274,7 @@ export function renderParticipants({
   const visible = limit > 0 ? workingList.slice(0, limit) : workingList;
 
   if (!visible.length) {
-    const emptyRow = document.createElement("tr");
-    emptyRow.innerHTML = `
-      <td colspan="5" class="empty-state">No participants match the current filters.</td>
-    `;
-    participantsBody.appendChild(emptyRow);
+    handleEmptyState("No participants match the current filters.");
     if (participantsNote) {
       participantsNote.textContent = "Adjust the filters to list participants for this view.";
     }
@@ -289,7 +297,7 @@ export function renderParticipants({
     participantsNote.textContent = `${parts.join(" — ")}.`;
   }
 
-  visible.forEach((entry, index) => {
+  const buildRows = (entry, index) => {
     const rowId = entry.id || `participant-${index}`;
     const detailId = `${rowId}-detail`;
     const row = document.createElement("tr");
@@ -318,8 +326,6 @@ export function renderParticipants({
       </td>
       <td data-label="Avg Words">${avgWords !== null ? avgWords : "—"}</td>
     `;
-    participantsBody.appendChild(row);
-
     const detailRow = document.createElement("tr");
     detailRow.className = "participant-detail-row hidden";
     detailRow.id = detailId;
@@ -329,8 +335,24 @@ export function renderParticipants({
         ${buildParticipantDetail(entry)}
       </td>
     `;
-    participantsBody.appendChild(detailRow);
-  });
+    return [row, detailRow];
+  };
+
+  if (participantsVirtualizer) {
+    participantsVirtualizer.setEmptyRenderer(() => {
+      const emptyRow = document.createElement("tr");
+      emptyRow.innerHTML = `
+        <td colspan="5" class="empty-state">No participants match the current filters.</td>
+      `;
+      return emptyRow;
+    });
+    participantsVirtualizer.setItems(visible, (entry, index) => buildRows(entry, index));
+  } else {
+    visible.forEach((entry, index) => {
+      const nodes = buildRows(entry, index);
+      nodes.forEach(node => participantsBody.appendChild(node));
+    });
+  }
 
   updateParticipantPresetStates(participantFilters, participantPresetButtons);
   if (typeof setParticipantView === "function") {

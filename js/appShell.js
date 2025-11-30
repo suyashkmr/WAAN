@@ -295,6 +295,9 @@ const relayClearStorageButton = domCache.getById("relay-clear-storage");
 const relayQrContainer = domCache.getById("relay-qr-container");
 const relayQrImage = domCache.getById("relay-qr-image");
 const relayHelpText = domCache.getById("relay-help-text");
+const relaySyncProgressEl = domCache.getById("relay-sync-progress");
+const relaySyncChatsMeta = domCache.getById("relay-sync-chats-meta");
+const relaySyncMessagesMeta = domCache.getById("relay-sync-messages-meta");
 const reduceMotionToggle = domCache.getById("reduce-motion-toggle");
 const highContrastToggle = domCache.getById("high-contrast-toggle");
 const customControls = domCache.getById("custom-range-controls");
@@ -672,6 +675,9 @@ const relayController = createRelayController({
     logDrawerList,
     logDrawerConnectionLabel,
     relayClearStorageButton,
+    relaySyncProgressEl,
+    relaySyncChatsMeta,
+    relaySyncMessagesMeta,
   },
   helpers: {
     updateStatus,

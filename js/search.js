@@ -14,6 +14,7 @@ import {
   updateStatus,
 } from "./state.js";
 import { getTimestamp } from "./analytics.js";
+import { createVirtualList } from "./virtualList.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
@@ -33,6 +34,21 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
     progressBarEl,
     progressLabelEl,
   } = elements;
+
+  let searchResultsVirtualList = null;
+  let searchResultsTailNote = null;
+  if (resultsListEl) {
+    searchResultsTailNote = document.createElement("div");
+    searchResultsTailNote.className = "search-results-note hidden";
+    resultsListEl.insertAdjacentElement("afterend", searchResultsTailNote);
+    searchResultsVirtualList = createVirtualList({
+      container: resultsListEl,
+      estimatedItemHeight: 120,
+      overscan: 6,
+      renderItem: item => buildSearchResultItem(item),
+    });
+  }
+
   const resultLimit = Number.isFinite(options.resultLimit) ? options.resultLimit : DEFAULT_RESULT_LIMIT;
   let activeSearchRequest = 0;
   let searchWorkerInstance = null;
@@ -256,32 +272,58 @@ export function createSearchController({ elements = {}, options = {}, getSnapsho
       resultsSummaryEl.textContent = `Showing ${formatNumber(results.length)} match${results.length === 1 ? "" : "es"}.`;
     }
 
-    resultsListEl.innerHTML = "";
+    if (!searchResultsVirtualList) {
+      resultsListEl.innerHTML = "";
+      if (!total) {
+        const emptyLegacy = document.createElement("div");
+        emptyLegacy.className = "search-results-empty";
+        emptyLegacy.textContent = hasFilters
+          ? "No matching messages. Try other names, words, or dates."
+          : "Add filters above to search the chat history.";
+        resultsListEl.appendChild(emptyLegacy);
+        renderSearchInsights(null);
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      results.forEach(result => {
+        fragment.appendChild(buildSearchResultItem(result));
+      });
+      resultsListEl.appendChild(fragment);
+      if (total > results.length) {
+        const note = document.createElement("div");
+        note.className = "search-results-empty";
+        note.textContent = "Narrow your filters to see more matches.";
+        resultsListEl.appendChild(note);
+      }
+      renderSearchInsights(summary);
+      return;
+    }
 
     if (!total) {
-      const empty = document.createElement("div");
-      empty.className = "search-results-empty";
-      empty.textContent = hasFilters
-        ? "No matching messages. Try other names, words, or dates."
-        : "Add filters above to search the chat history.";
-      resultsListEl.appendChild(empty);
+      searchResultsVirtualList.setEmptyRenderer(() => {
+        const empty = document.createElement("div");
+        empty.className = "search-results-empty";
+        empty.textContent = hasFilters
+          ? "No matching messages. Try other names, words, or dates."
+          : "Add filters above to search the chat history.";
+        return empty;
+      });
+      searchResultsVirtualList.setItems([]);
+      if (searchResultsTailNote) searchResultsTailNote.classList.add("hidden");
       renderSearchInsights(null);
       return;
     }
 
-    const fragment = document.createDocumentFragment();
-    results.forEach(result => {
-      fragment.appendChild(buildSearchResultItem(result));
-    });
-    resultsListEl.appendChild(fragment);
-
-    if (total > results.length) {
-      const note = document.createElement("div");
-      note.className = "search-results-empty";
-      note.textContent = "Narrow your filters to see more matches.";
-      resultsListEl.appendChild(note);
+    searchResultsVirtualList.setEmptyRenderer(null);
+    searchResultsVirtualList.setItems(results);
+    if (searchResultsTailNote) {
+      if (total > results.length) {
+        searchResultsTailNote.textContent = "Narrow your filters to see more matches.";
+        searchResultsTailNote.classList.remove("hidden");
+      } else {
+        searchResultsTailNote.classList.add("hidden");
+      }
     }
-
     renderSearchInsights(summary);
   }
 

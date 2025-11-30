@@ -123,6 +123,89 @@
     flex: 1;
 }
 
+.relay-sync-progress {
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.relay-sync-progress.hidden {
+    display: none;
+}
+
+.relay-sync-progress h4 {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--text);
+}
+
+.relay-sync-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.relay-sync-step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.relay-sync-step-label {
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--muted) 75%, transparent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.relay-sync-step-meta {
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.relay-sync-bar {
+    width: 100%;
+    height: 0.4rem;
+    border-radius: var(--shape-full);
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    overflow: hidden;
+}
+
+.relay-sync-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #fff));
+    transition: width var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.relay-sync-step[data-state="complete"] .relay-sync-bar span {
+    width: 100%;
+}
+
+.relay-sync-step[data-state="active"] .relay-sync-bar span {
+    width: 60%;
+    animation: relay-sync-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes relay-sync-pulse {
+    0% {
+        width: 25%;
+    }
+    50% {
+        width: 75%;
+    }
+    100% {
+        width: 25%;
+    }
+}
+
 #global-progress {
     position: sticky;
     top: 0;
@@ -582,6 +665,10 @@
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.85rem;
     line-height: 1.5;
+}
+
+.relay-log-body .virtual-items {
+    gap: 0.35rem;
 }
 
 .relay-log-entry {
@@ -2090,13 +2177,37 @@ main.is-loading .card-content {
     color: color-mix(in srgb, var(--muted) 75%, transparent);
 }
 
-.search-results-list {
+.virtual-items {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0;
+}
+
+.virtual-spacer {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.virtual-spacer-row td {
+    padding: 0 !important;
+    border: none !important;
+}
+
+.virtual-table-spacer {
+    width: 100%;
+    display: block;
+}
+
+.search-results-list {
+    display: block;
+    position: relative;
     max-height: 400px;
     overflow-y: auto;
     padding-right: 0.25rem;
+}
+
+.search-results-list .virtual-items {
+    gap: 0.75rem;
 }
 
 .search-result {
@@ -2140,6 +2251,12 @@ main.is-loading .card-content {
     color: var(--text);
     padding: 0 0.15rem;
     border-radius: 0.2rem;
+}
+
+.search-results-note {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--muted) 75%, transparent);
 }
 
 .summary-block {
@@ -3798,6 +3915,8 @@ main.is-loading .card-content {
 
 .table-container.scrollable {
     max-height: 420px;
+    height: clamp(280px, 45vh, 420px);
+    min-height: 280px;
     overflow-y: auto;
     overflow-x: hidden;
     border-radius: 0.85rem;

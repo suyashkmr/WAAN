@@ -100,6 +100,21 @@
                         Need to start manually? Run <code>npm start --workspace apps/server</code> in a terminal, wait
                         for “Relay listening”, then press Connect.
                     </p>
+                    <div class="relay-sync-progress hidden" id="relay-sync-progress" aria-live="polite">
+                        <h4>Sync progress</h4>
+                        <div class="relay-sync-steps">
+                            <div class="relay-sync-step" data-step="chats" data-state="pending">
+                                <div class="relay-sync-step-label">Chat list</div>
+                                <div class="relay-sync-step-meta" id="relay-sync-chats-meta">Waiting to sync…</div>
+                                <div class="relay-sync-bar"><span></span></div>
+                            </div>
+                            <div class="relay-sync-step" data-step="messages" data-state="pending">
+                                <div class="relay-sync-step-label">Messages</div>
+                                <div class="relay-sync-step-meta" id="relay-sync-messages-meta">Waiting to sync…</div>
+                                <div class="relay-sync-bar"><span></span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
