@@ -7,7 +7,6 @@ import {
   formatDisplayDate,
   formatTimestampDisplay,
 } from "./utils.js";
-import { WEEKDAY_SHORT } from "./constants.js";
 import {
   SECTION_NAV_ITEMS,
   SEARCH_RESULT_LIMIT,
@@ -44,33 +43,21 @@ import {
   resetHourlyFilters,
   getWeekdayState,
   updateWeekdayState,
-  resetWeekdayFilters,
   getCachedAnalytics,
   setCachedAnalytics,
   clearAnalyticsCache,
   setDatasetFingerprint,
   getDatasetFingerprint,
   setDatasetParticipantDirectory,
+  resetWeekdayFilters,
   computeDatasetFingerprint,
 } from "./state.js";
 import { createExporters } from "./exporters.js";
 import { createRelayController } from "./relayControls.js";
 import {
-  renderSummaryCards as renderSummarySection,
-  renderParticipants as renderParticipantsSection,
-} from "./analytics/summary.js";
-import {
-  renderTimeOfDayPanel,
   formatHourLabel,
   computeTimeOfDayDataset,
-  renderHourlyHeatmapSection,
-  renderDailySection,
-  renderWeeklySection,
-  renderWeekdaySection,
 } from "./analytics/activity.js";
-import { renderSentimentSection } from "./analytics/sentiment.js";
-import { renderMessageTypesSection } from "./analytics/messageTypes.js";
-import { renderPollsSection } from "./analytics/polls.js";
 import { createSearchController } from "./search.js";
 import { createSavedViewsController } from "./savedViews.js";
 import {
@@ -86,17 +73,9 @@ import { EXPORT_THEME_STYLES } from "./theme.js";
 import {
   createDomCache,
   createDatasetEmptyStateManager,
-  createDeferredRenderScheduler,
   createCompactModeManager,
   createAccessibilityController,
 } from "./ui.js";
-import {
-  createParticipantDirectory,
-  serializeParticipantDirectory,
-  deserializeParticipantDirectory,
-  normalizeEntriesWithDirectory,
-  buildParticipantRoster,
-} from "./appShell/participantDirectory.js";
 import { createOnboardingController } from "./appShell/onboarding.js";
 import { createStatusUiController } from "./appShell/statusUi.js";
 import { createThemeUiController } from "./appShell/themeUi.js";
@@ -106,6 +85,15 @@ import { createExportPipeline } from "./appShell/exportPipeline.js";
 import { createRangeFiltersController } from "./appShell/rangeFilters.js";
 import { createAnalyticsPipeline } from "./appShell/analyticsPipeline.js";
 import { createPdfPreviewController } from "./appShell/pdfPreview.js";
+import { createDatasetLifecycleController } from "./appShell/datasetLifecycle.js";
+import {
+  createDashboardRenderController,
+  applyParticipantTopChange,
+  applyParticipantSortChange,
+  applyParticipantTimeframeChange,
+  applyParticipantPreset,
+  toggleParticipantRow,
+} from "./appShell/dashboardRender.js";
 
 const domCache = createDomCache();
 const statusEl = domCache.getById("data-status");
@@ -264,8 +252,37 @@ const {
   handleChatSelectionChange: handleChatSelectionChangeCore,
 } = chatSelectionController;
 let activeAnalyticsRequest = 0;
-let renderTaskToken = 0;
-const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
+let dashboardRenderController = null;
+function renderDashboard(analytics) {
+  dashboardRenderController?.renderDashboard(analytics);
+}
+function renderParticipants(analytics) {
+  dashboardRenderController?.renderParticipants(analytics);
+}
+function ensureWeekdayDayFilters() {
+  dashboardRenderController?.ensureWeekdayDayFilters();
+}
+function ensureWeekdayHourFilters() {
+  dashboardRenderController?.ensureWeekdayHourFilters();
+}
+function syncWeekdayControlsWithState() {
+  dashboardRenderController?.syncWeekdayControlsWithState();
+}
+function rerenderHourlyFromState() {
+  dashboardRenderController?.rerenderHourlyFromState();
+}
+function rerenderWeekdayFromState() {
+  dashboardRenderController?.rerenderWeekdayFromState();
+}
+function ensureDayFilters() {
+  dashboardRenderController?.ensureDayFilters();
+}
+function ensureHourFilters() {
+  dashboardRenderController?.ensureHourFilters();
+}
+function syncHourlyControlsWithState() {
+  dashboardRenderController?.syncHourlyControlsWithState();
+}
 const analyticsPipeline = createAnalyticsPipeline();
 const { computeAnalyticsWithWorker } = analyticsPipeline;
 const rangeFiltersController = createRangeFiltersController({
@@ -403,7 +420,6 @@ document.querySelectorAll(".summary-value").forEach(element => {
   element.setAttribute("data-skeleton", "value");
 });
 
-let hourlyControlsInitialised = false;
 const participantFilters = {
   topCount: Number(participantsTopSelect?.value ?? 25) || 0,
   sortMode: participantsSortSelect?.value ?? "most",
@@ -422,6 +438,77 @@ function getExportFilterSummary() {
   return parts;
 }
 let participantView = [];
+dashboardRenderController = createDashboardRenderController({
+  elements: {
+    summaryEl,
+    participantsBody,
+    participantsNote,
+    participantPresetButtons,
+    hourlyChartEl,
+    filterNoteEl,
+    brushSummaryEl,
+    hourlyAnomaliesEl,
+    hourlyTopHourEl,
+    dailyChartEl,
+    dailyAvgDayEl,
+    weeklyChartEl,
+    weeklyCumulativeEl,
+    weeklyRollingEl,
+    weeklyAverageEl,
+    weekdayChartEl,
+    weekdayFilterNote,
+    weekdayToggleWeekdays,
+    weekdayToggleWeekends,
+    weekdayToggleWorking,
+    weekdayToggleOffhours,
+    weekdayHourStartInput,
+    weekdayHourEndInput,
+    timeOfDayWeekdayToggle,
+    timeOfDayWeekendToggle,
+    timeOfDayHourStartInput,
+    timeOfDayHourEndInput,
+    timeOfDayHourStartLabel,
+    timeOfDayHourEndLabel,
+    timeOfDayChartContainer,
+    timeOfDaySparklineEl,
+    timeOfDayBandsEl,
+    timeOfDayCalloutsEl,
+    sentimentSummaryEl,
+    sentimentTrendNote,
+    sentimentDailyChart,
+    sentimentPositiveList,
+    sentimentNegativeList,
+    messageTypeSummaryEl,
+    messageTypeNoteEl,
+    pollsListEl,
+    pollsTotalEl,
+    pollsCreatorsEl,
+    pollsNote,
+    highlightList,
+    rangeSelect,
+  },
+  deps: {
+    getDatasetLabel,
+    getDatasetEntries,
+    getDatasetAnalytics,
+    getCustomRange,
+    getHourlyState,
+    updateHourlyState,
+    getWeekdayState,
+    updateWeekdayState,
+    participantFilters,
+    setParticipantView: next => {
+      participantView = next;
+    },
+    setDataAvailabilityState,
+    searchPopulateParticipants: () => searchController.populateParticipants(),
+    searchRenderResults: () => searchController.renderResults(),
+    applyCustomRange,
+    formatNumber,
+    formatFloat,
+    sanitizeText,
+  },
+});
 const {
   generateMarkdownReportAsync,
   generateSlidesHtmlAsync,
@@ -481,6 +568,42 @@ const pdfPreviewController = createPdfPreviewController({
   updateStatus,
 });
 const { handleDownloadPdfReport } = pdfPreviewController;
+const datasetLifecycleController = createDatasetLifecycleController({
+  elements: { rangeSelect },
+  deps: {
+    setDatasetEntries,
+    setDatasetFingerprint,
+    setDatasetParticipantDirectory,
+    clearAnalyticsCache,
+    setDatasetLabel,
+    setCurrentRange,
+    setCustomRange,
+    resetHourlyFilters,
+    resetWeekdayFilters,
+    computeDatasetFingerprint,
+    saveChatDataset,
+    setCachedAnalytics,
+    setDatasetAnalytics,
+    setActiveChatId,
+    computeAnalyticsWithWorker,
+    renderDashboard,
+    updateCustomRangeBounds,
+    encodeChatSelectorValue,
+    refreshChatSelector,
+    updateStatus,
+    setDashboardLoadingState,
+    formatNumber,
+    nextAnalyticsRequestToken: () => {
+      activeAnalyticsRequest += 1;
+      return activeAnalyticsRequest;
+    },
+    isAnalyticsRequestCurrent: token => token === activeAnalyticsRequest,
+    resetSavedViewsForNewDataset: () => savedViewsController.resetForNewDataset(),
+    resetSearchState: () => searchController.resetState(),
+    populateSearchParticipants: () => searchController.populateParticipants(),
+  },
+});
+const { applyEntriesToApp } = datasetLifecycleController;
 
 const relayController = createRelayController({
   elements: {
@@ -1009,396 +1132,38 @@ async function handleClearStorageClick() {
   }
 }
 
-async function applyEntriesToApp(entries, label, options = {}) {
-  let participantDirectory = null;
-  if (options.participantDirectoryData) {
-    participantDirectory = deserializeParticipantDirectory(options.participantDirectoryData);
-  }
-  if (!participantDirectory) {
-    participantDirectory = createParticipantDirectory(entries, options.participants || []);
-  }
-  const directorySnapshot = serializeParticipantDirectory(participantDirectory);
-  const shouldNormalize = !options.entriesNormalized;
-  const normalizedEntries = shouldNormalize
-    ? normalizeEntriesWithDirectory(entries, participantDirectory)
-    : entries.map(entry => ({
-        ...entry,
-        search_text:
-          entry.search_text ?? (typeof entry.message === "string" ? entry.message.toLowerCase() : ""),
-      }));
-  const fingerprint = computeDatasetFingerprint(normalizedEntries);
-  setDatasetEntries(normalizedEntries);
-  setDatasetFingerprint(fingerprint);
-  setDatasetParticipantDirectory(directorySnapshot);
-  savedViewsController.resetForNewDataset();
-  clearAnalyticsCache();
-  searchController.resetState();
-  searchController.populateParticipants();
-  setDatasetLabel(label);
-  setCurrentRange("all");
-  setCustomRange(null);
-  if (rangeSelect) rangeSelect.value = "all";
-  resetHourlyFilters();
-  resetWeekdayFilters();
-
-  const requestToken = ++activeAnalyticsRequest;
-  let analytics = options.analyticsOverride ?? null;
-  if (!analytics) {
-    analytics = await computeAnalyticsWithWorker(normalizedEntries);
-    if (requestToken !== activeAnalyticsRequest) return null;
-  }
-
-  setCachedAnalytics("all", analytics);
-  setDatasetAnalytics(analytics);
-  renderDashboard(analytics);
-  updateCustomRangeBounds();
-
-  let savedRecord = null;
-  const persistDataset = options.persist !== false;
-  const participantRoster = buildParticipantRoster(participantDirectory);
-
-  if (persistDataset) {
-    savedRecord = saveChatDataset({
-      id: options.datasetId ?? undefined,
-      label,
-      entries: normalizedEntries,
-      analytics,
-      fingerprint,
-      participantDirectory: directorySnapshot,
-      meta: {
-        messageCount: analytics.total_messages,
-        dateRange: analytics.date_range,
-        participants: participantRoster,
-      },
-    });
-  }
-
-  const selectionValue =
-    options.selectionValue ??
-    (persistDataset && savedRecord ? encodeChatSelectorValue("local", savedRecord.id) : null);
-  if (selectionValue) {
-    setActiveChatId(selectionValue);
-  }
-  await refreshChatSelector();
-
-  const statusMessage =
-    options.statusMessage ??
-    `Loaded ${formatNumber(normalizedEntries.length)} chat lines from ${label}. Showing the full message history (${formatNumber(
-      analytics.total_messages,
-    )} messages).`;
-  updateStatus(statusMessage, "info");
-  setDashboardLoadingState(false);
-  return { analytics, datasetId: savedRecord?.id ?? null };
-}
-
 function handleParticipantsTopChange() {
-  const value = Number(participantsTopSelect?.value ?? 0);
-  participantFilters.topCount = Number.isFinite(value) && value > 0 ? value : 0;
+  applyParticipantTopChange(participantFilters, participantsTopSelect?.value);
   const analytics = getDatasetAnalytics();
   if (analytics) renderParticipants(analytics);
 }
 
 function handleParticipantsSortChange() {
-  participantFilters.sortMode = participantsSortSelect?.value || "most";
+  applyParticipantSortChange(participantFilters, participantsSortSelect?.value);
   const analytics = getDatasetAnalytics();
   if (analytics) renderParticipants(analytics);
 }
 
 function handleParticipantsTimeframeChange() {
-  participantFilters.timeframe = participantsTimeframeSelect?.value || "all";
+  applyParticipantTimeframeChange(participantFilters, participantsTimeframeSelect?.value);
   const analytics = getDatasetAnalytics();
   if (analytics) renderParticipants(analytics);
 }
 
 function handleParticipantPresetClick(event) {
   const preset = event.currentTarget?.dataset?.participantsPreset;
-  if (!preset) return;
-  if (preset === "top-week") {
-    if (participantsTopSelect) participantsTopSelect.value = "5";
-    if (participantsSortSelect) participantsSortSelect.value = "most";
-    if (participantsTimeframeSelect) participantsTimeframeSelect.value = "week";
-    participantFilters.topCount = 5;
-    participantFilters.sortMode = "most";
-    participantFilters.timeframe = "week";
-  } else if (preset === "quiet") {
-    if (participantsTopSelect) participantsTopSelect.value = "5";
-    if (participantsSortSelect) participantsSortSelect.value = "quiet";
-    if (participantsTimeframeSelect) participantsTimeframeSelect.value = "all";
-    participantFilters.topCount = 5;
-    participantFilters.sortMode = "quiet";
-    participantFilters.timeframe = "all";
-  }
+  applyParticipantPreset(participantFilters, preset, {
+    participantsTopSelect,
+    participantsSortSelect,
+    participantsTimeframeSelect,
+  });
   const analytics = getDatasetAnalytics();
   if (analytics) renderParticipants(analytics);
 }
 
 function handleParticipantRowToggle(event) {
-  const toggle = event.target.closest(".participant-toggle");
-  if (!toggle) return;
-  event.preventDefault();
-  const row = toggle.closest("tr");
-  if (!row) return;
-  const rowId = row.dataset.rowId;
-  if (!rowId || !participantsBody) return;
-  const detailRow = participantsBody.querySelector(
-    `tr.participant-detail-row[data-row-id="${rowId}"]`,
-  );
-  const isExpanded = toggle.getAttribute("aria-expanded") === "true";
-  toggle.setAttribute("aria-expanded", String(!isExpanded));
-  const icon = toggle.querySelector(".toggle-icon");
-  if (icon) icon.textContent = !isExpanded ? "▾" : "▸";
-  row.classList.toggle("expanded", !isExpanded);
-  if (detailRow) {
-    detailRow.classList.toggle("hidden", isExpanded);
-  }
+  toggleParticipantRow(event, participantsBody);
 }
-
-function formatSentimentScore(value, digits = 2) {
-  if (!Number.isFinite(value)) return "—";
-  const abs = Math.abs(value);
-  const formatted = formatFloat(abs, digits);
-  if (value > 0) return `+${formatted}`;
-  if (value < 0) return `-${formatted}`;
-  return formatFloat(0, digits);
-}
-
-function renderDashboard(analytics) {
-  const label = getDatasetLabel();
-  const currentToken = ++renderTaskToken;
-  renderSummarySection({
-    analytics,
-    label,
-    summaryEl,
-  });
-  renderParticipants(analytics);
-  renderHourlyPanel(analytics);
-  renderDailyPanel(analytics);
-  scheduleDeferredRender(() => renderWeeklyPanel(analytics), currentToken);
-  scheduleDeferredRender(
-    () =>
-      renderSentimentSection({
-        sentiment: analytics.sentiment ?? null,
-        elements: {
-          summaryEl: sentimentSummaryEl,
-          trendNoteEl: sentimentTrendNote,
-          dailyChartEl: sentimentDailyChart,
-          positiveListEl: sentimentPositiveList,
-          negativeListEl: sentimentNegativeList,
-        },
-        helpers: { formatSentimentScore },
-      }),
-    currentToken,
-  );
-  renderWeekdayPanel(analytics);
-  scheduleDeferredRender(
-    () =>
-      renderTimeOfDayPanel(analytics, {
-        container: timeOfDayChartContainer,
-        sparklineEl: timeOfDaySparklineEl,
-        bandsEl: timeOfDayBandsEl,
-        calloutsEl: timeOfDayCalloutsEl,
-      }),
-    currentToken,
-  );
-  scheduleDeferredRender(
-    () =>
-      renderMessageTypesSection({
-        data: analytics.message_types ?? null,
-        elements: {
-          summaryEl: messageTypeSummaryEl,
-          noteEl: messageTypeNoteEl,
-        },
-      }),
-    currentToken,
-  );
-  scheduleDeferredRender(
-    () =>
-      renderPollsSection({
-        data: analytics.polls ?? null,
-        elements: {
-          listEl: pollsListEl,
-          totalsEl: pollsTotalEl,
-          creatorsEl: pollsCreatorsEl,
-          noteEl: pollsNote,
-        },
-      }),
-    currentToken,
-  );
-  renderStatistics(analytics);
-  scheduleDeferredRender(() => searchController.populateParticipants(), currentToken);
-  scheduleDeferredRender(() => searchController.renderResults(), currentToken);
-  scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
-  setDataAvailabilityState(Boolean(analytics));
-}
-
-function renderParticipants(analytics) {
-  if (!participantsBody) return;
-  renderParticipantsSection({
-    analytics,
-    entries: getDatasetEntries(),
-    participantFilters,
-    participantsBody,
-    participantsNote,
-    participantPresetButtons,
-    setParticipantView: next => {
-      participantView = Array.isArray(next) ? next : [];
-    },
-  });
-}
-
-function renderHourlyPanel(analytics) {
-  renderHourlyHeatmapSection(
-    {
-      heatmap: analytics.hourly_heatmap,
-      summary: analytics.hourly_summary,
-      details: analytics.hourly_details,
-      distribution: analytics.hourly_distribution,
-    },
-    {
-      chartEl: hourlyChartEl,
-      filterNoteEl,
-      brushSummaryEl,
-      anomaliesEl: hourlyAnomaliesEl,
-      renderSummary: renderHourlySummary,
-    },
-  );
-  if (!hourlyControlsInitialised) {
-    initHourlyControls();
-    hourlyControlsInitialised = true;
-  }
-  syncHourlyControlsWithState();
-}
-
-function renderHourlySummary(summary) {
-  if (!hourlyTopHourEl) return;
-  if (!summary || !summary.topHour) {
-    hourlyTopHourEl.textContent = "—";
-    return;
-  }
-
-  const { dayIndex, hour, count } = summary.topHour;
-  const weekday = WEEKDAY_SHORT[dayIndex] ?? `Day ${dayIndex + 1}`;
-  const timeLabel = `${weekday} ${String(hour).padStart(2, "0")}:00`;
-  const share = summary.totalMessages ? (count / summary.totalMessages) * 100 : null;
-  const shareText = share !== null ? ` (${formatFloat(share, 1)}%)` : "";
-
-  hourlyTopHourEl.textContent = `${timeLabel} · ${formatNumber(count)} msgs${shareText}`;
-}
-
-function renderDailyPanel(analytics) {
-  renderDailySection(analytics.daily_counts, {
-    container: dailyChartEl,
-    averageEl: dailyAvgDayEl,
-  });
-}
-
-function renderWeeklyPanel(analytics) {
-  const customRange = getCustomRange();
-  renderWeeklySection(analytics.weekly_counts, analytics.weekly_summary, {
-    container: weeklyChartEl,
-    cumulativeEl: weeklyCumulativeEl,
-    rollingEl: weeklyRollingEl,
-    averageEl: weeklyAverageEl,
-    selectedRange:
-      customRange && customRange.type === "custom"
-        ? { start: customRange.start, end: customRange.end }
-        : null,
-    onSelectRange: range => {
-      if (!range?.start || !range?.end) return;
-      applyCustomRange(range.start, range.end);
-      if (rangeSelect) rangeSelect.value = "custom";
-    },
-  });
-}
-
-function renderHighlights(highlights) {
-  if (!highlightList) return;
-  highlightList.innerHTML = "";
-
-  if (!Array.isArray(highlights) || !highlights.length) {
-    const empty = document.createElement("p");
-    empty.className = "search-results-empty";
-    empty.textContent = "Highlights will show up after the chat loads.";
-    highlightList.appendChild(empty);
-    return;
-  }
-
-  highlights.forEach(highlight => {
-    const card = document.createElement("div");
-    card.className = `highlight-card ${sanitizeText(highlight.type || "")}`;
-
-    const labelRow = document.createElement("div");
-    labelRow.className = "highlight-label-row";
-    const label = document.createElement("span");
-    label.className = "highlight-label";
-    label.textContent = highlight.label || "Highlight";
-    labelRow.appendChild(label);
-    if (highlight.tooltip) {
-      const tooltipButton = document.createElement("button");
-      tooltipButton.type = "button";
-      tooltipButton.className = "info-note-button info-note-inline";
-      tooltipButton.setAttribute("aria-label", highlight.tooltip);
-      tooltipButton.setAttribute("title", highlight.tooltip);
-      tooltipButton.innerHTML =
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>';
-      labelRow.appendChild(tooltipButton);
-    }
-    card.appendChild(labelRow);
-
-    if (highlight.headline) {
-      const headline = document.createElement("p");
-      headline.className = "highlight-headline";
-      headline.textContent = highlight.headline;
-      card.appendChild(headline);
-    }
-
-    const value = document.createElement("span");
-    value.className = "highlight-value";
-    value.textContent = highlight.value || "—";
-    card.appendChild(value);
-
-    if (highlight.descriptor) {
-      const descriptor = document.createElement("span");
-      descriptor.className = "highlight-descriptor";
-      descriptor.textContent = highlight.descriptor;
-      card.appendChild(descriptor);
-    }
-
-    if (Array.isArray(highlight.items) && highlight.items.length) {
-      const list = document.createElement("ol");
-      list.className = "highlight-items";
-      highlight.items.forEach(item => {
-        const li = document.createElement("li");
-        const label = document.createElement("span");
-        label.className = "item-label";
-        label.textContent = item.label || "";
-        li.appendChild(label);
-        if (item.value) {
-          const value = document.createElement("span");
-          value.className = "item-value";
-          value.textContent = item.value;
-          li.appendChild(value);
-        }
-        list.appendChild(li);
-      });
-      card.appendChild(list);
-    }
-
-    if (highlight.theme || highlight.type) {
-      card.dataset.accent = highlight.theme || highlight.type;
-    }
-
-    if (highlight.meta) {
-      const meta = document.createElement("span");
-      meta.className = "highlight-meta";
-      meta.textContent = highlight.meta;
-      card.appendChild(meta);
-    }
-
-    highlightList.appendChild(card);
-  });
-}
-
 
 function updateHeroRelayStatus(status) {
   if (!heroStatusBadge || !heroStatusCopy) return;
@@ -1427,249 +1192,5 @@ function updateHeroRelayStatus(status) {
   } else {
     heroStatusBadge.textContent = "Not connected";
     heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
-  }
-}
-
-function renderWeekdayPanel(analytics) {
-  updateWeekdayState({
-    distribution: analytics.weekday_distribution,
-    stats: analytics.weekday_stats,
-  });
-  ensureWeekdayDayFilters();
-  ensureWeekdayHourFilters();
-  syncWeekdayControlsWithState();
-  rerenderWeekdayFromState();
-}
-
-function renderStatistics(analytics) {
-  const setText = (id, value) => {
-    const node = document.getElementById(id);
-    if (node) node.textContent = value;
-  };
-
-  setText("media-count", formatNumber(analytics.media_count));
-  setText("link-count", formatNumber(analytics.link_count));
-  setText("poll-count", formatNumber(analytics.poll_count));
-  setText("join-events", formatNumber(analytics.join_events));
-  setText("added-events", formatNumber(analytics.added_events));
-  setText("left-events", formatNumber(analytics.left_events));
-  setText("removed-events", formatNumber(analytics.removed_events));
-  setText("changed-events", formatNumber(analytics.changed_events));
-  setText("other-system-events", formatNumber(analytics.other_system_events));
-  if (analytics.system_summary) {
-    setText("join-requests", formatNumber(analytics.system_summary.join_requests));
-  }
-  setText("avg-chars", formatFloat(analytics.averages.characters, 1));
-  setText("avg-words", formatFloat(analytics.averages.words, 1));
-}
-
-function ensureWeekdayDayFilters() {
-  const state = getWeekdayState();
-  const filters = { ...state.filters };
-  if (!filters.weekdays && !filters.weekends) {
-    filters.weekdays = true;
-    filters.weekends = true;
-    if (weekdayToggleWeekdays) weekdayToggleWeekdays.checked = true;
-    if (weekdayToggleWeekends) weekdayToggleWeekends.checked = true;
-  }
-  updateWeekdayState({ filters });
-}
-
-function ensureWeekdayHourFilters() {
-  const state = getWeekdayState();
-  const filters = { ...state.filters };
-  if (!filters.working && !filters.offhours) {
-    filters.working = true;
-    filters.offhours = true;
-    if (weekdayToggleWorking) weekdayToggleWorking.checked = true;
-    if (weekdayToggleOffhours) weekdayToggleOffhours.checked = true;
-  }
-  updateWeekdayState({ filters });
-}
-
-function syncWeekdayControlsWithState() {
-  const state = getWeekdayState();
-  const { filters, brush } = state;
-  if (weekdayToggleWeekdays) weekdayToggleWeekdays.checked = filters.weekdays;
-  if (weekdayToggleWeekends) weekdayToggleWeekends.checked = filters.weekends;
-  if (weekdayToggleWorking) weekdayToggleWorking.checked = filters.working;
-  if (weekdayToggleOffhours) weekdayToggleOffhours.checked = filters.offhours;
-  if (weekdayHourStartInput) weekdayHourStartInput.value = String(brush.start);
-  if (weekdayHourEndInput) weekdayHourEndInput.value = String(brush.end);
-  const startLabel = document.getElementById("weekday-hour-start-label");
-  const endLabel = document.getElementById("weekday-hour-end-label");
-  if (startLabel) startLabel.textContent = `${String(brush.start).padStart(2, "0")}:00`;
-  if (endLabel) endLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
-}
-
-
-
-
-
-function rerenderHourlyFromState() {
-  renderHourlyHeatmapSection(null, {
-    chartEl: hourlyChartEl,
-    filterNoteEl,
-    brushSummaryEl,
-    anomaliesEl: hourlyAnomaliesEl,
-    renderSummary: renderHourlySummary,
-  });
-  const analytics = getDatasetAnalytics();
-  if (analytics) {
-    renderTimeOfDayPanel(analytics, {
-      container: timeOfDayChartContainer,
-      sparklineEl: timeOfDaySparklineEl,
-      bandsEl: timeOfDayBandsEl,
-      calloutsEl: timeOfDayCalloutsEl,
-    });
-  }
-}
-
-function rerenderWeekdayFromState() {
-  renderWeekdaySection({
-    container: weekdayChartEl,
-    filterNoteEl: weekdayFilterNote,
-  });
-}
-
-function initHourlyControls() {
-  const weekdayToggle = document.getElementById("filter-weekdays");
-  const weekendToggle = document.getElementById("filter-weekends");
-  const workingToggle = document.getElementById("filter-working");
-  const offToggle = document.getElementById("filter-offhours");
-  const brushStart = document.getElementById("hourly-brush-start");
-  const brushEnd = document.getElementById("hourly-brush-end");
-
-  if (weekdayToggle) {
-    weekdayToggle.addEventListener("change", () => {
-      updateHourlyState({
-        filters: {
-          ...getHourlyState().filters,
-          weekdays: weekdayToggle.checked,
-        },
-      });
-      ensureDayFilters();
-      rerenderHourlyFromState();
-    });
-  }
-
-  if (weekendToggle) {
-    weekendToggle.addEventListener("change", () => {
-      updateHourlyState({
-        filters: {
-          ...getHourlyState().filters,
-          weekends: weekendToggle.checked,
-        },
-      });
-      ensureDayFilters();
-      rerenderHourlyFromState();
-    });
-  }
-
-  if (workingToggle) {
-    workingToggle.addEventListener("change", () => {
-      updateHourlyState({
-        filters: {
-          ...getHourlyState().filters,
-          working: workingToggle.checked,
-        },
-      });
-      ensureHourFilters();
-      rerenderHourlyFromState();
-    });
-  }
-
-  if (offToggle) {
-    offToggle.addEventListener("change", () => {
-      updateHourlyState({
-        filters: {
-          ...getHourlyState().filters,
-          offhours: offToggle.checked,
-        },
-      });
-      ensureHourFilters();
-      rerenderHourlyFromState();
-    });
-  }
-
-  if (brushStart && brushEnd) {
-    const updateBrush = () => {
-      let start = Number(brushStart.value);
-      let end = Number(brushEnd.value);
-      if (start > end) [start, end] = [end, start];
-      updateHourlyState({
-        brush: { start, end },
-      });
-      brushStart.value = String(start);
-      brushEnd.value = String(end);
-      const startLabel = document.getElementById("hourly-brush-start-label");
-      const endLabel = document.getElementById("hourly-brush-end-label");
-      if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
-      if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-      rerenderHourlyFromState();
-    };
-    brushStart.addEventListener("input", updateBrush);
-    brushEnd.addEventListener("input", updateBrush);
-    brushStart.value = String(getHourlyState().brush.start);
-    brushEnd.value = String(getHourlyState().brush.end);
-  }
-}
-
-function ensureDayFilters() {
-  const state = getHourlyState();
-  const filters = state.filters;
-  if (!filters.weekdays && !filters.weekends) {
-    filters.weekdays = true;
-    filters.weekends = true;
-    const weekdayToggle = document.getElementById("filter-weekdays");
-    const weekendToggle = document.getElementById("filter-weekends");
-    if (weekdayToggle) weekdayToggle.checked = true;
-    if (weekendToggle) weekendToggle.checked = true;
-  }
-  updateHourlyState({ filters });
-}
-
-function ensureHourFilters() {
-  const state = getHourlyState();
-  const filters = state.filters;
-  if (!filters.working && !filters.offhours) {
-    filters.working = true;
-    filters.offhours = true;
-    const workingToggle = document.getElementById("filter-working");
-    const offToggle = document.getElementById("filter-offhours");
-    if (workingToggle) workingToggle.checked = true;
-    if (offToggle) offToggle.checked = true;
-  }
-  updateHourlyState({ filters });
-}
-
-function syncHourlyControlsWithState() {
-  const state = getHourlyState();
-  const weekdayToggle = document.getElementById("filter-weekdays");
-  const weekendToggle = document.getElementById("filter-weekends");
-  const workingToggle = document.getElementById("filter-working");
-  const offToggle = document.getElementById("filter-offhours");
-  const brushStart = document.getElementById("hourly-brush-start");
-  const brushEnd = document.getElementById("hourly-brush-end");
-  const startLabel = document.getElementById("hourly-brush-start-label");
-  const endLabel = document.getElementById("hourly-brush-end-label");
-
-  if (weekdayToggle) weekdayToggle.checked = state.filters.weekdays;
-  if (weekendToggle) weekendToggle.checked = state.filters.weekends;
-  if (workingToggle) workingToggle.checked = state.filters.working;
-  if (offToggle) offToggle.checked = state.filters.offhours;
-  if (brushStart) brushStart.value = String(state.brush.start);
-  if (brushEnd) brushEnd.value = String(state.brush.end);
-  if (startLabel) startLabel.textContent = `${String(state.brush.start).padStart(2, "0")}:00`;
-  if (endLabel) endLabel.textContent = `${String(state.brush.end).padStart(2, "0")}:00`;
-  if (timeOfDayWeekdayToggle) timeOfDayWeekdayToggle.checked = state.filters.weekdays;
-  if (timeOfDayWeekendToggle) timeOfDayWeekendToggle.checked = state.filters.weekends;
-  if (timeOfDayHourStartInput) timeOfDayHourStartInput.value = String(state.brush.start);
-  if (timeOfDayHourEndInput) timeOfDayHourEndInput.value = String(state.brush.end);
-  if (timeOfDayHourStartLabel) {
-    timeOfDayHourStartLabel.textContent = `${String(state.brush.start).padStart(2, "0")}:00`;
-  }
-  if (timeOfDayHourEndLabel) {
-    timeOfDayHourEndLabel.textContent = `${String(state.brush.end).padStart(2, "0")}:00`;
   }
 }
