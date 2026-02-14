@@ -224,12 +224,23 @@
             data-accent="highlights">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2><span class="section-icon" aria-hidden="true">
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M12 2l1.76 5.15L19 7.5l-4 3.34L16.5 16l-4.5-2.8L7.5 16 9 10.84 5 7.5l5.24-.35z" />
+                                </svg>
+                            </span>Highlights</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="highlights-note">
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path
-                                    d="M12 2l1.76 5.15L19 7.5l-4 3.34L16.5 16l-4.5-2.8L7.5 16 9 10.84 5 7.5l5.24-.35z" />
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
                             </svg>
-                        </span>Highlights</h2>
+                            <span class="info-tooltip" id="highlights-note" role="tooltip">Activity outlooks anchor on
+                                the dataset end date.</span>
+                        </button>
+                    </div>
                     <button type="button" class="card-toggle" aria-expanded="true"
                         data-target="insight-highlights-content">▾</button>
                 </div>
@@ -667,7 +678,8 @@
                                     d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
                             </svg>
                             <span class="info-tooltip" id="message-types-note" role="tooltip">Break down chat volume by
-                                media, links, polls, and system events for the selected range.</span>
+                                media, links, polls, and system events. Join events and members added are counted as
+                                non-overlapping categories.</span>
                         </button>
                     </div>
                     <div class="card-header-actions">

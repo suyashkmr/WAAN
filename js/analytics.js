@@ -76,6 +76,15 @@ function isMediaMessage(message) {
   return false;
 }
 
+function isDeletedMessage(message) {
+  if (!message) return false;
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("this message was deleted") ||
+    lower.includes("you deleted this message")
+  );
+}
+
 function parseTimestampText(text) {
   if (!text) return null;
   const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4}), (\d{1,2}):(\d{2})(?: (AM|PM))?/i);
@@ -735,6 +744,7 @@ export function computeAnalytics(entries = []) {
   const weekdaySenderMap = Array.from({ length: 7 }, () => new Map());
   const weekdayWeekHourMap = Array.from({ length: 7 }, () => new Map());
   const hourlyByDate = new Map();
+  const weeklySenderCounts = new Map();
 
   const weeklyMap = new Map();
 
@@ -763,6 +773,12 @@ export function computeAnalytics(entries = []) {
       senderMap.set(entry.sender, (senderMap.get(entry.sender) || 0) + 1);
       const daySenderMap = weekdaySenderMap[day];
       daySenderMap.set(entry.sender, (daySenderMap.get(entry.sender) || 0) + 1);
+      let weeklySenderMap = weeklySenderCounts.get(weekKey);
+      if (!weeklySenderMap) {
+        weeklySenderMap = new Map();
+        weeklySenderCounts.set(weekKey, weeklySenderMap);
+      }
+      weeklySenderMap.set(entry.sender, (weeklySenderMap.get(entry.sender) || 0) + 1);
     }
 
     const dayWeekMap = weekdayWeekHourMap[day];
@@ -779,7 +795,7 @@ export function computeAnalytics(entries = []) {
     const trimmedMessage = (entry.message || "").trim();
     const lowerMessage = trimmedMessage.toLowerCase();
     const snapshot = buildMessageSnapshot(entry);
-    if (lowerMessage === "this message was deleted") {
+    if (isDeletedMessage(trimmedMessage)) {
       deletedMessageCount += 1;
     }
 
@@ -856,18 +872,22 @@ export function computeAnalytics(entries = []) {
       collection.push({ ...baseSnapshot, ...extra });
     };
     let classified = false;
+    let countedAsJoin = false;
 
     if (isJoinSystemEntry(entry)) {
       joinEvents += participantCount;
       pushSnapshot(systemSnapshots.joins, { participant_count: participantCount });
       classified = true;
+      countedAsJoin = true;
     } else if (containsWord(lowerMessage, "joined")) {
       joinEvents += 1;
       pushSnapshot(systemSnapshots.joins, { participant_count: 1 });
       classified = true;
+      countedAsJoin = true;
     }
 
-    const additions = getAdditionIncrement(entry);
+    // Keep join and added mutually exclusive to avoid double-counting one system event.
+    const additions = countedAsJoin ? 0 : getAdditionIncrement(entry);
     if (additions > 0) {
       addedEvents += additions;
       pushSnapshot(systemSnapshots.added, { participant_count: additions });
@@ -922,6 +942,22 @@ export function computeAnalytics(entries = []) {
       score: info.sentiment?.score ?? 0,
     }))
     .sort((a, b) => a.startMs - b.startMs);
+
+  const recentWeekKeys = weeklyCounts.slice(-3).map(entry => entry.week);
+  const recentSenderCounts = new Map();
+  recentWeekKeys.forEach(weekKey => {
+    const weekSenders = weeklySenderCounts.get(weekKey);
+    if (!weekSenders) return;
+    weekSenders.forEach((count, sender) => {
+      recentSenderCounts.set(sender, (recentSenderCounts.get(sender) || 0) + count);
+    });
+  });
+  const recentTopSenders = Array.from(recentSenderCounts.entries())
+    .sort((a, b) => {
+      if (b[1] === a[1]) return a[0].localeCompare(b[0]);
+      return b[1] - a[1];
+    })
+    .map(([sender, count]) => ({ sender, count }));
 
   const totalMessages = messages.length;
   const hourlyValues = hourlyCounts.map(item => item.count);
@@ -1309,9 +1345,9 @@ export function computeAnalytics(entries = []) {
     sentiment: sentimentOverview,
     highlights: buildHighlights({
       dailyCounts,
-      weeklyCounts,
       weekdayDetails,
       topSenders,
+      recentTopSenders,
       linkCount,
       linkCountPrev,
       totalMessages,
@@ -1345,10 +1381,16 @@ function getISOWeekKey(date) {
   return `${target.getUTCFullYear()}-W${String(weekNumber).padStart(2, "0")}`;
 }
 
-function buildHighlights({ dailyCounts, weeklyCounts, weekdayDetails, topSenders, hourlySeries }) {
+function buildHighlights({
+  dailyCounts,
+  weekdayDetails,
+  topSenders,
+  recentTopSenders,
+  hourlySeries,
+}) {
   const highlights = [];
 
-  const contributorHighlight = buildTopContributorsHighlight(weeklyCounts, topSenders);
+  const contributorHighlight = buildTopContributorsHighlight(recentTopSenders, topSenders);
   if (contributorHighlight) highlights.push(contributorHighlight);
 
   const busiestDayHighlight = buildMostActiveDayHighlight(dailyCounts);
@@ -1375,45 +1417,32 @@ function buildHighlights({ dailyCounts, weeklyCounts, weekdayDetails, topSenders
   return highlights.slice(0, 6);
 }
 
-function buildTopContributorsHighlight(weeklyCounts, topSenders) {
-  const recentWeeks = Array.isArray(weeklyCounts) ? weeklyCounts.slice(-3) : [];
-  const aggregated = new Map();
-
-  recentWeeks.forEach(week => {
-    week.topSenders?.forEach(sender => {
-      const prev = aggregated.get(sender.sender) || 0;
-      aggregated.set(sender.sender, prev + sender.count);
-    });
-  });
-
-  if (!aggregated.size && Array.isArray(weeklyCounts) && weeklyCounts.length) {
-    weeklyCounts[weeklyCounts.length - 1].topSenders?.forEach(sender => {
-      aggregated.set(sender.sender, sender.count);
-    });
-  }
-
-  let topWeekSenders = Array.from(aggregated.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
+function buildTopContributorsHighlight(recentTopSenders, topSenders) {
+  let topWeekSenders = Array.isArray(recentTopSenders)
+    ? recentTopSenders.slice(0, 3)
+    : [];
 
   if (!topWeekSenders.length && Array.isArray(topSenders) && topSenders.length) {
-    topWeekSenders = topSenders.slice(0, 3).map(item => [item.sender, item.count]);
+    topWeekSenders = topSenders.slice(0, 3).map(item => ({
+      sender: item.sender,
+      count: item.count,
+    }));
   }
 
   if (!topWeekSenders.length) return null;
 
-  const contributorItems = topWeekSenders.map(([sender, count], index) => ({
-    label: `${index + 1}. ${sender}`,
-    value: formatHighlightCount(count, "message"),
+  const contributorItems = topWeekSenders.map((item, index) => ({
+    label: `${index + 1}. ${item.sender}`,
+    value: formatHighlightCount(item.count, "message"),
   }));
+  const totalCount = topWeekSenders.reduce((sum, item) => sum + item.count, 0);
+  const topCountLabel =
+    topWeekSenders.length === 1 ? "top sender" : `top ${topWeekSenders.length}`;
 
   return {
     type: "contributors",
     label: "Recent top senders",
-    value: `${formatHighlightCount(
-      topWeekSenders.reduce((sum, [, count]) => sum + count, 0),
-      "message",
-    )} across top 3`,
+    value: `${formatHighlightCount(totalCount, "message")} across ${topCountLabel}`,
     items: contributorItems,
   };
 }
@@ -1565,7 +1594,9 @@ function buildEngagementForecastHighlight(
     weekdayBuckets[day].push(Number(entry.count) || 0);
   });
 
-  const targetDate = new Date();
+  const baseDate = new Date(sorted[sorted.length - 1].date);
+  if (Number.isNaN(baseDate.getTime())) return null;
+  const targetDate = new Date(baseDate.getTime());
   if (Number.isFinite(offsetDays)) {
     targetDate.setDate(targetDate.getDate() + offsetDays);
   }
