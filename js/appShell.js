@@ -86,6 +86,15 @@ import { createRangeFiltersController } from "./appShell/rangeFilters.js";
 import { createAnalyticsPipeline } from "./appShell/analyticsPipeline.js";
 import { createPdfPreviewController } from "./appShell/pdfPreview.js";
 import { createDatasetLifecycleController } from "./appShell/datasetLifecycle.js";
+import { createRelayBootstrapController } from "./appShell/relayBootstrap.js";
+import { createKeyboardShortcutsController } from "./appShell/keyboardShortcuts.js";
+import { createEventBindingsController } from "./appShell/eventBindings.js";
+import { createBootstrapController } from "./appShell/bootstrap.js";
+import {
+  createBusyRuntimeController,
+  fetchJson,
+  formatRelayAccount,
+} from "./appShell/sharedRuntime.js";
 import {
   createDashboardRenderController,
   applyParticipantTopChange,
@@ -604,6 +613,11 @@ const datasetLifecycleController = createDatasetLifecycleController({
   },
 });
 const { applyEntriesToApp } = datasetLifecycleController;
+const busyRuntimeController = createBusyRuntimeController({
+  globalProgressEl,
+  globalProgressLabel,
+});
+const { withGlobalBusy } = busyRuntimeController;
 
 const relayController = createRelayController({
   elements: {
@@ -665,7 +679,41 @@ const {
   initLogStream,
   isLogDrawerOpen,
 } = relayController;
-let globalBusyCount = 0;
+const relayBootstrapController = createRelayBootstrapController({
+  elements: {
+    relayStartButton,
+    relayStatusEl,
+    relayStopButton,
+    relayLogoutButton,
+    relayReloadAllButton,
+    relayClearStorageButton,
+    logDrawerToggleButton,
+    logDrawerCloseButton,
+    logDrawerClearButton,
+  },
+  handlers: {
+    handleRelayPrimaryActionClick,
+    stopRelaySession,
+    logoutRelaySession,
+    handleReloadAllChats,
+    openLogDrawer,
+    closeLogDrawer,
+    handleLogClear,
+    handleLogDrawerDocumentClick,
+    handleLogDrawerKeydown,
+    refreshRelayStatus,
+    startStatusPolling,
+    initLogStream,
+  },
+  deps: {
+    fetchJson,
+    apiBase: API_BASE,
+    setRemoteChatList,
+    refreshChatSelector,
+    updateStatus,
+  },
+});
+const { initRelayControls } = relayBootstrapController;
 self.windowToasts = [];
 let dataAvailable = false;
 self.windowToasts = [];
@@ -704,7 +752,7 @@ const accessibilityController = createAccessibilityController({
   reduceMotionStorageKey: REDUCE_MOTION_STORAGE_KEY,
   highContrastStorageKey: HIGH_CONTRAST_STORAGE_KEY,
 });
-const { initAccessibilityControls, prefersReducedMotion } = accessibilityController;
+const { initAccessibilityControls } = accessibilityController;
 
 const onboardingController = createOnboardingController({
   overlayEl: onboardingOverlay,
@@ -732,83 +780,7 @@ function setDataAvailabilityState(hasData) {
   savedViewsController.refreshUI();
 }
 
-function setGlobalBusy(isBusy, message = "Working…") {
-  if (!globalProgressEl || !globalProgressLabel) return;
-  if (isBusy) {
-    globalBusyCount += 1;
-    globalProgressLabel.textContent = message;
-    globalProgressEl.hidden = false;
-  } else if (globalBusyCount > 0) {
-    globalBusyCount -= 1;
-    if (globalBusyCount === 0) {
-      globalProgressEl.hidden = true;
-    }
-  }
-}
-
-async function withGlobalBusy(task, message = "Working…") {
-  setGlobalBusy(true, message);
-  try {
-    return await task();
-  } finally {
-    setGlobalBusy(false);
-  }
-}
-
 function syncHeroPillsWithRange() { }
-
-function animateCardSection(content, expand) {
-  if (!content) return;
-  content.classList.add("collapsible");
-  if (prefersReducedMotion()) {
-    content.style.display = expand ? "" : "none";
-    content.style.maxHeight = "";
-    content.style.opacity = "";
-    return;
-  }
-  if (expand) {
-    content.style.display = "";
-    const height = content.scrollHeight;
-    content.style.maxHeight = "0px";
-    content.style.opacity = "0";
-    requestAnimationFrame(() => {
-      content.style.maxHeight = `${height}px`;
-      content.style.opacity = "1";
-    });
-    const onEnd = () => {
-      content.style.maxHeight = "";
-      content.style.opacity = "";
-      content.removeEventListener("transitionend", onEnd);
-    };
-    content.addEventListener("transitionend", onEnd, { once: true });
-  } else {
-    const height = content.scrollHeight;
-    content.style.maxHeight = `${height}px`;
-    requestAnimationFrame(() => {
-      content.style.maxHeight = "0px";
-      content.style.opacity = "0";
-    });
-    const onEnd = () => {
-      content.style.display = "none";
-      content.style.maxHeight = "";
-      content.style.opacity = "";
-      content.removeEventListener("transitionend", onEnd);
-    };
-    content.addEventListener("transitionend", onEnd, { once: true });
-  }
-}
-
-function stripRelaySuffix(value) {
-  if (!value) return "";
-  return value.replace(/@(?:c|g)\.us$/gi, "");
-}
-
-function formatRelayAccount(account) {
-  if (!account) return "";
-  if (account.pushName) return account.pushName;
-  if (account.wid) return stripRelaySuffix(account.wid);
-  return "";
-}
 
 async function handleChatSelectionChange(event) {
   return handleChatSelectionChangeCore(event, {
@@ -826,311 +798,124 @@ setStatusCallback((message, tone) => {
     showToast(message, tone);
   }
 });
+const keyboardShortcutsController = createKeyboardShortcutsController({
+  deps: {
+    syncRelayChats,
+    isLogDrawerOpen,
+    closeLogDrawer,
+    openLogDrawer,
+    applyCompactMode,
+    showToast,
+    onboardingController,
+  },
+});
+const { initKeyboardShortcuts } = keyboardShortcutsController;
+initKeyboardShortcuts();
+const eventBindingsController = createEventBindingsController({
+  elements: {
+    chatSelector,
+    rangeSelect,
+    customApplyButton,
+    customStartInput,
+    customEndInput,
+    downloadParticipantsButton,
+    downloadHourlyButton,
+    downloadDailyButton,
+    downloadWeeklyButton,
+    downloadWeekdayButton,
+    downloadTimeOfDayButton,
+    downloadMessageTypesButton,
+    downloadChatJsonButton,
+    downloadSentimentButton,
+    downloadMarkdownButton,
+    downloadSlidesButton,
+    downloadSearchButton,
+    downloadPdfButton,
+    participantsTopSelect,
+    participantsSortSelect,
+    participantsTimeframeSelect,
+    participantPresetButtons,
+    participantsBody,
+    weekdayToggleWeekdays,
+    weekdayToggleWeekends,
+    weekdayToggleWorking,
+    weekdayToggleOffhours,
+    timeOfDayWeekdayToggle,
+    timeOfDayWeekendToggle,
+    timeOfDayHourStartInput,
+    timeOfDayHourEndInput,
+    weekdayHourStartInput,
+    weekdayHourEndInput,
+  },
+  handlers: {
+    handleChatSelectionChange,
+    handleRangeChange,
+    exportParticipants,
+    exportHourly,
+    exportDaily,
+    exportWeekly,
+    exportWeekday,
+    exportTimeOfDay,
+    exportMessageTypes,
+    exportChatJson,
+    exportSentiment,
+    exportMessageSubtype,
+    handleDownloadMarkdownReport,
+    handleDownloadSlidesReport,
+    exportSearchResults,
+    handleDownloadPdfReport,
+    handleParticipantsTopChange,
+    handleParticipantsSortChange,
+    handleParticipantsTimeframeChange,
+    handleParticipantPresetClick,
+    handleParticipantRowToggle,
+  },
+  deps: {
+    updateStatus,
+    applyCustomRange,
+    updateWeekdayState,
+    ensureWeekdayDayFilters,
+    rerenderWeekdayFromState,
+    ensureWeekdayHourFilters,
+    updateHourlyState,
+    getHourlyState,
+    ensureDayFilters,
+    syncHourlyControlsWithState,
+    rerenderHourlyFromState,
+  },
+});
+const { initEventHandlers } = eventBindingsController;
+const bootstrapController = createBootstrapController({
+  elements: {
+    onboardingSkipButton,
+    onboardingNextButton,
+  },
+  deps: {
+    initEventHandlers,
+    initRelayControls,
+    initThemeControls,
+    initCompactMode,
+    initAccessibilityControls,
+    setDataAvailabilityState,
+    onboardingController,
+    startRelaySession,
+    stopRelaySession,
+    buildSectionNav,
+    setupSectionNavTracking,
+    searchController,
+    savedViewsController,
+    getDataAvailable: () => dataAvailable,
+    refreshChatSelector,
+    updateStatus,
+    relayServiceName: RELAY_SERVICE_NAME,
+    prefersReducedMotion: () => accessibilityController.prefersReducedMotion(),
+  },
+});
+const { initAppBootstrap } = bootstrapController;
 
 document.addEventListener("DOMContentLoaded", () => {
-  attachEventHandlers();
-  initRelayControls();
-  initThemeControls();
-  initCompactMode();
-  initAccessibilityControls();
-  setDataAvailabilityState(false);
-  onboardingSkipButton?.addEventListener("click", onboardingController.skip);
-  onboardingNextButton?.addEventListener("click", onboardingController.advance);
-  setTimeout(() => onboardingController.start(), 500);
-  if (window.electronAPI?.onRelayAction) {
-    window.electronAPI.onRelayAction(action => {
-      if (action === "connect") {
-        startRelaySession();
-      } else if (action === "disconnect") {
-        stopRelaySession();
-      }
-    });
-  }
-  buildSectionNav();
-  setupSectionNavTracking();
-  Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
-    toggle.addEventListener("click", () => {
-      const expanded = toggle.getAttribute("aria-expanded") === "true";
-      const targetId = toggle.dataset.target;
-      const content = targetId ? document.getElementById(targetId) : null;
-      const card = toggle.closest(".card");
-      const next = !expanded;
-      toggle.setAttribute("aria-expanded", String(next));
-      if (content) animateCardSection(content, next);
-      if (card) card.classList.toggle("collapsed", !next);
-    });
-  });
-  searchController.init();
-  savedViewsController.init();
-  savedViewsController.setDataAvailability(dataAvailable);
-  refreshChatSelector();
-  updateStatus(`Start ${RELAY_SERVICE_NAME} to mirror chat app chats here.`, "info");
+  initAppBootstrap();
 });
-
-function attachEventHandlers() {
-  if (chatSelector) {
-    chatSelector.addEventListener("change", handleChatSelectionChange);
-  }
-  if (rangeSelect) {
-    rangeSelect.addEventListener("change", handleRangeChange);
-  }
-
-  if (customApplyButton) {
-    customApplyButton.addEventListener("click", async () => {
-      const start = customStartInput?.value;
-      const end = customEndInput?.value;
-      if (!start || !end) {
-        updateStatus("Please pick both a start and end date.", "warning");
-        return;
-      }
-      await applyCustomRange(start, end);
-    });
-  }
-
-  if (downloadParticipantsButton) {
-    downloadParticipantsButton.addEventListener("click", exportParticipants);
-  }
-  if (downloadHourlyButton) {
-    downloadHourlyButton.addEventListener("click", exportHourly);
-  }
-  if (downloadDailyButton) {
-    downloadDailyButton.addEventListener("click", exportDaily);
-  }
-  if (downloadWeeklyButton) {
-    downloadWeeklyButton.addEventListener("click", exportWeekly);
-  }
-  if (downloadWeekdayButton) {
-    downloadWeekdayButton.addEventListener("click", exportWeekday);
-  }
-  if (downloadTimeOfDayButton) {
-    downloadTimeOfDayButton.addEventListener("click", exportTimeOfDay);
-  }
-  if (downloadMessageTypesButton) {
-    downloadMessageTypesButton.addEventListener("click", exportMessageTypes);
-  }
-  if (downloadChatJsonButton) {
-    downloadChatJsonButton.addEventListener("click", exportChatJson);
-  }
-  if (downloadSentimentButton) {
-    downloadSentimentButton.addEventListener("click", exportSentiment);
-  }
-  document.querySelectorAll(".stat-download").forEach(button => {
-    button.addEventListener("click", () => {
-      const type = button.dataset.export;
-      if (type) {
-        exportMessageSubtype(type);
-      }
-    });
-  });
-  if (downloadMarkdownButton) {
-    downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
-  }
-  if (downloadSlidesButton) {
-    downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
-  }
-  if (downloadSearchButton) {
-    downloadSearchButton.addEventListener("click", exportSearchResults);
-  }
-  if (downloadPdfButton) {
-    downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
-  }
-
-  if (participantsTopSelect) {
-    participantsTopSelect.addEventListener("change", handleParticipantsTopChange);
-  }
-  if (participantsSortSelect) {
-    participantsSortSelect.addEventListener("change", handleParticipantsSortChange);
-  }
-  if (participantsTimeframeSelect) {
-    participantsTimeframeSelect.addEventListener("change", handleParticipantsTimeframeChange);
-  }
-  if (participantPresetButtons?.length) {
-    participantPresetButtons.forEach(button => {
-      button.addEventListener("click", handleParticipantPresetClick);
-    });
-  }
-  if (participantsBody) {
-    participantsBody.addEventListener("click", handleParticipantRowToggle);
-  }
-  if (weekdayToggleWeekdays) {
-    weekdayToggleWeekdays.addEventListener("change", () => {
-      updateWeekdayState({ filters: { weekdays: weekdayToggleWeekdays.checked } });
-      ensureWeekdayDayFilters();
-      rerenderWeekdayFromState();
-    });
-  }
-  if (weekdayToggleWeekends) {
-    weekdayToggleWeekends.addEventListener("change", () => {
-      updateWeekdayState({ filters: { weekends: weekdayToggleWeekends.checked } });
-      ensureWeekdayDayFilters();
-      rerenderWeekdayFromState();
-    });
-  }
-  if (weekdayToggleWorking) {
-    weekdayToggleWorking.addEventListener("change", () => {
-      updateWeekdayState({ filters: { working: weekdayToggleWorking.checked } });
-      ensureWeekdayHourFilters();
-      rerenderWeekdayFromState();
-    });
-  }
-  if (weekdayToggleOffhours) {
-    weekdayToggleOffhours.addEventListener("change", () => {
-      updateWeekdayState({ filters: { offhours: weekdayToggleOffhours.checked } });
-      ensureWeekdayHourFilters();
-      rerenderWeekdayFromState();
-    });
-  }
-  if (timeOfDayWeekdayToggle) {
-    timeOfDayWeekdayToggle.addEventListener("change", () => {
-      updateHourlyState({
-        filters: {
-          ...getHourlyState().filters,
-          weekdays: timeOfDayWeekdayToggle.checked,
-        },
-      });
-      ensureDayFilters();
-      syncHourlyControlsWithState();
-      rerenderHourlyFromState();
-    });
-  }
-  if (timeOfDayWeekendToggle) {
-    timeOfDayWeekendToggle.addEventListener("change", () => {
-      updateHourlyState({
-        filters: {
-          ...getHourlyState().filters,
-          weekends: timeOfDayWeekendToggle.checked,
-        },
-      });
-      ensureDayFilters();
-      syncHourlyControlsWithState();
-      rerenderHourlyFromState();
-    });
-  }
-  if (timeOfDayHourStartInput && timeOfDayHourEndInput) {
-    const updateTimeOfDayBrush = () => {
-      let start = Number(timeOfDayHourStartInput.value);
-      let end = Number(timeOfDayHourEndInput.value);
-      if (start > end) [start, end] = [end, start];
-      updateHourlyState({ brush: { start, end } });
-      syncHourlyControlsWithState();
-      rerenderHourlyFromState();
-    };
-    timeOfDayHourStartInput.addEventListener("input", updateTimeOfDayBrush);
-    timeOfDayHourEndInput.addEventListener("input", updateTimeOfDayBrush);
-  }
-  if (weekdayHourStartInput && weekdayHourEndInput) {
-    const updateBrush = () => {
-      let start = Number(weekdayHourStartInput.value);
-      let end = Number(weekdayHourEndInput.value);
-      if (start > end) [start, end] = [end, start];
-      updateWeekdayState({ brush: { start, end } });
-      weekdayHourStartInput.value = String(start);
-      weekdayHourEndInput.value = String(end);
-      const startLabel = document.getElementById("weekday-hour-start-label");
-      const endLabel = document.getElementById("weekday-hour-end-label");
-      if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
-      if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-      rerenderWeekdayFromState();
-    };
-    weekdayHourStartInput.addEventListener("input", updateBrush);
-    weekdayHourEndInput.addEventListener("input", updateBrush);
-  }
-}
-
-function initRelayControls() {
-  if (!relayStartButton || !relayStatusEl) {
-    return;
-  }
-  relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
-  relayStopButton?.addEventListener("click", stopRelaySession);
-  relayLogoutButton?.addEventListener("click", logoutRelaySession);
-  relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
-  relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
-  logDrawerToggleButton?.addEventListener("click", openLogDrawer);
-  logDrawerCloseButton?.addEventListener("click", closeLogDrawer);
-  logDrawerClearButton?.addEventListener("click", handleLogClear);
-  document.addEventListener("click", handleLogDrawerDocumentClick);
-  document.addEventListener("keydown", handleLogDrawerKeydown);
-  refreshRelayStatus({ silent: true }).finally(() => {
-    startStatusPolling();
-  });
-  initLogStream();
-}
-
-document.addEventListener("keydown", event => {
-  const targetTag = event.target?.tagName;
-  const isTypingTarget = targetTag === "INPUT" || targetTag === "TEXTAREA" || event.target?.isContentEditable;
-  if (event.metaKey || event.ctrlKey) {
-    if (isTypingTarget) return;
-    if (event.key === "r" || event.key === "R") {
-      event.preventDefault();
-      syncRelayChats({ silent: false });
-      return;
-    }
-    if ((event.key === "l" || event.key === "L") && !isTypingTarget) {
-      event.preventDefault();
-      if (isLogDrawerOpen()) {
-        closeLogDrawer();
-      } else {
-        openLogDrawer();
-      }
-      return;
-    }
-    if (event.key.toLowerCase() === "m") {
-      event.preventDefault();
-      applyCompactMode(!(document.body.dataset.compact === "true"));
-      showToast(
-        document.body.dataset.compact === "true" ? "Compact mode enabled." : "Comfort mode enabled.",
-        "info",
-        { duration: 2500 }
-      );
-      return;
-    }
-  }
-  if (event.key === "Escape" && isLogDrawerOpen()) {
-    closeLogDrawer();
-    return;
-  }
-  if (event.key === "Escape" && onboardingController.isOpen()) {
-    event.preventDefault();
-    onboardingController.skip();
-    return;
-  }
-});
-
-async function fetchJson(url, options = {}) {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `Request failed (${response.status})`);
-  }
-  return response.json();
-}
-
-async function clearStoredChatsOnServer() {
-  return fetchJson(`${API_BASE}/chats/clear`, { method: "POST" });
-}
-
-async function handleClearStorageClick() {
-  if (typeof window !== "undefined" && window.confirm) {
-    const confirmed = window.confirm(
-      "Clear all cached ChatScope chats on this machine? You'll need to refresh to download them again."
-    );
-    if (!confirmed) return;
-  }
-  if (relayClearStorageButton) relayClearStorageButton.disabled = true;
-  try {
-    await clearStoredChatsOnServer();
-    setRemoteChatList([]);
-    await refreshChatSelector();
-    updateStatus('Cleared cached chats. Press "Reload all chats" to download them again.', "info");
-  } catch (error) {
-    console.error(error);
-    updateStatus("We couldn't clear the cached chats.", "error");
-  } finally {
-    if (relayClearStorageButton) relayClearStorageButton.disabled = false;
-  }
-}
 
 function handleParticipantsTopChange() {
   applyParticipantTopChange(participantFilters, participantsTopSelect?.value);
