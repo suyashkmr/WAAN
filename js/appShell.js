@@ -103,6 +103,9 @@ import { createThemeUiController } from "./appShell/themeUi.js";
 import { createSectionNavController } from "./appShell/sectionNav.js";
 import { createChatSelectionController } from "./appShell/chatSelection.js";
 import { createExportPipeline } from "./appShell/exportPipeline.js";
+import { createRangeFiltersController } from "./appShell/rangeFilters.js";
+import { createAnalyticsPipeline } from "./appShell/analyticsPipeline.js";
+import { createPdfPreviewController } from "./appShell/pdfPreview.js";
 
 const domCache = createDomCache();
 const statusEl = domCache.getById("data-status");
@@ -260,6 +263,55 @@ const {
   refreshChatSelector,
   handleChatSelectionChange: handleChatSelectionChangeCore,
 } = chatSelectionController;
+let activeAnalyticsRequest = 0;
+let renderTaskToken = 0;
+const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
+const analyticsPipeline = createAnalyticsPipeline();
+const { computeAnalyticsWithWorker } = analyticsPipeline;
+const rangeFiltersController = createRangeFiltersController({
+  elements: {
+    rangeSelect,
+    customControls,
+    customStartInput,
+    customEndInput,
+    customApplyButton,
+    searchStartInput,
+    searchEndInput,
+  },
+  deps: {
+    getDatasetEntries,
+    getDatasetLabel,
+    setCurrentRange,
+    setCustomRange,
+    getCustomRange,
+    getCachedAnalytics,
+    setCachedAnalytics,
+    setDatasetAnalytics,
+    renderDashboard,
+    computeAnalyticsWithWorker,
+    updateStatus,
+    formatNumber,
+    formatDisplayDate,
+    getTimestamp,
+    toISODate,
+    onRangeApplied: syncHeroPillsWithRange,
+    nextAnalyticsRequestToken: () => {
+      activeAnalyticsRequest += 1;
+      return activeAnalyticsRequest;
+    },
+    isAnalyticsRequestCurrent: token => token === activeAnalyticsRequest,
+  },
+});
+const {
+  normalizeRangeValue,
+  filterEntriesByRange,
+  describeRange,
+  showCustomControls,
+  updateCustomRangeBounds,
+  applyRangeAndRender,
+  handleRangeChange,
+  applyCustomRange,
+} = rangeFiltersController;
 
 const sectionNavInner = document.querySelector(".section-nav-inner");
 const timeOfDayWeekdayToggle = domCache.getById("timeofday-toggle-weekdays");
@@ -422,13 +474,14 @@ const {
   getExportThemeConfig,
   getDatasetFingerprint,
 });
+const pdfPreviewController = createPdfPreviewController({
+  getDatasetAnalytics,
+  getExportThemeConfig,
+  generatePdfDocumentHtmlAsync,
+  updateStatus,
+});
+const { handleDownloadPdfReport } = pdfPreviewController;
 
-let analyticsWorkerInstance = null;
-let analyticsWorkerRequestId = 0;
-const analyticsWorkerRequests = new Map();
-let activeAnalyticsRequest = 0;
-let renderTaskToken = 0;
-const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
 const relayController = createRelayController({
   elements: {
     relayStartButton,
@@ -537,46 +590,6 @@ const onboardingController = createOnboardingController({
   nextButtonEl: onboardingNextButton,
   steps: ONBOARDING_STEPS,
 });
-
-function ensureAnalyticsWorker() {
-  if (analyticsWorkerInstance) return analyticsWorkerInstance;
-  analyticsWorkerInstance = new Worker(new URL("./analyticsWorker.js", import.meta.url), {
-    type: "module",
-  });
-  analyticsWorkerInstance.onmessage = event => {
-    const { id, analytics, error } = event.data || {};
-    const callbacks = analyticsWorkerRequests.get(id);
-    if (!callbacks) return;
-    analyticsWorkerRequests.delete(id);
-    if (error) {
-      callbacks.reject(new Error(error));
-    } else {
-      callbacks.resolve(analytics);
-    }
-  };
-  analyticsWorkerInstance.onerror = event => {
-    console.error("Analytics worker error", event);
-    analyticsWorkerRequests.forEach(({ reject }) => {
-      reject(new Error("Analytics worker encountered an error."));
-    });
-    analyticsWorkerRequests.clear();
-  };
-  return analyticsWorkerInstance;
-}
-
-function computeAnalyticsWithWorker(entries) {
-  const worker = ensureAnalyticsWorker();
-  const id = ++analyticsWorkerRequestId;
-  return new Promise((resolve, reject) => {
-    analyticsWorkerRequests.set(id, { resolve, reject });
-    try {
-      worker.postMessage({ id, entries });
-    } catch (error) {
-      analyticsWorkerRequests.delete(id);
-      reject(error);
-    }
-  });
-}
 
 function setDashboardLoadingState(isLoading) {
   if (!dashboardRoot) return;
@@ -1417,80 +1430,6 @@ function updateHeroRelayStatus(status) {
   }
 }
 
-async function handleDownloadPdfReport() {
-  const analytics = getDatasetAnalytics();
-  if (!analytics) {
-    updateStatus("Load the chat summary before exporting a report.", "warning");
-    return;
-  }
-  const theme = getExportThemeConfig();
-  try {
-    const { content } = await generatePdfDocumentHtmlAsync(analytics, theme);
-    const opened = launchPrintableDocument(content);
-    if (opened) {
-      updateStatus(`Opened the ${theme.label} PDF preview — use your print dialog to save it.`, "info");
-    } else {
-      updateStatus("Couldn't prepare the PDF preview.", "error");
-    }
-  } catch (error) {
-    console.error(error);
-    updateStatus("Couldn't prepare the PDF preview.", "error");
-  }
-}
-
-function launchPrintableDocument(html) {
-  try {
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    const cleanup = () => {
-      URL.revokeObjectURL(url);
-      iframe.remove();
-    };
-    iframe.addEventListener("load", () => {
-      const win = iframe.contentWindow;
-      if (!win) {
-        cleanup();
-        return;
-      }
-      const handleAfterPrint = () => {
-        win.removeEventListener("afterprint", handleAfterPrint);
-        if (cleanupTimer) {
-          clearTimeout(cleanupTimer);
-          cleanupTimer = null;
-        }
-        cleanup();
-      };
-      let cleanupTimer = window.setTimeout(() => {
-        handleAfterPrint();
-      }, 60000);
-      win.addEventListener("afterprint", handleAfterPrint);
-      setTimeout(() => {
-        try {
-          win.focus();
-          win.print();
-        } catch (error) {
-          console.error(error);
-          cleanup();
-        }
-      }, 150);
-    });
-    iframe.addEventListener("error", cleanup);
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-
 function renderWeekdayPanel(analytics) {
   updateWeekdayState({
     distribution: analytics.weekday_distribution,
@@ -1523,240 +1462,6 @@ function renderStatistics(analytics) {
   setText("avg-chars", formatFloat(analytics.averages.characters, 1));
   setText("avg-words", formatFloat(analytics.averages.words, 1));
 }
-
-async function handleRangeChange() {
-  const value = rangeSelect?.value;
-  if (!value) return;
-
-  if (value === "custom") {
-    showCustomControls(true);
-    updateStatus("Choose your dates and click Apply.", "info");
-    return;
-  }
-
-  showCustomControls(false);
-  setCurrentRange(value);
-  setCustomRange(null);
-  await applyRangeAndRender(value);
-  syncHeroPillsWithRange();
-}
-
-async function applyCustomRange(start, end) {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  if (Number.isNaN(startDate) || Number.isNaN(endDate)) {
-    updateStatus("Those dates don't look right.", "error");
-    return;
-  }
-  if (startDate > endDate) {
-    updateStatus("Start date must be on or before the end date.", "error");
-    return;
-  }
-
-  const range = { type: "custom", start, end };
-  setCustomRange(range);
-  setCurrentRange("custom");
-  if (rangeSelect) rangeSelect.value = "custom";
-  showCustomControls(true);
-  await applyRangeAndRender(range);
-}
-
-async function applyRangeAndRender(range) {
-  const entries = getDatasetEntries();
-  if (!entries.length) {
-    updateStatus("Load a chat file before picking a range.", "warning");
-    return;
-  }
-
-  const requestToken = ++activeAnalyticsRequest;
-  const normalizedRange = normalizeRangeValue(range);
-  const rangeKey = buildRangeKey(normalizedRange);
-  const cached = getCachedAnalytics(rangeKey);
-  if (cached) {
-    if (requestToken === activeAnalyticsRequest) {
-      setDatasetAnalytics(cached);
-      renderDashboard(cached);
-      updateCustomRangeBounds();
-      const labelCached = describeRange(normalizedRange);
-      updateStatus(
-        `Showing ${formatNumber(cached.total_messages)} messages from ${getDatasetLabel()} (${labelCached}).`,
-        "info",
-      );
-    }
-    return;
-  }
-
-  updateStatus("Calculating stats for the selected range…", "info");
-
-  const subset = filterEntriesByRange(entries, normalizedRange);
-  try {
-    const analytics = await computeAnalyticsWithWorker(subset);
-    if (requestToken !== activeAnalyticsRequest) return;
-
-    setCachedAnalytics(rangeKey, analytics);
-    setDatasetAnalytics(analytics);
-    renderDashboard(analytics);
-    updateCustomRangeBounds();
-
-    const label = describeRange(normalizedRange);
-    updateStatus(
-      `Showing ${formatNumber(analytics.total_messages)} messages from ${getDatasetLabel()} (${label}).`,
-      "info",
-    );
-  } catch (error) {
-    console.error(error);
-    if (requestToken === activeAnalyticsRequest) {
-      updateStatus("We couldn't calculate stats for this range.", "error");
-    }
-  }
-}
-
-function normalizeRangeValue(range) {
-  if (!range || range === "all") return "all";
-  if (typeof range === "string") return range;
-  if (typeof range === "object" && range.type === "custom") {
-    return { type: "custom", start: range.start ?? null, end: range.end ?? null };
-  }
-  return range;
-}
-
-function filterEntriesByRange(entries, range) {
-  if (!range || range === "all") return entries;
-  if (range.type === "custom") {
-    const startDate = new Date(range.start);
-    const endDate = new Date(range.end);
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
-    return entries.filter(entry => {
-      const ts = getTimestamp(entry);
-      return ts && ts >= startDate && ts <= endDate;
-    });
-  }
-
-  const days = Number(range);
-  if (!Number.isFinite(days) || days <= 0) return entries;
-
-  const timestamps = entries
-    .map(entry => getTimestamp(entry))
-    .filter(Boolean)
-    .sort((a, b) => a - b);
-  if (!timestamps.length) return entries;
-
-  const end = new Date(timestamps[timestamps.length - 1]);
-  end.setHours(23, 59, 59, 999);
-  const start = new Date(end);
-  start.setDate(start.getDate() - (days - 1));
-  start.setHours(0, 0, 0, 0);
-
-  return entries.filter(entry => {
-    const ts = getTimestamp(entry);
-    return ts && ts >= start && ts <= end;
-  });
-}
-
-function buildRangeKey(range) {
-  if (!range || range === "all") return "all";
-  if (typeof range === "string") return `days:${range}`;
-  if (typeof range === "object" && range.type === "custom") {
-    const start = range.start ?? "";
-    const end = range.end ?? "";
-    return `custom:${start}|${end}`;
-  }
-  return `range:${JSON.stringify(range)}`;
-}
-
-function describeRange(range) {
-  if (!range || range === "all") return "entire history";
-  if (typeof range === "object" && range.type === "custom") {
-    return `${formatDisplayDate(range.start)} → ${formatDisplayDate(range.end)}`;
-  }
-  const days = Number(range);
-  return Number.isFinite(days) ? `last ${days} days` : String(range);
-}
-
-function showCustomControls(visible) {
-  if (!customControls) return;
-  if (visible) {
-    customControls.classList.remove("hidden");
-  } else {
-    customControls.classList.add("hidden");
-  }
-  if (customStartInput && customEndInput) {
-    customStartInput.disabled = !visible;
-    customEndInput.disabled = !visible;
-  }
-  if (customApplyButton) {
-    customApplyButton.disabled = !visible;
-  }
-}
-
-
-function updateCustomRangeBounds() {
-  if (!customStartInput || !customEndInput) return;
-  const entries = getDatasetEntries();
-  if (!entries.length) {
-    customStartInput.value = "";
-    customEndInput.value = "";
-    customStartInput.disabled = true;
-    customEndInput.disabled = true;
-    if (customApplyButton) customApplyButton.disabled = true;
-    if (searchStartInput) {
-      searchStartInput.value = "";
-      searchStartInput.disabled = true;
-      searchStartInput.min = "";
-      searchStartInput.max = "";
-    }
-    if (searchEndInput) {
-      searchEndInput.value = "";
-      searchEndInput.disabled = true;
-      searchEndInput.min = "";
-      searchEndInput.max = "";
-    }
-    return;
-  }
-
-  const timestamps = entries
-    .map(entry => getTimestamp(entry))
-    .filter(Boolean)
-    .sort((a, b) => a - b);
-  if (!timestamps.length) {
-    customStartInput.disabled = true;
-    customEndInput.disabled = true;
-    if (customApplyButton) customApplyButton.disabled = true;
-    return;
-  }
-
-  const start = toISODate(timestamps[0]);
-  const end = toISODate(timestamps[timestamps.length - 1]);
-
-  customStartInput.min = start;
-  customStartInput.max = end;
-  customEndInput.min = start;
-  customEndInput.max = end;
-  customStartInput.disabled = false;
-  customEndInput.disabled = false;
-  if (customApplyButton) customApplyButton.disabled = false;
-
-  if (searchStartInput) {
-    searchStartInput.disabled = false;
-    searchStartInput.min = start;
-    searchStartInput.max = end;
-  }
-  if (searchEndInput) {
-    searchEndInput.disabled = false;
-    searchEndInput.min = start;
-    searchEndInput.max = end;
-  }
-
-  const customRange = getCustomRange();
-  if (!customRange || customRange.type !== "custom") {
-    customStartInput.value = start;
-    customEndInput.value = end;
-  }
-}
-
-
-
 
 function ensureWeekdayDayFilters() {
   const state = getWeekdayState();
