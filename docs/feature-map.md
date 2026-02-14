@@ -2,18 +2,31 @@
 
 | Module | Purpose / Key Responsibilities | Current Usage & Notes |
 | --- | --- | --- |
-| `js/appShell.js` | App entry point: loads datasets, wires DOM events, initializes analytics renderers, relay controller, exporters, search, saved views. | Active; snapshot sharing + duplicate participant detail removed. Remaining lint warnings now focused on real TODOs (hero pills, config hooks). Coverage 0% → consider integration tests. |
-| `js/relayControls.js` | Manages relay start/stop/logout, status polling, log streaming, sync progress UI. | Active. Log drawer now renders directly (virtual list removed). Still need coverage for refresh/poll flows. |
-| `js/analytics.js` | Parses chat entries (`parseChatText`), computes analytics (sentiment, message types, highlights). | Active, partially covered by tests. System-entry helper cleanup in progress; remaining warnings highlight legacy classifications. |
-| `js/analytics/activity.js`, `summary.js`, `sentiment.js`, `messageTypes.js`, `polls.js` | Render analytics cards (hourly, daily, participants, sentiment, polls). | Active renderers invoked from `appShell`. No lint complaints, but currently lack test coverage. |
-| `js/state.js` | Global store for dataset entries, analytics, search state, hourly/weekday filters, saved views. | Active; unit tests cover core helpers. |
-| `js/search.js` + `js/searchWorker.js` | Advanced search UI and worker-based filtering/highlighting. | Active. Worker has 0% coverage; lint now limited to intentional TODOs (result limits). |
-| `js/exporters.js`, `js/exportShared.js`, `js/exportWorker.js` | CSV/text/slides/PDF export logic and workers. | Active with shared helpers only; worker handles Markdown/Slides/PDF to keep UI responsive. |
-| `js/config.js`, `js/theme.js`, `js/ui.js`, `js/utils.js`, `js/constants.js` | Config/env vars, theme toggles, UI utilities, general helpers/constants. | Active. `constants.js` covered; others have no automated tests yet. |
-| `js/vendor/whatsapp-chat-parser.js` | Third-party WhatsApp text parser. | Used by `analytics.js`. Ignored via ESLint `ignores` block (treated as vendored). |
-| `js/main.js` | Entry script for the web/Electron bundle. | Active but minimal. |
-| `js/savedViews.js` | Saved views CRUD and comparison helpers. | Active (used by `appShell`), but lacks coverage/tests. |
+| `js/appShell.js` | Composition root for the dashboard app. Wires state, controllers, and boot sequence. | Active. Mostly orchestration now; behavior moved into `js/appShell/*` modules. |
+| `js/appShell/index.js` | Barrel export for app-shell controllers/utilities. | Active. Reduces import churn and centralizes module boundaries. |
+| `js/appShell/bootstrap.js` | App startup sequence (`DOMContentLoaded`): init controllers, nav, onboarding, card toggles. | Active; covered by boot smoke test (`tests/appShellBoot.test.js`). |
+| `js/appShell/eventBindings.js` | DOM event registration for filters, exports, participants, and range controls. | Active; covered by controller tests. |
+| `js/appShell/relayBootstrap.js` | Relay control wiring + clear-storage flow + polling/log stream startup. | Active; covered by controller tests. |
+| `js/appShell/datasetLifecycle.js` | Dataset apply pipeline: normalize, fingerprint/cache reset, analytics compute, persist/select, render handoff. | Active; covered by controller + integration tests. |
+| `js/appShell/dataStatus.js` | Dashboard loading/data-availability state + relay hero status messaging. | Active; covered by controller tests. |
+| `js/appShell/keyboardShortcuts.js` | Global shortcut handling (`Cmd/Ctrl+R`, `Cmd/Ctrl+L`, `Cmd/Ctrl+M`, `Esc`). | Active. |
+| `js/appShell/sharedRuntime.js` | Shared runtime helpers (`fetchJson`, global busy wrapper, relay account formatting). | Active. |
+| `js/appShell/dashboardRender.js` + `js/appShell/dashboardRender/*` | Dashboard rendering orchestration split into `activityPanels`, `highlightsStats`, and `participantsPanel`. | Active. Large render domain now segmented. |
+| `js/relayControls.js` | Relay lifecycle/status syncing, QR/session handling, log drawer runtime behavior. | Active. Consumed by app-shell composition. |
+| `js/analytics.js` + `js/analytics/*` | Parse and compute analytics (summary, activity, sentiment, message types, highlights, system events). | Active; analytics behavior covered by existing analytics tests. |
+| `js/search.js` + `js/searchWorker.js` | Search query execution and worker-based filtering/progress. | Active. |
+| `js/exporters.js`, `js/exportShared.js`, `js/exportWorker.js` | CSV/text/slides/PDF exports and worker-backed report generation. | Active; exporter smoke tests exist. |
+| `js/state.js` | Central in-memory state for dataset, library, range/filter, search, and saved views. | Active; unit-tested. |
 
-**Next steps**
-- Finish pruning analytics/appShell helpers flagged by lint, or add usage.
-- Expand test coverage beyond analytics/state to cover UI/exports/relay modules.
+## Quality Gates
+
+- `npm run lint`
+- `npm test`
+- `npm run verify` (lint + test)
+
+## Current Test Coverage Signals
+
+- Controller-focused tests: `tests/appShellControllers.test.js`
+- App boot smoke test: `tests/appShellBoot.test.js`
+- Barrel export regression test: `tests/barrels.test.js`
+- Cross-controller integration test: `tests/appShellIntegration.test.js`
