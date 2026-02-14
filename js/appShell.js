@@ -90,6 +90,8 @@ import { createRelayBootstrapController } from "./appShell/relayBootstrap.js";
 import { createKeyboardShortcutsController } from "./appShell/keyboardShortcuts.js";
 import { createEventBindingsController } from "./appShell/eventBindings.js";
 import { createBootstrapController } from "./appShell/bootstrap.js";
+import { createDataStatusController } from "./appShell/dataStatus.js";
+import { createParticipantInteractionsController } from "./appShell/participantInteractions.js";
 import {
   createBusyRuntimeController,
   fetchJson,
@@ -97,11 +99,6 @@ import {
 } from "./appShell/sharedRuntime.js";
 import {
   createDashboardRenderController,
-  applyParticipantTopChange,
-  applyParticipantSortChange,
-  applyParticipantTimeframeChange,
-  applyParticipantPreset,
-  toggleParticipantRow,
 } from "./appShell/dashboardRender.js";
 
 const domCache = createDomCache();
@@ -424,6 +421,26 @@ const savedViewsController = createSavedViewsController({
     normalizeRangeValue,
   },
 });
+const dataStatusController = createDataStatusController({
+  elements: {
+    dashboardRoot,
+    heroStatusBadge,
+    heroStatusCopy,
+    datasetEmptyStateManager,
+  },
+  deps: {
+    setDatasetEmptyMessage,
+    savedViewsController,
+    formatRelayAccount,
+    formatNumber,
+  },
+});
+const {
+  setDashboardLoadingState,
+  setDataAvailabilityState,
+  updateHeroRelayStatus,
+  getDataAvailable,
+} = dataStatusController;
 setDashboardLoadingState(true);
 document.querySelectorAll(".summary-value").forEach(element => {
   element.setAttribute("data-skeleton", "value");
@@ -434,6 +451,26 @@ const participantFilters = {
   sortMode: participantsSortSelect?.value ?? "most",
   timeframe: participantsTimeframeSelect?.value ?? "all",
 };
+const participantInteractionsController = createParticipantInteractionsController({
+  elements: {
+    participantsTopSelect,
+    participantsSortSelect,
+    participantsTimeframeSelect,
+    participantsBody,
+  },
+  deps: {
+    participantFilters,
+    getDatasetAnalytics,
+    renderParticipants,
+  },
+});
+const {
+  handleParticipantsTopChange,
+  handleParticipantsSortChange,
+  handleParticipantsTimeframeChange,
+  handleParticipantPresetClick,
+  handleParticipantRowToggle,
+} = participantInteractionsController;
 
 function getExportFilterSummary() {
   const rangeValue = normalizeRangeValue(getCurrentRange());
@@ -715,9 +752,6 @@ const relayBootstrapController = createRelayBootstrapController({
 });
 const { initRelayControls } = relayBootstrapController;
 self.windowToasts = [];
-let dataAvailable = false;
-self.windowToasts = [];
-self.windowToasts = [];
 const COMPACT_STORAGE_KEY = "waan-compact-mode";
 const REDUCE_MOTION_STORAGE_KEY = "waan-reduce-motion";
 const HIGH_CONTRAST_STORAGE_KEY = "waan-high-contrast";
@@ -761,24 +795,6 @@ const onboardingController = createOnboardingController({
   nextButtonEl: onboardingNextButton,
   steps: ONBOARDING_STEPS,
 });
-
-function setDashboardLoadingState(isLoading) {
-  if (!dashboardRoot) return;
-  dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
-}
-
-function setDataAvailabilityState(hasData) {
-  dataAvailable = Boolean(hasData);
-  datasetEmptyStateManager.setAvailability(dataAvailable);
-  if (!dataAvailable) {
-    setDatasetEmptyMessage(
-      "No chat is selected yet.",
-      "Start the relay desktop app, press Connect, scan the QR code, then choose a mirrored chat from “Loaded chats”.",
-    );
-  }
-  savedViewsController.setDataAvailability(Boolean(hasData));
-  savedViewsController.refreshUI();
-}
 
 function syncHeroPillsWithRange() { }
 
@@ -904,7 +920,7 @@ const bootstrapController = createBootstrapController({
     setupSectionNavTracking,
     searchController,
     savedViewsController,
-    getDataAvailable: () => dataAvailable,
+    getDataAvailable,
     refreshChatSelector,
     updateStatus,
     relayServiceName: RELAY_SERVICE_NAME,
@@ -916,66 +932,3 @@ const { initAppBootstrap } = bootstrapController;
 document.addEventListener("DOMContentLoaded", () => {
   initAppBootstrap();
 });
-
-function handleParticipantsTopChange() {
-  applyParticipantTopChange(participantFilters, participantsTopSelect?.value);
-  const analytics = getDatasetAnalytics();
-  if (analytics) renderParticipants(analytics);
-}
-
-function handleParticipantsSortChange() {
-  applyParticipantSortChange(participantFilters, participantsSortSelect?.value);
-  const analytics = getDatasetAnalytics();
-  if (analytics) renderParticipants(analytics);
-}
-
-function handleParticipantsTimeframeChange() {
-  applyParticipantTimeframeChange(participantFilters, participantsTimeframeSelect?.value);
-  const analytics = getDatasetAnalytics();
-  if (analytics) renderParticipants(analytics);
-}
-
-function handleParticipantPresetClick(event) {
-  const preset = event.currentTarget?.dataset?.participantsPreset;
-  applyParticipantPreset(participantFilters, preset, {
-    participantsTopSelect,
-    participantsSortSelect,
-    participantsTimeframeSelect,
-  });
-  const analytics = getDatasetAnalytics();
-  if (analytics) renderParticipants(analytics);
-}
-
-function handleParticipantRowToggle(event) {
-  toggleParticipantRow(event, participantsBody);
-}
-
-function updateHeroRelayStatus(status) {
-  if (!heroStatusBadge || !heroStatusCopy) return;
-  if (!status) {
-    heroStatusBadge.textContent = "Not connected";
-    heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
-    return;
-  }
-  if (status.status === "running") {
-    heroStatusBadge.textContent = status.account
-      ? `Connected • ${formatRelayAccount(status.account)}`
-      : "Relay connected";
-    heroStatusCopy.textContent = status.chatCount
-      ? `${formatNumber(status.chatCount)} chats indexed.`
-      : "Syncing chats now…";
-  } else if (status.status === "waiting_qr") {
-    heroStatusBadge.textContent = "Scan the QR code";
-    if (status.lastQr) {
-      heroStatusCopy.textContent = "On your phone: chat app → Linked Devices → Link a device → scan this code.";
-    } else {
-      heroStatusCopy.textContent = "Press Connect to reopen the relay browser and show a QR code.";
-    }
-  } else if (status.status === "starting") {
-    heroStatusBadge.textContent = "Starting relay";
-    heroStatusCopy.textContent = "Launching the relay browser…";
-  } else {
-    heroStatusBadge.textContent = "Not connected";
-    heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
-  }
-}
