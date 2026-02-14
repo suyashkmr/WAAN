@@ -90,171 +90,17 @@ import {
   createCompactModeManager,
   createAccessibilityController,
 } from "./ui.js";
-
-function normalizeJid(value) {
-  if (!value) return "";
-  return String(value).trim().toLowerCase();
-}
-
-function stripJidSuffix(value) {
-  return value.replace(/@[\w.]+$/, "");
-}
-
-function normalizeContactId(value) {
-  if (!value) return null;
-  const text = String(value).trim();
-  if (!text) return null;
-  if (text.includes("@")) return normalizeJid(text);
-  const digits = text.replace(/\D+/g, "");
-  if (digits.length >= 5) return digits;
-  return normalizeJid(text);
-}
-
-function shouldPreferLabel(next, current) {
-  if (!current) return true;
-  if (!next) return false;
-  const currentIsNumber = /^\d+$/.test(current.replace(/\D+/g, ""));
-  const nextIsNumber = /^\d+$/.test(next.replace(/\D+/g, ""));
-  if (currentIsNumber && !nextIsNumber) return true;
-  if (!currentIsNumber && nextIsNumber) return false;
-  return next.length <= current.length;
-}
-
-function createParticipantDirectory(entries = [], participants = []) {
-  const records = new Map();
-  const aliasIndex = new Map();
-
-  const ensureRecord = id => {
-    const normalized = normalizeContactId(id);
-    if (!normalized) return null;
-    if (!records.has(normalized)) {
-      records.set(normalized, { id: normalized, label: null, aliases: new Set() });
-    }
-    return records.get(normalized);
-  };
-
-  const register = (id, label) => {
-    let record = ensureRecord(id);
-    const cleanLabel = label ? String(label).trim() : "";
-    if (!record && cleanLabel) {
-      const aliasKey = cleanLabel.toLowerCase();
-      record = aliasIndex.get(aliasKey);
-      if (!record) {
-        const aliasId = `alias:${aliasKey}`;
-        record = { id: aliasId, label: null, aliases: new Set() };
-        records.set(aliasId, record);
-      }
-    }
-    if (!record) return null;
-    if (cleanLabel) {
-      if (!record.label || shouldPreferLabel(cleanLabel, record.label)) {
-        record.label = cleanLabel;
-      }
-      record.aliases.add(cleanLabel);
-      aliasIndex.set(cleanLabel.toLowerCase(), record);
-    }
-    return record;
-  };
-
-  participants.forEach(participant => {
-    const label = participant.label || participant.name || participant.displayName || participant.pushname;
-    const id = participant.id || participant.jid || participant.phone || participant.identifier;
-    if (id || label) {
-      register(id, label || (id ? stripJidSuffix(id) : ""));
-    }
-  });
-
-  entries.forEach(entry => {
-    register(entry.sender_jid || entry.sender_id || entry.sender, entry.sender);
-  });
-
-  return { records, aliasIndex };
-}
-
-function serializeParticipantDirectory(directory) {
-  if (!directory) return null;
-  return Array.from(directory.records.entries()).map(([id, record]) => ({
-    id,
-    label: record.label ?? null,
-    aliases: Array.from(record.aliases || []),
-  }));
-}
-
-function deserializeParticipantDirectory(snapshot) {
-  if (!Array.isArray(snapshot) || !snapshot.length) return null;
-  const records = new Map();
-  const aliasIndex = new Map();
-  snapshot.forEach(item => {
-    if (!item || !item.id) return;
-    const aliases = Array.isArray(item.aliases) ? item.aliases : [];
-    const record = {
-      id: item.id,
-      label: item.label ?? null,
-      aliases: new Set(aliases),
-    };
-    records.set(record.id, record);
-    aliases.forEach(alias => {
-      if (alias) aliasIndex.set(alias.toLowerCase(), record);
-    });
-    if (record.label) aliasIndex.set(record.label.toLowerCase(), record);
-  });
-  return { records, aliasIndex };
-}
-
-function normalizeEntriesWithDirectory(entries = [], directory) {
-  if (!directory) return entries;
-  const { records, aliasIndex } = directory;
-
-  const resolveRecord = entry => {
-    const candidates = [entry.sender_jid, entry.sender_id, entry.sender];
-    for (const candidate of candidates) {
-      const normalized = normalizeContactId(candidate);
-      if (normalized && records.has(normalized)) {
-        return records.get(normalized);
-      }
-    }
-    if (entry.sender) {
-      const alias = aliasIndex.get(entry.sender.trim().toLowerCase());
-      if (alias) return alias;
-    }
-    return null;
-  };
-
-  return entries.map(entry => {
-    const record = resolveRecord(entry);
-    const normalizedId =
-      record?.id ||
-      normalizeContactId(entry.sender_jid) ||
-      normalizeContactId(entry.sender_id) ||
-      normalizeContactId(entry.sender) ||
-      entry.sender_id ||
-      entry.sender;
-    const displayName =
-      record?.label ||
-      (normalizedId && !normalizedId.startsWith("alias:") ? stripJidSuffix(normalizedId) : null) ||
-      entry.sender ||
-      "Unknown";
-    const baseMessage = typeof entry.message === "string" ? entry.message : "";
-    return {
-      ...entry,
-      sender_id: normalizedId || entry.sender_id || entry.sender,
-      sender: displayName,
-      search_text: entry.search_text ?? baseMessage.toLowerCase(),
-    };
-  });
-}
-
-function buildParticipantRoster(directory) {
-  if (!directory) return [];
-  const roster = [];
-  directory.records.forEach(record => {
-    const label = record.label || stripJidSuffix(record.id);
-    if (label) {
-      roster.push({ id: record.id, label });
-    }
-  });
-  return roster;
-}
+import {
+  createParticipantDirectory,
+  serializeParticipantDirectory,
+  deserializeParticipantDirectory,
+  normalizeEntriesWithDirectory,
+  buildParticipantRoster,
+} from "./appShell/participantDirectory.js";
+import { createOnboardingController } from "./appShell/onboarding.js";
+import { createStatusUiController } from "./appShell/statusUi.js";
+import { createThemeUiController } from "./appShell/themeUi.js";
+import { createSectionNavController } from "./appShell/sectionNav.js";
 
 const domCache = createDomCache();
 const statusEl = domCache.getById("data-status");
@@ -396,12 +242,7 @@ const datasetEmptyStateManager = createDatasetEmptyStateManager({
 });
 const setDatasetEmptyMessage = datasetEmptyStateManager.setMessage;
 
-const TOASTS = [];
-const MAX_TOASTS = 4;
-const themeToggleInputs = Array.from(document.querySelectorAll('input[name="theme-option"]'));
 const sectionNavInner = document.querySelector(".section-nav-inner");
-let sectionNavLinks = [];
-let sectionNavItems = [];
 const timeOfDayWeekdayToggle = domCache.getById("timeofday-toggle-weekdays");
 const timeOfDayWeekendToggle = domCache.getById("timeofday-toggle-weekends");
 const timeOfDayHourStartInput = domCache.getById("timeofday-hour-start");
@@ -580,6 +421,12 @@ function getExportFilterSummary() {
   return parts;
 }
 let participantView = [];
+const themeUiController = createThemeUiController({
+  themeToggleInputs: Array.from(document.querySelectorAll('input[name="theme-option"]')),
+  mediaQuery: window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null,
+  exportThemeStyles: EXPORT_THEME_STYLES,
+});
+const { initThemeControls, getExportThemeConfig } = themeUiController;
 
 const {
   exportParticipants,
@@ -622,8 +469,6 @@ let analyticsWorkerInstance = null;
 let analyticsWorkerRequestId = 0;
 const analyticsWorkerRequests = new Map();
 let activeAnalyticsRequest = 0;
-let sectionNavObserver = null;
-let activeSectionId = null;
 let renderTaskToken = 0;
 const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
 const remoteChatState = {
@@ -695,14 +540,24 @@ self.windowToasts = [];
 let dataAvailable = false;
 self.windowToasts = [];
 self.windowToasts = [];
-const themeState = {
-  preference: "system",
-  mediaQuery: window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null,
-};
 const COMPACT_STORAGE_KEY = "waan-compact-mode";
-const ONBOARDING_STORAGE_KEY = "waan-onboarding-dismissed";
 const REDUCE_MOTION_STORAGE_KEY = "waan-reduce-motion";
 const HIGH_CONTRAST_STORAGE_KEY = "waan-high-contrast";
+const statusUiController = createStatusUiController({
+  statusEl,
+  toastContainer,
+  autoHideDelayMs: STATUS_AUTO_HIDE_DELAY_MS,
+  exitDurationMs: STATUS_EXIT_DURATION_MS,
+});
+const {
+  showToast,
+  showStatusMessage,
+} = statusUiController;
+const sectionNavController = createSectionNavController({
+  containerEl: sectionNavInner,
+  navItemsConfig: SECTION_NAV_ITEMS,
+});
+const { buildSectionNav, setupSectionNavTracking } = sectionNavController;
 
 const { apply: applyCompactMode, init: initCompactMode } = createCompactModeManager({
   toggle: compactToggleButton,
@@ -721,10 +576,13 @@ const accessibilityController = createAccessibilityController({
 });
 const { initAccessibilityControls, prefersReducedMotion } = accessibilityController;
 
-let onboardingIndex = 0;
-let onboardingHighlight = null;
-let statusHideTimer = null;
-let statusExitTimer = null;
+const onboardingController = createOnboardingController({
+  overlayEl: onboardingOverlay,
+  copyEl: onboardingCopyEl,
+  stepLabelEl: onboardingStepLabel,
+  nextButtonEl: onboardingNextButton,
+  steps: ONBOARDING_STEPS,
+});
 
 function ensureAnalyticsWorker() {
   if (analyticsWorkerInstance) return analyticsWorkerInstance;
@@ -750,107 +608,6 @@ function ensureAnalyticsWorker() {
     analyticsWorkerRequests.clear();
   };
   return analyticsWorkerInstance;
-}
-
-function buildSectionNav() {
-  if (!sectionNavInner) return;
-  sectionNavInner.innerHTML = "";
-  sectionNavLinks = [];
-  sectionNavItems = [];
-  SECTION_NAV_ITEMS.forEach(item => {
-    const targetEl = document.getElementById(item.id);
-    if (!targetEl) return;
-    const link = document.createElement("a");
-    link.href = `#${item.id}`;
-    link.textContent = item.label;
-    sectionNavInner.appendChild(link);
-    sectionNavLinks.push(link);
-    sectionNavItems.push({ link, target: targetEl, id: item.id });
-  });
-}
-
-function setActiveSectionNav(targetId) {
-  if (!targetId || activeSectionId === targetId) return;
-  activeSectionId = targetId;
-  sectionNavLinks.forEach(link => {
-    const linkTarget = link.getAttribute("href")?.replace(/^#/, "");
-    link.classList.toggle("active", linkTarget === targetId);
-  });
-}
-
-function setupSectionNavTracking() {
-  if (!sectionNavItems.length || typeof window === "undefined" || !("IntersectionObserver" in window)) {
-    return;
-  }
-
-  const navItems = sectionNavItems.slice();
-
-  navItems.forEach(({ link, id }) => {
-    link.addEventListener("click", () => {
-      setActiveSectionNav(id);
-    });
-    link.addEventListener("focus", () => {
-      setActiveSectionNav(id);
-    });
-    link.addEventListener("keydown", event => {
-      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      event.preventDefault();
-      const index = navItems.findIndex(entry => entry.link === link);
-      if (index === -1) return;
-      const delta = event.key === "ArrowRight" ? 1 : -1;
-      const nextIndex = (index + delta + navItems.length) % navItems.length;
-      const nextEntry = navItems[nextIndex];
-      if (nextEntry?.link) nextEntry.link.focus();
-    });
-  });
-
-  if (!navItems.length) return;
-
-  if (sectionNavObserver) {
-    sectionNavObserver.disconnect();
-    sectionNavObserver = null;
-  }
-
-  sectionNavObserver = new IntersectionObserver(
-    observerEntries => {
-      const visible = observerEntries
-        .filter(entry => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      if (visible.length) {
-        setActiveSectionNav(visible[0].target.id);
-        return;
-      }
-      const nearest = navItems
-        .map(item => ({
-          id: item.id,
-          distance: Math.abs(item.target.getBoundingClientRect().top),
-        }))
-        .sort((a, b) => a.distance - b.distance)[0];
-      if (nearest) setActiveSectionNav(nearest.id);
-    },
-    {
-      root: null,
-      rootMargin: "-60% 0px -35% 0px",
-      threshold: [0.1, 0.25, 0.5, 0.75],
-    },
-  );
-
-  navItems.forEach(({ target }) => sectionNavObserver.observe(target));
-
-  const initial =
-    navItems
-      .map(item => ({
-        id: item.id,
-        top: item.target.getBoundingClientRect().top,
-      }))
-      .filter(Boolean)
-      .sort((a, b) => {
-        if (a.top >= 0 && b.top >= 0) return a.top - b.top;
-        if (a.top >= 0) return -1;
-        if (b.top >= 0) return 1;
-        return a.top - b.top;
-      })[0] || navItems[0];
-  if (initial) setActiveSectionNav(initial.id);
 }
 
 function computeAnalyticsWithWorker(entries) {
@@ -919,116 +676,7 @@ async function withGlobalBusy(task, message = "Working…") {
   }
 }
 
-function showToast(message, tone = "info", { duration = 5000 } = {}) {
-  if (!toastContainer) return;
-  const toast = document.createElement("div");
-  toast.className = `toast ${tone}`;
-  const body = document.createElement("div");
-  body.className = "toast-message";
-  body.textContent = message;
-  const close = document.createElement("button");
-  close.type = "button";
-  close.className = "toast-close";
-  close.setAttribute("aria-label", "Dismiss");
-  close.textContent = "×";
-  close.addEventListener("click", () => dismissToast(toast));
-  toast.appendChild(body);
-  toast.appendChild(close);
-  toastContainer.appendChild(toast);
-  TOASTS.push(toast);
-  while (TOASTS.length > MAX_TOASTS) {
-    const expired = TOASTS.shift();
-    expired?.remove();
-  }
-  setTimeout(() => dismissToast(toast), duration);
-}
-
-function dismissToast(toast) {
-  if (!toast?.isConnected) return;
-  toast.classList.add("toast-dismiss");
-  setTimeout(() => {
-    toast.remove();
-    const index = TOASTS.indexOf(toast);
-    if (index >= 0) TOASTS.splice(index, 1);
-  }, 150);
-}
-
-function startOnboarding() {
-  if (!onboardingOverlay || localStorage.getItem(ONBOARDING_STORAGE_KEY) === "done") return;
-  onboardingIndex = 0;
-  document.body.classList.add("onboarding-active");
-  onboardingOverlay.setAttribute("aria-hidden", "false");
-  showOnboardingStep(onboardingIndex);
-}
-
-function showOnboardingStep(index) {
-  if (!onboardingOverlay || !onboardingCopyEl) return;
-  const step = ONBOARDING_STEPS[index];
-  if (!step) {
-    finishOnboarding();
-    return;
-  }
-  onboardingCopyEl.textContent = step.copy;
-  if (onboardingStepLabel) {
-    onboardingStepLabel.textContent = `Step ${index + 1} of ${ONBOARDING_STEPS.length}`;
-  }
-  highlightTarget(step.target);
-  onboardingNextButton.textContent = index === ONBOARDING_STEPS.length - 1 ? "Done" : "Next";
-}
-
-function highlightTarget(selector) {
-  if (onboardingHighlight) {
-    onboardingHighlight.classList.remove("onboarding-highlight");
-    onboardingHighlight = null;
-  }
-  if (!selector) return;
-  const target = document.querySelector(selector);
-  if (target) {
-    onboardingHighlight = target;
-    target.classList.add("onboarding-highlight");
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-}
-
-function advanceOnboarding() {
-  onboardingIndex += 1;
-  if (onboardingIndex >= ONBOARDING_STEPS.length) {
-    finishOnboarding();
-  } else {
-    showOnboardingStep(onboardingIndex);
-  }
-}
-
-function skipOnboarding() {
-  finishOnboarding();
-}
-
-function finishOnboarding() {
-  if (onboardingHighlight) {
-    onboardingHighlight.classList.remove("onboarding-highlight");
-    onboardingHighlight = null;
-  }
-  onboardingOverlay?.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("onboarding-active");
-  if (onboardingStepLabel) onboardingStepLabel.textContent = "";
-  localStorage.setItem(ONBOARDING_STORAGE_KEY, "done");
-}
-
 function syncHeroPillsWithRange() { }
-
-function applyTheme(preference) {
-  const root = document.documentElement;
-  if (!root) return;
-  root.dataset.theme = preference;
-  localStorage.setItem("waan-theme-preference", preference);
-  if (preference === "system" && themeState.mediaQuery) {
-    root.dataset.colorScheme = themeState.mediaQuery.matches ? "dark" : "light";
-  } else if (preference === "dark") {
-    root.dataset.colorScheme = "dark";
-  } else {
-    root.dataset.colorScheme = "light";
-  }
-}
 
 function animateCardSection(content, expand) {
   if (!content) return;
@@ -1069,80 +717,6 @@ function animateCardSection(content, expand) {
     };
     content.addEventListener("transitionend", onEnd, { once: true });
   }
-}
-
-function showStatusMessage(message, tone) {
-  if (!statusEl) return;
-  statusEl.classList.remove("hidden", "is-exiting", "success", "warning", "error");
-  if (tone) {
-    statusEl.classList.add(tone);
-  }
-  statusEl.textContent = message;
-  if (statusHideTimer) {
-    clearTimeout(statusHideTimer);
-    statusHideTimer = null;
-  }
-  if (statusExitTimer) {
-    clearTimeout(statusExitTimer);
-    statusExitTimer = null;
-  }
-  requestAnimationFrame(() => {
-    statusEl.classList.add("is-active");
-  });
-  statusHideTimer = window.setTimeout(() => beginStatusExit(), STATUS_AUTO_HIDE_DELAY_MS);
-}
-
-function beginStatusExit() {
-  if (!statusEl) return;
-  statusEl.classList.add("is-exiting");
-  if (statusExitTimer) {
-    clearTimeout(statusExitTimer);
-  }
-  statusExitTimer = window.setTimeout(() => finalizeStatusExit(), STATUS_EXIT_DURATION_MS);
-}
-
-function finalizeStatusExit() {
-  if (!statusEl) return;
-  statusEl.classList.remove("is-active", "is-exiting", "success", "warning", "error");
-  statusEl.classList.add("hidden");
-}
-
-function initThemeControls() {
-  const saved = localStorage.getItem("waan-theme-preference");
-  const initial = saved || "system";
-  themeState.preference = initial;
-  applyTheme(initial);
-  themeToggleInputs.forEach(input => {
-    input.checked = input.value === initial;
-    input.addEventListener("change", () => {
-      if (input.checked) {
-        themeState.preference = input.value;
-        applyTheme(input.value);
-      }
-    });
-  });
-  if (themeState.mediaQuery) {
-    themeState.mediaQuery.addEventListener("change", () => {
-      if (themeState.preference === "system") {
-        applyTheme("system");
-      }
-    });
-  }
-}
-
-function getInterfaceColorScheme() {
-  const root = document.documentElement;
-  const scheme = root?.dataset.colorScheme === "light" ? "light" : "dark";
-  return scheme === "light" ? "light" : "dark";
-}
-
-function getExportThemeConfig() {
-  const scheme = getInterfaceColorScheme();
-  const theme = EXPORT_THEME_STYLES[scheme] || EXPORT_THEME_STYLES.dark;
-  return {
-    id: scheme,
-    ...theme,
-  };
 }
 
 function formatLocalChatLabel(chat) {
@@ -1293,9 +867,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initCompactMode();
   initAccessibilityControls();
   setDataAvailabilityState(false);
-  onboardingSkipButton?.addEventListener("click", skipOnboarding);
-  onboardingNextButton?.addEventListener("click", advanceOnboarding);
-  setTimeout(() => startOnboarding(), 500);
+  onboardingSkipButton?.addEventListener("click", onboardingController.skip);
+  onboardingNextButton?.addEventListener("click", onboardingController.advance);
+  setTimeout(() => onboardingController.start(), 500);
   if (window.electronAPI?.onRelayAction) {
     window.electronAPI.onRelayAction(action => {
       if (action === "connect") {
@@ -1550,9 +1124,9 @@ document.addEventListener("keydown", event => {
     closeLogDrawer();
     return;
   }
-  if (event.key === "Escape" && onboardingOverlay?.getAttribute("aria-hidden") === "false") {
+  if (event.key === "Escape" && onboardingController.isOpen()) {
     event.preventDefault();
-    skipOnboarding();
+    onboardingController.skip();
     return;
   }
 });
