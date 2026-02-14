@@ -11,6 +11,7 @@
     "bootstrap": "npm install --workspaces",
     "lint": "eslint js",
     "test": "vitest --run",
+    "verify": "npm run lint && npm test",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },

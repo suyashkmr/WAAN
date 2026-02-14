@@ -76,30 +76,28 @@ import {
   createCompactModeManager,
   createAccessibilityController,
 } from "./ui.js";
-import { createOnboardingController } from "./appShell/onboarding.js";
-import { createStatusUiController } from "./appShell/statusUi.js";
-import { createThemeUiController } from "./appShell/themeUi.js";
-import { createSectionNavController } from "./appShell/sectionNav.js";
-import { createChatSelectionController } from "./appShell/chatSelection.js";
-import { createExportPipeline } from "./appShell/exportPipeline.js";
-import { createRangeFiltersController } from "./appShell/rangeFilters.js";
-import { createAnalyticsPipeline } from "./appShell/analyticsPipeline.js";
-import { createPdfPreviewController } from "./appShell/pdfPreview.js";
-import { createDatasetLifecycleController } from "./appShell/datasetLifecycle.js";
-import { createRelayBootstrapController } from "./appShell/relayBootstrap.js";
-import { createKeyboardShortcutsController } from "./appShell/keyboardShortcuts.js";
-import { createEventBindingsController } from "./appShell/eventBindings.js";
-import { createBootstrapController } from "./appShell/bootstrap.js";
-import { createDataStatusController } from "./appShell/dataStatus.js";
-import { createParticipantInteractionsController } from "./appShell/participantInteractions.js";
 import {
+  createOnboardingController,
+  createStatusUiController,
+  createThemeUiController,
+  createSectionNavController,
+  createChatSelectionController,
+  createExportPipeline,
+  createRangeFiltersController,
+  createAnalyticsPipeline,
+  createPdfPreviewController,
+  createDatasetLifecycleController,
+  createRelayBootstrapController,
+  createKeyboardShortcutsController,
+  createEventBindingsController,
+  createBootstrapController,
+  createDataStatusController,
+  createParticipantInteractionsController,
   createBusyRuntimeController,
   fetchJson,
   formatRelayAccount,
-} from "./appShell/sharedRuntime.js";
-import {
   createDashboardRenderController,
-} from "./appShell/dashboardRender.js";
+} from "./appShell/index.js";
 
 const domCache = createDomCache();
 const statusEl = domCache.getById("data-status");
