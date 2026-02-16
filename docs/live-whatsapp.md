@@ -1,6 +1,8 @@
 # ChatScope Live Chat Integration
 
-WAAN can now read chats directly from ChatScope using [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). This flow lets you analyse any conversation without exporting `.txt` files.
+WAAN reads chats directly from ChatScope using
+[`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). Chat data
+is mirrored through the relay and then loaded into WAAN's local chat library.
 
 ## 1. Start the relay server
 
@@ -20,18 +22,21 @@ The first run downloads a headless Chromium build for ChatScope Web and stores t
 
 ## 2. Link ChatScope
 
-1. Open `index.html` in a desktop browser (or serve the repo root with any static HTTP server).
-2. Use the new **Connect to ChatScope** card:
+1. Open WAAN (either the browser dashboard or `WAAN.app`).
+2. Use the **Connect to ChatScope** card:
    - Click **Connect**. The relay generates a QR code.
    - On your phone open ChatScope → *Linked devices* → *Link a device* and scan the QR.
-3. Once connected, the UI shows your account name and lists all chats under the existing “Loaded chats” selector (grouped under *ChatScope account*).
+3. Once connected, WAAN shows your account name and lists mirrored chats under
+   the **Loaded chats** selector (grouped under *ChatScope account*).
 
 ## 3. Load a chat
 
-Select any chat from the *ChatScope account* optgroup. WAAN fetches up to 4 000 recent messages (tweak via `window.WAAN_CONFIG.remoteMessageLimit`) and renders the analytics just like an uploaded `.txt`.
+Select any chat from the *ChatScope account* group. WAAN fetches recent
+messages (default limit: `4000`) and renders analytics for that conversation.
 
 - Click **Refresh chats** after new conversations arrive.
-- Use **Disconnect** to log out and clear the mirrored list.
+- Use **Disconnect** to log out.
+- Use **Clear storage** to remove mirrored chats from local relay storage.
 
 ### Troubleshooting
 

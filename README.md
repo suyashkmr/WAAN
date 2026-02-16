@@ -1,8 +1,8 @@
 # WAAN
 
-WAAN is a ChatScope/WhatsApp analytics dashboard. It parses exported chats and
-renders insights such as activity trends, participant behavior, highlights,
-message types, sentiment, and system events.
+WAAN is a ChatScope/WhatsApp analytics dashboard. It analyzes mirrored chat
+history and renders insights such as activity trends, participant behavior,
+highlights, message types, sentiment, and system events.
 
 WAAN is available as:
 
@@ -11,10 +11,11 @@ WAAN is available as:
 
 ## What It Does
 
-- Loads local chat exports (`.txt` / parsed JSON datasets).
+- Loads mirrored chats from a connected ChatScope account via the relay.
+- Persists loaded chats in the local in-app library for quick switching.
 - Computes analytics across time, participants, and message categories.
 - Supports search, saved views, and multiple export formats.
-- Can optionally sync chats from a live linked account through `apps/server`.
+- Syncs from a live linked account through `apps/server`.
 
 ## Quick Start (Web Dashboard)
 
