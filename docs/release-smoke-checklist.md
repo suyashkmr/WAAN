@@ -52,3 +52,9 @@ If any step fails, capture:
 4. Whether fallback loaded chats and final synced count.
 
 Then follow `docs/relay-troubleshooting.md`.
+
+## Latest Sign-off
+
+- Date: 2026-02-16
+- Status: PASS
+- Verified by: user-confirmed manual packaged-app smoke run
