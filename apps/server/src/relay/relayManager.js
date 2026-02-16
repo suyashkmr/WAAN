@@ -116,6 +116,7 @@ class RelayManager extends EventEmitter {
       account: null,
       chatsSyncedAt: null,
       chatCount: 0,
+      syncPath: null,
     };
     this.loggedGetChatsFallback = false;
   }
@@ -131,6 +132,7 @@ class RelayManager extends EventEmitter {
       account: this.state.account,
       chatsSyncedAt: this.state.chatsSyncedAt,
       chatCount: this.state.chatCount,
+      syncPath: this.state.syncPath,
       syncingChats: this.syncingChats,
     };
   }
@@ -240,6 +242,7 @@ class RelayManager extends EventEmitter {
     try {
       this.log("Synchronising chat list from ChatScope…");
       let chats = [];
+      let syncPath = RELAY_SYNC_MODE === "fallback" ? "fallback" : "primary";
       if (RELAY_SYNC_MODE === "fallback") {
         this.logger.info("Relay sync mode=fallback; skipping client.getChats().");
         chats = await this.getChatsFromStoreFallback();
@@ -256,6 +259,7 @@ class RelayManager extends EventEmitter {
           }
           this.logger.debug("client.getChats() fallback details: %s", details);
           chats = await this.getChatsFromStoreFallback();
+          syncPath = "fallback";
         }
       }
       for (const chat of chats) {
@@ -263,7 +267,8 @@ class RelayManager extends EventEmitter {
       }
       this.state.chatCount = chats.length;
       this.state.chatsSyncedAt = new Date().toISOString();
-      this.log(`Synced ${chats.length} chats.`);
+      this.state.syncPath = syncPath;
+      this.log(`Synced ${chats.length} chats via ${syncPath}.`);
     } catch (error) {
       const message = formatErrorMessage(error, "Chat sync failed");
       const details = formatErrorDetails(error, "Chat sync failed");

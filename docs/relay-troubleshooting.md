@@ -2,6 +2,19 @@
 
 This runbook covers common WAAN relay issues for the ChatScope live sync flow.
 
+## Compatibility Baseline
+
+- Known-good WAAN baseline: `whatsapp-web.js@1.34.6` (pinned in `apps/server/package.json`).
+- If `client.getChats()` throws `t: t`, WAAN now degrades to Store fallback sync (`WAAN_RELAY_SYNC_MODE=auto`).
+- Treat fallback sync as degraded mode, not full compatibility.
+
+Upgrade policy:
+1. Bump `whatsapp-web.js` on a branch.
+2. Validate startup + chat sync in both modes:
+   - `WAAN_RELAY_SYNC_MODE=primary`
+   - `WAAN_RELAY_SYNC_MODE=auto`
+3. Keep fallback-only mode for diagnostics, not as default.
+
 ## Quick Health Checks
 
 1. Relay/API startup logs should include:
@@ -27,7 +40,7 @@ Meaning:
 
 Expected follow-up logs:
 - `Fallback chat sync path loaded <N> chats.`
-- `Synced <N> chats.`
+- `Synced <N> chats via fallback.`
 
 Action:
 1. If `<N> > 0`, treat as degraded-but-working.
@@ -55,7 +68,7 @@ Action:
 Example:
 
 ```text
-Synced 0 chats.
+Synced 0 chats via primary.
 ```
 
 Action:
