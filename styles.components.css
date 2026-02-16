@@ -741,11 +741,6 @@
     text-transform: uppercase;
 }
 
-.subtitle {
-    margin-top: 0.5rem;
-    color: var(--muted);
-}
-
 main {
     display: grid;
     gap: 1.5rem;
