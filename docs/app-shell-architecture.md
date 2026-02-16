@@ -37,5 +37,28 @@ Generated/backup artifacts stay ignored (examples: `*.tgz`, `*.tar.gz`, `apps_pr
 
 - Local verify: `npm run ci:verify`
   - Runs lint + tests + circular dependency check.
+- Local smoke: `npm run test:smoke`
+  - Runs fast boundary/bootstrap checks before full test suite.
 - CI workflow: `.github/workflows/ci.yml`
-  - Runs `npm ci`, `npm run verify`, `npm run check:circular`.
+  - Runs artifact + unused-export checks, smoke tests, full verify, then circular check.
+
+## Maintainer Checklist
+
+When adding a new app-shell controller/module:
+
+1. Add the module under `js/appShell/` with a focused responsibility.
+2. Wire it through the correct composition layer:
+   - controller construction: `js/appShell/controllerWiring/*`
+   - runtime assembly: `js/appShell/compositionAssembly.js`
+   - startup/bootstrap: `js/appShell/runtimeBootstrap.js` or `js/appShell/runtimeConfig.js`
+3. Keep `js/appShell.js` orchestration-only; avoid embedding long controller internals there.
+4. If new DOM nodes are required, register them in `js/appShell/domRefs.js` and group them in `js/appShell/domRefGroups.js`.
+5. Add/adjust tests:
+   - boundary contract tests (`tests/*Contracts.test.js`) for new wiring surface
+   - smoke coverage if startup behavior changes (`tests/appShellBoundaryIntegration.test.js` / `tests/appShellBoot.test.js`)
+6. Run guardrails before merging:
+   - `npm run check:artifacts`
+   - `npm run check:unused-exports`
+   - `npm run test:smoke`
+   - `npm run verify`
+   - `npm run check:circular`

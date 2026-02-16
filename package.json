@@ -13,6 +13,7 @@
     "check:unused-exports": "eslint js apps/server/src tests",
     "check:circular": "npx --yes madge --extensions js --circular js apps/server/src",
     "check:artifacts": "bash scripts/check-artifacts.sh",
+    "test:smoke": "vitest --run tests/appShellBoot.test.js tests/appShellBoundaryIntegration.test.js tests/controllerWiringContracts.test.js tests/compositionAssemblyContracts.test.js",
     "test": "vitest --run",
     "verify": "npm run lint && npm test",
     "ci:verify": "npm run check:artifacts && npm run check:unused-exports && npm run verify && npm run check:circular",

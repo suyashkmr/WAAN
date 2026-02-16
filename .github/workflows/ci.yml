@@ -27,6 +27,9 @@ jobs:
       - name: Check unused exports
         run: npm run check:unused-exports
 
+      - name: Run smoke tests
+        run: npm run test:smoke
+
       - name: Lint and test
         run: npm run verify
 
