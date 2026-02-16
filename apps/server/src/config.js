@@ -26,11 +26,11 @@ function loadConfig(overrides = {}) {
   );
   const apiPort = toNumber(
     overrides.apiPort || process.env.WAAN_API_PORT,
-    3333
+    3334
   );
   const relayPort = toNumber(
     overrides.relayPort || process.env.WAAN_RELAY_PORT,
-    4545
+    4546
   );
   const host = overrides.host || process.env.WAAN_BIND_HOST || "127.0.0.1";
   const allowOrigin =

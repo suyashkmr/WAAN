@@ -6,6 +6,8 @@ const datasetState = {
   datasetLabel: "sample chat",
   currentRange: "all",
   customRange: null,
+  fingerprint: null,
+  participantDirectory: null,
 };
 
 const chatLibrary = new Map();
@@ -56,10 +58,6 @@ export function updateStatus(message, tone = "info") {
   }
 }
 
-export function getDatasetState() {
-  return datasetState;
-}
-
 export function setDatasetEntries(entries) {
   datasetState.entries = entries ?? [];
 }
@@ -100,6 +98,18 @@ export function getCustomRange() {
   return datasetState.customRange;
 }
 
+export function setDatasetFingerprint(fingerprint) {
+  datasetState.fingerprint = fingerprint ?? null;
+}
+
+export function getDatasetFingerprint() {
+  return datasetState.fingerprint;
+}
+
+export function setDatasetParticipantDirectory(snapshot) {
+  datasetState.participantDirectory = snapshot ?? null;
+}
+
 function generateChatId() {
   return `chat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -113,6 +123,8 @@ export function saveChatDataset(record = {}) {
     label: record.label ?? existing?.label ?? `Chat ${chatOrder.length + 1}`,
     entries: record.entries ?? existing?.entries ?? [],
     analytics: record.analytics ?? existing?.analytics ?? null,
+    fingerprint: record.fingerprint ?? existing?.fingerprint ?? null,
+    participantDirectory: record.participantDirectory ?? existing?.participantDirectory ?? null,
     meta: {
       ...(existing?.meta ?? {}),
       ...(record.meta ?? {}),
@@ -222,6 +234,8 @@ const searchState = {
   results: [],
   total: 0,
   lastRun: null,
+  summary: null,
+  lastRunHasFilters: false,
 };
 
 export function getSearchState() {
@@ -232,10 +246,12 @@ export function setSearchQuery(query) {
   searchState.query = { ...defaultSearchQuery, ...(query || {}) };
 }
 
-export function setSearchResults(results, total) {
+export function setSearchResults(results, total, summary, meta = {}) {
   searchState.results = Array.isArray(results) ? results : [];
   searchState.total = Number.isFinite(total) ? total : 0;
   searchState.lastRun = new Date().toISOString();
+  searchState.summary = summary ?? null;
+  searchState.lastRunHasFilters = Boolean(meta.hasFilters);
 }
 
 export function resetSearchState() {
@@ -243,6 +259,8 @@ export function resetSearchState() {
   searchState.results = [];
   searchState.total = 0;
   searchState.lastRun = null;
+  searchState.summary = null;
+  searchState.lastRunHasFilters = false;
 }
 
 const analyticsCache = new Map();
@@ -304,4 +322,18 @@ export function resetWeekdayFilters() {
     offhours: true,
   };
   weekdayState.brush = { start: 0, end: 23 };
+}
+
+export function computeDatasetFingerprint(entries = []) {
+  if (!Array.isArray(entries) || !entries.length) {
+    return "0::";
+  }
+  const first = entries[0];
+  const last = entries[entries.length - 1];
+  const resolveStamp = entry =>
+    entry?.timestamp ||
+    entry?.timestamp_text ||
+    entry?.date ||
+    (typeof entry?.message === "string" ? `${entry.message.length}` : "");
+  return `${entries.length}:${resolveStamp(first)}:${resolveStamp(last)}`;
 }

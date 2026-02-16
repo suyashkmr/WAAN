@@ -105,15 +105,56 @@ class ChatStore extends EventEmitter {
       unreadCount: 0,
       lastMessageAt: null,
       messageCount: 0,
+      participants: [],
     };
     const updated = {
       ...existing,
       ...patch,
     };
+    if (patch.participants) {
+      updated.participants = patch.participants;
+    }
     this.metadata.set(chatId, updated);
     await this.persistMetadata();
     this.emit("chats:updated", this.listChats());
     return updated;
+  }
+
+  async upsertChatMetaBulk(updates = []) {
+    const normalized = Array.isArray(updates) ? updates : [];
+    if (!normalized.length) {
+      return [];
+    }
+    const applied = [];
+    normalized.forEach(item => {
+      if (!item || !item.chatId) return;
+      const chatId = item.chatId;
+      const patch = item.patch || {};
+      const existing = this.metadata.get(chatId) || {
+        id: chatId,
+        name: patch.name || chatId,
+        isGroup: Boolean(patch.isGroup),
+        unreadCount: 0,
+        lastMessageAt: null,
+        messageCount: 0,
+        participants: [],
+      };
+      const updated = {
+        ...existing,
+        ...patch,
+      };
+      if (patch.participants) {
+        updated.participants = patch.participants;
+      }
+      this.metadata.set(chatId, updated);
+      applied.push(updated);
+    });
+    if (!applied.length) {
+      return [];
+    }
+    await this.persistMetadata();
+    this.emit("chats:updated", this.listChats());
+    return applied;
   }
 
   async appendMessage(chatId, entry, meta = {}) {
@@ -131,6 +172,29 @@ class ChatStore extends EventEmitter {
     await this.saveEntries(chatId);
     this.emit("chat:message", { chatId, entry });
     return entry;
+  }
+
+  async replaceEntries(chatId, entries = [], meta = {}) {
+    const normalized = Array.isArray(entries) ? entries : [];
+    this.entriesCache.set(chatId, normalized);
+    await fs.outputJson(this.getChatPath(chatId), { chatId, entries: normalized }, { spaces: 2 });
+    const lastEntry = normalized.length ? normalized[normalized.length - 1] : null;
+    const patch = {
+      lastMessageAt: lastEntry?.timestamp || null,
+      messageCount: normalized.length,
+      ...meta,
+    };
+    await this.upsertChatMeta(chatId, patch);
+    this.emit("chat:replaced", { chatId, count: normalized.length });
+    return normalized;
+  }
+
+  async clearAll() {
+    this.metadata.clear();
+    this.entriesCache.clear();
+    await fs.remove(this.metadataPath).catch(() => {});
+    await fs.emptyDir(this.chatsDir);
+    this.emit("chats:cleared");
   }
 }
 

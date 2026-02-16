@@ -14,6 +14,7 @@ tmp/
 
 # Coverage
 coverage/
+coverage/**
 
 # Environment variables
 .env
@@ -30,7 +31,19 @@ apps/client/.erb
 .Spotlight-V100
 .Trashes
 
+# Ignored directories
+_IGNORE_waan/
+
 # Build artifacts
 *.pkg
 *.dmg
 *.zip
+*.tgz
+*.tar.gz
+waan-data-backup-*.tgz
+apps_prev_*/
+chat.json
+analytics.json
+chat.json.gz
+__pycache__/
+.DS_Store

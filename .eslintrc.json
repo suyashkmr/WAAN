@@ -1,0 +1,8 @@
+{
+  "ignorePatterns": [
+    "node_modules/**",
+    "coverage/**",
+    "js/vendor/**",
+    "_IGNORE_waan/**"
+  ]
+}

@@ -1,0 +1,11 @@
+WAAN is licensed under the MIT License (see `LICENSE`).
+
+Trademark, brand, and asset notice:
+- The WAAN name, logos, icons, and other brand identifiers are not granted for
+  unrestricted trademark use by this license.
+- Repository assets that are third-party or separately licensed remain subject
+  to their original licenses.
+
+Dependency notice:
+- This project uses third-party open-source dependencies (for example,
+  `whatsapp-web.js` under Apache-2.0). Their license terms continue to apply.

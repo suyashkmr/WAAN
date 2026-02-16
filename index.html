@@ -1,40 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Chat Overview</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>ChatScope Conversation Overview</title>
+    <link rel="icon" type="image/png" href="tpg.png">
+    <link rel="stylesheet" href="styles.base.css">
+    <link rel="stylesheet" href="styles.components.css">
 </head>
+
 <body>
-    <header>
-        <h1>Whatsapp Group Chat Analytics</h1>
+    <div class="ambient-field" aria-hidden="true"></div>
+    <nav class="section-nav" aria-label="Section shortcuts">
+        <div class="section-nav-inner"></div>
+    </nav>
+
+    <header class="hero-shell" id="hero-panel" data-nav-target="hero">
+        <div class="hero-layout">
+            <div class="hero-blurb">
+                <div class="hero-brand">
+                    <div class="hero-logo">
+                        <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="lazy">
+                    </div>
+                    <div class="hero-brand-copy">
+                        <p class="eyebrow">ChatScope Relay</p>
+                        <h1>ChatScope Conversation Analytics</h1>
+                        <p class="subtitle">Link once, view everything. Start the desktop relay, pick any chat, and let
+                            ChatScope keep the highlights ready.</p>
+                    </div>
+                </div>
+                <div class="hero-status">
+                    <span class="hero-status-badge" id="hero-status-badge">Not connected</span>
+                    <p class="hero-status-copy" id="hero-status-copy">Launch the relay desktop app and press Connect to
+                        begin.</p>
+                </div>
+            </div>
+            <section id="relay-live-card" class="card hero-live-card" data-accent="relay">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <h2><span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M8 3v2h8V3h2v2h1a2 2 0 0 1 2 2v4h-2V8H5v3H3V7a2 2 0 0 1 2-2h1V3h2zm-4 8h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8zm4 2v6h2v-4h4v4h2v-6H8z" />
+                                </svg>
+                            </span>Connect ChatScope Relay</h2>
+                        <p class="card-subtitle">The desktop relay mirrors chat app Web. Keep it running to capture new
+                            messages.</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button small" id="relay-reload-all" disabled>Reload All
+                            Chats</button>
+                        <button type="button" class="ghost-button small danger" id="relay-clear-storage" disabled>Clear
+                            Cached Chats</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="relay-onboarding" role="list">
+                        <div class="relay-step" data-step-id="start" role="listitem">
+                            <span class="relay-step-index">1</span>
+                            <div>
+                                <p class="relay-step-title">Start Relay</p>
+                                <p class="relay-step-detail">Open the ChatScope Relay desktop app, then press Start.</p>
+                            </div>
+                        </div>
+                        <div class="relay-step" data-step-id="qr" role="listitem">
+                            <span class="relay-step-index">2</span>
+                            <div>
+                                <p class="relay-step-title">Scan QR code</p>
+                                <p class="relay-step-detail">On your phone go to chat app → Linked Devices, tap “Link a
+                                    device”, and scan the QR code below.</p>
+                            </div>
+                        </div>
+                        <div class="relay-step" data-step-id="sync" role="listitem">
+                            <span class="relay-step-index">3</span>
+                            <div>
+                                <p class="relay-step-title">Sync Chats</p>
+                                <p class="relay-step-detail">Keep the relay open until chats finish syncing. After that
+                                    the dashboard stays in sync.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="relay-connection-status" class="live-status"></p>
+                    <div class="live-actions">
+                        <button type="button" class="ghost-button" id="relay-start">Connect Relay</button>
+                        <div class="live-button-group">
+                            <button type="button" class="ghost-button" id="relay-stop" disabled>Pause Relay</button>
+                            <button type="button" class="ghost-button danger" id="relay-logout" disabled>Log Out &
+                                Unlink</button>
+                        </div>
+                    </div>
+                    <p id="relay-account-name" class="live-account"></p>
+                    <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
+                        <img id="relay-qr-image" alt="Scan this QR code to link your device">
+                        <p>On your phone: chat app → Linked Devices → Link a device → scan this code. Keep the relay
+                            browser open until it says “Connected”.</p>
+                    </div>
+                    <p id="relay-help-text" class="live-help">
+                        Need to start manually? Run <code>npm start --workspace apps/server</code> in a terminal, wait
+                        for “Relay listening”, then press Connect.
+                    </p>
+                    <div class="relay-sync-progress hidden" id="relay-sync-progress" aria-live="polite">
+                        <h4>Sync progress</h4>
+                        <div class="relay-sync-steps">
+                            <div class="relay-sync-step" data-step="chats" data-state="pending">
+                                <div class="relay-sync-step-label">Chat list</div>
+                                <div class="relay-sync-step-meta" id="relay-sync-chats-meta">Waiting to sync…</div>
+                                <div class="relay-sync-bar"><span></span></div>
+                            </div>
+                            <div class="relay-sync-step" data-step="messages" data-state="pending">
+                                <div class="relay-sync-step-label">Messages</div>
+                                <div class="relay-sync-step-meta" id="relay-sync-messages-meta">Waiting to sync…</div>
+                                <div class="relay-sync-bar"><span></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </header>
 
+    <div id="global-progress" aria-live="polite" hidden>
+        <span class="global-progress-spinner" aria-hidden="true"></span>
+        <span id="global-progress-label">Working…</span>
+    </div>
+
+    <section class="relay-status-banner full-span" id="relay-status-banner" aria-live="polite"
+        data-nav-target="relay-status">
+        <div class="relay-banner-indicator" id="relay-status-dot" aria-hidden="true"></div>
+        <div class="relay-banner-text">
+            <p class="relay-banner-status" id="relay-status-message">Relay status unknown.</p>
+            <p class="relay-banner-meta" id="relay-status-meta">Launch the desktop relay and press Connect to mirror
+                chats into ChatScope.</p>
+        </div>
+    </section>
+
     <main>
-        <nav class="section-nav full-span" aria-label="Section shortcuts">
-            <div class="section-nav-inner">
-                <a href="#summary">Overview</a>
-                <a href="#insight-highlights">Highlights</a>
-                <a href="#daily-activity">Day by Day</a>
-                <a href="#weekly-trend">Week by Week</a>
-                <a href="#weekday-trend">Day of the Week</a>
-                <a href="#timeofday-trend">Time of Day</a>
-                <a href="#sentiment-overview">Mood</a>
-                <a href="#message-types">Message Mix</a>
-                <a href="#polls-card">Polls</a>
-                <a href="#saved-views-card">Saved Setups</a>
-                <a href="#search-panel">Search Messages</a>
+
+        <section class="actions-toolbar full-span" aria-label="Dataset actions" id="actions-toolbar"
+            data-nav-target="actions">
+            <div class="toolbar-group primary">
+                <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
+                <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
+                <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
             </div>
-        </nav>
+            <div class="toolbar-group secondary">
+                <button type="button" class="ghost-button" id="compact-toggle" aria-pressed="false"
+                    title="Switch between compact and comfort layouts">Compact mode</button>
+                <div class="theme-toggle">
+                    <span>Theme</span>
+                    <div class="segmented-option">
+                        <input type="radio" name="theme-option" id="theme-system" value="system" checked>
+                        <label for="theme-system">Auto</label>
+                    </div>
+                    <div class="segmented-option">
+                        <input type="radio" name="theme-option" id="theme-light" value="light">
+                        <label for="theme-light">Light</label>
+                    </div>
+                    <div class="segmented-option">
+                        <input type="radio" name="theme-option" id="theme-dark" value="dark">
+                        <label for="theme-dark">Dark</label>
+                    </div>
+                </div>
+                <div class="a11y-controls" aria-label="Accessibility options">
+                    <button type="button" class="ghost-button small" id="reduce-motion-toggle"
+                        aria-pressed="mixed">Motion: Standard</button>
+                    <button type="button" class="ghost-button small" id="high-contrast-toggle"
+                        aria-pressed="false">Contrast: Standard</button>
+                </div>
+                <button type="button" class="ghost-button" id="log-drawer-toggle">View Relay Logs</button>
+            </div>
+        </section>
 
         <div class="page-controls full-span">
             <div class="control-row primary-controls">
-                <div class="control upload-control">
-                    <span>Upload WhatsApp chat </span>
-                    <input type="file" id="chat-file" accept=".txt,text/plain">
-                  
-                </div>
                 <label class="control dataset-control">
                     <span>Loaded chats</span>
                     <select id="chat-selector" disabled>
@@ -62,23 +201,48 @@
                     </select>
                 </label>
             </div>
-            <div class="control-row page-actions">
-                <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
-                <button type="button" class="ghost-button" id="share-snapshot">Share this view</button>
-                <button type="button" class="ghost-button" id="download-markdown-report">Save text report</button>
-                <button type="button" class="ghost-button" id="download-slides-report">Save slides (HTML)</button>
+        </div>
+
+        <div id="dataset-empty-callout" class="dataset-empty full-span hidden" aria-live="polite">
+            <div class="empty-illustration" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="dataset-empty-copy">
+                <h3 id="dataset-empty-heading">No chat is selected yet.</h3>
+                <p id="dataset-empty-copy">Open the ChatScope Relay desktop app, press Connect, then pick a mirrored
+                    chat from “Loaded chats”.</p>
             </div>
         </div>
 
-        <p id="data-status" class="status full-span"></p>
+        <div id="data-status" class="status-snackbar full-span hidden" aria-live="polite"></div>
 
-        <section id="summary" class="card-grid summary full-span"></section>
+        <section id="summary" class="card-grid summary full-span" data-nav-target="overview"></section>
 
-        <section class="card full-span highlights" id="insight-highlights">
+        <section class="card full-span highlights" id="insight-highlights" data-nav-target="highlights"
+            data-accent="highlights">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Highlights</h2>
-                    <button type="button" class="card-toggle" aria-expanded="true" data-target="insight-highlights-content">▾</button>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                        d="M12 2l1.76 5.15L19 7.5l-4 3.34L16.5 16l-4.5-2.8L7.5 16 9 10.84 5 7.5l5.24-.35z" />
+                                </svg>
+                            </span>Highlights</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="highlights-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="highlights-note" role="tooltip">Activity outlooks anchor on
+                                the dataset end date.</span>
+                        </button>
+                    </div>
+                    <button type="button" class="card-toggle" aria-expanded="true"
+                        data-target="insight-highlights-content">▾</button>
                 </div>
             </div>
             <div class="card-content" id="insight-highlights-content">
@@ -86,28 +250,70 @@
             </div>
         </section>
 
-<section class="card full-span participants">
+        <section class="card full-span participants" id="participants" data-nav-target="participants"
+            data-accent="participants">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Participants</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                                </svg></span>Participants</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="participants-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="participants-note" role="tooltip">See who speaks the most,
+                                and filter to spotlight the quietest members or recent activity.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-participants">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="participants-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-participants"
+                            title="Download the participants table as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="participants-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="participants-content">
-                <p class="section-note" id="participants-note">Everyone listed by how many messages they have sent.</p>
                 <div class="participants-controls">
                     <label class="control-group" for="participants-top-count">
                         <span>Show Top</span>
                         <select id="participants-top-count">
+                            <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="25" selected>25</option>
                             <option value="50">50</option>
                             <option value="0">All</option>
                         </select>
                     </label>
+                    <label class="control-group" for="participants-sort">
+                        <span>Sort</span>
+                        <select id="participants-sort">
+                            <option value="most" selected>Most active</option>
+                            <option value="quiet">Quietest</option>
+                        </select>
+                    </label>
+                    <label class="control-group" for="participants-timeframe">
+                        <span>Timeframe</span>
+                        <select id="participants-timeframe">
+                            <option value="all" selected>All time</option>
+                            <option value="week">Last 7 days</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="participants-quick-filters">
+                    <span>Quick filters:</span>
+                    <button type="button" class="ghost-button tiny" data-participants-preset="top-week"
+                        aria-pressed="false">
+                        Top 5 this week
+                    </button>
+                    <button type="button" class="ghost-button tiny" data-participants-preset="quiet"
+                        aria-pressed="false">
+                        Quietest 5
+                    </button>
                 </div>
                 <div class="table-container scrollable">
                     <table id="top-senders">
@@ -126,18 +332,33 @@
             </div>
         </section>
 
-        <section class="card full-span" id="hourly-activity">
+        <section class="card full-span" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Hourly Activity</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M11 7h2v6h-4v-2h2zm1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                                </svg></span>Hourly rhythm</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="hourly-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="hourly-note" role="tooltip">Track when conversations spike
+                                during the day, and filter to compare weekdays vs weekends or work vs off hours.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-hourly">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="hourly-activity-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-hourly"
+                            title="Download hourly activity as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="hourly-activity-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="hourly-activity-content">
-                <p class="section-note">Shows when messages were sent during the day (using times from the chat).</p>
                 <div class="hourly-summary">
                     <div class="summary-block">
                         <span class="summary-label">Top Hour</span>
@@ -175,40 +396,75 @@
             </div>
         </section>
 
-        <section class="card full-span" id="daily-activity">
+        <section class="card full-span" id="daily-activity" data-nav-target="daily-activity" data-accent="daily">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Day by Day</h2>
+                    <div class="card-heading">
+                        <h2>
+                            <span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M7 2v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5v10h14V8z" />
+                                </svg>
+                            </span>
+                            Day by Day
+                        </h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="daily-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="daily-note" role="tooltip">Messages per day across the full
+                                range so you can spot busy streaks and quiet spells.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-daily">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="daily-activity-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-daily"
+                            title="Download daily activity as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="daily-activity-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="daily-activity-content">
-                <p class="section-note">Messages per day across the whole chat. Hover to see the numbers.</p>
                 <div class="daily-summary">
                     <div class="summary-block">
                         <span class="summary-label">Avg per day</span>
-                    <span class="summary-value" id="daily-avg-day">—</span>
+                        <span class="summary-value" id="daily-avg-day">—</span>
                     </div>
                 </div>
                 <div id="daily-chart" class="calendar-chart"></div>
             </div>
         </section>
 
-        <section class="card full-span" id="weekly-trend">
+        <section class="card full-span" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Week by Week</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17l-3.5-3.5-1.41 1.41L9 19 20.5 7.5 19.09 6z" />
+                                </svg></span>Week by Week</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="weekly-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="weekly-note" role="tooltip">Messages per calendar week, with
+                                rolling averages to highlight trends. Week labels follow ISO week notation (ISO
+                                8601).</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-weekly">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="weekly-trend-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-weekly"
+                            title="Download weekly activity as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="weekly-trend-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="weekly-trend-content">
-                <p class="section-note">Messages per week (calendar weeks).</p>
                 <div class="weekly-summary">
                     <div class="summary-block">
                         <span class="summary-label">Total so far</span>
@@ -224,22 +480,36 @@
                     </div>
                 </div>
                 <div id="weekly-chart" class="weekly-chart"></div>
-                <p class="section-note week-number-note">Week labels follow ISO week notation (ISO 8601).</p>
             </div>
         </section>
 
-        <section class="card full-span" id="weekday-trend">
+        <section class="card full-span" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Day of the Week</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M21 3h-3V1h-2v2H8V1H6v2H3a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h18a2 2 0 0 0 2-2V5c0-1.1-.9-2-2-2zm0 18H3V9h18zm0-14H3V5h18z" />
+                                </svg></span>Busiest Weekdays</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="weekday-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="weekday-note" role="tooltip">Compare average messages for
+                                each day of the week, or zero in on specific hours using the filters.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-weekday">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="weekday-trend-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-weekday"
+                            title="Download weekday distribution as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="weekday-trend-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="weekday-trend-content">
-                <p class="section-note">Average messages for each day of the week.</p>
                 <div class="weekday-controls">
                     <div class="toggle-group">
                         <span class="toggle-label">Days</span>
@@ -281,21 +551,35 @@
             </div>
         </section>
 
-        <section class="card full-span" id="timeofday-trend">
+        <section class="card full-span" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Time of Day</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path d="M12 7V3h-2v4H7l5 6 5-6h-3zM5 17h14v2H5z" />
+                                </svg></span>Time of Day</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="timeofday-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="timeofday-note" role="tooltip">Average messages per hour so
+                                you can see when mornings, afternoons, or evenings are most active.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-timeofday">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="timeofday-trend-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-timeofday"
+                            title="Download the time-of-day summary as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="timeofday-trend-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="timeofday-trend-content">
-                <p class="section-note">Average messages per hour for the selected range.</p>
                 <div class="timeofday-controls">
                     <div class="toggle-group">
-                        <span class="toggle-label">Days to include</span>
+                        <span class="toggle-label">Days to Include</span>
                         <label class="segmented-option">
                             <input type="checkbox" id="timeofday-toggle-weekdays" checked>
                             <span>Weekdays</span>
@@ -326,18 +610,35 @@
             </div>
         </section>
 
-        <section class="card full-span sentiment" id="sentiment-overview">
+        <section class="card full-span sentiment" id="sentiment-overview" data-nav-target="sentiment-overview"
+            data-accent="sentiment">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Mood</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.003 6.003 0 0 1 19 3c3.04 0 5.5 2.46 5.5 5.5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg></span>Mood & sentiment</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="sentiment-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="sentiment-note" role="tooltip">Estimated mood (positive,
+                                neutral, negative) based on the message text—use it as a loose signal, not a
+                                verdict.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-sentiment">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="sentiment-overview-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-sentiment"
+                            title="Download the sentiment timeline as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="sentiment-overview-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="sentiment-overview-content">
-                <p class="section-note">Estimated mood (positive, neutral, negative) based on the message text. Treat this as a rough guide.</p>
                 <div class="sentiment-summary" id="sentiment-summary"></div>
                 <div class="sentiment-content">
                     <div class="sentiment-trend sentiment-panel">
@@ -362,62 +663,97 @@
                 </div>
             </div>
         </section>
-
-        <section class="card full-span message-types" id="message-types">
+        <section class="card full-span message-types" id="message-types" data-nav-target="message-types"
+            data-accent="message-types">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Message Mix</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                                </svg></span>Message Mix</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="message-types-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="message-types-note" role="tooltip">Break down chat volume by
+                                media, links, polls, and system events. Join events and members added are counted as
+                                non-overlapping categories.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-message-types">Download CSV</button>
-                        <button type="button" class="ghost-button" id="download-chat-json">Download chat JSON</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="message-types-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-message-types"
+                            title="Download the message mix as CSV">Download CSV</button>
+                        <button type="button" class="ghost-button" id="download-chat-json"
+                            title="Download the current chat as raw JSON">Download JSON</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="message-types-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="message-types-content">
-                <p class="section-note">Shows each type of message and how it has changed since last week.</p>
                 <div class="message-type-summary" id="message-type-summary"></div>
-                <p class="message-type-note" id="message-type-note"></p>
                 <div class="card-grid stats message-basics">
                     <div class="stat" data-stat="media">
                         <span class="stat-value" id="media-count">0</span>
                         <span class="stat-label">Messages with media</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="media"
+                            title="Download media stats as CSV">Media CSV</button>
                     </div>
                     <div class="stat" data-stat="link">
                         <span class="stat-value" id="link-count">0</span>
                         <span class="stat-label">Messages with links</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="links"
+                            title="Download link stats as CSV">Links CSV</button>
                     </div>
                     <div class="stat" data-stat="poll">
                         <span class="stat-value" id="poll-count">0</span>
                         <span class="stat-label">Polls</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="polls"
+                            title="Download poll stats as CSV">Polls CSV</button>
                     </div>
                     <div class="stat" data-stat="join">
                         <span class="stat-value" id="join-events">0</span>
                         <span class="stat-label">Join events</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="joins"
+                            title="Download join events as CSV">Join events CSV</button>
                     </div>
                     <div class="stat" data-stat="added">
                         <span class="stat-value" id="added-events">0</span>
                         <span class="stat-label">Members added</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="added"
+                            title="Download member additions as CSV">Members added CSV</button>
                     </div>
                     <div class="stat" data-stat="left">
                         <span class="stat-value" id="left-events">0</span>
                         <span class="stat-label">Members left</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="left"
+                            title="Download member departures as CSV">Members left CSV</button>
                     </div>
                     <div class="stat" data-stat="removed">
                         <span class="stat-value" id="removed-events">0</span>
                         <span class="stat-label">Members removed</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="removed"
+                            title="Download member removals as CSV">Members removed CSV</button>
                     </div>
                     <div class="stat" data-stat="changed">
                         <span class="stat-value" id="changed-events">0</span>
                         <span class="stat-label">Settings changes</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="changed"
+                            title="Download settings changes as CSV">Changes CSV</button>
                     </div>
                     <div class="stat" data-stat="other">
                         <span class="stat-value" id="other-system-events">0</span>
                         <span class="stat-label">Other system messages</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="other"
+                            title="Download other system messages as CSV">Other systems CSV</button>
                     </div>
                     <div class="stat" data-stat="join-requests">
                         <span class="stat-value" id="join-requests">0</span>
                         <span class="stat-label">Join requests</span>
+                        <button type="button" class="ghost-button tiny stat-download" data-export="join_requests"
+                            title="Download join requests as CSV">Join requests CSV</button>
                     </div>
                     <div class="stat" data-stat="avg-chars">
                         <span class="stat-value" id="avg-chars">0</span>
@@ -430,15 +766,30 @@
                 </div>
             </div>
         </section>
-        <section class="card full-span" id="polls-card">
+        <section class="card full-span" id="polls-card" data-nav-target="polls" data-accent="polls">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Polls</h2>
-                    <button type="button" class="card-toggle" aria-expanded="true" data-target="polls-content">▾</button>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path d="M6 19h2V5H6zm5 6h2V2h-2zm5-11v13h2V14z" />
+                                </svg></span>Poll Highlights</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="polls-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="polls-note" role="tooltip">Poll questions detected in your
+                                mirrored chats, with total counts and creators.</span>
+                        </button>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="polls-content">▾</button>
+                    </div>
                 </div>
             </div>
             <div class="card-content" id="polls-content">
-                <p class="section-note" id="polls-note">Poll questions detected in your uploaded chats.</p>
                 <div class="polls-summary">
                     <div class="stat">
                         <span class="stat-label">Total polls</span>
@@ -453,11 +804,16 @@
             </div>
         </section>
 
-        <section class="card full-span saved-views" id="saved-views-card">
+        <section class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views"
+            data-accent="saved-views">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Saved Setups</h2>
-                    <button type="button" class="card-toggle" aria-expanded="true" data-target="saved-views-content">▾</button>
+                    <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                <path
+                                    d="M17 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V7zM7 5h7v4H7zm7 14H7v-6h7zm3-12h-2V5h1z" />
+                            </svg></span>Saved Setups</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true"
+                        data-target="saved-views-content">▾</button>
                 </div>
             </div>
             <div class="card-content" id="saved-views-content">
@@ -465,44 +821,60 @@
                     <div class="saved-view-save">
                         <label for="saved-view-name">Name</label>
                         <input type="text" id="saved-view-name" placeholder="e.g. Last 30 days weekdays">
-                        <button type="button" class="ghost-button" id="save-view">Save current setup</button>
+                        <button type="button" class="ghost-button" id="save-view">Save current view</button>
                     </div>
                     <div class="saved-view-manage">
                         <label class="control-group" for="saved-view-list">
                             <span>Saved setups</span>
                             <select id="saved-view-list"></select>
                         </label>
-                        <button type="button" class="ghost-button small" id="apply-saved-view">Use</button>
-                        <button type="button" class="ghost-button small" id="delete-saved-view">Remove</button>
+                        <button type="button" class="ghost-button small" id="apply-saved-view">Load view</button>
+                        <button type="button" class="ghost-button small" id="delete-saved-view">Delete view</button>
                     </div>
                 </div>
+                <div class="saved-view-gallery" id="saved-view-gallery" aria-live="polite"></div>
                 <div class="compare-controls" id="compare-controls">
                     <div class="compare-select">
-                        <label for="compare-view-a">Setup A</label>
+                        <label for="compare-view-a">View A</label>
                         <select id="compare-view-a"></select>
                     </div>
                     <div class="compare-select">
-                        <label for="compare-view-b">Setup B</label>
+                        <label for="compare-view-b">View B</label>
                         <select id="compare-view-b"></select>
                     </div>
-                    <button type="button" class="ghost-button" id="compare-views">Compare</button>
+                    <button type="button" class="ghost-button" id="compare-views">Compare views</button>
                 </div>
                 <div class="compare-summary" id="compare-summary"></div>
             </div>
         </section>
 
-        <section class="card full-span search-panel" id="search-panel">
+        <section class="card full-span search-panel" id="search-panel" data-nav-target="search" data-accent="search">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2>Search Messages</h2>
+                    <div class="card-heading">
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M15.5 14h-.79l-.28-.27A6 6 0 1 0 14 15.5l.27.28v.79l5 5 1.5-1.5zm-5.5 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" />
+                                </svg></span>Search Messages</h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="search-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="search-note" role="tooltip">Add words, pick people, and
+                                optional dates to find messages.</span>
+                        </button>
+                    </div>
                     <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-search-results">Save CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true" data-target="search-panel-content">▾</button>
+                        <button type="button" class="ghost-button" id="download-search-results"
+                            title="Download the current search results as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="search-panel-content">▾</button>
                     </div>
                 </div>
             </div>
             <div class="card-content" id="search-panel-content">
-                <p class="section-note">Add words, pick people, and optional dates to find messages.</p>
                 <form id="advanced-search-form" class="search-controls">
                     <div class="search-control">
                         <label for="search-keyword">Keywords</label>
@@ -523,19 +895,131 @@
                         <input type="date" id="search-end">
                     </div>
                     <div class="search-actions">
-                        <button type="submit" class="ghost-button">Search</button>
-                        <button type="button" class="ghost-button" id="reset-search">Reset</button>
+                        <button type="submit" class="ghost-button">Search messages</button>
+                        <button type="button" class="ghost-button" id="reset-search">Clear filters</button>
                     </div>
                 </form>
-                <div class="search-results-summary" id="search-results-summary">Add filters to search messages.</div>
+                <div class="search-results-summary" id="search-results-summary">Enter keywords, choose a participant, or
+                    set dates to search this chat. Leave keywords blank to filter by participant/dates only.</div>
+                <div class="search-progress" id="search-progress" aria-live="polite">
+                    <div class="search-progress-track" id="search-progress-track" role="progressbar" aria-valuemin="0"
+                        aria-valuemax="100" aria-valuenow="0" aria-label="Search progress">
+                        <div class="search-progress-bar" id="search-progress-bar"></div>
+                    </div>
+                    <div class="search-progress-label" id="search-progress-label"></div>
+                </div>
+                <div class="search-insights hidden" id="search-insights" aria-live="polite"></div>
                 <div class="search-results-list" id="search-results-list"></div>
+            </div>
+        </section>
+
+        <section class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                <path
+                                    d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" />
+                            </svg></span>FAQ</h2>
+                    <button type="button" class="card-toggle" aria-expanded="true" data-target="faq-content">▾</button>
+                </div>
+            </div>
+            <div class="card-content" id="faq-content">
+                <div class="faq-illustration" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul class="faq-list">
+                    <li>
+                        <h3>How do I connect my account?</h3>
+                        <p>Click Connect, then on your phone open chat app → Linked Devices → Link a device and scan
+                            the QR code shown on this screen. After that, choose a conversation from “Loaded chats”.</p>
+                    </li>
+                    <li>
+                        <h3>Why do I sometimes see a sync warning, but chats still load?</h3>
+                        <p>Sometimes the first sync method fails. WAAN automatically switches to a backup method so
+                            your chats can still load. In most cases, you can continue using the app normally.</p>
+                    </li>
+                    <li>
+                        <h3>Do I need to keep my phone online?</h3>
+                        <p>Yes. Your phone should stay connected to the internet while syncing, similar to using chat
+                            app Web.</p>
+                    </li>
+                    <li>
+                        <h3>Why are export buttons disabled?</h3>
+                        <p>Exports are available only after a chat is loaded. Connect first, then pick a chat from the
+                            list.</p>
+                    </li>
+                    <li>
+                        <h3>Where is my data stored?</h3>
+                        <p>Your data is stored locally on your Mac in WAAN’s app data folder. It is not uploaded
+                            unless you explicitly share exported files.</p>
+                    </li>
+                    <li>
+                        <h3>What are saved views?</h3>
+                        <p>Saved views let you bookmark your current filters and chart settings so you can return to
+                            the same analysis later.</p>
+                    </li>
+                    <li>
+                        <h3>What should I do if syncing seems stuck?</h3>
+                        <p>Try clicking Resync chats. If it still doesn’t move, stop and reconnect the relay, then
+                            try again.</p>
+                    </li>
+                    <li>
+                        <h3>What’s the safest way to close the app?</h3>
+                        <p>Disconnect or stop syncing first, then quit the app. If a relay browser window opened, close
+                            that too.</p>
+                    </li>
+                </ul>
             </div>
         </section>
     </main>
 
+    <aside class="relay-log-drawer" id="relay-log-drawer" aria-hidden="true" aria-label="Relay logs">
+        <div class="relay-log-header">
+            <div>
+                <p class="relay-log-title">Relay logs</p>
+                <p class="relay-log-subtitle" id="relay-log-connection">Connecting…</p>
+            </div>
+            <div class="relay-log-actions">
+                <button type="button" class="ghost-button small" id="relay-log-clear">Clear</button>
+                <button type="button" class="ghost-button small" id="relay-log-close">Close</button>
+            </div>
+        </div>
+        <div class="relay-log-body" id="relay-log-list">
+            <p class="relay-log-empty">No relay logs yet.</p>
+        </div>
+    </aside>
+
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="onboarding-overlay" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="onboarding-panel">
+            <h2>Welcome to ChatScope</h2>
+            <p class="onboarding-step-label" id="onboarding-step-label"></p>
+            <p id="onboarding-copy">Link the relay to start mirroring chats.</p>
+            <div class="onboarding-actions">
+                <button type="button" class="ghost-button" id="onboarding-skip">Skip</button>
+                <button type="button" class="ghost-button primary" id="onboarding-next">Next</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
+        <div class="footer-brand">
+            <img src="tpg.png" alt="ChatScope logo" class="brand-mark brand-mark--small" loading="lazy">
+            <div>
+                <p>ChatScope Relay</p>
+                <small>Conversation intelligence for your chat app chats.</small>
+            </div>
+        </div>
+        <p class="footer-meta">
+            Crafted with care · <span class="footer-dot">•</span> <a href="https://relay.chatscope.app" target="_blank"
+                rel="noopener">relay.chatscope.app</a>
+        </p>
     </footer>
 
     <script type="module" src="js/main.js"></script>
-  </body>
+</body>
+
 </html>

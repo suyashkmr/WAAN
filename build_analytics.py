@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate a compact analytics summary from the parsed WhatsApp chat JSON.
+Generate a compact analytics summary from the parsed ChatScope chat JSON.
 
 This script reads `chat.json` (created with parse_whatsapp.py) and writes
 `analytics.json` containing pre-aggregated metrics for the web dashboard.

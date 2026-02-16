@@ -1,4 +1,5 @@
 const express = require("express");
+const { formatErrorMessage } = require("../errorUtils");
 
 const LOG_LIMIT = 400;
 
@@ -33,7 +34,7 @@ function buildRelayRouter({ relayManager }) {
       const status = await relayManager.start();
       res.json(status);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: formatErrorMessage(error, "Unable to start relay") });
     }
   });
 
@@ -42,7 +43,34 @@ function buildRelayRouter({ relayManager }) {
       const status = await relayManager.stop();
       res.json(status);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: formatErrorMessage(error, "Unable to stop relay") });
+    }
+  });
+
+  router.post("/relay/logout", async (req, res) => {
+    try {
+      const status = await relayManager.logout();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ error: formatErrorMessage(error, "Unable to logout relay session") });
+    }
+  });
+
+  router.post("/relay/sync", async (req, res) => {
+    try {
+      const status = await relayManager.syncChats();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ error: formatErrorMessage(error, "Unable to sync chats") });
+    }
+  });
+
+  router.post("/relay/show-browser", async (req, res) => {
+    try {
+      await relayManager.showBrowserWindow();
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(500).json({ error: formatErrorMessage(error, "Unable to show relay browser") });
     }
   });
 

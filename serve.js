@@ -1,46 +1,44 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+#!/usr/bin/env node
+/**
+ * Lightweight static server for the WAAN dashboard.
+ * Serves everything from the repo root so the browser can fetch
+ * chat.json/analytics.json and JS modules without extra tooling.
+ */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import express from "express";
 
-const PORT = Number(process.env.PORT || process.env.WAAN_CLIENT_PORT || 4174);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const mimeTypes = {
-  '.html': 'text/html',
-  '.js': 'text/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
-};
+const ROOT = path.resolve(__dirname);
+const PORT = Number(process.env.WAAN_CLIENT_PORT || process.env.PORT || 4173);
+const HOST = process.env.WAAN_CLIENT_HOST || process.env.HOST || "0.0.0.0";
 
-const server = http.createServer((req, res) => {
-  let filePath = '.' + req.url;
-  if (filePath === './') {
-    filePath = './index.html';
-  }
+const app = express();
 
-  const extname = String(path.extname(filePath)).toLowerCase();
-  const mimeType = mimeTypes[extname] || 'application/octet-stream';
-
-  fs.readFile(filePath, (error, content) => {
-    if (error) {
-      if (error.code === 'ENOENT') {
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end('<h1>404 Not Found</h1>', 'utf-8');
-      } else {
-        res.writeHead(500);
-        res.end('Server Error', 'utf-8');
+app.use(
+  express.static(ROOT, {
+    extensions: ["html"],
+    etag: false,
+    setHeaders: (res, filePath) => {
+      res.setHeader("Cache-Control", "no-store");
+      // Ensure font files are served with correct MIME type
+      if (filePath.endsWith('.woff2')) {
+        res.setHeader("Content-Type", "font/woff2");
+      } else if (filePath.endsWith('.woff')) {
+        res.setHeader("Content-Type", "font/woff");
       }
-    } else {
-      res.writeHead(200, { 'Content-Type': mimeType });
-      res.end(content, 'utf-8');
-    }
-  });
+    },
+  })
+);
+
+// Fallback to index.html for any unknown route (keeps relative imports working)
+app.use((_req, res) => {
+  res.sendFile(path.join(ROOT, "index.html"));
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+app.listen(PORT, HOST, () => {
+  // eslint-disable-next-line no-console
+  console.log(`WAAN dashboard available at http://${HOST}:${PORT}`);
 });

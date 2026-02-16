@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": "2026-01-01T10:00:00.000Z",
+    "timestamp_text": "01/01/2026, 10:00",
+    "sender": "Alice",
+    "sender_id": "Alice",
+    "message": "Happy new year!",
+    "type": "message",
+    "search_text": "happy new year!"
+  },
+  {
+    "timestamp": "2026-01-01T10:01:00.000Z",
+    "timestamp_text": "01/01/2026, 10:01",
+    "sender": "Bob",
+    "sender_id": "Bob",
+    "message": "Happy new year to you too.",
+    "type": "message",
+    "search_text": "happy new year to you too."
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "ensure-server-deps": "node scripts/ensure-server-deps.js",
+    "start": "npm run ensure-server-deps && electron .",
+    "start-backend": "npm run ensure-server-deps && node startup.js",
+    "dist": "npm run ensure-server-deps && electron-builder --mac"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "ai.waan.desktop",
+    "productName": "WAAN",
+    "afterPack": "./scripts/after-pack.js",
+    "files": [
+      "**/*",
+      "!dist{,/**}"
+    ],
+    "extraResources": [
+      {
+        "from": "..",
+        "to": "waan/web",
+        "filter": [
+          "index.html",
+          "styles.css",
+          "styles.base.css",
+          "styles.components.css",
+          "styles/**/*",
+          "js/**/*",
+          "vendor/**/*",
+          "tpg.png"
+        ]
+      },
+      {
+        "from": "../apps/server",
+        "to": "waan/apps/server"
+      },
+      {
+        "from": "../scripts",
+        "to": "waan/scripts",
+        "filter": [
+          "restore-waandata.cjs"
+        ]
+      }
+    ]
+  }
+}
