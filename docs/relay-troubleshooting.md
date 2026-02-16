@@ -2,6 +2,8 @@
 
 This runbook covers common WAAN relay issues for the ChatScope live sync flow.
 
+Before release tagging, run: `docs/release-smoke-checklist.md`.
+
 ## Compatibility Baseline
 
 - Known-good WAAN baseline: `whatsapp-web.js@1.34.6` (pinned in `apps/server/package.json`).

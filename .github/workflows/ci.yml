@@ -35,3 +35,7 @@ jobs:
 
       - name: Check circular dependencies
         run: npm run check:circular
+
+      - name: Release smoke reminder
+        if: github.ref_type == 'tag'
+        run: echo "Reminder: run docs/release-smoke-checklist.md on the packaged WAAN.app artifact."

@@ -1,21 +1,35 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 
 const ORIGINAL_SYNC_MODE = process.env.WAAN_RELAY_SYNC_MODE;
+const ORIGINAL_RETRY_ATTEMPTS = process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS;
+const ORIGINAL_RETRY_DELAY_MS = process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS;
 
 function restoreSyncMode() {
   if (ORIGINAL_SYNC_MODE === undefined) {
     delete process.env.WAAN_RELAY_SYNC_MODE;
-    return;
+  } else {
+    process.env.WAAN_RELAY_SYNC_MODE = ORIGINAL_SYNC_MODE;
   }
-  process.env.WAAN_RELAY_SYNC_MODE = ORIGINAL_SYNC_MODE;
+  if (ORIGINAL_RETRY_ATTEMPTS === undefined) {
+    delete process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS;
+  } else {
+    process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS = ORIGINAL_RETRY_ATTEMPTS;
+  }
+  if (ORIGINAL_RETRY_DELAY_MS === undefined) {
+    delete process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS;
+  } else {
+    process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS = ORIGINAL_RETRY_DELAY_MS;
+  }
 }
 
-async function loadRelayManager(syncMode) {
+async function loadRelayManager(syncMode, { retryAttempts = 2, retryDelayMs = 0 } = {}) {
   if (syncMode === undefined) {
     delete process.env.WAAN_RELAY_SYNC_MODE;
   } else {
     process.env.WAAN_RELAY_SYNC_MODE = syncMode;
   }
+  process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS = String(retryAttempts);
+  process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS = String(retryDelayMs);
   vi.resetModules();
   const relayModule = await import("../apps/server/src/relay/relayManager.js");
   const resolved = relayModule?.RelayManager || relayModule?.default?.RelayManager;
@@ -82,6 +96,7 @@ describe("relayManager sync mode behavior", () => {
   it("auto mode falls back when client.getChats() fails", async () => {
     const RelayManager = await loadRelayManager("auto");
     const { manager, logger, store } = createManager(RelayManager);
+    manager.waitBeforePrimaryRetry = vi.fn(async () => {});
     const fallbackChat = buildChat("fallback@c.us");
     manager.client = {
       getChats: vi.fn(async () => {
@@ -92,7 +107,8 @@ describe("relayManager sync mode behavior", () => {
 
     const status = await manager.syncChats();
 
-    expect(manager.client.getChats).toHaveBeenCalledTimes(1);
+    expect(manager.client.getChats).toHaveBeenCalledTimes(2);
+    expect(manager.waitBeforePrimaryRetry).toHaveBeenCalledTimes(1);
     expect(manager.getChatsFromStoreFallback).toHaveBeenCalledTimes(1);
     expect(store.upsertChatMeta).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith(
@@ -149,5 +165,46 @@ describe("relayManager sync mode behavior", () => {
     expect(logger.info).toHaveBeenCalledWith(
       "Sync path transition detected: primary -> fallback.",
     );
+  });
+
+  it("retries primary getChats in auto mode and stays on primary when retry succeeds", async () => {
+    const RelayManager = await loadRelayManager("auto");
+    const { manager } = createManager(RelayManager);
+    manager.waitBeforePrimaryRetry = vi.fn(async () => {});
+    manager.client = {
+      getChats: vi
+        .fn()
+        .mockRejectedValueOnce(new Error("transient failure"))
+        .mockResolvedValueOnce([buildChat("primary-retry@c.us")]),
+    };
+    manager.getChatsFromStoreFallback = vi.fn(async () => [buildChat("fallback@c.us")]);
+
+    const status = await manager.syncChats();
+
+    expect(manager.client.getChats).toHaveBeenCalledTimes(2);
+    expect(manager.waitBeforePrimaryRetry).toHaveBeenCalledTimes(1);
+    expect(manager.getChatsFromStoreFallback).not.toHaveBeenCalled();
+    expect(status.syncPath).toBe("primary");
+    expect(status.lastError).toBeNull();
+  });
+
+  it("falls back only after auto-mode primary retries are exhausted", async () => {
+    const RelayManager = await loadRelayManager("auto");
+    const { manager } = createManager(RelayManager);
+    manager.waitBeforePrimaryRetry = vi.fn(async () => {});
+    manager.client = {
+      getChats: vi.fn(async () => {
+        throw new Error("persistent primary failure");
+      }),
+    };
+    manager.getChatsFromStoreFallback = vi.fn(async () => [buildChat("fallback-after-retries@c.us")]);
+
+    const status = await manager.syncChats();
+
+    expect(manager.client.getChats).toHaveBeenCalledTimes(2);
+    expect(manager.waitBeforePrimaryRetry).toHaveBeenCalledTimes(1);
+    expect(manager.getChatsFromStoreFallback).toHaveBeenCalledTimes(1);
+    expect(status.syncPath).toBe("fallback");
+    expect(status.lastError).toBeNull();
   });
 });

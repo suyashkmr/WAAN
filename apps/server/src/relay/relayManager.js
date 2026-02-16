@@ -18,6 +18,22 @@ const RELAY_SYNC_MODE = (() => {
   // Keep primary-first behavior by default; fallback is opt-in or failover.
   return "auto";
 })();
+const PRIMARY_SYNC_RETRY_ATTEMPTS = (() => {
+  const raw = Number(process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS);
+  if (!Number.isFinite(raw)) return 2;
+  const rounded = Math.trunc(raw);
+  if (rounded < 1) return 1;
+  if (rounded > 5) return 5;
+  return rounded;
+})();
+const PRIMARY_SYNC_RETRY_DELAY_MS = (() => {
+  const raw = Number(process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS);
+  if (!Number.isFinite(raw)) return 250;
+  const rounded = Math.trunc(raw);
+  if (rounded < 0) return 0;
+  if (rounded > 5000) return 5000;
+  return rounded;
+})();
 
 function runCommand(command, args = []) {
   return new Promise((resolve, reject) => {
@@ -249,10 +265,29 @@ class RelayManager extends EventEmitter {
       } else if (RELAY_SYNC_MODE === "primary") {
         chats = await client.getChats();
       } else {
+        let primaryError = null;
         try {
-          chats = await client.getChats();
-        } catch (error) {
-          const details = formatErrorDetails(error, "ChatScope getChats failed");
+          for (let attempt = 1; attempt <= PRIMARY_SYNC_RETRY_ATTEMPTS; attempt += 1) {
+            try {
+              chats = await client.getChats();
+              primaryError = null;
+              break;
+            } catch (error) {
+              primaryError = error;
+              if (attempt >= PRIMARY_SYNC_RETRY_ATTEMPTS) {
+                throw error;
+              }
+              this.logger.debug(
+                "client.getChats() failed (attempt %d/%d). Retrying in %dms.",
+                attempt,
+                PRIMARY_SYNC_RETRY_ATTEMPTS,
+                PRIMARY_SYNC_RETRY_DELAY_MS,
+              );
+              await this.waitBeforePrimaryRetry(PRIMARY_SYNC_RETRY_DELAY_MS);
+            }
+          }
+        } catch {
+          const details = formatErrorDetails(primaryError, "ChatScope getChats failed");
           if (!this.loggedGetChatsFallback) {
             this.logger.info("client.getChats() unavailable; using Store.Chat fallback sync.");
             this.loggedGetChatsFallback = true;
@@ -283,6 +318,13 @@ class RelayManager extends EventEmitter {
       this.emit("status", this.getStatus());
     }
     return this.getStatus();
+  }
+
+  waitBeforePrimaryRetry(delayMs) {
+    if (!Number.isFinite(delayMs) || delayMs <= 0) {
+      return Promise.resolve();
+    }
+    return new Promise(resolve => setTimeout(resolve, delayMs));
   }
 
   async getChatsFromStoreFallback() {

@@ -39,6 +39,7 @@ Select any chat from the *ChatScope account* optgroup. WAAN fetches up to 4 00
 - **No QR shown**: Delete the session folder (`~/Library/Application Support/WAAN/relay-session`) and restart the relay to force a new login.
 - **Chats missing messages**: Increase the fetch window via `WAAN_CHAT_FETCH_LIMIT` on the server or `remoteMessageLimit` in `window.WAAN_CONFIG`.
 - **Advanced relay incident handling**: see `docs/relay-troubleshooting.md`.
+- **Pre-release packaged-app smoke**: run `docs/release-smoke-checklist.md`.
 
 > The relay stores parsed chats under `~/Library/Application Support/WAAN/storage/chats`. Remove this directory if you want a clean slate.
 
