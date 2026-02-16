@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces",
-    "lint": "eslint js",
+    "lint": "eslint js apps/server/src",
     "test": "vitest --run",
     "verify": "npm run lint && npm test",
     "coverage": "vitest --run --coverage",

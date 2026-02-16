@@ -29,6 +29,12 @@ export default [
     },
   },
   {
+    files: ["apps/server/src/**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs",
+    },
+  },
+  {
     files: ["js/vendor/**"],
     rules: {
       "no-var": "off",

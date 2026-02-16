@@ -14,6 +14,7 @@ tmp/
 
 # Coverage
 coverage/
+coverage/**
 
 # Environment variables
 .env
@@ -37,4 +38,10 @@ _IGNORE_waan/
 *.pkg
 *.dmg
 *.zip
+*.tgz
+*.tar.gz
+waan-data-backup-*.tgz
+apps_prev_*/
+chat.json.gz
+__pycache__/
 .DS_Store

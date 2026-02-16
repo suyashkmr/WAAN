@@ -371,7 +371,7 @@ class RelayManager extends EventEmitter {
               formattedName: contact.formattedName || null,
               displayName: contact.displayName || null,
             };
-          } catch (err) {
+          } catch {
             return null;
           }
         }).filter(Boolean);

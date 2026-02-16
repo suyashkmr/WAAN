@@ -23,7 +23,3 @@ export const motionPreferenceQuery =
     : null;
 
 export const initialReduceMotionPreferred = Boolean(motionPreferenceQuery?.matches);
-
-export function getRuntimeConfig() {
-  return runtimeConfig;
-}

@@ -1,8 +1,6 @@
 import { toISODate } from "./utils.js";
-import { parseString } from "./vendor/whatsapp-chat-parser.js";
 import { buildHighlights } from "./analytics/highlights.js";
 import {
-  classifyExportSystemMessage,
   analyzeSystemEvents,
 } from "./analytics/systemEvents.js";
 import {
@@ -200,59 +198,6 @@ function buildSnippet(text, limit = 160) {
   if (!normalized) return "";
   if (normalized.length <= limit) return normalized;
   return `${normalized.slice(0, limit - 3)}...`;
-}
-
-function formatTimestampFromDate(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = String(date.getFullYear());
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year}, ${hours}:${minutes}`;
-}
-
-export function parseChatText(text) {
-  if (!text) return [];
-  const parsed = parseString(text, { parseAttachments: true }) || [];
-  return parsed.map(message => {
-    const timestamp = message.date instanceof Date ? message.date.toISOString() : null;
-    const timestampText = formatTimestampFromDate(message.date);
-    let sender = message.author || null;
-    let body = message.message || "";
-    if (!sender && body.includes(":")) {
-      const splitIndex = body.indexOf(":");
-      const possibleName = body.slice(0, splitIndex).trim();
-      const remainder = body.slice(splitIndex + 1).trim();
-      if (possibleName && remainder) {
-        sender = possibleName;
-        body = remainder;
-      }
-    }
-    let type = "message";
-    let systemSubtype = null;
-    const classification = classifyExportSystemMessage(sender, body);
-    if (classification) {
-      type = "system";
-      sender = null;
-      systemSubtype = classification.subtype || null;
-    }
-    const entry = {
-      timestamp,
-      timestamp_text: timestampText,
-      sender,
-      sender_id: sender || null,
-      message: body,
-      type,
-      has_poll: false,
-      poll_title: null,
-      poll_options: null,
-    };
-    if (systemSubtype) {
-      entry.system_subtype = systemSubtype;
-    }
-    return entry;
-  });
 }
 
 export function computeAnalytics(entries = []) {

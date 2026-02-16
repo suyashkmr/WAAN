@@ -18,17 +18,6 @@ export const SECTION_NAV_ITEMS = [
   { id: "faq-card", label: "FAQ" },
 ];
 
-export const TIME_OF_DAY_BANDS = [
-  { id: "late-night", label: "Late Night", start: 0, end: 4 },
-  { id: "early-morning", label: "Early Morning", start: 5, end: 7 },
-  { id: "morning", label: "Morning", start: 8, end: 11 },
-  { id: "afternoon", label: "Afternoon", start: 12, end: 16 },
-  { id: "evening", label: "Evening", start: 17, end: 20 },
-  { id: "late-evening", label: "Late Evening", start: 21, end: 23 },
-];
-
-export const TIME_OF_DAY_SPAN_WINDOW = 3;
-
 export const SEARCH_RESULT_LIMIT = 200;
 
 export const ONBOARDING_STEPS = [

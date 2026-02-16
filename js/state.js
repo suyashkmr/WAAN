@@ -58,10 +58,6 @@ export function updateStatus(message, tone = "info") {
   }
 }
 
-export function getDatasetState() {
-  return datasetState;
-}
-
 export function setDatasetEntries(entries) {
   datasetState.entries = entries ?? [];
 }
@@ -112,10 +108,6 @@ export function getDatasetFingerprint() {
 
 export function setDatasetParticipantDirectory(snapshot) {
   datasetState.participantDirectory = snapshot ?? null;
-}
-
-export function getDatasetParticipantDirectory() {
-  return datasetState.participantDirectory;
 }
 
 function generateChatId() {

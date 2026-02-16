@@ -71,11 +71,13 @@ import {
 } from "./config.js";
 import { EXPORT_THEME_STYLES } from "./theme.js";
 import {
-  createDomCache,
   createDatasetEmptyStateManager,
   createCompactModeManager,
   createAccessibilityController,
 } from "./ui.js";
+import { createAppDomRefs } from "./appShell/domRefs.js";
+import { createAnalyticsRequestTracker } from "./appShell/adapters.js";
+import { setupAppBootstrap } from "./appShell/bootstrapApp.js";
 import {
   createOnboardingController,
   createStatusUiController,
@@ -89,8 +91,6 @@ import {
   createDatasetLifecycleController,
   createRelayBootstrapController,
   createKeyboardShortcutsController,
-  createEventBindingsController,
-  createBootstrapController,
   createDataStatusController,
   createParticipantInteractionsController,
   createBusyRuntimeController,
@@ -99,123 +99,141 @@ import {
   createDashboardRenderController,
 } from "./appShell/index.js";
 
-const domCache = createDomCache();
-const statusEl = domCache.getById("data-status");
-const relayBannerEl = domCache.getById("relay-status-banner");
-const relayBannerMessage = domCache.getById("relay-status-message");
-const relayBannerMeta = domCache.getById("relay-status-meta");
-const relayOnboardingSteps = document.querySelectorAll(".relay-step");
-const summaryEl = domCache.getById("summary");
-const participantsBody = document.querySelector("#top-senders tbody");
-const participantsNote = domCache.getById("participants-note");
-const participantsTopSelect = domCache.getById("participants-top-count");
-const participantsSortSelect = domCache.getById("participants-sort");
-const participantsTimeframeSelect = domCache.getById("participants-timeframe");
-const participantPresetButtons = document.querySelectorAll("[data-participants-preset]");
-const rangeSelect = domCache.getById("global-range");
-const chatSelector = domCache.getById("chat-selector");
-const relayStatusEl = domCache.getById("relay-connection-status");
-const relayAccountEl = domCache.getById("relay-account-name");
-const relayStartButton = domCache.getById("relay-start");
-const relayStopButton = domCache.getById("relay-stop");
-const relayLogoutButton = domCache.getById("relay-logout");
-const relayReloadAllButton = domCache.getById("relay-reload-all");
-const relayClearStorageButton = domCache.getById("relay-clear-storage");
-const relayQrContainer = domCache.getById("relay-qr-container");
-const relayQrImage = domCache.getById("relay-qr-image");
-const relayHelpText = domCache.getById("relay-help-text");
-const relaySyncProgressEl = domCache.getById("relay-sync-progress");
-const relaySyncChatsMeta = domCache.getById("relay-sync-chats-meta");
-const relaySyncMessagesMeta = domCache.getById("relay-sync-messages-meta");
-const reduceMotionToggle = domCache.getById("reduce-motion-toggle");
-const highContrastToggle = domCache.getById("high-contrast-toggle");
-const customControls = domCache.getById("custom-range-controls");
-const customStartInput = domCache.getById("custom-start");
-const customEndInput = domCache.getById("custom-end");
-const customApplyButton = domCache.getById("apply-custom-range");
-const hourlyTopHourEl = domCache.getById("hourly-top-hour");
-const brushSummaryEl = domCache.getById("hourly-brush-summary");
-const filterNoteEl = domCache.getById("hourly-filter-note");
-const hourlyChartEl = domCache.getById("hourly-chart");
-const hourlyAnomaliesEl = domCache.getById("hourly-anomalies");
-const dailyChartEl = domCache.getById("daily-chart");
-const dailyAvgDayEl = domCache.getById("daily-avg-day");
-const weeklyChartEl = domCache.getById("weekly-chart");
-const weeklyCumulativeEl = domCache.getById("weekly-cumulative");
-const weeklyRollingEl = domCache.getById("weekly-rolling");
-const weeklyAverageEl = domCache.getById("weekly-average");
-const weekdayChartEl = domCache.getById("weekday-chart");
-const weekdayFilterNote = domCache.getById("weekday-filter-note");
-const weekdayToggleWeekdays = domCache.getById("weekday-toggle-weekdays");
-const weekdayToggleWeekends = domCache.getById("weekday-toggle-weekends");
-const weekdayToggleWorking = domCache.getById("weekday-toggle-working");
-const weekdayToggleOffhours = domCache.getById("weekday-toggle-offhours");
-const weekdayHourStartInput = domCache.getById("weekday-hour-start");
-const weekdayHourEndInput = domCache.getById("weekday-hour-end");
-const messageTypeSummaryEl = domCache.getById("message-type-summary");
-const messageTypeNoteEl = domCache.getById("message-types-note");
-const downloadPdfButton = domCache.getById("download-pdf");
-const downloadTimeOfDayButton = domCache.getById("download-timeofday");
-const downloadParticipantsButton = domCache.getById("download-participants");
-const downloadHourlyButton = domCache.getById("download-hourly");
-const downloadDailyButton = domCache.getById("download-daily");
-const downloadWeeklyButton = domCache.getById("download-weekly");
-const downloadWeekdayButton = domCache.getById("download-weekday");
-const downloadMessageTypesButton = domCache.getById("download-message-types");
-const downloadSentimentButton = domCache.getById("download-sentiment");
-const downloadChatJsonButton = domCache.getById("download-chat-json");
-const sentimentSummaryEl = domCache.getById("sentiment-summary");
-const sentimentTrendNote = domCache.getById("sentiment-trend-note");
-const sentimentDailyChart = domCache.getById("sentiment-daily-chart");
-const sentimentPositiveList = domCache.getById("sentiment-top-positive");
-const sentimentNegativeList = domCache.getById("sentiment-top-negative");
-const savedViewNameInput = domCache.getById("saved-view-name");
-const saveViewButton = domCache.getById("save-view");
-const savedViewList = domCache.getById("saved-view-list");
-const applySavedViewButton = domCache.getById("apply-saved-view");
-const deleteSavedViewButton = domCache.getById("delete-saved-view");
-const savedViewGallery = domCache.getById("saved-view-gallery");
-const compareViewASelect = domCache.getById("compare-view-a");
-const compareViewBSelect = domCache.getById("compare-view-b");
-const compareViewsButton = domCache.getById("compare-views");
-const compareSummaryEl = domCache.getById("compare-summary");
-const searchForm = domCache.getById("advanced-search-form");
-const searchKeywordInput = domCache.getById("search-keyword");
-const searchParticipantSelect = domCache.getById("search-participant");
-const searchStartInput = domCache.getById("search-start");
-const searchEndInput = domCache.getById("search-end");
-const resetSearchButton = domCache.getById("reset-search");
-const downloadSearchButton = domCache.getById("download-search-results");
-const searchResultsSummary = domCache.getById("search-results-summary");
-const searchResultsList = domCache.getById("search-results-list");
-const searchInsightsEl = domCache.getById("search-insights");
-const searchProgressEl = domCache.getById("search-progress");
-const searchProgressTrack = domCache.getById("search-progress-track");
-const searchProgressBar = domCache.getById("search-progress-bar");
-const searchProgressLabel = domCache.getById("search-progress-label");
-const highlightList = domCache.getById("highlight-list");
-const downloadMarkdownButton = domCache.getById("download-markdown-report");
-const downloadSlidesButton = domCache.getById("download-slides-report");
-const logDrawerToggleButton = domCache.getById("log-drawer-toggle");
-const logDrawerEl = domCache.getById("relay-log-drawer");
-const logDrawerCloseButton = domCache.getById("relay-log-close");
-const logDrawerClearButton = domCache.getById("relay-log-clear");
-const logDrawerList = domCache.getById("relay-log-list");
-const logDrawerConnectionLabel = domCache.getById("relay-log-connection");
-const globalProgressEl = domCache.getById("global-progress");
-const globalProgressLabel = domCache.getById("global-progress-label");
-const toastContainer = domCache.getById("toast-container");
-const compactToggleButton = domCache.getById("compact-toggle");
-const onboardingOverlay = domCache.getById("onboarding-overlay");
-const onboardingCopyEl = domCache.getById("onboarding-copy");
-const onboardingStepLabel = domCache.getById("onboarding-step-label");
-const onboardingSkipButton = domCache.getById("onboarding-skip");
-const onboardingNextButton = domCache.getById("onboarding-next");
-const heroStatusBadge = domCache.getById("hero-status-badge");
-const heroStatusCopy = domCache.getById("hero-status-copy");
-const datasetEmptyCallout = domCache.getById("dataset-empty-callout");
-const datasetEmptyHeading = domCache.getById("dataset-empty-heading");
-const datasetEmptyCopy = domCache.getById("dataset-empty-copy");
+const {
+  statusEl,
+  relayBannerEl,
+  relayBannerMessage,
+  relayBannerMeta,
+  relayOnboardingSteps,
+  summaryEl,
+  participantsBody,
+  participantsNote,
+  participantsTopSelect,
+  participantsSortSelect,
+  participantsTimeframeSelect,
+  participantPresetButtons,
+  rangeSelect,
+  chatSelector,
+  relayStatusEl,
+  relayAccountEl,
+  relayStartButton,
+  relayStopButton,
+  relayLogoutButton,
+  relayReloadAllButton,
+  relayClearStorageButton,
+  relayQrContainer,
+  relayQrImage,
+  relayHelpText,
+  relaySyncProgressEl,
+  relaySyncChatsMeta,
+  relaySyncMessagesMeta,
+  reduceMotionToggle,
+  highContrastToggle,
+  customControls,
+  customStartInput,
+  customEndInput,
+  customApplyButton,
+  hourlyTopHourEl,
+  brushSummaryEl,
+  filterNoteEl,
+  hourlyChartEl,
+  hourlyAnomaliesEl,
+  dailyChartEl,
+  dailyAvgDayEl,
+  weeklyChartEl,
+  weeklyCumulativeEl,
+  weeklyRollingEl,
+  weeklyAverageEl,
+  weekdayChartEl,
+  weekdayFilterNote,
+  weekdayToggleWeekdays,
+  weekdayToggleWeekends,
+  weekdayToggleWorking,
+  weekdayToggleOffhours,
+  weekdayHourStartInput,
+  weekdayHourEndInput,
+  messageTypeSummaryEl,
+  messageTypeNoteEl,
+  downloadPdfButton,
+  downloadTimeOfDayButton,
+  downloadParticipantsButton,
+  downloadHourlyButton,
+  downloadDailyButton,
+  downloadWeeklyButton,
+  downloadWeekdayButton,
+  downloadMessageTypesButton,
+  downloadSentimentButton,
+  downloadChatJsonButton,
+  sentimentSummaryEl,
+  sentimentTrendNote,
+  sentimentDailyChart,
+  sentimentPositiveList,
+  sentimentNegativeList,
+  savedViewNameInput,
+  saveViewButton,
+  savedViewList,
+  applySavedViewButton,
+  deleteSavedViewButton,
+  savedViewGallery,
+  compareViewASelect,
+  compareViewBSelect,
+  compareViewsButton,
+  compareSummaryEl,
+  searchForm,
+  searchKeywordInput,
+  searchParticipantSelect,
+  searchStartInput,
+  searchEndInput,
+  resetSearchButton,
+  downloadSearchButton,
+  searchResultsSummary,
+  searchResultsList,
+  searchInsightsEl,
+  searchProgressEl,
+  searchProgressTrack,
+  searchProgressBar,
+  searchProgressLabel,
+  highlightList,
+  downloadMarkdownButton,
+  downloadSlidesButton,
+  logDrawerToggleButton,
+  logDrawerEl,
+  logDrawerCloseButton,
+  logDrawerClearButton,
+  logDrawerList,
+  logDrawerConnectionLabel,
+  globalProgressEl,
+  globalProgressLabel,
+  toastContainer,
+  compactToggleButton,
+  onboardingOverlay,
+  onboardingCopyEl,
+  onboardingStepLabel,
+  onboardingSkipButton,
+  onboardingNextButton,
+  heroStatusBadge,
+  heroStatusCopy,
+  datasetEmptyCallout,
+  datasetEmptyHeading,
+  datasetEmptyCopy,
+  sectionNavInner,
+  timeOfDayWeekdayToggle,
+  timeOfDayWeekendToggle,
+  timeOfDayHourStartInput,
+  timeOfDayHourEndInput,
+  timeOfDayHourStartLabel,
+  timeOfDayHourEndLabel,
+  timeOfDaySparklineEl,
+  timeOfDayBandsEl,
+  timeOfDayCalloutsEl,
+  timeOfDayChartContainer,
+  pollsNote,
+  pollsTotalEl,
+  pollsCreatorsEl,
+  pollsListEl,
+  dashboardRoot,
+  themeToggleInputs,
+} = createAppDomRefs();
 
 const datasetEmptyStateManager = createDatasetEmptyStateManager({
   calloutEl: datasetEmptyCallout,
@@ -255,7 +273,7 @@ const {
   refreshChatSelector,
   handleChatSelectionChange: handleChatSelectionChangeCore,
 } = chatSelectionController;
-let activeAnalyticsRequest = 0;
+const analyticsRequestTracker = createAnalyticsRequestTracker();
 let dashboardRenderController = null;
 function renderDashboard(analytics) {
   dashboardRenderController?.renderDashboard(analytics);
@@ -316,11 +334,8 @@ const rangeFiltersController = createRangeFiltersController({
     getTimestamp,
     toISODate,
     onRangeApplied: syncHeroPillsWithRange,
-    nextAnalyticsRequestToken: () => {
-      activeAnalyticsRequest += 1;
-      return activeAnalyticsRequest;
-    },
-    isAnalyticsRequestCurrent: token => token === activeAnalyticsRequest,
+    nextAnalyticsRequestToken: analyticsRequestTracker.nextToken,
+    isAnalyticsRequestCurrent: analyticsRequestTracker.isCurrent,
   },
 });
 const {
@@ -333,23 +348,6 @@ const {
   handleRangeChange,
   applyCustomRange,
 } = rangeFiltersController;
-
-const sectionNavInner = document.querySelector(".section-nav-inner");
-const timeOfDayWeekdayToggle = domCache.getById("timeofday-toggle-weekdays");
-const timeOfDayWeekendToggle = domCache.getById("timeofday-toggle-weekends");
-const timeOfDayHourStartInput = domCache.getById("timeofday-hour-start");
-const timeOfDayHourEndInput = domCache.getById("timeofday-hour-end");
-const timeOfDayHourStartLabel = domCache.getById("timeofday-hour-start-label");
-const timeOfDayHourEndLabel = domCache.getById("timeofday-hour-end-label");
-const timeOfDaySparklineEl = domCache.getById("timeofday-sparkline");
-const timeOfDayBandsEl = domCache.getById("timeofday-bands");
-const timeOfDayCalloutsEl = domCache.getById("timeofday-callouts");
-const timeOfDayChartContainer = domCache.getById("timeofday-chart");
-const pollsNote = domCache.getById("polls-note");
-const pollsTotalEl = domCache.getById("polls-total");
-const pollsCreatorsEl = domCache.getById("polls-creators");
-const pollsListEl = domCache.getById("polls-list");
-const dashboardRoot = document.querySelector("main");
 
 const searchController = createSearchController({
   elements: {
@@ -563,7 +561,7 @@ const {
   brandName: BRAND_NAME,
 });
 const themeUiController = createThemeUiController({
-  themeToggleInputs: Array.from(document.querySelectorAll('input[name="theme-option"]')),
+  themeToggleInputs,
   mediaQuery: window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null,
   exportThemeStyles: EXPORT_THEME_STYLES,
 });
@@ -637,11 +635,8 @@ const datasetLifecycleController = createDatasetLifecycleController({
     updateStatus,
     setDashboardLoadingState,
     formatNumber,
-    nextAnalyticsRequestToken: () => {
-      activeAnalyticsRequest += 1;
-      return activeAnalyticsRequest;
-    },
-    isAnalyticsRequestCurrent: token => token === activeAnalyticsRequest,
+    nextAnalyticsRequestToken: analyticsRequestTracker.nextToken,
+    isAnalyticsRequestCurrent: analyticsRequestTracker.isCurrent,
     resetSavedViewsForNewDataset: () => savedViewsController.resetForNewDataset(),
     resetSearchState: () => searchController.resetState(),
     populateSearchParticipants: () => searchController.populateParticipants(),
@@ -805,13 +800,6 @@ async function handleChatSelectionChange(event) {
   });
 }
 
-setStatusCallback((message, tone) => {
-  if (!statusEl) return;
-  showStatusMessage(message, tone);
-  if (tone === "success" || tone === "warning" || tone === "error") {
-    showToast(message, tone);
-  }
-});
 const keyboardShortcutsController = createKeyboardShortcutsController({
   deps: {
     syncRelayChats,
@@ -824,109 +812,112 @@ const keyboardShortcutsController = createKeyboardShortcutsController({
   },
 });
 const { initKeyboardShortcuts } = keyboardShortcutsController;
-initKeyboardShortcuts();
-const eventBindingsController = createEventBindingsController({
-  elements: {
-    chatSelector,
-    rangeSelect,
-    customApplyButton,
-    customStartInput,
-    customEndInput,
-    downloadParticipantsButton,
-    downloadHourlyButton,
-    downloadDailyButton,
-    downloadWeeklyButton,
-    downloadWeekdayButton,
-    downloadTimeOfDayButton,
-    downloadMessageTypesButton,
-    downloadChatJsonButton,
-    downloadSentimentButton,
-    downloadMarkdownButton,
-    downloadSlidesButton,
-    downloadSearchButton,
-    downloadPdfButton,
-    participantsTopSelect,
-    participantsSortSelect,
-    participantsTimeframeSelect,
-    participantPresetButtons,
-    participantsBody,
-    weekdayToggleWeekdays,
-    weekdayToggleWeekends,
-    weekdayToggleWorking,
-    weekdayToggleOffhours,
-    timeOfDayWeekdayToggle,
-    timeOfDayWeekendToggle,
-    timeOfDayHourStartInput,
-    timeOfDayHourEndInput,
-    weekdayHourStartInput,
-    weekdayHourEndInput,
+setupAppBootstrap({
+  status: {
+    setStatusCallback,
+    statusEl,
+    showStatusMessage,
+    showToast,
   },
-  handlers: {
-    handleChatSelectionChange,
-    handleRangeChange,
-    exportParticipants,
-    exportHourly,
-    exportDaily,
-    exportWeekly,
-    exportWeekday,
-    exportTimeOfDay,
-    exportMessageTypes,
-    exportChatJson,
-    exportSentiment,
-    exportMessageSubtype,
-    handleDownloadMarkdownReport,
-    handleDownloadSlidesReport,
-    exportSearchResults,
-    handleDownloadPdfReport,
-    handleParticipantsTopChange,
-    handleParticipantsSortChange,
-    handleParticipantsTimeframeChange,
-    handleParticipantPresetClick,
-    handleParticipantRowToggle,
+  keyboardShortcuts: {
+    initKeyboardShortcuts,
   },
-  deps: {
-    updateStatus,
-    applyCustomRange,
-    updateWeekdayState,
-    ensureWeekdayDayFilters,
-    rerenderWeekdayFromState,
-    ensureWeekdayHourFilters,
-    updateHourlyState,
-    getHourlyState,
-    ensureDayFilters,
-    syncHourlyControlsWithState,
-    rerenderHourlyFromState,
+  eventBindings: {
+    elements: {
+      chatSelector,
+      rangeSelect,
+      customApplyButton,
+      customStartInput,
+      customEndInput,
+      downloadParticipantsButton,
+      downloadHourlyButton,
+      downloadDailyButton,
+      downloadWeeklyButton,
+      downloadWeekdayButton,
+      downloadTimeOfDayButton,
+      downloadMessageTypesButton,
+      downloadChatJsonButton,
+      downloadSentimentButton,
+      downloadMarkdownButton,
+      downloadSlidesButton,
+      downloadSearchButton,
+      downloadPdfButton,
+      participantsTopSelect,
+      participantsSortSelect,
+      participantsTimeframeSelect,
+      participantPresetButtons,
+      participantsBody,
+      weekdayToggleWeekdays,
+      weekdayToggleWeekends,
+      weekdayToggleWorking,
+      weekdayToggleOffhours,
+      timeOfDayWeekdayToggle,
+      timeOfDayWeekendToggle,
+      timeOfDayHourStartInput,
+      timeOfDayHourEndInput,
+      weekdayHourStartInput,
+      weekdayHourEndInput,
+    },
+    handlers: {
+      handleChatSelectionChange,
+      handleRangeChange,
+      exportParticipants,
+      exportHourly,
+      exportDaily,
+      exportWeekly,
+      exportWeekday,
+      exportTimeOfDay,
+      exportMessageTypes,
+      exportChatJson,
+      exportSentiment,
+      exportMessageSubtype,
+      handleDownloadMarkdownReport,
+      handleDownloadSlidesReport,
+      exportSearchResults,
+      handleDownloadPdfReport,
+      handleParticipantsTopChange,
+      handleParticipantsSortChange,
+      handleParticipantsTimeframeChange,
+      handleParticipantPresetClick,
+      handleParticipantRowToggle,
+    },
+    deps: {
+      updateStatus,
+      applyCustomRange,
+      updateWeekdayState,
+      ensureWeekdayDayFilters,
+      rerenderWeekdayFromState,
+      ensureWeekdayHourFilters,
+      updateHourlyState,
+      getHourlyState,
+      ensureDayFilters,
+      syncHourlyControlsWithState,
+      rerenderHourlyFromState,
+    },
   },
-});
-const { initEventHandlers } = eventBindingsController;
-const bootstrapController = createBootstrapController({
-  elements: {
-    onboardingSkipButton,
-    onboardingNextButton,
+  bootstrap: {
+    elements: {
+      onboardingSkipButton,
+      onboardingNextButton,
+    },
+    deps: {
+      initRelayControls,
+      initThemeControls,
+      initCompactMode,
+      initAccessibilityControls,
+      setDataAvailabilityState,
+      onboardingController,
+      startRelaySession,
+      stopRelaySession,
+      buildSectionNav,
+      setupSectionNavTracking,
+      searchController,
+      savedViewsController,
+      getDataAvailable,
+      refreshChatSelector,
+      updateStatus,
+      relayServiceName: RELAY_SERVICE_NAME,
+      prefersReducedMotion: () => accessibilityController.prefersReducedMotion(),
+    },
   },
-  deps: {
-    initEventHandlers,
-    initRelayControls,
-    initThemeControls,
-    initCompactMode,
-    initAccessibilityControls,
-    setDataAvailabilityState,
-    onboardingController,
-    startRelaySession,
-    stopRelaySession,
-    buildSectionNav,
-    setupSectionNavTracking,
-    searchController,
-    savedViewsController,
-    getDataAvailable,
-    refreshChatSelector,
-    updateStatus,
-    relayServiceName: RELAY_SERVICE_NAME,
-    prefersReducedMotion: () => accessibilityController.prefersReducedMotion(),
-  },
-});
-const { initAppBootstrap } = bootstrapController;
-
-document.addEventListener("DOMContentLoaded", () => {
-  initAppBootstrap();
 });
