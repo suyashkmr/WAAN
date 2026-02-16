@@ -265,9 +265,13 @@ class RelayManager extends EventEmitter {
       for (const chat of chats) {
         await this.persistChatMeta(chat);
       }
+      const previousSyncPath = this.state.syncPath;
       this.state.chatCount = chats.length;
       this.state.chatsSyncedAt = new Date().toISOString();
       this.state.syncPath = syncPath;
+      if (previousSyncPath && previousSyncPath !== syncPath) {
+        this.log(`Sync path transition detected: ${previousSyncPath} -> ${syncPath}.`);
+      }
       this.log(`Synced ${chats.length} chats via ${syncPath}.`);
     } catch (error) {
       const message = formatErrorMessage(error, "Chat sync failed");

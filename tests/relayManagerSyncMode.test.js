@@ -128,4 +128,26 @@ describe("relayManager sync mode behavior", () => {
       expect.any(String),
     );
   });
+
+  it("logs sync path transitions across successful sync cycles", async () => {
+    const RelayManager = await loadRelayManager("auto");
+    const { manager, logger } = createManager(RelayManager);
+    manager.client = {
+      getChats: vi.fn(async () => [buildChat("primary@c.us")]),
+    };
+    manager.getChatsFromStoreFallback = vi.fn(async () => [buildChat("fallback@c.us")]);
+
+    await manager.syncChats();
+    expect(manager.getStatus().syncPath).toBe("primary");
+
+    manager.client.getChats = vi.fn(async () => {
+      throw new Error("primary path failed");
+    });
+    await manager.syncChats();
+
+    expect(manager.getStatus().syncPath).toBe("fallback");
+    expect(logger.info).toHaveBeenCalledWith(
+      "Sync path transition detected: primary -> fallback.",
+    );
+  });
 });
