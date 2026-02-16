@@ -21,7 +21,7 @@ export default [
       "no-unused-vars": ["warn", { args: "none", ignoreRestSiblings: true }],
       "no-undef": "error",
       "import/no-unused-modules": [
-        "warn",
+        "error",
         {
           unusedExports: true,
           src: ["js/**/*.js", "apps/server/src/**/*.js", "tests/**/*.js"],

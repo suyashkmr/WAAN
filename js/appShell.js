@@ -56,8 +56,6 @@ import {
   formatHourLabel,
   computeTimeOfDayDataset,
 } from "./analytics/activity.js";
-import { createSearchController } from "./search.js";
-import { createSavedViewsController } from "./savedViews.js";
 import {
   API_BASE,
   BRAND_NAME,
@@ -67,39 +65,17 @@ import {
   motionPreferenceQuery,
   initialReduceMotionPreferred,
 } from "./config.js";
-import { EXPORT_THEME_STYLES } from "./theme.js";
-import {
-  createDatasetEmptyStateManager,
-  createCompactModeManager,
-  createAccessibilityController,
-} from "./ui.js";
+import { createDatasetEmptyStateManager } from "./ui.js";
 import {
   createAppDomRefs,
-  createAnalyticsRequestTracker,
-  setupAppBootstrap,
-  createExportRuntime,
-  createExportFilterSummary,
-  createRelayRuntime,
-  createDashboardRuntime,
-  createDatasetLifecycleRuntime,
-  createOnboardingController,
-  createStatusUiController,
-  createThemeUiController,
-  createSectionNavController,
-  createChatSelectionController,
-  createRangeFiltersController,
-  createAnalyticsPipeline,
-  createKeyboardShortcutsController,
-  createDataStatusController,
-  createParticipantInteractionsController,
-  createBusyRuntimeController,
   fetchJson,
-  formatRelayAccount,
   COMPACT_STORAGE_KEY,
   REDUCE_MOTION_STORAGE_KEY,
   HIGH_CONTRAST_STORAGE_KEY,
-  initWindowToasts,
 } from "./appShell/index.js";
+import { bootstrapAppShellRuntime } from "./appShell/runtimeBootstrap.js";
+import { createAppControllerWiring } from "./appShell/controllerWiring.js";
+import { createAppCompositionAssembly } from "./appShell/compositionAssembly.js";
 
 const {
   statusEl,
@@ -258,59 +234,46 @@ const datasetEmptyStateManager = createDatasetEmptyStateManager({
   ],
 });
 const setDatasetEmptyMessage = datasetEmptyStateManager.setMessage;
-const chatSelectionController = createChatSelectionController({
-  chatSelector,
-  brandName: BRAND_NAME,
-  formatNumber,
-  formatDisplayDate,
-  listChatDatasets,
-  getActiveChatId,
-  setActiveChatId,
-});
 const {
   encodeChatSelectorValue,
   setRemoteChatList,
   getRemoteChatList,
   getRemoteChatsLastFetchedAt,
   refreshChatSelector,
-  handleChatSelectionChange: handleChatSelectionChangeCore,
-} = chatSelectionController;
-const analyticsRequestTracker = createAnalyticsRequestTracker();
-let dashboardRenderController = null;
-function renderDashboard(analytics) {
-  dashboardRenderController?.renderDashboard(analytics);
-}
-function renderParticipants(analytics) {
-  dashboardRenderController?.renderParticipants(analytics);
-}
-function ensureWeekdayDayFilters() {
-  dashboardRenderController?.ensureWeekdayDayFilters();
-}
-function ensureWeekdayHourFilters() {
-  dashboardRenderController?.ensureWeekdayHourFilters();
-}
-function syncWeekdayControlsWithState() {
-  dashboardRenderController?.syncWeekdayControlsWithState();
-}
-function rerenderHourlyFromState() {
-  dashboardRenderController?.rerenderHourlyFromState();
-}
-function rerenderWeekdayFromState() {
-  dashboardRenderController?.rerenderWeekdayFromState();
-}
-function ensureDayFilters() {
-  dashboardRenderController?.ensureDayFilters();
-}
-function ensureHourFilters() {
-  dashboardRenderController?.ensureHourFilters();
-}
-function syncHourlyControlsWithState() {
-  dashboardRenderController?.syncHourlyControlsWithState();
-}
-const analyticsPipeline = createAnalyticsPipeline();
-const { computeAnalyticsWithWorker } = analyticsPipeline;
-const rangeFiltersController = createRangeFiltersController({
-  elements: {
+  handleChatSelectionChangeCore,
+  analyticsRequestTracker,
+  computeAnalyticsWithWorker,
+  normalizeRangeValue,
+  filterEntriesByRange,
+  describeRange,
+  updateCustomRangeBounds,
+  handleRangeChange,
+  applyCustomRange,
+  searchController,
+  savedViewsController,
+  setDashboardLoadingState,
+  setDataAvailabilityState,
+  updateHeroRelayStatus,
+  getDataAvailable,
+  handleParticipantsTopChange,
+  handleParticipantsSortChange,
+  handleParticipantsTimeframeChange,
+  handleParticipantPresetClick,
+  handleParticipantRowToggle,
+  getExportFilterSummary,
+  getParticipantView,
+  renderDashboard,
+  ensureWeekdayDayFilters,
+  ensureWeekdayHourFilters,
+  rerenderHourlyFromState,
+  rerenderWeekdayFromState,
+  ensureDayFilters,
+  syncHourlyControlsWithState,
+  initThemeControls,
+  getExportThemeConfig,
+} = createAppControllerWiring({
+  dom: {
+    chatSelector,
     rangeSelect,
     customControls,
     customStartInput,
@@ -318,168 +281,35 @@ const rangeFiltersController = createRangeFiltersController({
     customApplyButton,
     searchStartInput,
     searchEndInput,
-  },
-  deps: {
-    getDatasetEntries,
-    getDatasetLabel,
-    setCurrentRange,
-    setCustomRange,
-    getCustomRange,
-    getCachedAnalytics,
-    setCachedAnalytics,
-    setDatasetAnalytics,
-    renderDashboard,
-    computeAnalyticsWithWorker,
-    updateStatus,
-    formatNumber,
-    formatDisplayDate,
-    getTimestamp,
-    toISODate,
-    onRangeApplied: syncHeroPillsWithRange,
-    nextAnalyticsRequestToken: analyticsRequestTracker.nextToken,
-    isAnalyticsRequestCurrent: analyticsRequestTracker.isCurrent,
-  },
-});
-const {
-  normalizeRangeValue,
-  filterEntriesByRange,
-  describeRange,
-  showCustomControls,
-  updateCustomRangeBounds,
-  applyRangeAndRender,
-  handleRangeChange,
-  applyCustomRange,
-} = rangeFiltersController;
-
-const searchController = createSearchController({
-  elements: {
-    form: searchForm,
-    keywordInput: searchKeywordInput,
-    participantSelect: searchParticipantSelect,
-    startInput: searchStartInput,
-    endInput: searchEndInput,
-    resetButton: resetSearchButton,
-    resultsSummaryEl: searchResultsSummary,
-    resultsListEl: searchResultsList,
-    insightsEl: searchInsightsEl,
-    progressEl: searchProgressEl,
-    progressTrackEl: searchProgressTrack,
-    progressBarEl: searchProgressBar,
-    progressLabelEl: searchProgressLabel,
-  },
-  options: { resultLimit: SEARCH_RESULT_LIMIT },
-});
-
-const savedViewsController = createSavedViewsController({
-  elements: {
-    nameInput: savedViewNameInput,
-    saveButton: saveViewButton,
-    listSelect: savedViewList,
-    applyButton: applySavedViewButton,
-    deleteButton: deleteSavedViewButton,
-    gallery: savedViewGallery,
-    compareSelectA: compareViewASelect,
-    compareSelectB: compareViewBSelect,
-    compareButton: compareViewsButton,
+    searchForm,
+    searchKeywordInput,
+    searchParticipantSelect,
+    resetSearchButton,
+    searchResultsSummary,
+    searchResultsList,
+    searchInsightsEl,
+    searchProgressEl,
+    searchProgressTrack,
+    searchProgressBar,
+    searchProgressLabel,
+    savedViewNameInput,
+    saveViewButton,
+    savedViewList,
+    applySavedViewButton,
+    deleteSavedViewButton,
+    savedViewGallery,
+    compareViewASelect,
+    compareViewBSelect,
+    compareViewsButton,
     compareSummaryEl,
-    rangeSelect,
-    customStartInput,
-    customEndInput,
-  },
-  dependencies: {
-    getDatasetEntries,
-    getDatasetAnalytics,
-    getDatasetLabel,
-    getCurrentRange,
-    getCustomRange,
-    setCurrentRange,
-    setCustomRange,
-    showCustomControls,
-    addSavedView,
-    getSavedViews,
-    updateSavedView,
-    removeSavedView,
-    clearSavedViews,
-    getCompareSelection,
-    setCompareSelection,
-    getHourlyState,
-    updateHourlyState,
-    getWeekdayState,
-    updateWeekdayState,
-    applyRangeAndRender,
-    ensureDayFilters,
-    ensureHourFilters,
-    syncHourlyControlsWithState,
-    ensureWeekdayDayFilters,
-    ensureWeekdayHourFilters,
-    syncWeekdayControlsWithState,
-    describeRange,
-    updateStatus,
-    filterEntriesByRange,
-    normalizeRangeValue,
-  },
-});
-const dataStatusController = createDataStatusController({
-  elements: {
     dashboardRoot,
     heroStatusBadge,
     heroStatusCopy,
-    datasetEmptyStateManager,
-  },
-  deps: {
-    setDatasetEmptyMessage,
-    savedViewsController,
-    formatRelayAccount,
-    formatNumber,
-  },
-});
-const {
-  setDashboardLoadingState,
-  setDataAvailabilityState,
-  updateHeroRelayStatus,
-  getDataAvailable,
-} = dataStatusController;
-setDashboardLoadingState(true);
-document.querySelectorAll(".summary-value").forEach(element => {
-  element.setAttribute("data-skeleton", "value");
-});
-
-const participantFilters = {
-  topCount: Number(participantsTopSelect?.value ?? 25) || 0,
-  sortMode: participantsSortSelect?.value ?? "most",
-  timeframe: participantsTimeframeSelect?.value ?? "all",
-};
-const participantInteractionsController = createParticipantInteractionsController({
-  elements: {
     participantsTopSelect,
     participantsSortSelect,
     participantsTimeframeSelect,
     participantsBody,
-  },
-  deps: {
-    participantFilters,
-    getDatasetAnalytics,
-    renderParticipants,
-  },
-});
-const {
-  handleParticipantsTopChange,
-  handleParticipantsSortChange,
-  handleParticipantsTimeframeChange,
-  handleParticipantPresetClick,
-  handleParticipantRowToggle,
-} = participantInteractionsController;
-
-const getExportFilterSummary = createExportFilterSummary({
-  normalizeRangeValue,
-  getCurrentRange,
-  describeRange,
-  participantFilters,
-});
-const { controller: dashboardRuntimeController, getParticipantView } = createDashboardRuntime({
-  elements: {
     summaryEl,
-    participantsBody,
     participantsNote,
     participantPresetButtons,
     hourlyChartEl,
@@ -523,35 +353,55 @@ const { controller: dashboardRuntimeController, getParticipantView } = createDas
     pollsCreatorsEl,
     pollsNote,
     highlightList,
-    rangeSelect,
+    themeToggleInputs,
   },
-  deps: {
-    getDatasetLabel,
+  state: {
+    listChatDatasets,
+    getActiveChatId,
+    setActiveChatId,
     getDatasetEntries,
-    getDatasetAnalytics,
+    getDatasetLabel,
+    setCurrentRange,
+    setCustomRange,
     getCustomRange,
+    getCachedAnalytics,
+    setCachedAnalytics,
+    setDatasetAnalytics,
+    updateStatus,
+    getDatasetAnalytics,
+    getCurrentRange,
+    addSavedView,
+    getSavedViews,
+    updateSavedView,
+    removeSavedView,
+    clearSavedViews,
+    getCompareSelection,
+    setCompareSelection,
     getHourlyState,
     updateHourlyState,
     getWeekdayState,
     updateWeekdayState,
-    participantFilters,
-    setDataAvailabilityState,
-    searchPopulateParticipants: () => searchController.populateParticipants(),
-    searchRenderResults: () => searchController.renderResults(),
-    applyCustomRange,
+  },
+  utils: {
     formatNumber,
     formatFloat,
     sanitizeText,
+    formatDisplayDate,
+    getTimestamp,
+    toISODate,
+  },
+  constants: {
+    brandName: BRAND_NAME,
+    searchResultLimit: SEARCH_RESULT_LIMIT,
+  },
+  callbacks: {
+    syncHeroPillsWithRange: () => {},
+  },
+  dataStatus: {
+    datasetEmptyStateManager,
+    setDatasetEmptyMessage,
   },
 });
-dashboardRenderController = dashboardRuntimeController;
-const themeUiController = createThemeUiController({
-  themeToggleInputs,
-  mediaQuery: window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null,
-  exportThemeStyles: EXPORT_THEME_STYLES,
-});
-const { initThemeControls, getExportThemeConfig } = themeUiController;
-
 const {
   exportParticipants,
   exportHourly,
@@ -567,76 +417,19 @@ const {
   handleDownloadSlidesReport,
   exportMessageSubtype,
   handleDownloadPdfReport,
-} = createExportRuntime({
-  brandName: BRAND_NAME,
-  getExportFilterSummary,
-  getExportThemeConfig,
-  getDatasetFingerprint,
-  getDatasetAnalytics,
-  getDatasetEntries,
-  getDatasetLabel,
-  getCurrentRange,
-  getParticipantView,
-  getSearchState,
-  updateStatus,
-  formatNumber,
-  formatFloat,
-  formatTimestampDisplay,
-  computeTimeOfDayDataset,
-  formatHourLabel,
-  describeRange,
-  filterEntriesByRange,
-  normalizeRangeValue,
-});
-const { applyEntriesToApp } = createDatasetLifecycleRuntime({
-  rangeSelect,
-  deps: {
-    setDatasetEntries,
-    setDatasetFingerprint,
-    setDatasetParticipantDirectory,
-    clearAnalyticsCache,
-    setDatasetLabel,
-    setCurrentRange,
-    setCustomRange,
-    resetHourlyFilters,
-    resetWeekdayFilters,
-    computeDatasetFingerprint,
-    saveChatDataset,
-    setCachedAnalytics,
-    setDatasetAnalytics,
-    setActiveChatId,
-    computeAnalyticsWithWorker,
-    renderDashboard,
-    updateCustomRangeBounds,
-    encodeChatSelectorValue,
-    refreshChatSelector,
-    updateStatus,
-    setDashboardLoadingState,
-    formatNumber,
-    nextAnalyticsRequestToken: analyticsRequestTracker.nextToken,
-    isAnalyticsRequestCurrent: analyticsRequestTracker.isCurrent,
-    resetSavedViewsForNewDataset: () => savedViewsController.resetForNewDataset(),
-    resetSearchState: () => searchController.resetState(),
-    populateSearchParticipants: () => searchController.populateParticipants(),
-  },
-});
-const busyRuntimeController = createBusyRuntimeController({
-  globalProgressEl,
-  globalProgressLabel,
-});
-const { withGlobalBusy } = busyRuntimeController;
-
-const {
   startRelaySession,
   stopRelaySession,
   syncRelayChats,
-  loadRemoteChat,
   isLogDrawerOpen,
   openLogDrawer,
   closeLogDrawer,
   initRelayControls,
-} = createRelayRuntime({
-  relayElements: {
+  handleChatSelectionChange,
+} = createAppCompositionAssembly({
+  dom: {
+    rangeSelect,
+    globalProgressEl,
+    globalProgressLabel,
     relayStartButton,
     relayStopButton,
     relayLogoutButton,
@@ -658,114 +451,111 @@ const {
     relaySyncProgressEl,
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
+    logDrawerCloseButton,
+    logDrawerClearButton,
   },
-  relayHelpers: {
+  state: {
+    getDatasetFingerprint,
+    getDatasetAnalytics,
+    getDatasetEntries,
+    getDatasetLabel,
+    getCurrentRange,
+    getSearchState,
     updateStatus,
-    withGlobalBusy,
+    setDatasetEntries,
+    setDatasetFingerprint,
+    setDatasetParticipantDirectory,
+    clearAnalyticsCache,
+    setDatasetLabel,
+    setCurrentRange,
+    setCustomRange,
+    resetHourlyFilters,
+    resetWeekdayFilters,
+    computeDatasetFingerprint,
+    saveChatDataset,
+    setCachedAnalytics,
+    setDatasetAnalytics,
+    setActiveChatId,
+    getChatDatasetById,
+    setDatasetEmptyMessage,
     fetchJson,
+  },
+  utils: {
+    formatNumber,
+    formatFloat,
+    formatTimestampDisplay,
+  },
+  analytics: {
+    computeTimeOfDayDataset,
+    formatHourLabel,
+  },
+  constants: {
+    brandName: BRAND_NAME,
+    apiBase: API_BASE,
+  },
+  wiring: {
+    getExportFilterSummary,
+    getExportThemeConfig,
+    getParticipantView,
+    describeRange,
+    filterEntriesByRange,
+    normalizeRangeValue,
+    analyticsRequestTracker,
+    computeAnalyticsWithWorker,
+    renderDashboard,
+    updateCustomRangeBounds,
+    encodeChatSelectorValue,
     setRemoteChatList,
     getRemoteChatList,
     getRemoteChatsLastFetchedAt,
     refreshChatSelector,
+    savedViewsController,
+    searchController,
     setDashboardLoadingState,
-    setDatasetEmptyMessage,
     setDataAvailabilityState,
     updateHeroRelayStatus,
-    applyEntriesToApp,
-    encodeChatSelectorValue,
+    handleChatSelectionChangeCore,
   },
   electronAPI: window.electronAPI,
-  bootstrapElements: {
-    relayStartButton,
-    relayStatusEl,
-    relayStopButton,
-    relayLogoutButton,
-    relayReloadAllButton,
-    relayClearStorageButton,
-    logDrawerToggleButton,
-    logDrawerCloseButton,
-    logDrawerClearButton,
+});
+
+bootstrapAppShellRuntime({
+  statusConfig: {
+    setStatusCallback,
+    statusEl,
+    toastContainer,
+    autoHideDelayMs: STATUS_AUTO_HIDE_DELAY_MS,
+    exitDurationMs: STATUS_EXIT_DURATION_MS,
   },
-  fetchJson,
-  apiBase: API_BASE,
-  setRemoteChatList,
-  refreshChatSelector,
-  updateStatus,
-});
-initWindowToasts();
-const statusUiController = createStatusUiController({
-  statusEl,
-  toastContainer,
-  autoHideDelayMs: STATUS_AUTO_HIDE_DELAY_MS,
-  exitDurationMs: STATUS_EXIT_DURATION_MS,
-});
-const {
-  showToast,
-  showStatusMessage,
-} = statusUiController;
-const sectionNavController = createSectionNavController({
-  containerEl: sectionNavInner,
-  navItemsConfig: SECTION_NAV_ITEMS,
-});
-const { buildSectionNav, setupSectionNavTracking } = sectionNavController;
-
-const { apply: applyCompactMode, init: initCompactMode } = createCompactModeManager({
-  toggle: compactToggleButton,
-  storageKey: COMPACT_STORAGE_KEY,
-  showToast,
-});
-
-const accessibilityController = createAccessibilityController({
-  reduceMotionToggle,
-  highContrastToggle,
-  motionPreferenceQuery,
-  initialReduceMotionPreferred,
-  showToast,
-  reduceMotionStorageKey: REDUCE_MOTION_STORAGE_KEY,
-  highContrastStorageKey: HIGH_CONTRAST_STORAGE_KEY,
-});
-const { initAccessibilityControls } = accessibilityController;
-
-const onboardingController = createOnboardingController({
-  overlayEl: onboardingOverlay,
-  copyEl: onboardingCopyEl,
-  stepLabelEl: onboardingStepLabel,
-  nextButtonEl: onboardingNextButton,
-  steps: ONBOARDING_STEPS,
-});
-
-function syncHeroPillsWithRange() { }
-
-async function handleChatSelectionChange(event) {
-  return handleChatSelectionChangeCore(event, {
-    getChatDatasetById,
-    applyEntriesToApp,
-    loadRemoteChat,
-    updateStatus,
-  });
-}
-
-const keyboardShortcutsController = createKeyboardShortcutsController({
-  deps: {
+  sectionNavConfig: {
+    containerEl: sectionNavInner,
+    navItemsConfig: SECTION_NAV_ITEMS,
+  },
+  compactConfig: {
+    toggle: compactToggleButton,
+    storageKey: COMPACT_STORAGE_KEY,
+  },
+  accessibilityConfig: {
+    reduceMotionToggle,
+    highContrastToggle,
+    motionPreferenceQuery,
+    initialReduceMotionPreferred,
+    reduceMotionStorageKey: REDUCE_MOTION_STORAGE_KEY,
+    highContrastStorageKey: HIGH_CONTRAST_STORAGE_KEY,
+  },
+  onboardingConfig: {
+    overlayEl: onboardingOverlay,
+    copyEl: onboardingCopyEl,
+    stepLabelEl: onboardingStepLabel,
+    skipButtonEl: onboardingSkipButton,
+    nextButtonEl: onboardingNextButton,
+    steps: ONBOARDING_STEPS,
+  },
+  keyboardDeps: {
     syncRelayChats,
     isLogDrawerOpen,
     closeLogDrawer,
     openLogDrawer,
-    applyCompactMode,
-    showToast,
-    onboardingController,
-  },
-});
-const { initKeyboardShortcuts } = keyboardShortcutsController;
-setupAppBootstrap({
-  status: {
-    setStatusCallback,
-    statusEl,
-    showStatusMessage,
-    showToast,
-  },
-  keyboardShortcuts: {
-    initKeyboardShortcuts,
   },
   eventBindings: {
     elements: {
@@ -840,29 +630,17 @@ setupAppBootstrap({
       rerenderHourlyFromState,
     },
   },
-  bootstrap: {
-    elements: {
-      onboardingSkipButton,
-      onboardingNextButton,
-    },
-    deps: {
-      initRelayControls,
-      initThemeControls,
-      initCompactMode,
-      initAccessibilityControls,
-      setDataAvailabilityState,
-      onboardingController,
-      startRelaySession,
-      stopRelaySession,
-      buildSectionNav,
-      setupSectionNavTracking,
-      searchController,
-      savedViewsController,
-      getDataAvailable,
-      refreshChatSelector,
-      updateStatus,
-      relayServiceName: RELAY_SERVICE_NAME,
-      prefersReducedMotion: () => accessibilityController.prefersReducedMotion(),
-    },
+  bootstrapDeps: {
+    initRelayControls,
+    initThemeControls,
+    setDataAvailabilityState,
+    startRelaySession,
+    stopRelaySession,
+    searchController,
+    savedViewsController,
+    getDataAvailable,
+    refreshChatSelector,
+    updateStatus,
+    relayServiceName: RELAY_SERVICE_NAME,
   },
 });
