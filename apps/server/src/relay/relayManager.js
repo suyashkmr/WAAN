@@ -41,6 +41,14 @@ const PRIMARY_SYNC_RETRY_DELAY_MS = (() => {
   if (rounded > 5000) return 5000;
   return rounded;
 })();
+const STARTUP_PRIMARY_RESYNC_DELAY_MS = (() => {
+  const raw = Number(process.env.WAAN_RELAY_STARTUP_PRIMARY_RESYNC_DELAY_MS);
+  if (!Number.isFinite(raw)) return 15000;
+  const rounded = Math.trunc(raw);
+  if (rounded < 0) return 0;
+  if (rounded > 120000) return 120000;
+  return rounded;
+})();
 
 class RelayManager extends EventEmitter {
   constructor({ config, store, logger }) {
@@ -65,6 +73,8 @@ class RelayManager extends EventEmitter {
       lastSyncPersistDurationMs: null,
     };
     this.loggedGetChatsFallback = false;
+    this.startupPrimaryResyncTimer = null;
+    this.startupPrimaryResyncScheduled = false;
   }
 
   getStatus() {
@@ -133,6 +143,7 @@ class RelayManager extends EventEmitter {
   }
 
   async stop() {
+    this.clearStartupPrimaryResync();
     if (this.client) {
       try {
         await this.client.destroy();
@@ -168,11 +179,19 @@ class RelayManager extends EventEmitter {
     return this.client !== null && this.state.status === "running";
   }
 
-  async syncChats() {
+  async syncChats(options = {}) {
     const client = this.requireClient();
     if (this.syncingChats) {
       return this.getStatus();
     }
+    const requestedMode =
+      options && typeof options.mode === "string"
+        ? options.mode.trim().toLowerCase()
+        : "";
+    const effectiveMode =
+      requestedMode === "auto" || requestedMode === "primary" || requestedMode === "fallback"
+        ? requestedMode
+        : RELAY_SYNC_MODE;
     this.syncingChats = true;
     this.emit("status", this.getStatus());
     const syncStartedAt = Date.now();
@@ -180,7 +199,7 @@ class RelayManager extends EventEmitter {
       this.log("Synchronising chat list from ChatScope…");
       const syncResult = await fetchChatsWithStrategy({
         client,
-        mode: RELAY_SYNC_MODE,
+        mode: effectiveMode,
         retryAttempts: PRIMARY_SYNC_RETRY_ATTEMPTS,
         retryDelayMs: PRIMARY_SYNC_RETRY_DELAY_MS,
         waitBeforeRetry: delayMs => this.waitBeforePrimaryRetry(delayMs),
@@ -344,7 +363,41 @@ class RelayManager extends EventEmitter {
     });
     this.log("ChatScope relay is ready.");
     await this.refreshContacts();
-    await this.syncChats();
+    const syncStatus = await this.syncChats();
+    this.scheduleStartupPrimaryResync(syncStatus);
+  }
+
+  scheduleStartupPrimaryResync(syncStatus) {
+    if (RELAY_SYNC_MODE !== "auto") return;
+    if (!syncStatus || syncStatus.syncPath !== "fallback") return;
+    if (this.startupPrimaryResyncScheduled || this.startupPrimaryResyncTimer) return;
+    this.startupPrimaryResyncScheduled = true;
+    this.log(
+      `Scheduling deferred primary chat sync in ${STARTUP_PRIMARY_RESYNC_DELAY_MS}ms after fallback startup sync.`,
+    );
+    this.startupPrimaryResyncTimer = setTimeout(() => {
+      this.startupPrimaryResyncTimer = null;
+      this.runDeferredPrimaryResync();
+    }, STARTUP_PRIMARY_RESYNC_DELAY_MS);
+  }
+
+  async runDeferredPrimaryResync() {
+    if (!this.client) return;
+    try {
+      this.log("Running deferred primary chat sync.");
+      await this.syncChats({ mode: "primary" });
+    } catch (error) {
+      const details = formatErrorDetails(error, "Deferred primary sync failed");
+      this.logger.debug("Deferred primary sync failed: %s", details);
+    }
+  }
+
+  clearStartupPrimaryResync() {
+    if (this.startupPrimaryResyncTimer) {
+      clearTimeout(this.startupPrimaryResyncTimer);
+      this.startupPrimaryResyncTimer = null;
+    }
+    this.startupPrimaryResyncScheduled = false;
   }
 
   async refreshContacts() {

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 const ORIGINAL_SYNC_MODE = process.env.WAAN_RELAY_SYNC_MODE;
 const ORIGINAL_RETRY_ATTEMPTS = process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS;
 const ORIGINAL_RETRY_DELAY_MS = process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS;
+const ORIGINAL_STARTUP_RESYNC_DELAY_MS = process.env.WAAN_RELAY_STARTUP_PRIMARY_RESYNC_DELAY_MS;
 
 function restoreSyncMode() {
   if (ORIGINAL_SYNC_MODE === undefined) {
@@ -20,9 +21,17 @@ function restoreSyncMode() {
   } else {
     process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS = ORIGINAL_RETRY_DELAY_MS;
   }
+  if (ORIGINAL_STARTUP_RESYNC_DELAY_MS === undefined) {
+    delete process.env.WAAN_RELAY_STARTUP_PRIMARY_RESYNC_DELAY_MS;
+  } else {
+    process.env.WAAN_RELAY_STARTUP_PRIMARY_RESYNC_DELAY_MS = ORIGINAL_STARTUP_RESYNC_DELAY_MS;
+  }
 }
 
-async function loadRelayManager(syncMode, { retryAttempts = 2, retryDelayMs = 0 } = {}) {
+async function loadRelayManager(
+  syncMode,
+  { retryAttempts = 2, retryDelayMs = 0, startupPrimaryResyncDelayMs = 0 } = {},
+) {
   if (syncMode === undefined) {
     delete process.env.WAAN_RELAY_SYNC_MODE;
   } else {
@@ -30,6 +39,7 @@ async function loadRelayManager(syncMode, { retryAttempts = 2, retryDelayMs = 0 
   }
   process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_ATTEMPTS = String(retryAttempts);
   process.env.WAAN_RELAY_PRIMARY_SYNC_RETRY_DELAY_MS = String(retryDelayMs);
+  process.env.WAAN_RELAY_STARTUP_PRIMARY_RESYNC_DELAY_MS = String(startupPrimaryResyncDelayMs);
   vi.resetModules();
   const relayModule = await import("../apps/server/src/relay/relayManager.js");
   const resolved = relayModule?.RelayManager || relayModule?.default?.RelayManager;
@@ -69,6 +79,7 @@ function buildChat(id = "123@c.us") {
 
 describe("relayManager sync mode behavior", () => {
   afterEach(() => {
+    vi.useRealTimers();
     restoreSyncMode();
     vi.restoreAllMocks();
     vi.resetModules();
@@ -228,5 +239,26 @@ describe("relayManager sync mode behavior", () => {
     expect(store.upsertChatMeta).not.toHaveBeenCalled();
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
+  });
+
+  it("schedules deferred primary sync after startup fallback in auto mode", async () => {
+    vi.useFakeTimers();
+    const RelayManager = await loadRelayManager("auto", {
+      startupPrimaryResyncDelayMs: 1,
+    });
+    const { manager } = createManager(RelayManager);
+    const syncSpy = vi
+      .spyOn(manager, "syncChats")
+      .mockResolvedValueOnce({ syncPath: "fallback" })
+      .mockResolvedValueOnce({ syncPath: "primary" });
+    manager.refreshContacts = vi.fn(async () => {});
+    manager.client = {};
+
+    await manager.handleReady();
+    expect(syncSpy).toHaveBeenNthCalledWith(1);
+
+    await vi.runAllTimersAsync();
+    expect(syncSpy).toHaveBeenNthCalledWith(2, { mode: "primary" });
+    vi.useRealTimers();
   });
 });
