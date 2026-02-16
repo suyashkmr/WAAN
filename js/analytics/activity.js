@@ -94,7 +94,7 @@ export function renderTimeOfDayPanel(analytics, elements = {}) {
   renderTimeOfDayChart(dataset, elements);
 }
 
-export function renderTimeOfDayChart(dataset, elements = {}) {
+function renderTimeOfDayChart(dataset, elements = {}) {
   const {
     container,
     sparklineEl,

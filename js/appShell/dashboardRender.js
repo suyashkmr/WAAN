@@ -1,5 +1,5 @@
 import { renderSummaryCards as renderSummarySection } from "../analytics/summary.js";
-import { renderTimeOfDayPanel, formatHourLabel } from "../analytics/activity.js";
+import { renderTimeOfDayPanel } from "../analytics/activity.js";
 import { renderSentimentSection } from "../analytics/sentiment.js";
 import { renderMessageTypesSection } from "../analytics/messageTypes.js";
 import { renderPollsSection } from "../analytics/polls.js";
@@ -202,5 +202,4 @@ export {
   applyParticipantTimeframeChange,
   applyParticipantPreset,
   toggleParticipantRow,
-  formatHourLabel,
 };

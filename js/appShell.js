@@ -73,13 +73,15 @@ import {
   createCompactModeManager,
   createAccessibilityController,
 } from "./ui.js";
-import { createAppDomRefs } from "./appShell/domRefs.js";
-import { createAnalyticsRequestTracker } from "./appShell/adapters.js";
-import { setupAppBootstrap } from "./appShell/bootstrapApp.js";
-import { createExportRuntime, createExportFilterSummary } from "./appShell/exportRuntime.js";
-import { createRelayRuntime } from "./appShell/relayRuntime.js";
-import { createDashboardRuntime, createDatasetLifecycleRuntime } from "./appShell/compositionRuntime.js";
 import {
+  createAppDomRefs,
+  createAnalyticsRequestTracker,
+  setupAppBootstrap,
+  createExportRuntime,
+  createExportFilterSummary,
+  createRelayRuntime,
+  createDashboardRuntime,
+  createDatasetLifecycleRuntime,
   createOnboardingController,
   createStatusUiController,
   createThemeUiController,

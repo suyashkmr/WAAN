@@ -42,6 +42,8 @@ _IGNORE_waan/
 *.tar.gz
 waan-data-backup-*.tgz
 apps_prev_*/
+chat.json
+analytics.json
 chat.json.gz
 __pycache__/
 .DS_Store

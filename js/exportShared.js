@@ -1,7 +1,7 @@
 import { formatNumber, formatFloat } from "./utils.js";
 import { BRAND_NAME } from "./config.js";
 
-export function escapeHtml(value) {
+function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -10,7 +10,7 @@ export function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-export function collectExportSummary(analytics) {
+function collectExportSummary(analytics) {
   const highlights = (analytics.highlights || []).map(item => ({
     label: item.label || "Highlight",
     value: item.value || "",

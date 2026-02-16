@@ -1,5 +1,6 @@
 import globals from "globals";
 import js from "@eslint/js";
+import importPlugin from "eslint-plugin-import";
 
 export default [
   {
@@ -13,9 +14,20 @@ export default [
         ...globals.node,
       },
     },
+    plugins: {
+      import: importPlugin,
+    },
     rules: {
       "no-unused-vars": ["warn", { args: "none", ignoreRestSiblings: true }],
       "no-undef": "error",
+      "import/no-unused-modules": [
+        "warn",
+        {
+          unusedExports: true,
+          src: ["js/**/*.js", "apps/server/src/**/*.js", "tests/**/*.js"],
+          ignoreExports: ["js/main.js", "apps/server/src/index.js"],
+        },
+      ],
     },
   },
   {

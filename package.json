@@ -10,8 +10,10 @@
   "scripts": {
     "bootstrap": "npm install --workspaces",
     "lint": "eslint js apps/server/src",
+    "check:circular": "npx --yes madge --extensions js --circular js apps/server/src",
     "test": "vitest --run",
     "verify": "npm run lint && npm test",
+    "ci:verify": "npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },
@@ -24,6 +26,7 @@
     "@eslint/js": "^9.39.1",
     "@vitest/coverage-v8": "^4.0.14",
     "eslint": "^9.39.1",
+    "eslint-plugin-import": "^2.32.0",
     "globals": "^16.5.0",
     "happy-dom": "^20.0.11",
     "vitest": "^4.0.14"

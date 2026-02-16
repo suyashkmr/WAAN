@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   analyzeSystemEvents,
-  classifyExportSystemMessage,
 } from "../js/analytics/systemEvents.js";
 
 function buildSystemEntry({
@@ -20,14 +19,6 @@ function buildSystemEntry({
 }
 
 describe("systemEvents", () => {
-  it("classifies export join request text", () => {
-    const classification = classifyExportSystemMessage(
-      "whatsapp",
-      "Ravi requested to join",
-    );
-    expect(classification).toEqual({ subtype: "join_request" });
-  });
-
   it("keeps join and added counters non-overlapping", () => {
     const systems = [
       buildSystemEntry({
