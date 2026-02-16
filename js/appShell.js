@@ -95,6 +95,10 @@ import {
   createBusyRuntimeController,
   fetchJson,
   formatRelayAccount,
+  COMPACT_STORAGE_KEY,
+  REDUCE_MOTION_STORAGE_KEY,
+  HIGH_CONTRAST_STORAGE_KEY,
+  initWindowToasts,
 } from "./appShell/index.js";
 
 const {
@@ -688,10 +692,7 @@ const {
   refreshChatSelector,
   updateStatus,
 });
-self.windowToasts = [];
-const COMPACT_STORAGE_KEY = "waan-compact-mode";
-const REDUCE_MOTION_STORAGE_KEY = "waan-reduce-motion";
-const HIGH_CONTRAST_STORAGE_KEY = "waan-high-contrast";
+initWindowToasts();
 const statusUiController = createStatusUiController({
   statusEl,
   toastContainer,
