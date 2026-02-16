@@ -3,12 +3,21 @@ const EventEmitter = require("events");
 const { spawn } = require("child_process");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
+const { formatErrorMessage, formatErrorDetails } = require("../errorUtils");
 
 const DEFAULT_MESSAGE_LIMIT = Number(process.env.WAAN_CHAT_FETCH_LIMIT || 2500);
 const RELAY_HEADLESS =
   process.env.WAAN_RELAY_HEADLESS !== undefined
     ? process.env.WAAN_RELAY_HEADLESS === "true"
     : true;
+const RELAY_SYNC_MODE = (() => {
+  const raw = (process.env.WAAN_RELAY_SYNC_MODE || "").trim().toLowerCase();
+  if (raw === "auto" || raw === "primary" || raw === "fallback") {
+    return raw;
+  }
+  // Keep primary-first behavior by default; fallback is opt-in or failover.
+  return "auto";
+})();
 
 function runCommand(command, args = []) {
   return new Promise((resolve, reject) => {
@@ -108,6 +117,7 @@ class RelayManager extends EventEmitter {
       chatsSyncedAt: null,
       chatCount: 0,
     };
+    this.loggedGetChatsFallback = false;
   }
 
   getStatus() {
@@ -229,7 +239,25 @@ class RelayManager extends EventEmitter {
     this.emit("status", this.getStatus());
     try {
       this.log("Synchronising chat list from ChatScope…");
-      const chats = await client.getChats();
+      let chats = [];
+      if (RELAY_SYNC_MODE === "fallback") {
+        this.logger.info("Relay sync mode=fallback; skipping client.getChats().");
+        chats = await this.getChatsFromStoreFallback();
+      } else if (RELAY_SYNC_MODE === "primary") {
+        chats = await client.getChats();
+      } else {
+        try {
+          chats = await client.getChats();
+        } catch (error) {
+          const details = formatErrorDetails(error, "ChatScope getChats failed");
+          if (!this.loggedGetChatsFallback) {
+            this.logger.info("client.getChats() unavailable; using Store.Chat fallback sync.");
+            this.loggedGetChatsFallback = true;
+          }
+          this.logger.debug("client.getChats() fallback details: %s", details);
+          chats = await this.getChatsFromStoreFallback();
+        }
+      }
       for (const chat of chats) {
         await this.persistChatMeta(chat);
       }
@@ -237,13 +265,62 @@ class RelayManager extends EventEmitter {
       this.state.chatsSyncedAt = new Date().toISOString();
       this.log(`Synced ${chats.length} chats.`);
     } catch (error) {
-      this.logger.error("Failed to sync chats: %s", error.message);
-      this.state.lastError = error.message;
+      const message = formatErrorMessage(error, "Chat sync failed");
+      const details = formatErrorDetails(error, "Chat sync failed");
+      this.logger.error("Failed to sync chats: %s", details);
+      this.state.lastError = message;
     } finally {
       this.syncingChats = false;
       this.emit("status", this.getStatus());
     }
     return this.getStatus();
+  }
+
+  async getChatsFromStoreFallback() {
+    if (!this.client || !this.client.pupPage) {
+      throw new Error("Fallback chat sync unavailable: browser page is not ready.");
+    }
+    const payload = await this.client.pupPage.evaluate(() => {
+      if (!window.Store) {
+        return { ok: false, error: "window.Store is unavailable" };
+      }
+      if (!window.Store.Chat || typeof window.Store.Chat.getModelsArray !== "function") {
+        return { ok: false, error: "window.Store.Chat.getModelsArray is unavailable" };
+      }
+      const chatModels = window.Store.Chat.getModelsArray();
+      const chats = chatModels
+        .map(chat => {
+          try {
+            const chatId = chat.id?._serialized || chat.id?.id || chat.id?.user || null;
+            if (!chatId) return null;
+            return {
+              id: chatId,
+              name:
+                chat.name ||
+                chat.formattedTitle ||
+                chat.contact?.name ||
+                chat.contact?.pushname ||
+                null,
+              timestamp: Number(chat.t || chat.timestamp || 0) || 0,
+              isGroup: Boolean(chat.isGroup),
+              unreadCount: Number(chat.unreadCount) || 0,
+            };
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
+      return { ok: true, chats };
+    });
+    if (!payload || payload.ok !== true) {
+      const message = payload && payload.error
+        ? String(payload.error)
+        : "window.Store.Chat fallback returned invalid payload";
+      throw new Error(`Fallback chat sync unavailable: ${message}`);
+    }
+    const chats = Array.isArray(payload.chats) ? payload.chats : [];
+    this.log(`Fallback chat sync path loaded ${chats.length} chats.`);
+    return chats;
   }
 
   async ensureChatSynced(chatId, options = {}) {

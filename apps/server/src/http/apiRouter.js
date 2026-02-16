@@ -1,4 +1,5 @@
 const express = require("express");
+const { formatErrorMessage } = require("../errorUtils");
 
 function buildApiRouter({ store, relayManager, logger }) {
   const router = express.Router();
@@ -17,7 +18,7 @@ function buildApiRouter({ store, relayManager, logger }) {
       await relayManager?.syncChats();
       res.json({ ok: true });
     } catch (error) {
-      logger?.error("Failed to reload chats: %s", error.message);
+      logger?.error("Failed to reload chats: %s", formatErrorMessage(error, "Unable to reload chats"));
       res.status(500).json({ error: "Unable to reload chats" });
     }
   });
@@ -41,7 +42,7 @@ function buildApiRouter({ store, relayManager, logger }) {
         }
       }
     } catch (error) {
-      logger?.warn("Failed to refresh chat %s: %s", chatId, error.message);
+      logger?.warn("Failed to refresh chat %s: %s", chatId, formatErrorMessage(error, "Unable to refresh chat"));
     }
     meta = store.getChatMeta(chatId);
     if (!meta) {
@@ -62,7 +63,7 @@ function buildApiRouter({ store, relayManager, logger }) {
       await store.clearAll();
       res.json({ ok: true });
     } catch (error) {
-      logger?.error("Failed to clear chats: %s", error.message);
+      logger?.error("Failed to clear chats: %s", formatErrorMessage(error, "Unable to clear stored chats"));
       res.status(500).json({ error: "Unable to clear stored chats" });
     }
   });
