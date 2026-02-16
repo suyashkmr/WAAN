@@ -52,8 +52,6 @@ import {
   resetWeekdayFilters,
   computeDatasetFingerprint,
 } from "./state.js";
-import { createExporters } from "./exporters.js";
-import { createRelayController } from "./relayControls.js";
 import {
   formatHourLabel,
   computeTimeOfDayDataset,
@@ -78,25 +76,23 @@ import {
 import { createAppDomRefs } from "./appShell/domRefs.js";
 import { createAnalyticsRequestTracker } from "./appShell/adapters.js";
 import { setupAppBootstrap } from "./appShell/bootstrapApp.js";
+import { createExportRuntime, createExportFilterSummary } from "./appShell/exportRuntime.js";
+import { createRelayRuntime } from "./appShell/relayRuntime.js";
+import { createDashboardRuntime, createDatasetLifecycleRuntime } from "./appShell/compositionRuntime.js";
 import {
   createOnboardingController,
   createStatusUiController,
   createThemeUiController,
   createSectionNavController,
   createChatSelectionController,
-  createExportPipeline,
   createRangeFiltersController,
   createAnalyticsPipeline,
-  createPdfPreviewController,
-  createDatasetLifecycleController,
-  createRelayBootstrapController,
   createKeyboardShortcutsController,
   createDataStatusController,
   createParticipantInteractionsController,
   createBusyRuntimeController,
   fetchJson,
   formatRelayAccount,
-  createDashboardRenderController,
 } from "./appShell/index.js";
 
 const {
@@ -468,19 +464,13 @@ const {
   handleParticipantRowToggle,
 } = participantInteractionsController;
 
-function getExportFilterSummary() {
-  const rangeValue = normalizeRangeValue(getCurrentRange());
-  const rangeLabel = describeRange(rangeValue);
-  const parts = [`Range: ${rangeLabel}`];
-  parts.push(`Participants: ${participantFilters.sortMode === "quiet" ? "Quietest" : "Most active"}`);
-  if (participantFilters.topCount > 0) {
-    parts.push(`Limit: Top ${participantFilters.topCount}`);
-  }
-  parts.push(`Timeframe: ${participantFilters.timeframe === "week" ? "Last 7 days" : "All time"}`);
-  return parts;
-}
-let participantView = [];
-dashboardRenderController = createDashboardRenderController({
+const getExportFilterSummary = createExportFilterSummary({
+  normalizeRangeValue,
+  getCurrentRange,
+  describeRange,
+  participantFilters,
+});
+const { controller: dashboardRuntimeController, getParticipantView } = createDashboardRuntime({
   elements: {
     summaryEl,
     participantsBody,
@@ -539,9 +529,6 @@ dashboardRenderController = createDashboardRenderController({
     getWeekdayState,
     updateWeekdayState,
     participantFilters,
-    setParticipantView: next => {
-      participantView = next;
-    },
     setDataAvailabilityState,
     searchPopulateParticipants: () => searchController.populateParticipants(),
     searchRenderResults: () => searchController.renderResults(),
@@ -551,15 +538,7 @@ dashboardRenderController = createDashboardRenderController({
     sanitizeText,
   },
 });
-const {
-  generateMarkdownReportAsync,
-  generateSlidesHtmlAsync,
-  generatePdfDocumentHtmlAsync,
-} = createExportPipeline({
-  getDatasetLabel,
-  getExportFilterSummary,
-  brandName: BRAND_NAME,
-});
+dashboardRenderController = dashboardRuntimeController;
 const themeUiController = createThemeUiController({
   themeToggleInputs,
   mediaQuery: window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null,
@@ -581,13 +560,17 @@ const {
   handleDownloadMarkdownReport,
   handleDownloadSlidesReport,
   exportMessageSubtype,
-} = createExporters({
+  handleDownloadPdfReport,
+} = createExportRuntime({
+  brandName: BRAND_NAME,
+  getExportFilterSummary,
+  getExportThemeConfig,
+  getDatasetFingerprint,
   getDatasetAnalytics,
   getDatasetEntries,
   getDatasetLabel,
   getCurrentRange,
-  getParticipantView: () => participantView,
-  getExportFilterSummary,
+  getParticipantView,
   getSearchState,
   updateStatus,
   formatNumber,
@@ -598,20 +581,9 @@ const {
   describeRange,
   filterEntriesByRange,
   normalizeRangeValue,
-  generateMarkdownReport: generateMarkdownReportAsync,
-  generateSlidesHtml: generateSlidesHtmlAsync,
-  getExportThemeConfig,
-  getDatasetFingerprint,
 });
-const pdfPreviewController = createPdfPreviewController({
-  getDatasetAnalytics,
-  getExportThemeConfig,
-  generatePdfDocumentHtmlAsync,
-  updateStatus,
-});
-const { handleDownloadPdfReport } = pdfPreviewController;
-const datasetLifecycleController = createDatasetLifecycleController({
-  elements: { rangeSelect },
+const { applyEntriesToApp } = createDatasetLifecycleRuntime({
+  rangeSelect,
   deps: {
     setDatasetEntries,
     setDatasetFingerprint,
@@ -642,15 +614,23 @@ const datasetLifecycleController = createDatasetLifecycleController({
     populateSearchParticipants: () => searchController.populateParticipants(),
   },
 });
-const { applyEntriesToApp } = datasetLifecycleController;
 const busyRuntimeController = createBusyRuntimeController({
   globalProgressEl,
   globalProgressLabel,
 });
 const { withGlobalBusy } = busyRuntimeController;
 
-const relayController = createRelayController({
-  elements: {
+const {
+  startRelaySession,
+  stopRelaySession,
+  syncRelayChats,
+  loadRemoteChat,
+  isLogDrawerOpen,
+  openLogDrawer,
+  closeLogDrawer,
+  initRelayControls,
+} = createRelayRuntime({
+  relayElements: {
     relayStartButton,
     relayStopButton,
     relayLogoutButton,
@@ -673,7 +653,7 @@ const relayController = createRelayController({
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
   },
-  helpers: {
+  relayHelpers: {
     updateStatus,
     withGlobalBusy,
     fetchJson,
@@ -689,28 +669,7 @@ const relayController = createRelayController({
     encodeChatSelectorValue,
   },
   electronAPI: window.electronAPI,
-});
-
-const {
-  startRelaySession,
-  handlePrimaryActionClick: handleRelayPrimaryActionClick,
-  stopRelaySession,
-  logoutRelaySession,
-  handleReloadAllChats,
-  syncRelayChats,
-  loadRemoteChat,
-  refreshRelayStatus,
-  startStatusPolling,
-  handleLogClear,
-  openLogDrawer,
-  closeLogDrawer,
-  handleLogDrawerDocumentClick,
-  handleLogDrawerKeydown,
-  initLogStream,
-  isLogDrawerOpen,
-} = relayController;
-const relayBootstrapController = createRelayBootstrapController({
-  elements: {
+  bootstrapElements: {
     relayStartButton,
     relayStatusEl,
     relayStopButton,
@@ -721,29 +680,12 @@ const relayBootstrapController = createRelayBootstrapController({
     logDrawerCloseButton,
     logDrawerClearButton,
   },
-  handlers: {
-    handleRelayPrimaryActionClick,
-    stopRelaySession,
-    logoutRelaySession,
-    handleReloadAllChats,
-    openLogDrawer,
-    closeLogDrawer,
-    handleLogClear,
-    handleLogDrawerDocumentClick,
-    handleLogDrawerKeydown,
-    refreshRelayStatus,
-    startStatusPolling,
-    initLogStream,
-  },
-  deps: {
-    fetchJson,
-    apiBase: API_BASE,
-    setRemoteChatList,
-    refreshChatSelector,
-    updateStatus,
-  },
+  fetchJson,
+  apiBase: API_BASE,
+  setRemoteChatList,
+  refreshChatSelector,
+  updateStatus,
 });
-const { initRelayControls } = relayBootstrapController;
 self.windowToasts = [];
 const COMPACT_STORAGE_KEY = "waan-compact-mode";
 const REDUCE_MOTION_STORAGE_KEY = "waan-reduce-motion";
