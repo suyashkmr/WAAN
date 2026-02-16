@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { createDatasetLifecycleController } from "../js/appShell/datasetLifecycle.js";
 import { createRelayBootstrapController } from "../js/appShell/relayBootstrap.js";
 import { createEventBindingsController } from "../js/appShell/eventBindings.js";

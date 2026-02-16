@@ -10,11 +10,7 @@ vi.mock("../js/analytics/activity.js", () => ({
 
 import { createActivityPanelsController } from "../js/appShell/dashboardRender/activityPanels.js";
 import {
-  renderTimeOfDayPanel,
-  renderHourlyHeatmapSection,
-  renderDailySection,
   renderWeeklySection,
-  renderWeekdaySection,
 } from "../js/analytics/activity.js";
 
 function createRangeSelect() {

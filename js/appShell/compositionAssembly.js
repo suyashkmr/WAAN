@@ -157,15 +157,13 @@ export function createAppCompositionAssembly({
     updateStatus: state.updateStatus,
   });
 
-  function createChatSelectionChangeHandler() {
-    return async function handleChatSelectionChange(event) {
-      return wiring.handleChatSelectionChangeCore(event, {
-        getChatDatasetById: state.getChatDatasetById,
-        applyEntriesToApp,
-        loadRemoteChat,
-        updateStatus: state.updateStatus,
-      });
-    };
+  async function handleChatSelectionChange(event) {
+    return wiring.handleChatSelectionChangeCore(event, {
+      getChatDatasetById: state.getChatDatasetById,
+      applyEntriesToApp,
+      loadRemoteChat,
+      updateStatus: state.updateStatus,
+    });
   }
 
   return {
@@ -190,6 +188,6 @@ export function createAppCompositionAssembly({
     openLogDrawer,
     closeLogDrawer,
     initRelayControls,
-    handleChatSelectionChange: createChatSelectionChangeHandler(),
+    handleChatSelectionChange,
   };
 }

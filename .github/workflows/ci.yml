@@ -21,6 +21,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Enforce artifact policy
+        run: npm run check:artifacts
+
+      - name: Check unused exports
+        run: npm run check:unused-exports
+
       - name: Lint and test
         run: npm run verify
 
