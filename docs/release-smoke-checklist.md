@@ -27,8 +27,8 @@ Use this quick runbook before shipping a packaged WAAN build.
    - `Authenticated with ChatScope Web.`
    - `ChatScope relay is ready.`
 4. Trigger chat sync (auto/manual), then verify:
-   - `Synced <N> chats via primary.` or
-   - `Synced <N> chats via fallback.`
+   - `Synced <N> chats via primary in <T>ms (meta persist <P>ms).` or
+   - `Synced <N> chats via fallback in <T>ms (meta persist <P>ms).`
    - `N` should be non-zero for an account with visible chats.
 5. Open relay log drawer in UI and confirm sync-path visibility:
    - steady path: repeated `via primary` or `via fallback`

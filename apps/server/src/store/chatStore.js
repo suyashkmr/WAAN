@@ -120,6 +120,43 @@ class ChatStore extends EventEmitter {
     return updated;
   }
 
+  async upsertChatMetaBulk(updates = []) {
+    const normalized = Array.isArray(updates) ? updates : [];
+    if (!normalized.length) {
+      return [];
+    }
+    const applied = [];
+    normalized.forEach(item => {
+      if (!item || !item.chatId) return;
+      const chatId = item.chatId;
+      const patch = item.patch || {};
+      const existing = this.metadata.get(chatId) || {
+        id: chatId,
+        name: patch.name || chatId,
+        isGroup: Boolean(patch.isGroup),
+        unreadCount: 0,
+        lastMessageAt: null,
+        messageCount: 0,
+        participants: [],
+      };
+      const updated = {
+        ...existing,
+        ...patch,
+      };
+      if (patch.participants) {
+        updated.participants = patch.participants;
+      }
+      this.metadata.set(chatId, updated);
+      applied.push(updated);
+    });
+    if (!applied.length) {
+      return [];
+    }
+    await this.persistMetadata();
+    this.emit("chats:updated", this.listChats());
+    return applied;
+  }
+
   async appendMessage(chatId, entry, meta = {}) {
     const entries = await this.loadEntries(chatId);
     entries.push(entry);

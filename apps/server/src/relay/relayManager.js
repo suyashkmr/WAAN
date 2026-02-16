@@ -1,9 +1,16 @@
-const path = require("path");
 const EventEmitter = require("events");
-const { spawn } = require("child_process");
-const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
 const { formatErrorMessage, formatErrorDetails } = require("../errorUtils");
+const { fetchChatsWithStrategy } = require("./syncStrategy");
+const {
+  normaliseJid,
+  stripRelaySuffix,
+  buildChatMetaUpdate,
+  persistChatMeta,
+  serializeMessage,
+} = require("./relayData");
+const { createRelayClient, wireRelayClientEvents } = require("./relayLifecycle");
+const { openRelayBrowserWindow } = require("./relayBrowserWindow");
 
 const DEFAULT_MESSAGE_LIMIT = Number(process.env.WAAN_CHAT_FETCH_LIMIT || 2500);
 const RELAY_HEADLESS =
@@ -35,85 +42,6 @@ const PRIMARY_SYNC_RETRY_DELAY_MS = (() => {
   return rounded;
 })();
 
-function runCommand(command, args = []) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: "ignore" });
-    child.once("error", reject);
-    child.once("close", code => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`${command} exited with code ${code}`));
-      }
-    });
-  });
-}
-
-const SYSTEM_MESSAGE_TYPES = new Set(["notification", "gp2"]);
-const SYSTEM_MESSAGE_SUBTYPES = new Set([
-  "system",
-  "add",
-  "invite",
-  "remove",
-  "leave",
-  "linked_group_join",
-  "v4_add_invite_join",
-  "membership_approval_request",
-  "membership_approval",
-  "description",
-  "subject",
-  "announce",
-  "icon",
-  "create",
-  "limit_sharing_system_message",
-  "member_add_mode",
-  "restrict",
-  "admin",
-]);
-
-function normaliseJid(id) {
-  if (!id) return null;
-  if (typeof id === "string") return id;
-  if (typeof id === "object") {
-    if (id._serialized) return id._serialized;
-    if (id.id) return id.id;
-  }
-  return String(id);
-}
-
-function stripRelaySuffix(id) {
-  if (!id) return id;
-  return id.replace(/@(?:c|g)\.us$/, "");
-}
-
-function describeMedia(message) {
-  if (!message) return "";
-  if (message.type === "image") return "<image omitted>";
-  if (message.type === "video") return "<video omitted>";
-  if (message.type === "audio") return "<audio omitted>";
-  if (message.type === "ptt") return "<voice note>";
-  if (message.type === "sticker") return "<sticker>";
-  if (message.type === "document") return `<document: ${message._data?.mimetype || "file"}>`;
-  if (message.type === "ciphertext") return "<encrypted message>";
-  if (message.type === "revoked") return "<message deleted>";
-  if (message.type && message.type !== "chat") {
-    return `<${message.type}>`;
-  }
-  return "";
-}
-
-function formatTimestampLabel(isoString) {
-  if (!isoString) return null;
-  const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return null;
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year}, ${hours}:${minutes}`;
-}
-
 class RelayManager extends EventEmitter {
   constructor({ config, store, logger }) {
     super();
@@ -133,6 +61,8 @@ class RelayManager extends EventEmitter {
       chatsSyncedAt: null,
       chatCount: 0,
       syncPath: null,
+      lastSyncDurationMs: null,
+      lastSyncPersistDurationMs: null,
     };
     this.loggedGetChatsFallback = false;
   }
@@ -149,6 +79,8 @@ class RelayManager extends EventEmitter {
       chatsSyncedAt: this.state.chatsSyncedAt,
       chatCount: this.state.chatCount,
       syncPath: this.state.syncPath,
+      lastSyncDurationMs: this.state.lastSyncDurationMs,
+      lastSyncPersistDurationMs: this.state.lastSyncPersistDurationMs,
       syncingChats: this.syncingChats,
     };
   }
@@ -167,38 +99,26 @@ class RelayManager extends EventEmitter {
       lastQr: null,
     });
 
-    const sessionDir = path.join(this.config.dataDir, "relay-session");
-    const puppeteerArgs = [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-extensions",
-    ];
-    if (!RELAY_HEADLESS) {
-      puppeteerArgs.push("--start-minimized");
-    }
+    this.client = createRelayClient({
+      dataDir: this.config.dataDir,
+      headless: RELAY_HEADLESS,
+    });
 
-    this.client = new Client({
-      puppeteer: {
-        headless: RELAY_HEADLESS,
-        args: puppeteerArgs,
+    wireRelayClientEvents(this.client, {
+      onQr: qr => this.handleQr(qr),
+      onAuthenticated: () => this.log("Authenticated with ChatScope Web."),
+      onAuthFailure: message => this.handleAuthFailure(message),
+      onReady: () => this.handleReady(),
+      onChangeState: state => this.log(`Client state changed: ${state}`),
+      onDisconnected: reason => this.handleDisconnect(reason),
+      onLoadingScreen: (percent, message) => {
+        this.log(`Loading ChatScope… ${percent || 0}% ${message || ""}`.trim());
       },
-      authStrategy: new LocalAuth({ dataPath: sessionDir, clientId: "waan" }),
-    });
-
-    this.client.on("qr", qr => this.handleQr(qr));
-    this.client.on("authenticated", () => this.log("Authenticated with ChatScope Web."));
-    this.client.on("auth_failure", message => this.handleAuthFailure(message));
-    this.client.on("ready", () => this.handleReady());
-    this.client.on("change_state", state => this.log(`Client state changed: ${state}`));
-    this.client.on("disconnected", reason => this.handleDisconnect(reason));
-    this.client.on("loading_screen", (percent, message) => {
-      this.log(`Loading ChatScope… ${percent || 0}% ${message || ""}`.trim());
-    });
-    this.client.on("message", message => {
-      this.handleIncomingMessage(message).catch(error => {
-        this.logger.warn("Failed to record incoming message: %s", error.message);
-      });
+      onMessage: message => {
+        this.handleIncomingMessage(message).catch(error => {
+          this.logger.warn("Failed to record incoming message: %s", error.message);
+        });
+      },
     });
 
     try {
@@ -255,59 +175,53 @@ class RelayManager extends EventEmitter {
     }
     this.syncingChats = true;
     this.emit("status", this.getStatus());
+    const syncStartedAt = Date.now();
     try {
       this.log("Synchronising chat list from ChatScope…");
-      let chats = [];
-      let syncPath = RELAY_SYNC_MODE === "fallback" ? "fallback" : "primary";
-      if (RELAY_SYNC_MODE === "fallback") {
-        this.logger.info("Relay sync mode=fallback; skipping client.getChats().");
-        chats = await this.getChatsFromStoreFallback();
-      } else if (RELAY_SYNC_MODE === "primary") {
-        chats = await client.getChats();
-      } else {
-        let primaryError = null;
-        try {
-          for (let attempt = 1; attempt <= PRIMARY_SYNC_RETRY_ATTEMPTS; attempt += 1) {
-            try {
-              chats = await client.getChats();
-              primaryError = null;
-              break;
-            } catch (error) {
-              primaryError = error;
-              if (attempt >= PRIMARY_SYNC_RETRY_ATTEMPTS) {
-                throw error;
-              }
-              this.logger.debug(
-                "client.getChats() failed (attempt %d/%d). Retrying in %dms.",
-                attempt,
-                PRIMARY_SYNC_RETRY_ATTEMPTS,
-                PRIMARY_SYNC_RETRY_DELAY_MS,
-              );
-              await this.waitBeforePrimaryRetry(PRIMARY_SYNC_RETRY_DELAY_MS);
-            }
-          }
-        } catch {
-          const details = formatErrorDetails(primaryError, "ChatScope getChats failed");
-          if (!this.loggedGetChatsFallback) {
-            this.logger.info("client.getChats() unavailable; using Store.Chat fallback sync.");
-            this.loggedGetChatsFallback = true;
-          }
-          this.logger.debug("client.getChats() fallback details: %s", details);
-          chats = await this.getChatsFromStoreFallback();
-          syncPath = "fallback";
-        }
-      }
+      const syncResult = await fetchChatsWithStrategy({
+        client,
+        mode: RELAY_SYNC_MODE,
+        retryAttempts: PRIMARY_SYNC_RETRY_ATTEMPTS,
+        retryDelayMs: PRIMARY_SYNC_RETRY_DELAY_MS,
+        waitBeforeRetry: delayMs => this.waitBeforePrimaryRetry(delayMs),
+        logger: this.logger,
+        loggedGetChatsFallback: this.loggedGetChatsFallback,
+        getChatsFromStoreFallback: () => this.getChatsFromStoreFallback(),
+      });
+      const chats = Array.isArray(syncResult.chats) ? syncResult.chats : [];
+      const syncPath = syncResult.syncPath;
+      this.loggedGetChatsFallback = syncResult.loggedGetChatsFallback;
+      let persistDurationMs = 0;
+      const bulkMetaUpdates =
+        this.store && typeof this.store.upsertChatMetaBulk === "function" ? [] : null;
       for (const chat of chats) {
-        await this.persistChatMeta(chat);
+        const persistStartedAt = Date.now();
+        if (bulkMetaUpdates) {
+          const update = await this.buildChatMetaUpdate(chat);
+          if (update) bulkMetaUpdates.push(update);
+        } else {
+          await this.persistChatMeta(chat);
+        }
+        persistDurationMs += Math.max(0, Date.now() - persistStartedAt);
+      }
+      if (bulkMetaUpdates && bulkMetaUpdates.length) {
+        const bulkPersistStartedAt = Date.now();
+        await this.store.upsertChatMetaBulk(bulkMetaUpdates);
+        persistDurationMs += Math.max(0, Date.now() - bulkPersistStartedAt);
       }
       const previousSyncPath = this.state.syncPath;
+      const syncDurationMs = Math.max(0, Date.now() - syncStartedAt);
       this.state.chatCount = chats.length;
       this.state.chatsSyncedAt = new Date().toISOString();
       this.state.syncPath = syncPath;
+      this.state.lastSyncDurationMs = syncDurationMs;
+      this.state.lastSyncPersistDurationMs = persistDurationMs;
       if (previousSyncPath && previousSyncPath !== syncPath) {
         this.log(`Sync path transition detected: ${previousSyncPath} -> ${syncPath}.`);
       }
-      this.log(`Synced ${chats.length} chats via ${syncPath}.`);
+      this.log(
+        `Synced ${chats.length} chats via ${syncPath} in ${syncDurationMs}ms (meta persist ${persistDurationMs}ms).`,
+      );
     } catch (error) {
       const message = formatErrorMessage(error, "Chat sync failed");
       const details = formatErrorDetails(error, "Chat sync failed");
@@ -415,54 +329,10 @@ class RelayManager extends EventEmitter {
 
   async showBrowserWindow() {
     const client = this.requireClient();
-    if (RELAY_HEADLESS) {
-      throw new Error("Relay is running in headless mode. Set WAAN_RELAY_HEADLESS=false to enable the browser UI.");
-    }
-    if (!client.pupBrowser || typeof client.pupBrowser.process !== "function") {
-      throw new Error("ChatScope browser not available yet.");
-    }
-    const browserProcess = client.pupBrowser.process();
-    if (!browserProcess) {
-      throw new Error("Browser process not initialized.");
-    }
-    if (process.platform === "darwin") {
-      const executable =
-        browserProcess.spawnfile ||
-        (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
-      if (!executable) {
-        throw new Error("Unable to resolve ChatScope browser executable.");
-      }
-      const macosSegment = "/Contents/MacOS/";
-      let appPath = executable;
-      if (executable.includes(macosSegment)) {
-        appPath = executable.slice(0, executable.indexOf(macosSegment));
-      } else {
-        appPath = path.dirname(executable);
-      }
-      await runCommand("open", ["-a", appPath]);
-      return;
-    }
-    if (process.platform === "win32") {
-      const executable =
-        browserProcess.spawnfile ||
-        (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
-      if (!executable) {
-        throw new Error("Unable to resolve ChatScope browser executable.");
-      }
-      await runCommand("cmd", ["/c", "start", "", executable]);
-      return;
-    }
-    if (process.platform === "linux") {
-      const executable =
-        browserProcess.spawnfile ||
-        (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
-      if (!executable) {
-        throw new Error("Unable to resolve ChatScope browser executable.");
-      }
-      await runCommand("xdg-open", [executable]);
-      return;
-    }
-    throw new Error("Showing the ChatScope browser is not supported on this platform.");
+    await openRelayBrowserWindow({
+      client,
+      headless: RELAY_HEADLESS,
+    });
   }
 
   async handleReady() {
@@ -595,226 +465,27 @@ class RelayManager extends EventEmitter {
   }
 
   async persistChatMeta(chat) {
-    const chatId = normaliseJid(chat.id);
-    if (!chatId) return;
-    const name =
-      chat.name ||
-      chat.formattedTitle ||
-      chat.pushname ||
-      (chat.contact && (chat.contact.name || chat.contact.pushname)) ||
-      stripRelaySuffix(chatId);
-    const lastMessageTimestamp = chat.timestamp
-      ? new Date(chat.timestamp * 1000).toISOString()
-      : null;
+    await persistChatMeta({
+      chat,
+      store: this.store,
+      contactCache: this.contactCache,
+      logger: this.logger,
+    });
+  }
 
-    let participantList = Array.isArray(chat.participants) ? chat.participants : null;
-    if ((!participantList || !participantList.length) && typeof chat.fetchParticipants === "function") {
-      try {
-        participantList = await chat.fetchParticipants();
-      } catch (error) {
-        this.logger.warn("Failed to fetch participants for %s: %s", chatId, error.message);
-        participantList = [];
-      }
-    }
-
-    const participants = [];
-    if (Array.isArray(participantList)) {
-      participantList.forEach(participant => {
-        const participantId = normaliseJid(participant?.id);
-        if (!participantId) return;
-        const label =
-          participant?.name ||
-          participant?.pushname ||
-          participant?.shortName ||
-          participant?.notifyName ||
-          this.contactCache.get(participantId) ||
-          stripRelaySuffix(participantId || "");
-        if (label) {
-          this.contactCache.set(participantId, label);
-          participants.push({
-            id: participantId,
-            label,
-          });
-        }
-      });
-    }
-    await this.store.upsertChatMeta(chatId, {
-      name,
-      isGroup: Boolean(chat.isGroup),
-      unreadCount: Number(chat.unreadCount) || 0,
-      lastMessageAt: lastMessageTimestamp,
-      participants,
+  async buildChatMetaUpdate(chat) {
+    return buildChatMetaUpdate({
+      chat,
+      contactCache: this.contactCache,
+      logger: this.logger,
     });
   }
 
   serializeMessage(message) {
-    if (!message) return null;
-    const timestamp = this.extractTimestamp(message);
-    const textContent = this.extractMessageText(message);
-    const content = textContent || describeMedia(message);
-    const systemSubtype = this.extractSystemSubtype(message);
-    const senderJid = this.resolveSenderJid(message);
-    const entryType = this.resolveEntryType(message, systemSubtype);
-    const poll = this.extractPollInfo(message);
-    const entry = {
-      timestamp,
-      timestamp_text: formatTimestampLabel(timestamp),
-      sender: this.resolveSenderLabel(message),
-      sender_jid: senderJid,
-      message: content || "",
-      type: entryType,
-      has_poll: poll.hasPoll,
-      poll_title: poll.title,
-      poll_options: poll.options,
-      from_me: Boolean(message.fromMe),
-      message_id: message.id?._serialized || message.id?.id || null,
-      quoted_message_id: message.quotedMsgId || null,
-      ack: Number.isFinite(message.ack) ? Number(message.ack) : null,
-      is_forwarded: Boolean(message.isForwarded),
-      forwarding_score: Number.isFinite(message.forwardingScore)
-        ? Number(message.forwardingScore)
-        : null,
-      system_subtype: systemSubtype,
-    };
-    return entry;
-  }
-
-  extractPollInfo(message) {
-    const options = [];
-    const optionSources = [
-      message.pollOptions,
-      message.pollUpdates?.pollCreationMessageKeyData?.options,
-      message._data?.pollCreationMessageKeyData?.options,
-    ];
-    optionSources.forEach(source => {
-      if (Array.isArray(source)) {
-        source.forEach(option => {
-          if (!option) return;
-          if (typeof option === "string") {
-            options.push(option.trim());
-            return;
-          }
-          const name =
-            option.name ||
-            option.label ||
-            option.title ||
-            option.optionName?.defaultText ||
-            option.optionName ||
-            option.optionNameMessage?.text ||
-            option.localizedText ||
-            option.displayText;
-          if (name) options.push(String(name).trim());
-        });
-      }
+    return serializeMessage({
+      message,
+      contactCache: this.contactCache,
     });
-    const title =
-      message.pollName ||
-      message.pollTitle ||
-      message.pollUpdates?.pollCreationMessageKeyData?.name ||
-      message._data?.pollCreationMessageKeyData?.name ||
-      null;
-    const hasPoll =
-      Boolean(title) ||
-      (options.length > 0) ||
-      message.type === "poll_creation" ||
-      Boolean(message.pollUpdates);
-    return {
-      hasPoll,
-      title,
-      options: options.length ? options : null,
-    };
-  }
-
-  extractTimestamp(message) {
-    const source = Number(message.timestamp || message.t || message._data?.t);
-    if (!Number.isFinite(source)) return null;
-    const ms = source > 10_000_000_000 ? source : source * 1000;
-    const date = new Date(ms);
-    if (Number.isNaN(date.getTime())) return null;
-    return date.toISOString();
-  }
-
-  resolveEntryType(message, systemSubtype) {
-    if (!message) return "message";
-    const messageType = message.type || message._data?.type || "";
-    if (SYSTEM_MESSAGE_TYPES.has(messageType)) {
-      return "system";
-    }
-    if (systemSubtype && SYSTEM_MESSAGE_SUBTYPES.has(systemSubtype)) {
-      return "system";
-    }
-    return "message";
-  }
-
-  resolveSenderLabel(message) {
-    if (!message) return null;
-    if (message.fromMe) return "You";
-    const data = message._data || {};
-    const candidates = [
-      data.notifyName,
-      data.pushname,
-      data.sender?.shortName,
-      data.sender?.name,
-      data.name,
-    ];
-    const resolved = candidates.find(Boolean);
-    if (resolved) return resolved;
-    const authorId =
-      normaliseJid(message.author) ||
-      normaliseJid(message.from) ||
-      normaliseJid(message.id?.participant);
-    if (!authorId) return null;
-    if (this.contactCache.has(authorId)) {
-      return this.contactCache.get(authorId);
-    }
-    const fallback = stripRelaySuffix(authorId);
-    this.contactCache.set(authorId, fallback);
-    return fallback;
-  }
-
-  resolveSenderJid(message) {
-    return (
-      normaliseJid(message.author) ||
-      normaliseJid(message.from) ||
-      normaliseJid(message.id?.participant) ||
-      null
-    );
-  }
-
-  extractMessageText(message) {
-    const candidates = [
-      message.body,
-      message.caption,
-      message.description,
-      message._data?.body,
-      message._data?.caption,
-      message._data?.canonicalUrl,
-      message._data?.text,
-    ];
-    for (const value of candidates) {
-      if (typeof value === "string") {
-        const trimmed = value.trim();
-        if (trimmed.length) {
-          return trimmed;
-        }
-      }
-    }
-    return "";
-  }
-
-  extractSystemSubtype(message) {
-    const candidates = [
-      message.subtype,
-      message._data?.subtype,
-      message._data?.eventType,
-    ];
-    for (const candidate of candidates) {
-      if (!candidate) continue;
-      if (typeof candidate === "number") continue;
-      const normalized = String(candidate).toLowerCase();
-      if (normalized.length) return normalized;
-    }
-    return null;
   }
 
   log(text) {

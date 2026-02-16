@@ -76,6 +76,9 @@ export function updateRelayBanner({
   if (Number.isFinite(status.chatCount)) {
     metaParts.push(`${formatNumber(status.chatCount)} chats indexed`);
   }
+  if (Number.isFinite(status.lastSyncDurationMs) && status.lastSyncDurationMs >= 0) {
+    metaParts.push(`Last sync: ${formatNumber(status.lastSyncDurationMs)}ms`);
+  }
   if (status.syncPath === "primary" || status.syncPath === "fallback") {
     metaParts.push(`Sync path: ${status.syncPath}`);
   }

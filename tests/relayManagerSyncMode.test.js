@@ -91,6 +91,8 @@ describe("relayManager sync mode behavior", () => {
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
     expect(status.syncPath).toBe("primary");
+    expect(Number.isFinite(status.lastSyncDurationMs)).toBe(true);
+    expect(Number.isFinite(status.lastSyncPersistDurationMs)).toBe(true);
   });
 
   it("auto mode falls back when client.getChats() fails", async () => {
@@ -117,6 +119,8 @@ describe("relayManager sync mode behavior", () => {
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
     expect(status.syncPath).toBe("fallback");
+    expect(Number.isFinite(status.lastSyncDurationMs)).toBe(true);
+    expect(Number.isFinite(status.lastSyncPersistDurationMs)).toBe(true);
   });
 
   it("fallback mode surfaces Store API unavailability as sync failure", async () => {
@@ -138,6 +142,8 @@ describe("relayManager sync mode behavior", () => {
     expect(store.upsertChatMeta).not.toHaveBeenCalled();
     expect(status.chatCount).toBe(0);
     expect(status.syncPath).toBeNull();
+    expect(status.lastSyncDurationMs).toBeNull();
+    expect(status.lastSyncPersistDurationMs).toBeNull();
     expect(status.lastError).toContain("Fallback chat sync unavailable");
     expect(logger.error).toHaveBeenCalledWith(
       expect.stringMatching(/^Failed to sync chats: /),
@@ -206,5 +212,21 @@ describe("relayManager sync mode behavior", () => {
     expect(manager.getChatsFromStoreFallback).toHaveBeenCalledTimes(1);
     expect(status.syncPath).toBe("fallback");
     expect(status.lastError).toBeNull();
+  });
+
+  it("uses bulk chat metadata persistence when store supports it", async () => {
+    const RelayManager = await loadRelayManager("auto");
+    const { manager, store } = createManager(RelayManager);
+    store.upsertChatMetaBulk = vi.fn(async () => []);
+    manager.client = {
+      getChats: vi.fn(async () => [buildChat("bulk@c.us")]),
+    };
+
+    const status = await manager.syncChats();
+
+    expect(store.upsertChatMetaBulk).toHaveBeenCalledTimes(1);
+    expect(store.upsertChatMeta).not.toHaveBeenCalled();
+    expect(status.lastError).toBeNull();
+    expect(status.chatCount).toBe(1);
   });
 });

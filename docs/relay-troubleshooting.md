@@ -3,6 +3,7 @@
 This runbook covers common WAAN relay issues for the ChatScope live sync flow.
 
 Before release tagging, run: `docs/release-smoke-checklist.md`.
+For relay module boundaries, see: `docs/relay-architecture.md`.
 
 ## Compatibility Baseline
 
@@ -42,7 +43,7 @@ Meaning:
 
 Expected follow-up logs:
 - `Fallback chat sync path loaded <N> chats.`
-- `Synced <N> chats via fallback.`
+- `Synced <N> chats via fallback in <T>ms (meta persist <P>ms).`
 
 Action:
 1. If `<N> > 0`, treat as degraded-but-working.
@@ -70,7 +71,7 @@ Action:
 Example:
 
 ```text
-Synced 0 chats via primary.
+Synced 0 chats via primary in 182ms (meta persist 0ms).
 ```
 
 Action:
