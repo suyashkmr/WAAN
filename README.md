@@ -87,6 +87,130 @@ Default relay endpoints:
 Relay setup details: `docs/live-whatsapp.md`  
 Relay troubleshooting: `docs/relay-troubleshooting.md`
 
+## How To Use WAAN
+
+### 1. Connect your ChatScope account
+
+1. In WAAN, click **Connect** in the relay card.
+2. Scan the QR code from ChatScope on your phone:
+   *Linked devices* -> *Link a device*.
+3. Wait until the status shows connected.
+
+### 2. Sync and select a chat
+
+1. Click **Refresh chats** to mirror your latest chat list.
+2. Open **Loaded chats** and choose a chat under *ChatScope account*.
+3. WAAN fetches messages and renders analytics automatically.
+
+### 3. Explore analytics
+
+- Use range filters to focus on specific periods.
+- Open search to filter messages by keyword, participant, and date.
+- Use participant views and activity panels to inspect behavior by person/time.
+
+### 4. Save and export results
+
+- Save useful filter/search combinations as saved views.
+- Export outputs from the export controls (CSV/JSON/report formats).
+
+### 5. Manage relay session
+
+- **Disconnect** logs out from the linked account.
+- **Clear storage** removes locally mirrored relay chat data.
+
+## Data Points Explained
+
+### Core summary cards
+
+| Data point | Meaning |
+| --- | --- |
+| `Total Messages` | Count of chat messages (`type = message`) in the selected chat/range. |
+| `Active Participants` | Unique senders who posted messages in the selected data. |
+| `System Events Logged` | Count of system lines (`type = system`) such as joins/leaves/changes. |
+| `Date Range` | First and last detected timestamps in the selected data window. |
+
+### Highlights
+
+| Data point | Meaning |
+| --- | --- |
+| `Recent top senders` | Most active senders in the most recent weeks of data. |
+| `Busiest day` | Single day with the highest message count. |
+| `Busiest weekday` | Day-of-week with the highest message volume share. |
+| `Today/Tomorrow activity outlook` | Forecast based on recent daily/weekday patterns. |
+| `Next Busy Day` | Predicted next weekday likely to see above-baseline volume. |
+
+### Participants
+
+| Data point | Meaning |
+| --- | --- |
+| `Messages` | Number of messages sent by that participant. |
+| `Share` | Participant message count as a percentage of total messages. |
+| `Avg Words` | Average words per message for that participant. |
+| `Active range` | First and last seen message date for that participant. |
+| `Average length` | Average words and characters per message. |
+| `Sentiment` | Average sentiment score plus positive/negative mix for that participant. |
+| `Peak hour` | Hour where that participant posted most. |
+| `Peak weekday` | Weekday where that participant posted most. |
+
+### Activity panels
+
+| Data point | Meaning |
+| --- | --- |
+| `Top Hour` | Busiest weekday+hour cell in the hourly heatmap. |
+| `Avg per day` | Total messages divided by number of days in range. |
+| `Avg per week` | Total messages divided by number of calendar weeks in range. |
+| `Avg of last 3 weeks` | Rolling 3-week average ending at the latest week. |
+| `Busiest Weekdays` bars | Message count/share by weekday (with day/hour filters applied). |
+| `Time of Day peak` | Hour with highest volume in the selected time-of-day view. |
+| `Focus window share` | Percent of total messages falling inside selected hour range. |
+
+### Mood & sentiment
+
+| Data point | Meaning |
+| --- | --- |
+| `Positive / Neutral / Negative` | Message counts grouped by sentiment class. |
+| `Average` | Mean sentiment score over scored messages (`-1` to `+1`). |
+| `Daily trend/calendar` | Day-level sentiment average and message volume context. |
+| `Top positive/negative members` | Participants ranked by average sentiment score (with minimum activity threshold). |
+
+### Message mix and system metrics
+
+| Data point | Meaning |
+| --- | --- |
+| `Messages with media` | Messages classified as media-bearing. |
+| `Messages with links` | Messages containing URLs. |
+| `Polls` | Poll message count detected in chat history. |
+| `Join events` | Members joining the chat (including multi-member join events). |
+| `Members added` | Add/invite events counted from system messages. |
+| `Members left` | Leave events from system messages. |
+| `Members removed` | Removal events from system messages. |
+| `Settings changes` | System events indicating chat setting changes. |
+| `Other system messages` | System lines not matched to tracked categories. |
+| `Join requests` | Join-request style system events. |
+| `Average characters per message` | Mean message length in characters. |
+| `Average words per message` | Mean message length in words. |
+
+### Poll highlights
+
+| Data point | Meaning |
+| --- | --- |
+| `Total polls` | Total poll messages detected. |
+| `Unique poll creators` | Number of distinct participants who created polls. |
+| `Poll list` | Recent detected polls with creator, timestamp, and options (when available). |
+
+### Search
+
+| Data point | Meaning |
+| --- | --- |
+| `Search results` | Messages matching keyword, participant, and optional date filters. |
+| `Search summary` | Count and scope of currently matched results. |
+
+### Counting notes
+
+- `chat lines` includes both user messages and system entries.
+- Most percentages are relative to `Total Messages` (not total chat lines).
+- Sentiment is a lightweight lexicon-based score and should be treated as directional, not clinically precise.
+
 ## Scripts
 
 - `npm run lint` - lint dashboard + server code
