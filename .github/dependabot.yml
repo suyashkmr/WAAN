@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/apps/server"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    allow:
+      - dependency-name: "whatsapp-web.js"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
