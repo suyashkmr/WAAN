@@ -1,4 +1,3 @@
-import { WEEKDAY_SHORT } from "../../constants.js";
 import {
   renderTimeOfDayPanel,
   renderHourlyHeatmapSection,
@@ -6,6 +5,7 @@ import {
   renderWeeklySection,
   renderWeekdaySection,
 } from "../../analytics/activity.js";
+import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 
 export function createActivityPanelsController({ elements, deps }) {
   const {
@@ -57,18 +57,10 @@ export function createActivityPanelsController({ elements, deps }) {
 
   function renderHourlySummary(summary) {
     if (!hourlyTopHourEl) return;
-    if (!summary || !summary.topHour) {
-      hourlyTopHourEl.textContent = "-";
-      return;
-    }
-
-    const { dayIndex, hour, count } = summary.topHour;
-    const weekday = WEEKDAY_SHORT[dayIndex] ?? `Day ${dayIndex + 1}`;
-    const timeLabel = `${weekday} ${String(hour).padStart(2, "0")}:00`;
-    const share = summary.totalMessages ? (count / summary.totalMessages) * 100 : null;
-    const shareText = share !== null ? ` (${formatFloat(share, 1)}%)` : "";
-
-    hourlyTopHourEl.textContent = `${timeLabel} · ${formatNumber(count)} msgs${shareText}`;
+    hourlyTopHourEl.textContent = buildHourlyTopHourSummary(summary, {
+      formatNumber,
+      formatFloat,
+    });
   }
 
   function renderHourlyPanel(analytics) {

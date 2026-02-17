@@ -122,4 +122,4 @@ Use this as the working backlog for the current visual sprint.
   - [ ] Remove temporary module-size allowlist entries by splitting:
     - [ ] `js/exporters/createExporters.js`
     - [ ] `js/analytics/summary.js`
-    - [ ] `js/appShell/dashboardRender/activityPanels.js`
+    - [x] `js/appShell/dashboardRender/activityPanels.js`
