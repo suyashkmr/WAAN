@@ -9,6 +9,9 @@ WAAN is available as:
 - A web dashboard served from this repo
 - A macOS Electron desktop app (distributed as `.dmg`)
 
+Release assets are currently distributed via GitHub Releases (`v1.1.0` includes
+Apple Silicon DMG + ZIP).
+
 ## What It Does
 
 - Loads mirrored chats from a connected ChatScope account via the relay.
@@ -89,6 +92,12 @@ Relay troubleshooting: `docs/relay-troubleshooting.md`
 
 ## How To Use WAAN
 
+On first run, WAAN shows a guided setup flow in the empty state:
+
+1. Connect relay
+2. Scan QR code
+3. Choose a chat from **Loaded chats**
+
 ### 1. Connect your ChatScope account
 
 1. In WAAN, click **Connect** in the relay card.
@@ -98,7 +107,7 @@ Relay troubleshooting: `docs/relay-troubleshooting.md`
 
 ### 2. Sync and select a chat
 
-1. Click **Refresh chats** to mirror your latest chat list.
+1. Click **Resync chats** (or **Reload All Chats**) to mirror your latest chat list.
 2. Open **Loaded chats** and choose a chat under *ChatScope account*.
 3. WAAN fetches messages and renders analytics automatically.
 
@@ -115,8 +124,9 @@ Relay troubleshooting: `docs/relay-troubleshooting.md`
 
 ### 5. Manage relay session
 
-- **Disconnect** logs out from the linked account.
-- **Clear storage** removes locally mirrored relay chat data.
+- **Pause Relay** pauses relay activity.
+- **Log Out & Unlink** logs out from the linked account.
+- **Clear Cached Chats** removes locally mirrored relay chat data.
 
 ## Data Points Explained
 
@@ -217,12 +227,14 @@ Relay troubleshooting: `docs/relay-troubleshooting.md`
 - `npm test` - run test suite
 - `npm run verify` - lint + tests
 - `npm run ci:verify` - full local quality gate
+- `npm run perf:stress` - synthetic large-chat stress benchmark
 
 ## Project Docs
 
 - `docs/feature-map.md` - module ownership and responsibilities
 - `docs/app-shell-architecture.md` - dashboard architecture notes
 - `docs/release-smoke-checklist.md` - packaged smoke checklist / relay checks
+- `docs/performance-at-scale.md` - large-chat benchmark runbook and bottlenecks
 
 ## Acknowledgments
 
