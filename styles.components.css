@@ -2954,7 +2954,7 @@ main.is-loading .card-content {
 
 .weekday-heatmap-mobile .heatmap-cell.level-4 {
     background: var(--calendar-level-4);
-    color: var(--text-on-strong);
+    color: var(--calendar-level-4-fg);
 }
 
 .weekday-heatmap-row:last-child .heatmap-cell {
@@ -3113,13 +3113,13 @@ main.is-loading .card-content {
 
 .calendar-day.level-4 {
     background: var(--calendar-level-4);
-    color: var(--text-on-strong);
+    color: var(--calendar-level-4-fg);
     border-color: transparent;
 }
 
 .calendar-day.level-4 .day-number,
 .calendar-day.level-4 .day-count {
-    color: var(--text-on-strong);
+    color: var(--calendar-level-4-fg);
 }
 
 .calendar-day.zero .day-count {
@@ -3278,7 +3278,7 @@ main.is-loading .card-content {
 
 .heat-cell.level-4 {
     background: var(--calendar-level-4);
-    color: var(--text-on-strong);
+    color: var(--calendar-level-4-fg);
     border-color: transparent;
 }
 

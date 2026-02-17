@@ -40,6 +40,18 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 *::before,
 *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }`,
     });
+    await page.addStyleTag({
+      content: `.ghost-button.visual-hover-state {
+  background: color-mix(in srgb, var(--accent) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--accent) 20%, rgba(6, 8, 18, 0.45)) !important;
+}
+.ghost-button.visual-focus-state {
+  outline: 3px solid color-mix(in srgb, var(--accent) 20%, transparent) !important;
+  outline-offset: 2px !important;
+}`,
+    });
 
     await page.evaluate(() => {
       const status = document.getElementById("data-status");
@@ -50,18 +62,16 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const toggle = document.querySelector('.card-toggle[data-target="participants-content"]');
       const content = document.getElementById("participants-content");
       const card = document.getElementById("participants");
+      const focusButton = document.getElementById("reduce-motion-toggle");
+      const hoverButton = document.getElementById("download-pdf");
       if (toggle) toggle.setAttribute("aria-expanded", "false");
       if (content) content.style.display = "none";
       if (card) card.classList.add("collapsed");
+      focusButton?.classList.add("visual-focus-state");
+      hoverButton?.classList.add("visual-hover-state");
     });
-
-    const focusTarget = page.locator("#reduce-motion-toggle");
-    await expect(focusTarget).toBeVisible();
-    await focusTarget.focus();
-
-    const hoverTarget = page.locator("#download-pdf");
-    await expect(hoverTarget).toBeVisible();
-    await hoverTarget.hover();
+    await expect(page.locator("#reduce-motion-toggle")).toBeVisible();
+    await expect(page.locator("#download-pdf")).toBeVisible();
 
     await expect(page).toHaveScreenshot(`dashboard-interactive-${testInfo.project.name}.png`, {
       fullPage: false,

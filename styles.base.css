@@ -140,6 +140,7 @@
     --calendar-level-2: rgba(214, 179, 110, 0.34);
     --calendar-level-3: rgba(214, 179, 110, 0.52);
     --calendar-level-4: rgba(214, 179, 110, 0.78);
+    --calendar-level-4-fg: #171106;
     --chart-grid-line: color-mix(in srgb, var(--muted) 58%, transparent);
     --chart-axis-label: color-mix(in srgb, var(--accent) 45%, var(--muted));
     --chart-focus-band: color-mix(in srgb, var(--accent) 22%, transparent);
@@ -212,6 +213,7 @@ body[data-contrast="high"] {
     --warning: #ffba08;
     --warning-soft: color-mix(in srgb, var(--warning) 35%, transparent);
     --text-on-strong: #ffffff;
+    --calendar-level-4-fg: #010409;
     color: var(--text);
 }
 
@@ -289,6 +291,7 @@ body[data-contrast="high"] .card-title-group h2 {
         --calendar-level-2: rgba(156, 115, 50, 0.34);
         --calendar-level-3: rgba(156, 115, 50, 0.56);
         --calendar-level-4: rgba(156, 115, 50, 0.8);
+        --calendar-level-4-fg: #ffffff;
         --chart-grid-line: color-mix(in srgb, var(--muted) 62%, transparent);
         --chart-axis-label: color-mix(in srgb, var(--accent) 56%, var(--muted));
         --chart-focus-band: color-mix(in srgb, var(--accent) 18%, transparent);
@@ -345,6 +348,7 @@ body[data-contrast="high"] .card-title-group h2 {
     --calendar-level-2: rgba(214, 179, 110, 0.34);
     --calendar-level-3: rgba(214, 179, 110, 0.52);
     --calendar-level-4: rgba(214, 179, 110, 0.78);
+    --calendar-level-4-fg: #171106;
     --chart-grid-line: color-mix(in srgb, var(--muted) 58%, transparent);
     --chart-axis-label: color-mix(in srgb, var(--accent) 45%, var(--muted));
     --chart-focus-band: color-mix(in srgb, var(--accent) 22%, transparent);
@@ -400,6 +404,7 @@ body[data-contrast="high"] .card-title-group h2 {
     --calendar-level-2: rgba(156, 115, 50, 0.34);
     --calendar-level-3: rgba(156, 115, 50, 0.56);
     --calendar-level-4: rgba(156, 115, 50, 0.8);
+    --calendar-level-4-fg: #ffffff;
     --chart-grid-line: color-mix(in srgb, var(--muted) 62%, transparent);
     --chart-axis-label: color-mix(in srgb, var(--accent) 56%, var(--muted));
     --chart-focus-band: color-mix(in srgb, var(--accent) 18%, transparent);
