@@ -22,27 +22,27 @@ Use this as the working backlog for the current visual sprint.
 
 ## Next Delight Steps
 
-- [ ] Tighten card rhythm polish:
+- [x] Tighten card rhythm polish:
   - [x] Normalize header/action alignment across all card types
   - [x] Audit vertical spacing consistency in section bodies
-- [ ] Empty-state visual polish:
+- [x] Empty-state visual polish:
   - [x] Simplify to a single clear instruction block
   - [x] Keep spacing and readability consistent on mobile
-- [ ] Contextual microcopy refinement:
+- [x] Contextual microcopy refinement:
   - [x] Ensure all relay status lines follow one tone model
   - [x] Shorten verbose status strings for faster scanability
-- [ ] Accessibility polish:
+- [x] Accessibility polish:
   - [x] Contrast-check chips/badges in both themes
   - [x] Verify reduced-motion behavior for all new animations
 
 ## Code Health Follow-ups
 
 - [x] Remove unused vendor parser (`js/vendor/whatsapp-chat-parser.js`).
-- [ ] Split high-complexity modules:
+- [x] Split high-complexity modules:
   - [x] `js/savedViews.js`
   - [x] `js/exportShared.js`
   - [x] `js/analytics.js`
   - [x] `apps/server/src/relay/relayManager.js`
-- [ ] Trim visual artifact footprint where practical:
+- [x] Trim visual artifact footprint where practical:
   - [x] Keep critical coverage, avoid redundant near-duplicate snapshots
   - [x] Revisit baseline granularity if CI time grows
