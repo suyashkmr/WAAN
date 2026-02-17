@@ -16,20 +16,21 @@ Use this as the working backlog for the current visual sprint.
   - [x] `running_syncing`
   - [x] `running_ready`
 - [x] Empty-state delight pass:
-  - [x] Three-step quick-start chips
-  - [x] Single contextual CTA (`Open Relay Controls`)
+  - [x] Keep copy-led empty state with minimal visual noise
+  - [x] Remove redundant quick-start chips and extra CTA
+  - [x] Preserve mobile spacing polish after simplification
 
 ## Next Delight Steps
 
 - [ ] Tighten card rhythm polish:
-  - [ ] Normalize header/action alignment across all card types
-  - [ ] Audit vertical spacing consistency in section bodies
+  - [x] Normalize header/action alignment across all card types
+  - [x] Audit vertical spacing consistency in section bodies
 - [ ] Empty-state visual polish:
-  - [ ] Add small iconography per quick-start step
-  - [ ] Improve mobile stacking/spacing for CTA and chips
+  - [x] Simplify to a single clear instruction block
+  - [x] Keep spacing and readability consistent on mobile
 - [ ] Contextual microcopy refinement:
-  - [ ] Ensure all relay status lines follow one tone model
-  - [ ] Shorten verbose status strings for faster scanability
+  - [x] Ensure all relay status lines follow one tone model
+  - [x] Shorten verbose status strings for faster scanability
 - [ ] Accessibility polish:
   - [ ] Contrast-check chips/badges in both themes
   - [ ] Verify reduced-motion behavior for all new animations

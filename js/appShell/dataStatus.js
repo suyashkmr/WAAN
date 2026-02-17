@@ -40,7 +40,7 @@ export function createDataStatusController({ elements, deps }) {
     return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
-  function updateHeroSyncMeta({ state = "idle", message = "Waiting for relay activity." } = {}) {
+  function updateHeroSyncMeta({ state = "idle", message = "Awaiting relay." } = {}) {
     if (heroSyncDot) {
       heroSyncDot.dataset.state = state;
     }
@@ -88,7 +88,7 @@ export function createDataStatusController({ elements, deps }) {
     if (!dataAvailable) {
       setDatasetEmptyMessage(
         "No chat is selected yet.",
-        "Start the relay desktop app, press Connect, scan the QR code, then choose a mirrored chat from \"Loaded chats\".",
+        "Open Relay Controls, scan the QR code, then choose a chat from \"Loaded chats\".",
       );
     }
     savedViewsController.setDataAvailability(Boolean(hasData));
@@ -99,9 +99,9 @@ export function createDataStatusController({ elements, deps }) {
     if (!heroStatusBadge || !heroStatusCopy) return;
     if (!status) {
       heroStatusBadge.textContent = "Not connected";
-      heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
+      heroStatusCopy.textContent = "Open Relay Controls, then press Connect.";
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-      updateHeroSyncMeta({ state: "idle", message: "Waiting for relay activity." });
+      updateHeroSyncMeta({ state: "idle", message: "Awaiting relay." });
       setDashboardSyncState(false);
       clearReadyCelebration();
       return;
@@ -127,14 +127,14 @@ export function createDataStatusController({ elements, deps }) {
         }
       } else {
         heroStatusCopy.textContent = chatCount > 0
-          ? `${formatNumber(chatCount)} chats indexed. Finishing sync…`
-          : "Connected. Syncing chats now…";
+          ? `${formatNumber(chatCount)} chats indexed. Syncing updates…`
+          : "Connected. Syncing chats…";
         applyHeroMilestones({ connect: "complete", sync: "active", ready: "pending" });
         updateHeroSyncMeta({
           state: "syncing",
           message: chatCount > 0
-            ? `Syncing now • ${formatNumber(chatCount)} chats discovered`
-            : "Syncing now • preparing chat list",
+            ? `Syncing now • ${formatNumber(chatCount)} chats found`
+            : "Syncing now • preparing chats",
         });
         clearReadyCelebration({ rearm: chatCount === 0 });
       }
@@ -145,9 +145,9 @@ export function createDataStatusController({ elements, deps }) {
       heroStatusBadge.textContent = "Scan the QR code";
       if (status.lastQr) {
         heroStatusCopy.textContent =
-          "On your phone: chat app -> Linked Devices -> Link a device -> scan this code.";
+          "On your phone: Linked Devices -> Link a device -> scan this code.";
       } else {
-        heroStatusCopy.textContent = "Press Connect to reopen the relay browser and show a QR code.";
+        heroStatusCopy.textContent = "Press Connect to show a new QR code.";
       }
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Waiting for phone link." });
@@ -158,18 +158,18 @@ export function createDataStatusController({ elements, deps }) {
 
     if (status.status === "starting") {
       heroStatusBadge.textContent = "Starting relay";
-      heroStatusCopy.textContent = "Launching the relay browser...";
+      heroStatusCopy.textContent = "Starting relay…";
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-      updateHeroSyncMeta({ state: "idle", message: "Starting relay session…" });
+      updateHeroSyncMeta({ state: "idle", message: "Starting session…" });
       setDashboardSyncState(false);
       clearReadyCelebration({ rearm: true });
       return;
     }
 
     heroStatusBadge.textContent = "Not connected";
-    heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
+    heroStatusCopy.textContent = "Open Relay Controls, then press Connect.";
     applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-    updateHeroSyncMeta({ state: "idle", message: "Waiting for relay activity." });
+    updateHeroSyncMeta({ state: "idle", message: "Awaiting relay." });
     setDashboardSyncState(false);
     clearReadyCelebration({ rearm: true });
   }

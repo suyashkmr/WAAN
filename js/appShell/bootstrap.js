@@ -115,16 +115,6 @@ export function createBootstrapController({ elements, deps }) {
     savedViewsController.init();
     savedViewsController.setDataAvailability(getDataAvailable());
     refreshChatSelector();
-
-    const datasetEmptyOpenRelayButton = document.getElementById("dataset-empty-open-relay");
-    datasetEmptyOpenRelayButton?.addEventListener("click", () => {
-      document.getElementById("relay-live-card")?.scrollIntoView({
-        behavior: prefersReducedMotion() ? "auto" : "smooth",
-        block: "start",
-      });
-      startRelaySession();
-    });
-
     updateStatus(`Start ${relayServiceName} to mirror chat app chats here.`, "info");
   }
 

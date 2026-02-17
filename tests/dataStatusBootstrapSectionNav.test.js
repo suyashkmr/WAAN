@@ -57,7 +57,7 @@ describe("dataStatus controller details", () => {
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0 });
     expect(heroStatusBadge.textContent).toBe("Relay connected");
-    expect(heroStatusCopy.textContent).toBe("Connected. Syncing chats now…");
+    expect(heroStatusCopy.textContent).toBe("Connected. Syncing chats…");
     expect(heroSyncDot.dataset.state).toBe("syncing");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(true);
     expect(notifyRelayReady).toHaveBeenCalledTimes(0);
@@ -182,14 +182,6 @@ describe("bootstrap controller transitions", () => {
   });
 
   it("animates expand/collapse when reduced motion is disabled", () => {
-    const relayCard = document.createElement("section");
-    relayCard.id = "relay-live-card";
-    relayCard.scrollIntoView = vi.fn();
-    document.body.append(relayCard);
-    const datasetEmptyOpenRelayButton = document.createElement("button");
-    datasetEmptyOpenRelayButton.id = "dataset-empty-open-relay";
-    document.body.append(datasetEmptyOpenRelayButton);
-
     const content = document.createElement("div");
     content.id = "panel";
     Object.defineProperty(content, "scrollHeight", { configurable: true, value: 120 });
@@ -235,10 +227,6 @@ describe("bootstrap controller transitions", () => {
 
     controller.initAppBootstrap();
 
-    datasetEmptyOpenRelayButton.click();
-    expect(deps.startRelaySession).toHaveBeenCalledTimes(1);
-    expect(relayCard.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
-
     toggle.click();
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(card.classList.contains("collapsed")).toBe(false);
@@ -250,51 +238,6 @@ describe("bootstrap controller transitions", () => {
     expect(card.classList.contains("collapsed")).toBe(true);
     content.dispatchEvent(new Event("transitionend"));
     expect(content.style.display).toBe("none");
-  });
-
-  it("uses non-animated scroll for empty-state CTA when reduced motion is enabled", () => {
-    const relayCard = document.createElement("section");
-    relayCard.id = "relay-live-card";
-    relayCard.scrollIntoView = vi.fn();
-    document.body.append(relayCard);
-    const datasetEmptyOpenRelayButton = document.createElement("button");
-    datasetEmptyOpenRelayButton.id = "dataset-empty-open-relay";
-    document.body.append(datasetEmptyOpenRelayButton);
-
-    const deps = {
-      initEventHandlers: vi.fn(),
-      initRelayControls: vi.fn(),
-      initThemeControls: vi.fn(),
-      initCompactMode: vi.fn(),
-      initAccessibilityControls: vi.fn(),
-      setDataAvailabilityState: vi.fn(),
-      onboardingController: { start: vi.fn(), skip: vi.fn(), advance: vi.fn() },
-      startRelaySession: vi.fn(),
-      stopRelaySession: vi.fn(),
-      buildSectionNav: vi.fn(),
-      setupSectionNavTracking: vi.fn(),
-      searchController: { init: vi.fn() },
-      savedViewsController: { init: vi.fn(), setDataAvailability: vi.fn() },
-      getDataAvailable: vi.fn(() => false),
-      refreshChatSelector: vi.fn(),
-      updateStatus: vi.fn(),
-      relayServiceName: "Relay",
-      prefersReducedMotion: vi.fn(() => true),
-    };
-
-    const controller = createBootstrapController({
-      elements: {
-        onboardingSkipButton: null,
-        onboardingNextButton: null,
-      },
-      deps,
-    });
-
-    controller.initAppBootstrap();
-    datasetEmptyOpenRelayButton.click();
-
-    expect(relayCard.scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "start" });
-    expect(deps.startRelaySession).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -243,13 +243,13 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     updateRelayOnboarding({ status, relayOnboardingSteps });
     if (!status) {
       updateSyncProgressFromStatus(null);
-      relayStatusEl.textContent = `Relay offline. Launch the desktop relay to link ${BRAND_NAME}.`;
+      relayStatusEl.textContent = `Relay offline. Open the desktop relay to connect ${BRAND_NAME}.`;
       if (relayAccountEl) relayAccountEl.textContent = "";
       if (relayQrContainer) relayQrContainer.classList.add("hidden");
       if (relayQrImage) relayQrImage.removeAttribute("src");
       if (relayHelpText) {
         relayHelpText.textContent =
-          "Press Connect, open chat app on your phone (Linked Devices), scan the QR code, then choose a chat from “Loaded chats”.";
+          "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
       }
       if (relayStopButton) relayStopButton.disabled = true;
       if (relayReloadAllButton) relayReloadAllButton.disabled = true;
@@ -260,7 +260,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       setDashboardLoadingState(true);
       setDatasetEmptyMessage(
         "No chat is selected yet.",
-        "Start the relay desktop app, press Connect, scan the QR code, then choose a mirrored chat from “Loaded chats”.",
+        "Open Relay Controls, scan the QR code, then choose a chat from “Loaded chats”.",
       );
       setDataAvailabilityState(false);
       return;
@@ -276,8 +276,8 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     if (relayHelpText) {
       relayHelpText.textContent =
         status.status === "running"
-          ? `Your mirrored ${BRAND_NAME} chats now appear under “Loaded chats”. Pick one to explore insights.`
-          : "Open chat app on your phone, go to Linked Devices, tap “Link a device”, and scan the QR code shown here.";
+          ? `Your mirrored ${BRAND_NAME} chats appear under “Loaded chats”. Pick one to view insights.`
+          : "Open Linked Devices on your phone and scan the QR code shown here.";
     }
     if (status.lastQr && relayQrContainer && relayQrImage) {
       relayQrImage.src = status.lastQr;
@@ -332,7 +332,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       refreshChatSelector();
       setDashboardLoadingState(true);
       if (waiting && relayUiState.lastStatusKind !== "waiting") {
-        updateStatus("Scan the QR code shown below to finish linking your phone.", "info");
+        updateStatus("Scan the QR code to finish linking your phone.", "info");
         relayUiState.lastStatusKind = "waiting";
       } else if (status.status === "starting" && relayUiState.lastStatusKind !== "starting") {
         updateStatus(`Starting ${RELAY_SERVICE_NAME}…`, "info");
