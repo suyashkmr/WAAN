@@ -1,6 +1,5 @@
 const EventEmitter = require("events");
 const QRCode = require("qrcode");
-const { formatErrorMessage, formatErrorDetails } = require("../errorUtils");
 const { fetchChatsWithStrategy } = require("./syncStrategy");
 const {
   getRelayConfig,
@@ -23,13 +22,22 @@ const {
 } = require("./relayState");
 const {
   normaliseJid,
-  stripRelaySuffix,
   buildChatMetaUpdate,
   persistChatMeta,
   serializeMessage,
 } = require("./relayData");
-const { createRelayClient, wireRelayClientEvents } = require("./relayLifecycle");
 const { openRelayBrowserWindow } = require("./relayBrowserWindow");
+const { setupRelayClient } = require("./relayLifecycleSetup");
+const {
+  resolveEffectiveSyncMode,
+  applySyncSuccessState,
+  applySyncFailureState,
+} = require("./relayManagerSync");
+const { syncSingleChatMessages } = require("./relayMessageSync");
+const {
+  scheduleStartupPrimaryResync,
+  clearStartupPrimaryResync,
+} = require("./relayStartupResync");
 
 class RelayManager extends EventEmitter {
   constructor({ config, store, logger }) {
@@ -91,27 +99,7 @@ class RelayManager extends EventEmitter {
       lastQr: null,
     });
 
-    this.client = createRelayClient({
-      dataDir: this.config.dataDir,
-      headless: this.relayConfig.RELAY_HEADLESS,
-    });
-
-    wireRelayClientEvents(this.client, {
-      onQr: qr => this.handleQr(qr),
-      onAuthenticated: () => this.log("Authenticated with ChatScope Web."),
-      onAuthFailure: message => this.handleAuthFailure(message),
-      onReady: () => this.handleReady(),
-      onChangeState: state => this.log(`Client state changed: ${state}`),
-      onDisconnected: reason => this.handleDisconnect(reason),
-      onLoadingScreen: (percent, message) => {
-        this.log(`Loading ChatScope… ${percent || 0}% ${message || ""}`.trim());
-      },
-      onMessage: message => {
-        this.handleIncomingMessage(message).catch(error => {
-          this.logger.warn("Failed to record incoming message: %s", error.message);
-        });
-      },
-    });
+    setupRelayClient(this);
 
     try {
       await this.client.initialize();
@@ -125,7 +113,7 @@ class RelayManager extends EventEmitter {
   }
 
   async stop() {
-    this.clearStartupPrimaryResync();
+    clearStartupPrimaryResync(this);
     if (this.client) {
       try {
         await this.client.destroy();
@@ -166,14 +154,7 @@ class RelayManager extends EventEmitter {
     if (this.syncingChats) {
       return this.getStatus();
     }
-    const requestedMode =
-      options && typeof options.mode === "string"
-        ? options.mode.trim().toLowerCase()
-        : "";
-    const effectiveMode =
-      requestedMode === "auto" || requestedMode === "primary" || requestedMode === "fallback"
-        ? requestedMode
-        : this.relayConfig.RELAY_SYNC_MODE;
+    const effectiveMode = resolveEffectiveSyncMode(options, this.relayConfig.RELAY_SYNC_MODE);
     this.syncingChats = true;
     this.emit("status", this.getStatus());
     const syncStartedAt = Date.now();
@@ -198,24 +179,14 @@ class RelayManager extends EventEmitter {
         buildChatMetaUpdate: chat => this.buildChatMetaUpdate(chat),
         persistChatMeta: chat => this.persistChatMeta(chat),
       });
-      const previousSyncPath = this.state.syncPath;
-      const syncDurationMs = Math.max(0, Date.now() - syncStartedAt);
-      this.state.chatCount = chats.length;
-      this.state.chatsSyncedAt = new Date().toISOString();
-      this.state.syncPath = syncPath;
-      this.state.lastSyncDurationMs = syncDurationMs;
-      this.state.lastSyncPersistDurationMs = persistDurationMs;
-      if (previousSyncPath && previousSyncPath !== syncPath) {
-        this.log(`Sync path transition detected: ${previousSyncPath} -> ${syncPath}.`);
-      }
-      this.log(
-        `Synced ${chats.length} chats via ${syncPath} in ${syncDurationMs}ms (meta persist ${persistDurationMs}ms).`,
-      );
+      applySyncSuccessState(this, {
+        chats,
+        syncPath,
+        persistDurationMs,
+        syncStartedAt,
+      });
     } catch (error) {
-      const message = formatErrorMessage(error, "Chat sync failed");
-      const details = formatErrorDetails(error, "Chat sync failed");
-      this.logger.error("Failed to sync chats: %s", details);
-      this.state.lastError = message;
+      applySyncFailureState(this, error);
     } finally {
       this.syncingChats = false;
       this.emit("status", this.getStatus());
@@ -235,32 +206,12 @@ class RelayManager extends EventEmitter {
 
   async ensureChatSynced(chatId, options = {}) {
     const client = this.requireClient();
-    const targetId = decodeURIComponent(chatId);
-    const messageLimit = Number(options.limit) || this.relayConfig.DEFAULT_MESSAGE_LIMIT;
-    const chat = await client.getChatById(targetId);
-    if (!chat) {
-      throw new Error(`Chat ${targetId} not found on ChatScope`);
-    }
-    await this.persistChatMeta(chat);
-    this.log(`Fetching ${messageLimit} messages for ${chat.name || targetId}…`);
-    const messages = await chat.fetchMessages({ limit: messageLimit });
-    const entries = messages
-      .map(message => this.serializeMessage(message))
-      .filter(Boolean)
-      .sort((a, b) => {
-        const aTime = a.timestamp ? Date.parse(a.timestamp) : 0;
-        const bTime = b.timestamp ? Date.parse(b.timestamp) : 0;
-        return aTime - bTime;
-      });
-    await this.store.replaceEntries(targetId, entries, {
-      name: chat.name || chat.formattedTitle || stripRelaySuffix(targetId),
-      isGroup: Boolean(chat.isGroup),
-      unreadCount: Number(chat.unreadCount) || 0,
+    return syncSingleChatMessages({
+      manager: this,
+      client,
+      chatId,
+      options,
     });
-    this.log(
-      `Saved ${entries.length} messages for ${chat.name || targetId}.`
-    );
-    return entries;
   }
 
   requireClient() {
@@ -290,40 +241,7 @@ class RelayManager extends EventEmitter {
     this.log("ChatScope relay is ready.");
     await this.refreshContacts();
     const syncStatus = await this.syncChats();
-    this.scheduleStartupPrimaryResync(syncStatus);
-  }
-
-  scheduleStartupPrimaryResync(syncStatus) {
-    if (this.relayConfig.RELAY_SYNC_MODE !== "auto") return;
-    if (!syncStatus || syncStatus.syncPath !== "fallback") return;
-    if (this.startupPrimaryResyncScheduled || this.startupPrimaryResyncTimer) return;
-    this.startupPrimaryResyncScheduled = true;
-    this.log(
-      `Scheduling deferred primary chat sync in ${this.relayConfig.STARTUP_PRIMARY_RESYNC_DELAY_MS}ms after fallback startup sync.`,
-    );
-    this.startupPrimaryResyncTimer = setTimeout(() => {
-      this.startupPrimaryResyncTimer = null;
-      this.runDeferredPrimaryResync();
-    }, this.relayConfig.STARTUP_PRIMARY_RESYNC_DELAY_MS);
-  }
-
-  async runDeferredPrimaryResync() {
-    if (!this.client) return;
-    try {
-      this.log("Running deferred primary chat sync.");
-      await this.syncChats({ mode: "primary" });
-    } catch (error) {
-      const details = formatErrorDetails(error, "Deferred primary sync failed");
-      this.logger.debug("Deferred primary sync failed: %s", details);
-    }
-  }
-
-  clearStartupPrimaryResync() {
-    if (this.startupPrimaryResyncTimer) {
-      clearTimeout(this.startupPrimaryResyncTimer);
-      this.startupPrimaryResyncTimer = null;
-    }
-    this.startupPrimaryResyncScheduled = false;
+    scheduleStartupPrimaryResync(this, syncStatus);
   }
 
   async refreshContacts() {

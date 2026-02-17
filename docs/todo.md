@@ -86,3 +86,35 @@ Use this as the working backlog for the current visual sprint.
 - [x] Release handoff:
   - [x] Prepare concise release notes (visual sprint, accessibility, modularity, visual baseline trim).
   - [x] Confirm merge checklist and branch sync status before release cut.
+
+## Next Sprint: Trust + Adoption
+
+- [ ] Onboarding + activation:
+  - [ ] Add a first-run guided setup flow for relay link + first chat load.
+  - [ ] Add in-app install/run help for macOS Gatekeeper/unsigned app warnings.
+- [ ] Reliability hardening:
+  - [ ] Strengthen relay reconnect/backoff behavior and recovery UX.
+  - [ ] Reduce transient status flicker and add stricter relay transition tests.
+- [ ] Performance at scale:
+  - [ ] Stress-test large chats and document limits/bottlenecks.
+  - [ ] Add caching/virtualization for heaviest long-list panels where needed.
+- [ ] Release operations:
+  - [ ] Set up signed + notarized macOS build pipeline.
+  - [ ] Automate version/tag/release flow so artifact names always match release tags.
+- [ ] Product confidence:
+  - [ ] Add diagnostics/log bundle export for issue triage.
+  - [ ] Add a report-issue flow with prefilled runtime diagnostics.
+
+## Final Modularity Closure
+
+- [ ] Close recurring hotspot files with one final pass:
+  - [x] `js/savedViews.js` (target: split orchestration from rendering/state helpers; keep file < ~320 lines).
+  - [x] `js/search.js` (target: isolate worker client/cache-key/progress concerns; keep file < ~320 lines).
+    - [x] Phase 1 extraction complete (`cacheKeys`, `progressUi`, `workerClient`, `formState`).
+    - [x] Phase 2 extraction complete (`participantUi`, `resultsUi`) and controller reduced under target.
+  - [x] `js/appShell.js` (target: reduce composition/bootstrap density via module extraction; keep file < ~320 lines).
+  - [x] `apps/server/src/relay/relayManager.js` (target: isolate sync/state transitions further; keep file < ~320 lines).
+  - [x] `js/analytics.js` (target: move compute/render boundary helpers into focused modules; keep file < ~320 lines).
+- [ ] Guardrail enforcement:
+  - [ ] Add/adjust tests for each extraction slice before merge.
+  - [ ] Run `npm run ci:verify` after each hotspot slice.

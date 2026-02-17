@@ -12,6 +12,19 @@ import {
 } from "./state.js";
 import { parseDateInput, hasSearchFilters } from "./search/queryUtils.js";
 import {
+  buildParticipantOptionsCacheKey,
+  buildSearchRenderCacheKey,
+} from "./search/cacheKeys.js";
+import {
+  applySearchStateToInputs,
+  readSearchQueryFromInputs,
+  resetSearchInputs,
+} from "./search/formState.js";
+import { createSearchParticipantUiController } from "./search/participantUi.js";
+import { createSearchProgressUi } from "./search/progressUi.js";
+import { createSearchResultsUiController } from "./search/resultsUi.js";
+import { createSearchWorkerClient } from "./search/workerClient.js";
+import {
   renderSearchInsights,
   buildSearchResultItem,
   buildResultsSummaryText,
@@ -39,253 +52,57 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
 
   const resultLimit = Number.isFinite(options.resultLimit) ? options.resultLimit : DEFAULT_RESULT_LIMIT;
   let activeSearchRequest = 0;
-  let searchWorkerInstance = null;
-  let searchWorkerRequestId = 0;
-  const searchWorkerRequests = new Map();
-  let participantOptionsCacheKey = "";
-  let resultsRenderCacheKey = "";
-
-  function buildSummaryCacheKey(summary) {
-    if (!summary) return "none";
-    return JSON.stringify({
-      total: Number(summary.total) || 0,
-      truncated: Boolean(summary.truncated),
-      hitsPerDay: Array.isArray(summary.hitsPerDay)
-        ? summary.hitsPerDay.map(item => ({
-            date: item?.date || "",
-            count: Number(item?.count) || 0,
-          }))
-        : [],
-      topParticipants: Array.isArray(summary.topParticipants)
-        ? summary.topParticipants.map(item => ({
-            sender: item?.sender || "",
-            count: Number(item?.count) || 0,
-            share: Number(item?.share) || 0,
-          }))
-        : [],
-      filters: Array.isArray(summary.filters) ? summary.filters.map(value => String(value || "")) : [],
-    });
-  }
-
-  function buildResultsCacheKey(results) {
-    if (!Array.isArray(results) || !results.length) return "none";
-    return JSON.stringify(
-      results.map(item => ({
-        sender: item?.sender || "",
-        timestamp: item?.timestamp || "",
-        message: item?.message || "",
-        messageHtml: item?.messageHtml || "",
-      })),
-    );
-  }
+  const searchWorkerClient = createSearchWorkerClient();
+  const {
+    setSearchProgress,
+    showSearchProgress,
+    hideSearchProgress,
+  } = createSearchProgressUi({
+    progressEl,
+    progressTrackEl,
+    progressBarEl,
+    progressLabelEl,
+    formatNumber,
+  });
+  const participantUiController = createSearchParticipantUiController({
+    participantSelect,
+    getEntries,
+    getDatasetFingerprint,
+    getSearchState,
+    buildParticipantOptionsCacheKey,
+  });
+  const { populateParticipants, resetParticipantOptionsCache } = participantUiController;
+  const resultsUiController = createSearchResultsUiController({
+    resultsSummaryEl,
+    resultsListEl,
+    insightsEl,
+    resultLimit,
+    getSearchState,
+    getDatasetFingerprint,
+    buildSearchRenderCacheKey,
+    hasSearchFilters,
+    buildResultsSummaryText,
+    buildSearchResultItem,
+    renderSearchInsights,
+  });
+  const { renderResults, resetResultsRenderCache } = resultsUiController;
 
   function applyStateToForm() {
-    const state = getSearchState();
-    if (!state) return;
-    if (keywordInput) keywordInput.value = state.query.text ?? "";
-    if (participantSelect) participantSelect.value = state.query.participant ?? "";
-    if (startInput) startInput.value = state.query.start ?? "";
-    if (endInput) endInput.value = state.query.end ?? "";
+    applySearchStateToInputs({
+      state: getSearchState(),
+      keywordInput,
+      participantSelect,
+      startInput,
+      endInput,
+    });
   }
 
   function getEntries() {
     return getDatasetEntries() || [];
   }
 
-  function ensureSearchWorker() {
-    if (searchWorkerInstance) return searchWorkerInstance;
-    searchWorkerInstance = new Worker(new URL("./searchWorker.js", import.meta.url), {
-      type: "module",
-    });
-    searchWorkerInstance.onmessage = event => {
-      const { id, type, ...rest } = event.data || {};
-      if (typeof id === "undefined") return;
-      const request = searchWorkerRequests.get(id);
-      if (!request) return;
-      if (type === "progress") {
-        request.onProgress?.(rest);
-        return;
-      }
-      searchWorkerRequests.delete(id);
-      if (type === "result") {
-        request.resolve(rest);
-      } else if (type === "cancelled") {
-        request.resolve({ cancelled: true });
-      } else if (type === "error") {
-        request.reject(new Error(rest.error || "Search failed."));
-      } else {
-        request.reject(new Error("Search worker returned an unknown response."));
-      }
-    };
-    searchWorkerInstance.onerror = event => {
-      console.error("Search worker error", event);
-      searchWorkerRequests.forEach(({ reject }) => {
-        reject(new Error("Search worker encountered an error."));
-      });
-      searchWorkerRequests.clear();
-      searchWorkerInstance?.terminate();
-      searchWorkerInstance = null;
-    };
-    return searchWorkerInstance;
-  }
-
-  function populateParticipants() {
-    if (!participantSelect) return;
-    const entries = getEntries();
-    const datasetFingerprint = getDatasetFingerprint() || "";
-    const selectedStateValue = getSearchState()?.query.participant ?? "";
-    const selectedUiValue = participantSelect.value || "";
-    const nextCacheKey = `${datasetFingerprint}|${entries.length}|${selectedStateValue}|${selectedUiValue}`;
-    if (nextCacheKey === participantOptionsCacheKey) return;
-    const senders = new Set();
-    entries.forEach(entry => {
-      if (entry.type === "message" && entry.sender) {
-        senders.add(entry.sender);
-      }
-    });
-
-    const selected = getSearchState()?.query.participant ?? "";
-    const options = Array.from(senders).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-    const previousValue = participantSelect.value;
-    participantSelect.innerHTML = "";
-
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "All participants";
-    participantSelect.appendChild(placeholder);
-
-    options.forEach(sender => {
-      const option = document.createElement("option");
-      option.value = sender;
-      option.textContent = sender;
-      participantSelect.appendChild(option);
-    });
-
-    if (selected && !options.includes(selected)) {
-      const extraOption = document.createElement("option");
-      extraOption.value = selected;
-      extraOption.textContent = selected;
-      participantSelect.appendChild(extraOption);
-    }
-
-    const targetValue = selected || previousValue || "";
-    participantSelect.value = targetValue;
-    if (participantSelect.value !== targetValue) {
-      participantSelect.value = "";
-    }
-    participantSelect.disabled = options.length === 0;
-    participantOptionsCacheKey = nextCacheKey;
-  }
-
-  function renderResults() {
-    if (!resultsSummaryEl || !resultsListEl) return;
-    const state = getSearchState();
-    const query = state?.query ?? {};
-    const results = state?.results ?? [];
-    const total = state?.total ?? 0;
-    const summary = state?.summary ?? null;
-    const hasRunSearch = Boolean(state?.lastRun);
-    const lastRunFiltered = Boolean(state?.lastRunHasFilters);
-    const datasetFingerprint = getDatasetFingerprint() || "";
-    const summaryKey = buildSummaryCacheKey(summary);
-    const resultsKey = buildResultsCacheKey(results);
-    const nextRenderCacheKey = [
-      datasetFingerprint,
-      query.text ?? "",
-      query.participant ?? "",
-      query.start ?? "",
-      query.end ?? "",
-      String(total),
-      String(results.length),
-      String(hasRunSearch),
-      String(lastRunFiltered),
-      String(state?.lastRun || ""),
-      summaryKey,
-      resultsKey,
-    ].join("|");
-    if (nextRenderCacheKey === resultsRenderCacheKey) return;
-
-    const hasFilters = hasSearchFilters(query);
-    resultsSummaryEl.textContent = buildResultsSummaryText({
-      hasRunSearch,
-      total,
-      lastRunFiltered,
-      resultsLength: results.length,
-      hasFilters,
-      resultLimit,
-    });
-
-    resultsListEl.innerHTML = "";
-    if (!total) {
-      const empty = document.createElement("div");
-      empty.className = "search-results-empty";
-      empty.textContent = hasFilters
-        ? "No matching messages. Try other names, words, or dates."
-        : "Add filters above to search the chat history.";
-      resultsListEl.appendChild(empty);
-      renderSearchInsights({ insightsEl, summary: null, resultLimit });
-      resultsRenderCacheKey = nextRenderCacheKey;
-      return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    results.forEach(result => {
-      fragment.appendChild(buildSearchResultItem(result));
-    });
-    resultsListEl.appendChild(fragment);
-
-    if (lastRunFiltered && total > results.length) {
-      const note = document.createElement("div");
-      note.className = "search-results-empty";
-      note.textContent = "Narrow your filters to see more matches.";
-      resultsListEl.appendChild(note);
-    }
-
-    renderSearchInsights({ insightsEl, summary, resultLimit });
-    resultsRenderCacheKey = nextRenderCacheKey;
-  }
-
-  function setSearchProgress(scanned, total) {
-    if (!progressEl) return;
-    const safeTotal = Math.max(0, total || 0);
-    const safeScanned = Math.min(Math.max(0, scanned), safeTotal);
-    const percent = safeTotal ? Math.min(100, (safeScanned / safeTotal) * 100) : 0;
-    if (progressLabelEl) {
-      progressLabelEl.textContent = safeTotal
-        ? `Scanning ${formatNumber(safeScanned)} of ${formatNumber(safeTotal)} messages…`
-        : "Scanning messages…";
-    }
-    if (progressBarEl) {
-      progressBarEl.style.width = `${percent}%`;
-    }
-    if (progressTrackEl) {
-      const rounded = Math.round(percent);
-      progressTrackEl.setAttribute("aria-valuenow", String(rounded));
-      progressTrackEl.setAttribute("aria-valuetext", `${rounded}%`);
-    }
-  }
-
-  function showSearchProgress(total) {
-    if (!progressEl) return;
-    progressEl.classList.add("is-active");
-    setSearchProgress(0, total);
-  }
-
-  function hideSearchProgress() {
-    if (!progressEl) return;
-    progressEl.classList.remove("is-active");
-    if (progressLabelEl) progressLabelEl.textContent = "";
-    if (progressBarEl) progressBarEl.style.width = "0%";
-    if (progressTrackEl) {
-      progressTrackEl.setAttribute("aria-valuenow", "0");
-      progressTrackEl.setAttribute("aria-valuetext", "0%");
-    }
-  }
-
   function cancelActiveSearch() {
-    if (activeSearchRequest && searchWorkerInstance) {
-      searchWorkerInstance.postMessage({ id: activeSearchRequest, type: "cancel" });
-    }
+    searchWorkerClient.cancelSearchRequest(activeSearchRequest);
     activeSearchRequest = 0;
     hideSearchProgress();
   }
@@ -312,39 +129,31 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     setSearchQuery(query);
     cancelActiveSearch();
 
-    const worker = ensureSearchWorker();
-    const requestId = ++searchWorkerRequestId;
-    activeSearchRequest = requestId;
-    showSearchProgress(entries.length);
-
     const startBound = startDate ? startDate.getTime() : null;
     const endBound = endDate ? endDate.getTime() : null;
     const requestHasFilters = hasSearchFilters(query);
     const requestLimit = requestHasFilters ? resultLimit : entries.length;
     const startedAt = globalThis.performance?.now?.() ?? Date.now();
+    let requestId = 0;
+    const { requestId: nextRequestId, promise } = searchWorkerClient.runSearchRequest({
+      payload: {
+        entries,
+        query,
+        resultLimit: requestLimit,
+        startMs: startBound,
+        endMs: endBound,
+      },
+      onProgress: data => {
+        if (requestId === activeSearchRequest) {
+          setSearchProgress(data.scanned ?? 0, data.total ?? entries.length);
+        }
+      },
+    });
+    requestId = nextRequestId;
+    activeSearchRequest = requestId;
+    showSearchProgress(entries.length);
 
-    return new Promise((resolve, reject) => {
-      searchWorkerRequests.set(requestId, {
-        resolve,
-        reject,
-        onProgress: data => {
-          if (requestId === activeSearchRequest) {
-            setSearchProgress(data.scanned ?? 0, data.total ?? entries.length);
-          }
-        },
-      });
-      worker.postMessage({
-        id: requestId,
-        type: "search",
-        payload: {
-          entries,
-          query,
-          resultLimit: requestLimit,
-          startMs: startBound,
-          endMs: endBound,
-        },
-      });
-    })
+    return promise
       .then(payload => {
         if (!payload || payload.cancelled) return;
         const { results, total, summary } = payload;
@@ -398,12 +207,12 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
 
   function handleSubmit(event) {
     event?.preventDefault();
-    const query = {
-      text: keywordInput?.value.trim() ?? "",
-      participant: participantSelect?.value ?? "",
-      start: startInput?.value ?? "",
-      end: endInput?.value ?? "",
-    };
+    const query = readSearchQueryFromInputs({
+      keywordInput,
+      participantSelect,
+      startInput,
+      endInput,
+    });
     if (query.start && query.end && query.start > query.end) {
       updateStatus("The start date must come before the end date.", "error");
       return;
@@ -414,12 +223,14 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
   function resetFilters(showToast = true) {
     cancelActiveSearch();
     resetSearchState();
-    if (keywordInput) keywordInput.value = "";
-    if (participantSelect) participantSelect.value = "";
-    if (startInput) startInput.value = "";
-    if (endInput) endInput.value = "";
-    resultsRenderCacheKey = "";
-    participantOptionsCacheKey = "";
+    resetSearchInputs({
+      keywordInput,
+      participantSelect,
+      startInput,
+      endInput,
+    });
+    resetResultsRenderCache();
+    resetParticipantOptionsCache();
     renderResults();
     if (showToast) updateStatus("Search filters cleared.", "info");
   }
