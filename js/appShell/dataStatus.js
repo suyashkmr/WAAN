@@ -3,6 +3,9 @@ export function createDataStatusController({ elements, deps }) {
     dashboardRoot,
     heroStatusBadge,
     heroStatusCopy,
+    heroStatusMetaCopy,
+    heroSyncDot,
+    heroMilestoneSteps,
     datasetEmptyStateManager,
   } = elements;
 
@@ -11,13 +14,43 @@ export function createDataStatusController({ elements, deps }) {
     savedViewsController,
     formatRelayAccount,
     formatNumber,
+    notifyRelayReady,
   } = deps;
 
   let dataAvailable = false;
+  let readyNotified = false;
+
+  function applyHeroMilestones({ connect = "pending", sync = "pending", ready = "pending" } = {}) {
+    if (!heroMilestoneSteps?.length) return;
+    heroMilestoneSteps.forEach(step => {
+      const id = step.dataset.step;
+      if (id === "connect") step.dataset.state = connect;
+      if (id === "sync") step.dataset.state = sync;
+      if (id === "ready") step.dataset.state = ready;
+    });
+  }
 
   function setDashboardLoadingState(isLoading) {
     if (!dashboardRoot) return;
     dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
+  }
+
+  function formatStatusTime() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function updateHeroSyncMeta({ state = "idle", message = "Waiting for relay activity." } = {}) {
+    if (heroSyncDot) {
+      heroSyncDot.dataset.state = state;
+    }
+    if (heroStatusMetaCopy) {
+      heroStatusMetaCopy.textContent = message;
+    }
+  }
+
+  function setDashboardSyncState(isSyncing) {
+    if (!dashboardRoot) return;
+    dashboardRoot.classList.toggle("is-syncing", Boolean(isSyncing));
   }
 
   function setDataAvailabilityState(hasData) {
@@ -38,6 +71,10 @@ export function createDataStatusController({ elements, deps }) {
     if (!status) {
       heroStatusBadge.textContent = "Not connected";
       heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
+      applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
+      updateHeroSyncMeta({ state: "idle", message: "Waiting for relay activity." });
+      setDashboardSyncState(false);
+      readyNotified = false;
       return;
     }
 
@@ -45,9 +82,30 @@ export function createDataStatusController({ elements, deps }) {
       heroStatusBadge.textContent = status.account
         ? `Connected • ${formatRelayAccount(status.account)}`
         : "Relay connected";
-      heroStatusCopy.textContent = status.chatCount
-        ? `${formatNumber(status.chatCount)} chats indexed.`
-        : "Syncing chats now...";
+      const chatCount = Number(status.chatCount ?? 0);
+      const isSyncing = Boolean(status.syncingChats) || chatCount === 0;
+      setDashboardSyncState(isSyncing);
+      if (chatCount > 0 && !isSyncing) {
+        heroStatusCopy.textContent = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
+        applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
+        updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTime()}` });
+        if (!readyNotified && typeof notifyRelayReady === "function") {
+          notifyRelayReady(`Insights ready. ${formatNumber(chatCount)} chats indexed.`);
+        }
+        readyNotified = true;
+      } else {
+        heroStatusCopy.textContent = chatCount > 0
+          ? `${formatNumber(chatCount)} chats indexed. Finishing sync…`
+          : "Connected. Syncing chats now…";
+        applyHeroMilestones({ connect: "complete", sync: "active", ready: "pending" });
+        updateHeroSyncMeta({
+          state: "syncing",
+          message: chatCount > 0
+            ? `Syncing now • ${formatNumber(chatCount)} chats discovered`
+            : "Syncing now • preparing chat list",
+        });
+        readyNotified = false;
+      }
       return;
     }
 
@@ -59,17 +117,29 @@ export function createDataStatusController({ elements, deps }) {
       } else {
         heroStatusCopy.textContent = "Press Connect to reopen the relay browser and show a QR code.";
       }
+      applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
+      updateHeroSyncMeta({ state: "idle", message: "Waiting for phone link." });
+      setDashboardSyncState(false);
+      readyNotified = false;
       return;
     }
 
     if (status.status === "starting") {
       heroStatusBadge.textContent = "Starting relay";
       heroStatusCopy.textContent = "Launching the relay browser...";
+      applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
+      updateHeroSyncMeta({ state: "idle", message: "Starting relay session…" });
+      setDashboardSyncState(false);
+      readyNotified = false;
       return;
     }
 
     heroStatusBadge.textContent = "Not connected";
     heroStatusCopy.textContent = "Start the relay desktop app, then press Connect.";
+    applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
+    updateHeroSyncMeta({ state: "idle", message: "Waiting for relay activity." });
+    setDashboardSyncState(false);
+    readyNotified = false;
   }
 
   return {

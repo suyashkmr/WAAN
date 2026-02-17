@@ -21,7 +21,8 @@
             <div class="hero-blurb">
                 <div class="hero-brand">
                     <div class="hero-logo">
-                        <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="lazy">
+                        <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="eager" fetchpriority="high"
+                            decoding="async">
                     </div>
                     <div class="hero-brand-copy">
                         <p class="eyebrow">ChatScope Relay</p>
@@ -34,6 +35,15 @@
                     <span class="hero-status-badge" id="hero-status-badge">Not connected</span>
                     <p class="hero-status-copy" id="hero-status-copy">Launch the relay desktop app and press Connect to
                         begin.</p>
+                    <p class="hero-status-meta" id="hero-status-meta">
+                        <span class="hero-sync-dot" id="hero-sync-dot" data-state="idle" aria-hidden="true"></span>
+                        <span id="hero-status-meta-copy">Waiting for relay activity.</span>
+                    </p>
+                    <div class="hero-milestones" id="hero-milestones" aria-label="Setup progress milestones">
+                        <span class="hero-milestone" data-step="connect" data-state="active">Connect</span>
+                        <span class="hero-milestone" data-step="sync" data-state="pending">Sync</span>
+                        <span class="hero-milestone" data-step="ready" data-state="pending">Ready</span>
+                    </div>
                 </div>
             </div>
             <section id="relay-live-card" class="card hero-live-card" data-accent="relay">
@@ -1014,8 +1024,14 @@
             </div>
         </div>
         <p class="footer-meta">
-            Crafted with care · <span class="footer-dot">•</span> <a href="https://relay.chatscope.app" target="_blank"
-                rel="noopener">relay.chatscope.app</a>
+            Crafted with care
+            <a href="https://github.com/suyashkmr/WAAN" target="_blank" rel="noopener noreferrer"
+                class="footer-github-link" aria-label="View WAAN on GitHub">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                        d="M12 2C6.48 2 2 6.59 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.64-1.38-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05A9.31 9.31 0 0 1 12 6.84c.85 0 1.71.12 2.51.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.95-2.34 4.82-4.57 5.07.36.32.68.94.68 1.89 0 1.36-.01 2.45-.01 2.79 0 .27.18.59.69.49A10.25 10.25 0 0 0 22 12.26C22 6.59 17.52 2 12 2z" />
+                </svg>
+            </a>
         </p>
     </footer>
 

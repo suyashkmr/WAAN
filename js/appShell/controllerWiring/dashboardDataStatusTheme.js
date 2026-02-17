@@ -25,6 +25,9 @@ export function createDashboardDataStatusThemeWiring({
       dashboardRoot: dom.dashboardRoot,
       heroStatusBadge: dom.heroStatusBadge,
       heroStatusCopy: dom.heroStatusCopy,
+      heroStatusMetaCopy: dom.heroStatusMetaCopy,
+      heroSyncDot: dom.heroSyncDot,
+      heroMilestoneSteps: dom.heroMilestoneSteps,
       datasetEmptyStateManager: dataStatus.datasetEmptyStateManager,
     },
     deps: {
@@ -32,6 +35,7 @@ export function createDashboardDataStatusThemeWiring({
       savedViewsController,
       formatRelayAccount,
       formatNumber: utils.formatNumber,
+      notifyRelayReady: message => dataStatus.updateStatus?.(message, "success"),
     },
   });
   const {

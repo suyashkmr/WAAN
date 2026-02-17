@@ -12,6 +12,33 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await page.evaluate(() => {
       const status = document.getElementById("data-status");
       if (status) status.classList.remove("is-active", "is-exiting");
+
+      const heroBadge = document.getElementById("hero-status-badge");
+      const heroCopy = document.getElementById("hero-status-copy");
+      const heroMeta = document.getElementById("hero-status-meta-copy");
+      const heroSyncDot = document.getElementById("hero-sync-dot");
+      const heroMilestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
+      if (heroBadge) heroBadge.textContent = "Not connected";
+      if (heroCopy) heroCopy.textContent = "Start the relay desktop app, then press Connect.";
+      if (heroMeta) heroMeta.textContent = "Waiting for relay activity.";
+      if (heroSyncDot) heroSyncDot.dataset.state = "idle";
+      heroMilestones.forEach(step => {
+        if (step.dataset.step === "connect") step.dataset.state = "active";
+        if (step.dataset.step === "sync") step.dataset.state = "pending";
+        if (step.dataset.step === "ready") step.dataset.state = "pending";
+      });
+
+      const relayBanner = document.getElementById("relay-status-banner");
+      const relayBannerMessage = document.getElementById("relay-status-message");
+      const relayBannerMeta = document.getElementById("relay-status-meta");
+      if (relayBanner) relayBanner.dataset.status = "offline";
+      if (relayBannerMessage) relayBannerMessage.textContent = "Relay offline.";
+      if (relayBannerMeta) {
+        relayBannerMeta.textContent = "Launch the relay desktop app, press Connect, then pick a mirrored chat.";
+      }
+
+      const syncProgress = document.getElementById("relay-sync-progress");
+      if (syncProgress) syncProgress.classList.add("hidden");
     });
   }
 
