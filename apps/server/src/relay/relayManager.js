@@ -11,6 +11,17 @@ const {
   persistSyncedChatMeta,
 } = require("./relaySync");
 const {
+  extractAccountInfo,
+  refreshContactCache,
+} = require("./relayContacts");
+const {
+  updateRelayState,
+  handleAuthFailure,
+  handleDisconnect,
+  handleFatalError,
+  handleQr,
+} = require("./relayState");
+const {
   normaliseJid,
   stripRelaySuffix,
   buildChatMetaUpdate,
@@ -105,7 +116,7 @@ class RelayManager extends EventEmitter {
     try {
       await this.client.initialize();
     } catch (error) {
-      this.handleFatalError(error);
+      handleFatalError(this, error);
       await this.stop();
       throw error;
     }
@@ -274,7 +285,7 @@ class RelayManager extends EventEmitter {
       status: "running",
       readyAt: new Date().toISOString(),
       lastQr: null,
-      account: this.extractAccountInfo(),
+      account: extractAccountInfo(this.client),
     });
     this.log("ChatScope relay is ready.");
     await this.refreshContacts();
@@ -316,55 +327,12 @@ class RelayManager extends EventEmitter {
   }
 
   async refreshContacts() {
-    if (!this.client || !this.client.pupPage) {
-      return;
-    }
-    try {
-      // Access WhatsApp Web store directly to avoid getIsMyContact error
-      const contacts = await this.client.pupPage.evaluate(() => {
-        if (!window.Store || !window.Store.Contact) {
-          return [];
-        }
-
-        const contactModels = window.Store.Contact.getModelsArray();
-        return contactModels.map(contact => {
-          try {
-            return {
-              id: contact.id?._serialized || contact.id?.user || null,
-              name: contact.name || null,
-              pushname: contact.pushname || null,
-              shortName: contact.shortName || null,
-              formattedName: contact.formattedName || null,
-              displayName: contact.displayName || null,
-            };
-          } catch {
-            return null;
-          }
-        }).filter(Boolean);
-      });
-
-      let mapped = 0;
-      contacts.forEach(contact => {
-        const contactId = normaliseJid(contact?.id);
-        if (!contactId) return;
-        const label =
-          contact?.name ||
-          contact?.pushname ||
-          contact?.shortName ||
-          contact?.formattedName ||
-          contact?.displayName ||
-          stripRelaySuffix(contactId);
-        if (label) {
-          this.contactCache.set(contactId, label);
-          mapped += 1;
-        }
-      });
-      if (mapped) {
-        this.log(`Loaded ${mapped} contacts from ChatScope Web.`);
-      }
-    } catch (error) {
-      this.logger.warn("Failed to load contacts: %s", error.message);
-    }
+    await refreshContactCache({
+      client: this.client,
+      contactCache: this.contactCache,
+      logger: this.logger,
+      log: text => this.log(text),
+    });
   }
 
   async handleIncomingMessage(message) {
@@ -379,57 +347,23 @@ class RelayManager extends EventEmitter {
   }
 
   handleAuthFailure(message) {
-    const error = message || "Authentication failed.";
-    this.state.lastError = error;
-    this.log(`Authentication failed: ${error}`);
+    handleAuthFailure(this, message);
   }
 
   handleDisconnect(reason) {
-    this.log(`ChatScope disconnected: ${reason}`);
-    this.stop().catch(err => {
-      this.logger.error("Failed to stop relay after disconnect: %s", err.message);
-    });
+    handleDisconnect(this, reason);
   }
 
   handleFatalError(error) {
-    this.logger.error("ChatScope relay error: %s", error.message);
-    this.state.lastError = error.message;
-    this.emit("status", this.getStatus());
+    handleFatalError(this, error);
   }
 
   async handleQr(qr) {
-    this.log("ChatScope requests a QR code scan.");
-    try {
-      const dataUrl = await QRCode.toDataURL(qr, { margin: 2, width: 320 });
-      this.updateState({
-        status: "waiting_qr",
-        lastQr: dataUrl,
-      });
-    } catch (error) {
-      this.logger.error("Failed to render QR code: %s", error.message);
-      this.state.lastError = error.message;
-      this.emit("status", this.getStatus());
-    }
+    await handleQr(this, QRCode, qr);
   }
 
   updateState(patch = {}) {
-    this.state = {
-      ...this.state,
-      ...patch,
-    };
-    this.emit("status", this.getStatus());
-  }
-
-  extractAccountInfo() {
-    const info = this.client?.info;
-    if (!info) return null;
-    return {
-      wid: info.wid?._serialized || info.wid?.user || null,
-      pushName: info.pushname || null,
-      platform: info.platform || null,
-      battery: info.battery ?? null,
-      plugged: info.plugged ?? null,
-    };
+    updateRelayState(this, patch);
   }
 
   async persistChatMeta(chat) {

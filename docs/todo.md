@@ -46,3 +46,43 @@ Use this as the working backlog for the current visual sprint.
 - [x] Trim visual artifact footprint where practical:
   - [x] Keep critical coverage, avoid redundant near-duplicate snapshots
   - [x] Revisit baseline granularity if CI time grows
+
+## Next Engineering Steps
+
+- [x] Modularity pass (priority order):
+  - [x] Split `js/search.js` into query parsing, indexing, and result rendering modules.
+  - [x] Split `js/exporters.js` into format-specific handlers and shared orchestration.
+  - [x] Reduce `js/savedViews.js` further by moving compare rendering into a dedicated helper.
+  - [x] Continue trimming `apps/server/src/relay/relayManager.js` by isolating contact refresh and lifecycle state transitions.
+- [ ] Efficiency pass:
+  - [ ] Add lightweight timing logs around search, export generation, and relay sync hot paths.
+  - [ ] Profile dashboard render path on large datasets and cache repeated derived computations.
+  - [ ] Review polling intervals and debounce points to prevent redundant work during active sync.
+- [ ] Dead-code cleanup pass:
+  - [ ] Run `npm run check:unused-exports` after each refactor slice and remove stale helpers immediately.
+  - [ ] Audit runtime-only dormant branches (feature flags/fallbacks) and remove branches no longer used in current flow.
+  - [ ] Consolidate duplicate utility logic discovered during module splits.
+- [ ] Quality gates:
+  - [ ] Keep `npm run lint`, `npm run test:smoke`, and targeted suites green for every slice.
+  - [ ] Run `npm run test:visual` after UI-affecting changes; update baselines only for intentional diffs.
+
+## Modularity Guardrail
+
+- [ ] Defer additional broad modularity passes unless one of these triggers is met:
+  - [ ] File exceeds ~350 lines and is actively changing.
+  - [ ] Repeated merge conflicts occur in the same file across two consecutive PRs.
+  - [ ] A bug fix requires touching more than one unrelated concern in the same module.
+  - [ ] Change velocity slows due to unclear ownership/flow in a single file.
+
+## Review + Release Readiness
+
+- [ ] Stabilization window:
+  - [ ] Keep feature churn paused while review comments are in progress.
+  - [ ] Land only review-driven fixes until sign-off.
+- [ ] Verification gates:
+  - [ ] Run `npm run ci:verify`.
+  - [ ] Run `npm run test:visual`.
+  - [ ] Execute `docs/release-smoke-checklist.md` end-to-end.
+- [ ] Release handoff:
+  - [ ] Prepare concise release notes (visual sprint, accessibility, modularity, visual baseline trim).
+  - [ ] Confirm merge checklist and branch sync status before release cut.

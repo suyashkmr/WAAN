@@ -1,8 +1,5 @@
 import {
   formatNumber,
-  formatDisplayDate,
-  formatTimestampDisplay,
-  sanitizeText,
 } from "./utils.js";
 import {
   getDatasetEntries,
@@ -12,6 +9,12 @@ import {
   resetSearchState,
   updateStatus,
 } from "./state.js";
+import { parseDateInput, hasSearchFilters } from "./search/queryUtils.js";
+import {
+  renderSearchInsights,
+  buildSearchResultItem,
+  buildResultsSummaryText,
+} from "./search/renderUtils.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
@@ -130,110 +133,6 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     participantSelect.disabled = options.length === 0;
   }
 
-  function parseDateInput(value, endOfDay = false) {
-    if (!value) return null;
-    const parts = value.split("-");
-    if (parts.length !== 3) return null;
-    const [yearStr, monthStr, dayStr] = parts;
-    const year = Number(yearStr);
-    const month = Number(monthStr);
-    const day = Number(dayStr);
-    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
-    const date = new Date(
-      year,
-      month - 1,
-      day,
-      endOfDay ? 23 : 0,
-      endOfDay ? 59 : 0,
-      endOfDay ? 59 : 0,
-      endOfDay ? 999 : 0,
-    );
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  function renderSearchInsights(summary) {
-    if (!insightsEl) return;
-    if (!summary || !summary.total) {
-      insightsEl.classList.add("hidden");
-      insightsEl.innerHTML = "";
-      return;
-    }
-    const hitsList = summary.hitsPerDay.length
-      ? summary.hitsPerDay
-          .map(
-            item => `
-              <li>
-                <span class="search-insight-label">${sanitizeText(formatDisplayDate(item.date))}</span>
-                <span>${formatNumber(item.count)}</span>
-              </li>
-            `,
-          )
-          .join("")
-      : '<li><span class="search-insight-label">No daily data</span><span>—</span></li>';
-    const participantList = summary.topParticipants.length
-      ? summary.topParticipants
-          .map(
-            item => `
-              <li>
-                <span class="search-insight-label">${sanitizeText(item.sender)}</span>
-                <span>${formatNumber(item.count)}</span>
-              </li>
-            `,
-          )
-          .join("")
-      : '<li><span class="search-insight-label">No matches yet</span><span>—</span></li>';
-    const filtersList = summary.filters
-      .map(filter => `<li><span class="search-insight-label">${sanitizeText(filter)}</span></li>`)
-      .join("");
-    const noteText = summary.truncated
-      ? `Showing first ${resultLimit} of ${formatNumber(summary.total)} matches.`
-      : `Total matches: ${formatNumber(summary.total)}.`;
-    insightsEl.classList.remove("hidden");
-    insightsEl.innerHTML = `
-      <div class="search-insight-card">
-        <h4>Hits per day</h4>
-        <ul class="search-insight-list">${hitsList}</ul>
-      </div>
-      <div class="search-insight-card">
-        <h4>Top participants</h4>
-        <ul class="search-insight-list">${participantList}</ul>
-      </div>
-      <div class="search-insight-card">
-        <h4>Search filters</h4>
-        <ul class="search-insight-list">${filtersList}</ul>
-        <p class="search-insight-note">${noteText}</p>
-      </div>
-    `;
-  }
-
-  function buildSearchResultItem(result) {
-    const item = document.createElement("div");
-    item.className = "search-result";
-
-    const header = document.createElement("div");
-    header.className = "search-result-header";
-
-    const senderEl = document.createElement("span");
-    senderEl.className = "search-result-sender";
-    senderEl.textContent = result.sender || "[Unknown]";
-    header.appendChild(senderEl);
-
-    const timestampEl = document.createElement("span");
-    timestampEl.textContent = formatTimestampDisplay(result.timestamp);
-    header.appendChild(timestampEl);
-
-    const messageEl = document.createElement("div");
-    messageEl.className = "search-result-message";
-    if (result.messageHtml) {
-      messageEl.innerHTML = result.messageHtml;
-    } else {
-      messageEl.textContent = result.message || "";
-    }
-
-    item.append(header, messageEl);
-    return item;
-  }
-
   function renderResults() {
     if (!resultsSummaryEl || !resultsListEl) return;
     const state = getSearchState();
@@ -244,21 +143,15 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     const hasRunSearch = Boolean(state?.lastRun);
     const lastRunFiltered = Boolean(state?.lastRunHasFilters);
 
-    const hasFilters = Boolean(query.text || query.participant || query.start || query.end);
-    if (!hasRunSearch) {
-      resultsSummaryEl.textContent =
-        "Add keywords, choose a participant, or set dates to search this chat. Leave filters blank to list everything.";
-    } else if (!total) {
-      resultsSummaryEl.textContent = lastRunFiltered
-        ? "No messages matched these filters. Try another keyword, participant, or date range."
-        : "This chat doesn't have any messages yet.";
-    } else if (!lastRunFiltered) {
-      resultsSummaryEl.textContent = `Showing all ${formatNumber(results.length)} messages in this chat.`;
-    } else if (total > results.length) {
-      resultsSummaryEl.textContent = `Showing ${formatNumber(results.length)} of ${formatNumber(total)} matches (first ${resultLimit} shown). Narrow further to see more.`;
-    } else {
-      resultsSummaryEl.textContent = `Showing ${formatNumber(results.length)} match${results.length === 1 ? "" : "es"}.`;
-    }
+    const hasFilters = hasSearchFilters(query);
+    resultsSummaryEl.textContent = buildResultsSummaryText({
+      hasRunSearch,
+      total,
+      lastRunFiltered,
+      resultsLength: results.length,
+      hasFilters,
+      resultLimit,
+    });
 
     resultsListEl.innerHTML = "";
     if (!total) {
@@ -268,7 +161,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         ? "No matching messages. Try other names, words, or dates."
         : "Add filters above to search the chat history.";
       resultsListEl.appendChild(empty);
-      renderSearchInsights(null);
+      renderSearchInsights({ insightsEl, summary: null, resultLimit });
       return;
     }
 
@@ -285,7 +178,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
       resultsListEl.appendChild(note);
     }
 
-    renderSearchInsights(summary);
+    renderSearchInsights({ insightsEl, summary, resultLimit });
   }
 
   function setSearchProgress(scanned, total) {
@@ -362,7 +255,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
 
     const startBound = startDate ? startDate.getTime() : null;
     const endBound = endDate ? endDate.getTime() : null;
-    const requestHasFilters = Boolean(query.text || query.participant || query.start || query.end);
+    const requestHasFilters = hasSearchFilters(query);
     const requestLimit = requestHasFilters ? resultLimit : entries.length;
 
     return new Promise((resolve, reject) => {
