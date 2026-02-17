@@ -35,6 +35,36 @@ npm run dist
 
 This runs `electron-builder --mac` and produces macOS distributables.
 
+If signing/notary credentials are not provided, local builds are still produced
+but notarization is skipped.
+
+## CI Signed + Notarized Release Pipeline
+
+Tag `vX.Y.Z` to trigger `.github/workflows/macos-release.yml`.
+
+Preferred release command:
+
+```bash
+npm run release:cut -- <version|patch|minor|major>
+```
+
+Example:
+
+```bash
+npm run release:cut -- patch
+```
+
+Required repository secrets:
+
+- `CSC_LINK`
+- `CSC_KEY_PASSWORD`
+- `APPLE_ID`
+- `APPLE_APP_SPECIFIC_PASSWORD`
+- `APPLE_TEAM_ID`
+
+The workflow validates tag/version alignment, builds signed macOS artifacts, and
+publishes `.dmg` + `.zip` assets to the GitHub release for that tag.
+
 ## Environment Overrides
 
 You can override local host/ports when launching:

@@ -98,6 +98,27 @@ npm run dist
 ```
 
 This uses `electron-builder --mac` to create macOS distributables.
+If Apple signing/notary credentials are not set, the build still runs locally
+but skips notarization.
+
+## Signed + Notarized macOS Releases (GitHub Actions)
+
+Tag-based release builds are automated via `.github/workflows/macos-release.yml`.
+
+Required GitHub repository secrets:
+
+- `CSC_LINK` - base64 `.p12` signing certificate (or file URL supported by electron-builder)
+- `CSC_KEY_PASSWORD` - password for the signing certificate
+- `APPLE_ID` - Apple developer account email
+- `APPLE_APP_SPECIFIC_PASSWORD` - app-specific password for notarization
+- `APPLE_TEAM_ID` - Apple Developer Team ID
+
+Release flow:
+
+1. Cut a release in one command:
+   `npm run release:cut -- <version|patch|minor|major>`
+2. The script bumps root + Electron versions, commits, tags, and pushes.
+3. GitHub Actions builds signed/notarized `.dmg` + `.zip` and attaches them to the release.
 
 ## Optional: Run Live Relay Sync
 

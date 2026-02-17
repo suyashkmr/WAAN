@@ -99,8 +99,8 @@ Use this as the working backlog for the current visual sprint.
   - [x] Stress-test large chats and document limits/bottlenecks.
   - [x] Add caching/virtualization for heaviest long-list panels where needed.
 - [ ] Release operations:
-  - [ ] Set up signed + notarized macOS build pipeline.
-  - [ ] Automate version/tag/release flow so artifact names always match release tags.
+  - [x] Set up signed + notarized macOS build pipeline.
+  - [x] Automate version/tag/release flow so artifact names always match release tags.
 - [ ] Product confidence:
   - [ ] Add diagnostics/log bundle export for issue triage.
   - [ ] Add a report-issue flow with prefilled runtime diagnostics.

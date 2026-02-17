@@ -17,6 +17,7 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.5.0",
     "electron": "^30.0.0",
     "electron-builder": "^24.0.0"
   },
@@ -24,10 +25,26 @@
     "appId": "ai.waan.desktop",
     "productName": "WAAN",
     "afterPack": "./scripts/after-pack.js",
+    "afterSign": "./scripts/notarize.js",
     "files": [
       "**/*",
       "!dist{,/**}"
     ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "config/entitlements.mac.plist",
+      "entitlementsInherit": "config/entitlements.mac.plist"
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
     "extraResources": [
       {
         "from": "..",
