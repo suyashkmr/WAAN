@@ -248,4 +248,113 @@ describe("relayControls", () => {
     expect(elements.firstRunSetupSteps[2].dataset.state).toBe("active");
     expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
   });
+
+  it("keeps last known relay status during transient polling failures and shows retry timing", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+    const runningStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 4,
+      syncingChats: false,
+    };
+    let statusCalls = 0;
+    const elements = buildRelayElements();
+    const helpers = {
+      updateStatus: vi.fn(),
+      withGlobalBusy: vi.fn(async task => task()),
+      fetchJson: vi.fn(async url => {
+        if (url.endsWith("/relay/status")) {
+          statusCalls += 1;
+          if (statusCalls === 1) return runningStatus;
+          throw new Error("offline");
+        }
+        if (url.endsWith("/api/chats")) return { chats: [] };
+        return {};
+      }),
+      setRemoteChatList: vi.fn(),
+      getRemoteChatList: vi.fn(() => []),
+      getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+      refreshChatSelector: vi.fn(async () => {}),
+      setDashboardLoadingState: vi.fn(),
+      setDatasetEmptyMessage: vi.fn(),
+      setDataAvailabilityState: vi.fn(),
+      getDataAvailable: vi.fn(() => false),
+      updateHeroRelayStatus: vi.fn(),
+      applyEntriesToApp: vi.fn(async () => {}),
+      encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+    };
+    const controller = createRelayController({
+      elements,
+      helpers,
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    const statusBeforeFailure = elements.relayStatusEl.textContent;
+
+    const failedStatus = await controller.refreshRelayStatus({ silent: true, fromPolling: true });
+
+    expect(failedStatus).toBeNull();
+    expect(elements.relayStatusEl.textContent).toBe(statusBeforeFailure);
+    expect(helpers.updateStatus).toHaveBeenCalledWith("Relay connection lost. Retrying in 10s…", "warning");
+    expect(helpers.setDashboardLoadingState).not.toHaveBeenCalledWith(true);
+    errorSpy.mockRestore();
+    randomSpy.mockRestore();
+  });
+
+  it("avoids repeated reset churn when status remains waiting_qr", async () => {
+    const waitingStatus = {
+      status: "waiting_qr",
+      account: null,
+      chatCount: 0,
+      lastQr: "data:image/png;base64,abc",
+    };
+
+    const { controller, helpers } = createController({
+      fetchJson: vi.fn(async url => {
+        if (url.endsWith("/relay/status")) return waitingStatus;
+        if (url.endsWith("/api/chats")) return { chats: [] };
+        return {};
+      }),
+      getDataAvailable: vi.fn(() => false),
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(helpers.setRemoteChatList).toHaveBeenCalledTimes(1);
+    expect(helpers.refreshChatSelector).toHaveBeenCalledTimes(1);
+    expect(helpers.setDashboardLoadingState).toHaveBeenCalledTimes(1);
+  });
+
+  it("applies offline state when manual refresh joins an in-flight polling request", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { controller, helpers } = createController({
+      fetchJson: vi.fn(async () => {
+        await Promise.resolve();
+        throw new Error("offline");
+      }),
+      getDataAvailable: vi.fn(() => false),
+    });
+
+    const pollingRequest = controller.refreshRelayStatus({ silent: true, fromPolling: true });
+    const manualRequest = controller.refreshRelayStatus({ silent: false });
+    const [pollResult, manualResult] = await Promise.all([pollingRequest, manualRequest]);
+
+    expect(pollResult).toBeNull();
+    expect(manualResult).toBeNull();
+    expect(helpers.setRemoteChatList).toHaveBeenCalledWith([]);
+    expect(helpers.setDashboardLoadingState).toHaveBeenCalledWith(true);
+    expect(helpers.setDataAvailabilityState).toHaveBeenCalledWith(false);
+    expect(helpers.updateStatus).toHaveBeenCalledWith(
+      "ChatScope Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
+      "warning",
+    );
+    errorSpy.mockRestore();
+  });
 });

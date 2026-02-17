@@ -93,11 +93,11 @@ Use this as the working backlog for the current visual sprint.
   - [x] Add a first-run guided setup flow for relay link + first chat load.
   - [x] Add in-app install/run help for macOS Gatekeeper/unsigned app warnings.
 - [ ] Reliability hardening:
-  - [ ] Strengthen relay reconnect/backoff behavior and recovery UX.
-  - [ ] Reduce transient status flicker and add stricter relay transition tests.
+  - [x] Strengthen relay reconnect/backoff behavior and recovery UX.
+  - [x] Reduce transient status flicker and add stricter relay transition tests.
 - [ ] Performance at scale:
-  - [ ] Stress-test large chats and document limits/bottlenecks.
-  - [ ] Add caching/virtualization for heaviest long-list panels where needed.
+  - [x] Stress-test large chats and document limits/bottlenecks.
+  - [x] Add caching/virtualization for heaviest long-list panels where needed.
 - [ ] Release operations:
   - [ ] Set up signed + notarized macOS build pipeline.
   - [ ] Automate version/tag/release flow so artifact names always match release tags.

@@ -73,6 +73,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     controlsLocked: false,
     pollTimer: null,
     lastStatusKind: null,
+    lastAppliedStateKind: null,
     lastErrorNotice: null,
     primaryAction: "connect",
   };
@@ -298,6 +299,10 @@ export function createRelayController({ elements, helpers, electronAPI = window.
   });
 
   function applyRelayStatus(status) {
+    const stateKind = status?.status || "offline";
+    const previousStateKind = relayUiState.lastAppliedStateKind;
+    const isStateTransition = previousStateKind === null || previousStateKind !== stateKind;
+
     updateHeroRelayStatus(status);
     electronAPI?.updateRelayStatus?.(status);
     applyRelayPrimaryAction(status);
@@ -328,15 +333,18 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       if (relayStopButton) relayStopButton.disabled = true;
       if (relayReloadAllButton) relayReloadAllButton.disabled = true;
       if (relayClearStorageButton) relayClearStorageButton.disabled = false;
-      setRemoteChatList([]);
-      relayUiState.lastStatusKind = "offline";
-      refreshChatSelector();
-      setDashboardLoadingState(true);
-      setDatasetEmptyMessage(
-        "No chat is selected yet.",
-        "Open Relay Controls, scan the QR code, then choose a chat from “Loaded chats”.",
-      );
-      setDataAvailabilityState(false);
+      if (isStateTransition) {
+        setRemoteChatList([]);
+        relayUiState.lastStatusKind = "offline";
+        refreshChatSelector();
+        setDashboardLoadingState(true);
+        setDatasetEmptyMessage(
+          "No chat is selected yet.",
+          "Open Relay Controls, scan the QR code, then choose a chat from “Loaded chats”.",
+        );
+        setDataAvailabilityState(false);
+      }
+      relayUiState.lastAppliedStateKind = stateKind;
       return;
     }
 
@@ -403,9 +411,11 @@ export function createRelayController({ elements, helpers, electronAPI = window.
         relayUiState.lastStatusKind = "running";
       }
     } else {
-      setRemoteChatList([]);
-      refreshChatSelector();
-      setDashboardLoadingState(true);
+      if (isStateTransition) {
+        setRemoteChatList([]);
+        refreshChatSelector();
+        setDashboardLoadingState(true);
+      }
       if (waiting && relayUiState.lastStatusKind !== "waiting") {
         updateStatus("Scan the QR code to finish linking your phone.", "info");
         relayUiState.lastStatusKind = "waiting";
@@ -416,6 +426,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     }
 
     updateSyncProgressFromStatus(status);
+    relayUiState.lastAppliedStateKind = stateKind;
   }
   return {
     startRelaySession,

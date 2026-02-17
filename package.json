@@ -17,6 +17,7 @@
     "test": "vitest --run",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
+    "perf:stress": "node scripts/stress-large-chat.mjs",
     "verify": "npm run lint && npm test",
     "ci:verify": "npm run check:artifacts && npm run check:unused-exports && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",

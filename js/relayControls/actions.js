@@ -26,7 +26,22 @@ export function createRelayActionsController({
   markMessagesActive,
   handleSyncError,
 }) {
+  const MAX_RETRY_DELAY_MS = 60000;
+  const RETRY_NOTICE_COOLDOWN_MS = 20000;
+  const OFFLINE_AFTER_CONSECUTIVE_POLL_FAILURES = 3;
   let statusRequestPromise = null;
+  let statusRequestMeta = null;
+
+  function nowMs() {
+    return Date.now();
+  }
+
+  function buildRetryDelayMs(failureCount) {
+    const exponentialDelay = relayPollIntervalMs * (2 ** Math.min(failureCount, 4));
+    const jitter = 0.85 + Math.random() * 0.3;
+    const jittered = Math.round(exponentialDelay * jitter);
+    return Math.max(relayPollIntervalMs, Math.min(MAX_RETRY_DELAY_MS, jittered));
+  }
 
   async function startRelaySession() {
     if (!relayBase) return;
@@ -186,32 +201,65 @@ export function createRelayActionsController({
     return chatCount;
   }
 
-  async function refreshRelayStatus({ silent = false } = {}) {
+  async function refreshRelayStatus({ silent = false, fromPolling = false } = {}) {
     if (!relayBase || !relayStatusEl) return null;
-    if (statusRequestPromise) return statusRequestPromise;
+    if (statusRequestPromise) {
+      if (statusRequestMeta) {
+        // Escalate shared request semantics to the strictest caller.
+        if (!fromPolling) statusRequestMeta.fromPolling = false;
+        if (!silent) statusRequestMeta.silent = false;
+      }
+      return statusRequestPromise;
+    }
     const startedAt = globalThis.performance?.now?.() ?? Date.now();
+    statusRequestMeta = {
+      silent: Boolean(silent),
+      fromPolling: Boolean(fromPolling),
+    };
     statusRequestPromise = (async () => {
       try {
         const status = await fetchJson(`${relayBase}/relay/status`);
+        const failedPolls = Number(relayUiState.statusFailureCount || 0);
+        if (failedPolls > 0) {
+          updateStatus("Relay connection restored.", "success");
+        }
+        relayUiState.statusFailureCount = 0;
+        relayUiState.nextPollDelayMs = relayPollIntervalMs;
         applyRelayStatus(status);
         relayUiState.status = status;
         return status;
       } catch (error) {
+        const requestSilent = Boolean(statusRequestMeta?.silent);
+        const requestFromPolling = Boolean(statusRequestMeta?.fromPolling);
         console.error("Failed to refresh relay status", error);
-        if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
+        const nextFailureCount = Number(relayUiState.statusFailureCount || 0) + 1;
+        relayUiState.statusFailureCount = nextFailureCount;
+        relayUiState.nextPollDelayMs = buildRetryDelayMs(nextFailureCount);
+        const retryDelaySeconds = Math.ceil(relayUiState.nextPollDelayMs / 1000);
+        if (
+          requestFromPolling &&
+          (!relayUiState.lastRetryNoticeAt || nowMs() - relayUiState.lastRetryNoticeAt > RETRY_NOTICE_COOLDOWN_MS)
+        ) {
+          updateStatus(`Relay connection lost. Retrying in ${retryDelaySeconds}s…`, "warning");
+          relayUiState.lastRetryNoticeAt = nowMs();
+        }
+        if (!requestSilent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
           updateStatus(
             `${relayServiceName} is offline. Launch the desktop relay and press Connect to enable live loading.`,
             "warning",
           );
           relayUiState.lastErrorNotice = Date.now();
         }
-        relayUiState.status = null;
-        applyRelayStatus(null);
+        if (!requestFromPolling || nextFailureCount >= OFFLINE_AFTER_CONSECUTIVE_POLL_FAILURES) {
+          relayUiState.status = null;
+          applyRelayStatus(null);
+        }
         return null;
       } finally {
         const finishedAt = globalThis.performance?.now?.() ?? Date.now();
         logPerfDuration("relay.refresh_status", finishedAt - startedAt, { silent });
         statusRequestPromise = null;
+        statusRequestMeta = null;
       }
     })();
     return statusRequestPromise;
@@ -221,9 +269,12 @@ export function createRelayActionsController({
     if (relayUiState.pollTimer) {
       clearTimeout(relayUiState.pollTimer);
     }
+    relayUiState.statusFailureCount = 0;
+    relayUiState.nextPollDelayMs = relayPollIntervalMs;
     const poll = async () => {
-      await refreshRelayStatus({ silent: true });
-      relayUiState.pollTimer = setTimeout(poll, relayPollIntervalMs);
+      await refreshRelayStatus({ silent: true, fromPolling: true });
+      const delayMs = Number(relayUiState.nextPollDelayMs) || relayPollIntervalMs;
+      relayUiState.pollTimer = setTimeout(poll, delayMs);
     };
     poll();
   }

@@ -12,6 +12,16 @@ export function createSearchResultsUiController({
   renderSearchInsights,
 }) {
   let resultsRenderCacheKey = "";
+  let renderToken = 0;
+
+  function appendNoticeIfNeeded({ resultsListEl, lastRunFiltered, total, renderedCount }) {
+    if (lastRunFiltered && total > renderedCount) {
+      const note = document.createElement("div");
+      note.className = "search-results-empty";
+      note.textContent = "Narrow your filters to see more matches.";
+      resultsListEl.appendChild(note);
+    }
+  }
 
   function renderResults() {
     if (!resultsSummaryEl || !resultsListEl) return;
@@ -36,6 +46,8 @@ export function createSearchResultsUiController({
     if (nextRenderCacheKey === resultsRenderCacheKey) return;
 
     const hasFilters = hasSearchFilters(query);
+    renderToken += 1;
+    const activeRenderToken = renderToken;
     resultsSummaryEl.textContent = buildResultsSummaryText({
       hasRunSearch,
       total,
@@ -58,21 +70,49 @@ export function createSearchResultsUiController({
       return;
     }
 
-    const fragment = document.createDocumentFragment();
-    results.forEach(result => {
-      fragment.appendChild(buildSearchResultItem(result));
-    });
-    resultsListEl.appendChild(fragment);
-
-    if (lastRunFiltered && total > results.length) {
-      const note = document.createElement("div");
-      note.className = "search-results-empty";
-      note.textContent = "Narrow your filters to see more matches.";
-      resultsListEl.appendChild(note);
+    if (results.length <= 120) {
+      const fragment = document.createDocumentFragment();
+      results.forEach(result => {
+        fragment.appendChild(buildSearchResultItem(result));
+      });
+      if (activeRenderToken !== renderToken) return;
+      resultsListEl.appendChild(fragment);
+      appendNoticeIfNeeded({
+        resultsListEl,
+        lastRunFiltered,
+        total,
+        renderedCount: results.length,
+      });
+      renderSearchInsights({ insightsEl, summary, resultLimit });
+      resultsRenderCacheKey = nextRenderCacheKey;
+      return;
     }
 
-    renderSearchInsights({ insightsEl, summary, resultLimit });
-    resultsRenderCacheKey = nextRenderCacheKey;
+    const batchSize = 40;
+    let index = 0;
+    const renderBatch = () => {
+      if (activeRenderToken !== renderToken) return;
+      const fragment = document.createDocumentFragment();
+      const end = Math.min(index + batchSize, results.length);
+      for (let cursor = index; cursor < end; cursor += 1) {
+        fragment.appendChild(buildSearchResultItem(results[cursor]));
+      }
+      resultsListEl.appendChild(fragment);
+      index = end;
+      if (index < results.length) {
+        setTimeout(renderBatch, 0);
+        return;
+      }
+      appendNoticeIfNeeded({
+        resultsListEl,
+        lastRunFiltered,
+        total,
+        renderedCount: results.length,
+      });
+      renderSearchInsights({ insightsEl, summary, resultLimit });
+      resultsRenderCacheKey = nextRenderCacheKey;
+    };
+    renderBatch();
   }
 
   function resetResultsRenderCache() {
