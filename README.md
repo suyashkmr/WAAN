@@ -1,6 +1,6 @@
 # WAAN
 
-WAAN is a ChatScope/WhatsApp analytics dashboard. It analyzes mirrored chat
+WAAN is a WhatsApp analytics dashboard. It analyzes mirrored chat
 history and renders insights such as activity trends, participant behavior,
 highlights, message types, sentiment, and system events.
 
@@ -14,7 +14,7 @@ Apple Silicon DMG + ZIP).
 
 ## What It Does
 
-- Loads mirrored chats from a connected ChatScope account via the relay.
+- Loads mirrored chats from a connected WhatsApp account via the relay.
 - Persists loaded chats in the local in-app library for quick switching.
 - Computes analytics across time, participants, and message categories.
 - Supports search, saved views, and multiple export formats.
@@ -113,17 +113,17 @@ On first run, WAAN shows a guided setup flow in the empty state:
 2. Scan QR code
 3. Choose a chat from **Loaded chats**
 
-### 1. Connect your ChatScope account
+### 1. Connect your WhatsApp account
 
 1. In WAAN, click **Connect** in the relay card.
-2. Scan the QR code from ChatScope on your phone:
+2. Scan the QR code from WhatsApp on your phone:
    *Linked devices* -> *Link a device*.
 3. Wait until the status shows connected.
 
 ### 2. Sync and select a chat
 
 1. Click **Resync chats** (or **Reload All Chats**) to mirror your latest chat list.
-2. Open **Loaded chats** and choose a chat under *ChatScope account*.
+2. Open **Loaded chats** and choose a chat under *WhatsApp account*.
 3. WAAN fetches messages and renders analytics automatically.
 
 ### 3. Explore analytics
@@ -260,6 +260,12 @@ excellent open-source project created and maintained by
 
 Huge thanks for the thoughtful engineering and sustained open-source work that
 make projects like this possible.
+
+## Trademark Notice
+
+WhatsApp is a trademark of Meta Platforms, Inc. WAAN is an independent project
+and is not affiliated with, endorsed by, sponsored by, or associated with Meta
+or WhatsApp.
 
 ## License
 

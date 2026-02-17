@@ -4830,6 +4830,14 @@ footer {
     gap: 0.5rem;
 }
 
+.footer-disclaimer {
+    margin: 0;
+    max-width: 68ch;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--muted) 92%, transparent);
+}
+
 .footer-github-link {
     width: 1.9rem;
     height: 1.9rem;
