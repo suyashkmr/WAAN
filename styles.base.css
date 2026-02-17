@@ -236,6 +236,14 @@ body[data-reduce-motion="true"] .status-snackbar {
     transition: none;
 }
 
+body[data-reduce-motion="true"] *,
+body[data-reduce-motion="true"] *::before,
+body[data-reduce-motion="true"] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
+
 body[data-contrast="high"] {
     --bg: #010409;
     --card-bg: #0f1729;
@@ -272,6 +280,26 @@ body[data-contrast="high"] .relay-banner-indicator,
 body[data-contrast="high"] .stat-value,
 body[data-contrast="high"] .card-title-group h2 {
     color: var(--text);
+}
+
+body[data-contrast="high"] .hero-status-badge,
+body[data-contrast="high"] .hero-milestone,
+body[data-contrast="high"] .highlight-card .badge,
+body[data-contrast="high"] .timeofday-callout .badge,
+body[data-contrast="high"] .weekday-badge,
+body[data-contrast="high"] .hourly-anomalies .badge,
+body[data-contrast="high"] .section-nav a.active {
+    color: var(--text);
+    background: color-mix(in srgb, var(--accent) 28%, var(--card-bg));
+    border-color: color-mix(in srgb, var(--accent) 68%, var(--border));
+}
+
+body[data-contrast="high"] .hero-milestone::before,
+body[data-contrast="high"] .hero-sync-dot,
+body[data-contrast="high"] .hero-sync-dot[data-state="syncing"],
+body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
+    background: var(--text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 58%, transparent);
 }
 
 @media (prefers-color-scheme: light) {

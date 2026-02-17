@@ -32,8 +32,8 @@ Use this as the working backlog for the current visual sprint.
   - [x] Ensure all relay status lines follow one tone model
   - [x] Shorten verbose status strings for faster scanability
 - [ ] Accessibility polish:
-  - [ ] Contrast-check chips/badges in both themes
-  - [ ] Verify reduced-motion behavior for all new animations
+  - [x] Contrast-check chips/badges in both themes
+  - [x] Verify reduced-motion behavior for all new animations
 
 ## Code Health Follow-ups
 
