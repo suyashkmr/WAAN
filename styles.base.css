@@ -140,6 +140,14 @@
     --calendar-level-2: rgba(214, 179, 110, 0.34);
     --calendar-level-3: rgba(214, 179, 110, 0.52);
     --calendar-level-4: rgba(214, 179, 110, 0.78);
+    --chart-grid-line: color-mix(in srgb, var(--muted) 58%, transparent);
+    --chart-axis-label: color-mix(in srgb, var(--accent) 45%, var(--muted));
+    --chart-focus-band: color-mix(in srgb, var(--accent) 22%, transparent);
+    --chart-weekend-line: color-mix(in srgb, var(--md-secondary) 62%, transparent);
+    --chart-gradient-top: color-mix(in srgb, var(--accent) 36%, transparent);
+    --chart-gradient-bottom: color-mix(in srgb, var(--accent) 0%, transparent);
+    --chart-peak-fill: color-mix(in srgb, var(--accent) 86%, #ffffff);
+    --chart-peak-stroke: color-mix(in srgb, var(--bg) 72%, #ffffff);
 
     --motion-duration-fast: 180ms;
     --motion-duration-medium: 320ms;
@@ -281,6 +289,14 @@ body[data-contrast="high"] .card-title-group h2 {
         --calendar-level-2: rgba(156, 115, 50, 0.34);
         --calendar-level-3: rgba(156, 115, 50, 0.56);
         --calendar-level-4: rgba(156, 115, 50, 0.8);
+        --chart-grid-line: color-mix(in srgb, var(--muted) 62%, transparent);
+        --chart-axis-label: color-mix(in srgb, var(--accent) 56%, var(--muted));
+        --chart-focus-band: color-mix(in srgb, var(--accent) 18%, transparent);
+        --chart-weekend-line: color-mix(in srgb, var(--md-secondary) 58%, transparent);
+        --chart-gradient-top: color-mix(in srgb, var(--accent) 28%, transparent);
+        --chart-gradient-bottom: color-mix(in srgb, var(--accent) 0%, transparent);
+        --chart-peak-fill: color-mix(in srgb, var(--accent) 76%, #ffffff);
+        --chart-peak-stroke: color-mix(in srgb, var(--bg) 55%, #ffffff);
     }
 }
 
@@ -329,6 +345,14 @@ body[data-contrast="high"] .card-title-group h2 {
     --calendar-level-2: rgba(214, 179, 110, 0.34);
     --calendar-level-3: rgba(214, 179, 110, 0.52);
     --calendar-level-4: rgba(214, 179, 110, 0.78);
+    --chart-grid-line: color-mix(in srgb, var(--muted) 58%, transparent);
+    --chart-axis-label: color-mix(in srgb, var(--accent) 45%, var(--muted));
+    --chart-focus-band: color-mix(in srgb, var(--accent) 22%, transparent);
+    --chart-weekend-line: color-mix(in srgb, var(--md-secondary) 62%, transparent);
+    --chart-gradient-top: color-mix(in srgb, var(--accent) 36%, transparent);
+    --chart-gradient-bottom: color-mix(in srgb, var(--accent) 0%, transparent);
+    --chart-peak-fill: color-mix(in srgb, var(--accent) 86%, #ffffff);
+    --chart-peak-stroke: color-mix(in srgb, var(--bg) 72%, #ffffff);
 }
 
 :root[data-color-scheme="light"] {
@@ -376,6 +400,14 @@ body[data-contrast="high"] .card-title-group h2 {
     --calendar-level-2: rgba(156, 115, 50, 0.34);
     --calendar-level-3: rgba(156, 115, 50, 0.56);
     --calendar-level-4: rgba(156, 115, 50, 0.8);
+    --chart-grid-line: color-mix(in srgb, var(--muted) 62%, transparent);
+    --chart-axis-label: color-mix(in srgb, var(--accent) 56%, var(--muted));
+    --chart-focus-band: color-mix(in srgb, var(--accent) 18%, transparent);
+    --chart-weekend-line: color-mix(in srgb, var(--md-secondary) 58%, transparent);
+    --chart-gradient-top: color-mix(in srgb, var(--accent) 28%, transparent);
+    --chart-gradient-bottom: color-mix(in srgb, var(--accent) 0%, transparent);
+    --chart-peak-fill: color-mix(in srgb, var(--accent) 76%, #ffffff);
+    --chart-peak-stroke: color-mix(in srgb, var(--bg) 55%, #ffffff);
 }
 
 

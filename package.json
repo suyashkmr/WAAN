@@ -15,6 +15,8 @@
     "check:artifacts": "bash scripts/check-artifacts.sh",
     "test:smoke": "vitest --run tests/appShellBoot.test.js tests/appShellBoundaryIntegration.test.js tests/controllerWiringContracts.test.js tests/compositionAssemblyContracts.test.js",
     "test": "vitest --run",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
     "verify": "npm run lint && npm test",
     "ci:verify": "npm run check:artifacts && npm run check:unused-exports && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.58.2",
     "@vitest/coverage-v8": "^4.0.14",
     "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.32.0",

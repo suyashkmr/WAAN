@@ -5,6 +5,12 @@ export function formatHourLabel(hour) {
   return `${String(hour).padStart(2, "0")}:00`;
 }
 
+function readCssVar(el, name, fallback) {
+  if (!el) return fallback;
+  const value = getComputedStyle(el).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 export function computeTimeOfDayDataset(analytics) {
   const state = getHourlyState();
   const heatmap = state.heatmap;
@@ -149,6 +155,8 @@ function renderTimeOfDayChart(dataset, elements = {}) {
   const svg = document.createElementNS(svgNS, "svg");
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("preserveAspectRatio", "none");
+  const gradientTop = readCssVar(sparklineEl, "--chart-gradient-top", "rgba(34, 211, 238, 0.35)");
+  const gradientBottom = readCssVar(sparklineEl, "--chart-gradient-bottom", "rgba(34, 211, 238, 0)");
 
   const defs = document.createElementNS(svgNS, "defs");
   const gradient = document.createElementNS(svgNS, "linearGradient");
@@ -159,10 +167,10 @@ function renderTimeOfDayChart(dataset, elements = {}) {
   gradient.setAttribute("y2", "1");
   const stopTop = document.createElementNS(svgNS, "stop");
   stopTop.setAttribute("offset", "0%");
-  stopTop.setAttribute("stop-color", "rgba(34, 211, 238, 0.35)");
+  stopTop.setAttribute("stop-color", gradientTop);
   const stopBottom = document.createElementNS(svgNS, "stop");
   stopBottom.setAttribute("offset", "100%");
-  stopBottom.setAttribute("stop-color", "rgba(34, 211, 238, 0)");
+  stopBottom.setAttribute("stop-color", gradientBottom);
   gradient.append(stopTop, stopBottom);
   defs.appendChild(gradient);
   svg.appendChild(defs);

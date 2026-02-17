@@ -2587,12 +2587,12 @@ main.is-loading .card-content {
 }
 
 .timeofday-sparkline .baseline {
-    stroke: color-mix(in srgb, var(--muted) 60%, transparent);
+    stroke: var(--chart-grid-line);
     stroke-dasharray: 4 4;
 }
 
 .timeofday-sparkline .focus-band {
-    fill: rgba(34, 211, 238, 0.18);
+    fill: var(--chart-focus-band);
     stroke: none;
 }
 
@@ -2609,28 +2609,28 @@ main.is-loading .card-content {
 
 .timeofday-sparkline .weekend-line {
     fill: none;
-    stroke: rgba(14, 165, 233, 0.6);
+    stroke: var(--chart-weekend-line);
     stroke-width: 2;
     stroke-dasharray: 6 6;
 }
 
 .timeofday-sparkline .sparkline-peak {
-    fill: color-mix(in srgb, var(--card-accent, var(--accent)) 85%, #ffffff);
-    stroke: rgba(15, 23, 42, 0.35);
+    fill: var(--chart-peak-fill);
+    stroke: var(--chart-peak-stroke);
     stroke-width: 1.5;
 }
 
 .timeofday-sparkline .axis-line {
-    stroke: color-mix(in srgb, var(--muted) 60%, transparent);
+    stroke: var(--chart-grid-line);
 }
 
 .timeofday-sparkline .axis-tick {
-    stroke: color-mix(in srgb, var(--muted) 60%, transparent);
+    stroke: var(--chart-grid-line);
 }
 
 .timeofday-sparkline .axis-label {
     font-size: 0.7rem;
-    fill: color-mix(in srgb, var(--card-accent, var(--accent)) 45%, var(--muted));
+    fill: var(--chart-axis-label);
 }
 
 .timeofday-band-grid {
@@ -2651,7 +2651,7 @@ main.is-loading .card-content {
 
 .timeofday-band.top {
     border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 65%, var(--border));
-    box-shadow: 0 12px 24px rgba(34, 211, 238, 0.18);
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--chart-focus-band) 70%, transparent);
 }
 
 .timeofday-band .band-label {
@@ -2688,7 +2688,7 @@ main.is-loading .card-content {
 
 .timeofday-callout.focus {
     border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 60%, var(--border));
-    box-shadow: 0 10px 20px rgba(34, 211, 238, 0.18);
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--chart-focus-band) 70%, transparent);
 }
 
 .timeofday-callout strong {
@@ -2738,16 +2738,16 @@ main.is-loading .card-content {
 }
 
 .legend-swatch.weekend {
-    background: repeating-linear-gradient(135deg, rgba(14, 165, 233, 0.85), rgba(14, 165, 233, 0.85) 4px, rgba(14, 165, 233, 0.2) 4px, rgba(14, 165, 233, 0.2) 8px);
+    background: repeating-linear-gradient(135deg, var(--chart-weekend-line), var(--chart-weekend-line) 4px, color-mix(in srgb, var(--chart-weekend-line) 34%, transparent) 4px, color-mix(in srgb, var(--chart-weekend-line) 34%, transparent) 8px);
 }
 
 .legend-swatch.baseline {
-    background: linear-gradient(90deg, transparent 25%, color-mix(in srgb, var(--muted) 80%, transparent) 25%, color-mix(in srgb, var(--muted) 80%, transparent) 75%, transparent 75%);
+    background: linear-gradient(90deg, transparent 25%, var(--chart-grid-line) 25%, var(--chart-grid-line) 75%, transparent 75%);
 }
 
 .legend-swatch.focus {
-    background: rgba(34, 211, 238, 0.25);
-    border: 1px solid rgba(34, 211, 238, 0.55);
+    background: color-mix(in srgb, var(--chart-focus-band) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--chart-focus-band) 100%, transparent);
 }
 
 @media (max-width: 720px) {
