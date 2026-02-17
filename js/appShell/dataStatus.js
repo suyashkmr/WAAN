@@ -18,7 +18,8 @@ export function createDataStatusController({ elements, deps }) {
   } = deps;
 
   let dataAvailable = false;
-  let readyNotified = false;
+  let readyCelebrated = false;
+  let celebrationTimer = null;
 
   function applyHeroMilestones({ connect = "pending", sync = "pending", ready = "pending" } = {}) {
     if (!heroMilestoneSteps?.length) return;
@@ -53,6 +54,34 @@ export function createDataStatusController({ elements, deps }) {
     dashboardRoot.classList.toggle("is-syncing", Boolean(isSyncing));
   }
 
+  function clearReadyCelebration({ rearm = true } = {}) {
+    if (celebrationTimer) {
+      clearTimeout(celebrationTimer);
+      celebrationTimer = null;
+    }
+    heroStatusBadge?.classList.remove("hero-status-badge-ready");
+    heroMilestoneSteps?.forEach(step => {
+      if (step.dataset.step === "ready") {
+        step.classList.remove("is-ready-celebration");
+      }
+    });
+    if (rearm) {
+      readyCelebrated = false;
+    }
+  }
+
+  function triggerReadyCelebration() {
+    heroStatusBadge?.classList.add("hero-status-badge-ready");
+    heroMilestoneSteps?.forEach(step => {
+      if (step.dataset.step === "ready") {
+        step.classList.add("is-ready-celebration");
+      }
+    });
+    celebrationTimer = setTimeout(() => {
+      clearReadyCelebration({ rearm: false });
+    }, 1200);
+  }
+
   function setDataAvailabilityState(hasData) {
     dataAvailable = Boolean(hasData);
     datasetEmptyStateManager.setAvailability(dataAvailable);
@@ -74,7 +103,7 @@ export function createDataStatusController({ elements, deps }) {
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Waiting for relay activity." });
       setDashboardSyncState(false);
-      readyNotified = false;
+      clearReadyCelebration();
       return;
     }
 
@@ -89,10 +118,13 @@ export function createDataStatusController({ elements, deps }) {
         heroStatusCopy.textContent = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
         applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
         updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTime()}` });
-        if (!readyNotified && typeof notifyRelayReady === "function") {
-          notifyRelayReady(`Insights ready. ${formatNumber(chatCount)} chats indexed.`);
+        if (!readyCelebrated) {
+          triggerReadyCelebration();
+          if (typeof notifyRelayReady === "function") {
+            notifyRelayReady(`Insights ready. ${formatNumber(chatCount)} chats indexed.`);
+          }
+          readyCelebrated = true;
         }
-        readyNotified = true;
       } else {
         heroStatusCopy.textContent = chatCount > 0
           ? `${formatNumber(chatCount)} chats indexed. Finishing sync…`
@@ -104,7 +136,7 @@ export function createDataStatusController({ elements, deps }) {
             ? `Syncing now • ${formatNumber(chatCount)} chats discovered`
             : "Syncing now • preparing chat list",
         });
-        readyNotified = false;
+        clearReadyCelebration({ rearm: chatCount === 0 });
       }
       return;
     }
@@ -120,7 +152,7 @@ export function createDataStatusController({ elements, deps }) {
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Waiting for phone link." });
       setDashboardSyncState(false);
-      readyNotified = false;
+      clearReadyCelebration({ rearm: true });
       return;
     }
 
@@ -130,7 +162,7 @@ export function createDataStatusController({ elements, deps }) {
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Starting relay session…" });
       setDashboardSyncState(false);
-      readyNotified = false;
+      clearReadyCelebration({ rearm: true });
       return;
     }
 
@@ -139,7 +171,7 @@ export function createDataStatusController({ elements, deps }) {
     applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
     updateHeroSyncMeta({ state: "idle", message: "Waiting for relay activity." });
     setDashboardSyncState(false);
-    readyNotified = false;
+    clearReadyCelebration({ rearm: true });
   }
 
   return {

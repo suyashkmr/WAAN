@@ -67,9 +67,18 @@ describe("dataStatus controller details", () => {
     expect(heroSyncDot.dataset.state).toBe("ready");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
     expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+    expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(true);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 4, syncingChats: true });
+    expect(heroSyncDot.dataset.state).toBe("syncing");
+    expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(false);
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 4, syncingChats: false });
     expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: true });
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
+    expect(notifyRelayReady).toHaveBeenCalledTimes(2);
 
     controller.setDashboardLoadingState(true);
     expect(dashboardRoot.classList.contains("is-loading")).toBe(true);
@@ -99,6 +108,55 @@ describe("dataStatus controller details", () => {
     expect(() => controller.updateHeroRelayStatus({ status: "running" })).not.toThrow();
     expect(() => controller.setDashboardLoadingState(true)).not.toThrow();
   });
+
+  it("does not re-notify while remaining in ready state after celebration timeout", () => {
+    vi.useFakeTimers();
+    try {
+      const dashboardRoot = document.createElement("main");
+      const heroStatusBadge = document.createElement("span");
+      const heroStatusCopy = document.createElement("span");
+      const heroStatusMetaCopy = document.createElement("span");
+      const heroSyncDot = document.createElement("span");
+      const readyStep = document.createElement("span");
+      readyStep.dataset.step = "ready";
+      const notifyRelayReady = vi.fn();
+
+      const controller = createDataStatusController({
+        elements: {
+          dashboardRoot,
+          heroStatusBadge,
+          heroStatusCopy,
+          heroStatusMetaCopy,
+          heroSyncDot,
+          heroMilestoneSteps: [readyStep],
+          datasetEmptyStateManager: { setAvailability: vi.fn() },
+        },
+        deps: {
+          setDatasetEmptyMessage: vi.fn(),
+          savedViewsController: {
+            setDataAvailability: vi.fn(),
+            refreshUI: vi.fn(),
+          },
+          formatRelayAccount: vi.fn(() => "Alice"),
+          formatNumber: vi.fn(value => String(value)),
+          notifyRelayReady,
+        },
+      });
+
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
+      expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(1300);
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
+      expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: true });
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 6, syncingChats: false });
+      expect(notifyRelayReady).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("bootstrap controller transitions", () => {
@@ -124,6 +182,14 @@ describe("bootstrap controller transitions", () => {
   });
 
   it("animates expand/collapse when reduced motion is disabled", () => {
+    const relayCard = document.createElement("section");
+    relayCard.id = "relay-live-card";
+    relayCard.scrollIntoView = vi.fn();
+    document.body.append(relayCard);
+    const datasetEmptyOpenRelayButton = document.createElement("button");
+    datasetEmptyOpenRelayButton.id = "dataset-empty-open-relay";
+    document.body.append(datasetEmptyOpenRelayButton);
+
     const content = document.createElement("div");
     content.id = "panel";
     Object.defineProperty(content, "scrollHeight", { configurable: true, value: 120 });
@@ -138,34 +204,40 @@ describe("bootstrap controller transitions", () => {
     card.append(toggle, content);
     document.body.append(card);
 
+    const deps = {
+      initEventHandlers: vi.fn(),
+      initRelayControls: vi.fn(),
+      initThemeControls: vi.fn(),
+      initCompactMode: vi.fn(),
+      initAccessibilityControls: vi.fn(),
+      setDataAvailabilityState: vi.fn(),
+      onboardingController: { start: vi.fn(), skip: vi.fn(), advance: vi.fn() },
+      startRelaySession: vi.fn(),
+      stopRelaySession: vi.fn(),
+      buildSectionNav: vi.fn(),
+      setupSectionNavTracking: vi.fn(),
+      searchController: { init: vi.fn() },
+      savedViewsController: { init: vi.fn(), setDataAvailability: vi.fn() },
+      getDataAvailable: vi.fn(() => false),
+      refreshChatSelector: vi.fn(),
+      updateStatus: vi.fn(),
+      relayServiceName: "Relay",
+      prefersReducedMotion: vi.fn(() => false),
+    };
+
     const controller = createBootstrapController({
       elements: {
         onboardingSkipButton: null,
         onboardingNextButton: null,
       },
-      deps: {
-        initEventHandlers: vi.fn(),
-        initRelayControls: vi.fn(),
-        initThemeControls: vi.fn(),
-        initCompactMode: vi.fn(),
-        initAccessibilityControls: vi.fn(),
-        setDataAvailabilityState: vi.fn(),
-        onboardingController: { start: vi.fn(), skip: vi.fn(), advance: vi.fn() },
-        startRelaySession: vi.fn(),
-        stopRelaySession: vi.fn(),
-        buildSectionNav: vi.fn(),
-        setupSectionNavTracking: vi.fn(),
-        searchController: { init: vi.fn() },
-        savedViewsController: { init: vi.fn(), setDataAvailability: vi.fn() },
-        getDataAvailable: vi.fn(() => false),
-        refreshChatSelector: vi.fn(),
-        updateStatus: vi.fn(),
-        relayServiceName: "Relay",
-        prefersReducedMotion: vi.fn(() => false),
-      },
+      deps,
     });
 
     controller.initAppBootstrap();
+
+    datasetEmptyOpenRelayButton.click();
+    expect(deps.startRelaySession).toHaveBeenCalledTimes(1);
+    expect(relayCard.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
 
     toggle.click();
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
@@ -178,6 +250,51 @@ describe("bootstrap controller transitions", () => {
     expect(card.classList.contains("collapsed")).toBe(true);
     content.dispatchEvent(new Event("transitionend"));
     expect(content.style.display).toBe("none");
+  });
+
+  it("uses non-animated scroll for empty-state CTA when reduced motion is enabled", () => {
+    const relayCard = document.createElement("section");
+    relayCard.id = "relay-live-card";
+    relayCard.scrollIntoView = vi.fn();
+    document.body.append(relayCard);
+    const datasetEmptyOpenRelayButton = document.createElement("button");
+    datasetEmptyOpenRelayButton.id = "dataset-empty-open-relay";
+    document.body.append(datasetEmptyOpenRelayButton);
+
+    const deps = {
+      initEventHandlers: vi.fn(),
+      initRelayControls: vi.fn(),
+      initThemeControls: vi.fn(),
+      initCompactMode: vi.fn(),
+      initAccessibilityControls: vi.fn(),
+      setDataAvailabilityState: vi.fn(),
+      onboardingController: { start: vi.fn(), skip: vi.fn(), advance: vi.fn() },
+      startRelaySession: vi.fn(),
+      stopRelaySession: vi.fn(),
+      buildSectionNav: vi.fn(),
+      setupSectionNavTracking: vi.fn(),
+      searchController: { init: vi.fn() },
+      savedViewsController: { init: vi.fn(), setDataAvailability: vi.fn() },
+      getDataAvailable: vi.fn(() => false),
+      refreshChatSelector: vi.fn(),
+      updateStatus: vi.fn(),
+      relayServiceName: "Relay",
+      prefersReducedMotion: vi.fn(() => true),
+    };
+
+    const controller = createBootstrapController({
+      elements: {
+        onboardingSkipButton: null,
+        onboardingNextButton: null,
+      },
+      deps,
+    });
+
+    controller.initAppBootstrap();
+    datasetEmptyOpenRelayButton.click();
+
+    expect(relayCard.scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "start" });
+    expect(deps.startRelaySession).toHaveBeenCalledTimes(1);
   });
 });
 

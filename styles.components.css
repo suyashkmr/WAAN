@@ -133,6 +133,14 @@
     box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 24%, rgba(4, 8, 20, 0.5));
 }
 
+.hero-status-badge.hero-status-badge-ready {
+    border-color: color-mix(in srgb, var(--positive) 60%, transparent);
+    background: color-mix(in srgb, var(--positive) 18%, var(--card-bg));
+    color: color-mix(in srgb, var(--positive) 72%, var(--text));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--positive) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--positive) 30%, rgba(4, 8, 20, 0.5));
+    animation: hero-ready-glow 1.2s ease-out;
+}
+
 .hero-status-copy {
     margin: 0;
     color: var(--muted);
@@ -229,6 +237,21 @@
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--positive) 45%, transparent);
 }
 
+.hero-milestone.is-ready-celebration {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-milestone.is-ready-celebration::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0%, color-mix(in srgb, #ffffff 65%, transparent) 50%, transparent 100%);
+    transform: translateX(-120%);
+    animation: hero-ready-sweep 0.75s ease-out;
+    pointer-events: none;
+}
+
 @keyframes hero-sync-pulse {
     0% {
         transform: scale(1);
@@ -241,6 +264,27 @@
     100% {
         transform: scale(1);
         opacity: 0.9;
+    }
+}
+
+@keyframes hero-ready-glow {
+    0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--positive) 0%, transparent);
+    }
+    55% {
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--positive) 22%, transparent), 0 16px 30px color-mix(in srgb, var(--positive) 30%, rgba(4, 8, 20, 0.5));
+    }
+    100% {
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--positive) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--positive) 30%, rgba(4, 8, 20, 0.5));
+    }
+}
+
+@keyframes hero-ready-sweep {
+    from {
+        transform: translateX(-120%);
+    }
+    to {
+        transform: translateX(120%);
     }
 }
 
@@ -1096,6 +1140,10 @@ main > .card.half-span {
     .hero-sync-dot[data-state="syncing"] {
         animation: none;
     }
+    .hero-status-badge.hero-status-badge-ready,
+    .hero-milestone.is-ready-celebration::after {
+        animation: none;
+    }
     .card,
     .card:hover {
         transition: none;
@@ -1118,6 +1166,11 @@ body[data-reduce-motion="true"] .card:hover .section-icon {
 }
 
 body[data-reduce-motion="true"] .hero-sync-dot[data-state="syncing"] {
+    animation: none;
+}
+
+body[data-reduce-motion="true"] .hero-status-badge.hero-status-badge-ready,
+body[data-reduce-motion="true"] .hero-milestone.is-ready-celebration::after {
     animation: none;
 }
 
@@ -4064,6 +4117,31 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     max-width: 60ch;
 }
 
+.dataset-empty-steps {
+    margin-top: 0.72rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.dataset-empty-step {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.24rem 0.56rem;
+    border-radius: var(--shape-full);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: color-mix(in srgb, var(--accent) 74%, var(--text));
+    font-size: var(--type-label-xs);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.dataset-empty-cta {
+    margin-top: 0.85rem;
+}
+
 .empty-illustration {
     position: relative;
     width: 96px;
@@ -5071,6 +5149,10 @@ body[data-compact="true"] .dataset-empty {
     padding: 0.82rem;
     flex-direction: column;
     text-align: center;
+}
+
+body[data-compact="true"] .dataset-empty-steps {
+    justify-content: center;
 }
 
 body[data-compact="true"] .summary-card {
