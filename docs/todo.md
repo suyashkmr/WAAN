@@ -68,11 +68,12 @@ Use this as the working backlog for the current visual sprint.
 
 ## Modularity Guardrail
 
-- [ ] Defer additional broad modularity passes unless one of these triggers is met:
-  - [ ] File exceeds ~350 lines and is actively changing.
+- [x] Defer additional broad modularity passes unless one of these triggers is met:
+  - [x] File exceeds ~350 lines and is actively changing.
   - [ ] Repeated merge conflicts occur in the same file across two consecutive PRs.
   - [ ] A bug fix requires touching more than one unrelated concern in the same module.
   - [ ] Change velocity slows due to unclear ownership/flow in a single file.
+  - [x] Enforcement added: `npm run check:module-size` in local/CI (with temporary allowlist for known hotspots).
 
 ## Review + Release Readiness
 
@@ -89,25 +90,25 @@ Use this as the working backlog for the current visual sprint.
 
 ## Next Sprint: Trust + Adoption
 
-- [ ] Onboarding + activation:
+- [x] Onboarding + activation:
   - [x] Add a first-run guided setup flow for relay link + first chat load.
   - [x] Add in-app install/run help for macOS Gatekeeper/unsigned app warnings.
-- [ ] Reliability hardening:
+- [x] Reliability hardening:
   - [x] Strengthen relay reconnect/backoff behavior and recovery UX.
   - [x] Reduce transient status flicker and add stricter relay transition tests.
-- [ ] Performance at scale:
+- [x] Performance at scale:
   - [x] Stress-test large chats and document limits/bottlenecks.
   - [x] Add caching/virtualization for heaviest long-list panels where needed.
-- [ ] Release operations:
+- [x] Release operations:
   - [x] Set up signed + notarized macOS build pipeline.
   - [x] Automate version/tag/release flow so artifact names always match release tags.
-- [ ] Product confidence:
+- [x] Product confidence:
   - [x] Add diagnostics/log bundle export for issue triage.
   - [x] Add a report-issue flow with prefilled runtime diagnostics.
 
 ## Final Modularity Closure
 
-- [ ] Close recurring hotspot files with one final pass:
+- [x] Close recurring hotspot files with one final pass:
   - [x] `js/savedViews.js` (target: split orchestration from rendering/state helpers; keep file < ~320 lines).
   - [x] `js/search.js` (target: isolate worker client/cache-key/progress concerns; keep file < ~320 lines).
     - [x] Phase 1 extraction complete (`cacheKeys`, `progressUi`, `workerClient`, `formState`).
@@ -116,5 +117,9 @@ Use this as the working backlog for the current visual sprint.
   - [x] `apps/server/src/relay/relayManager.js` (target: isolate sync/state transitions further; keep file < ~320 lines).
   - [x] `js/analytics.js` (target: move compute/render boundary helpers into focused modules; keep file < ~320 lines).
 - [ ] Guardrail enforcement:
-  - [ ] Add/adjust tests for each extraction slice before merge.
-  - [ ] Run `npm run ci:verify` after each hotspot slice.
+  - [x] Add/adjust tests for each extraction slice before merge.
+  - [x] Run `npm run ci:verify` after each hotspot slice.
+  - [ ] Remove temporary module-size allowlist entries by splitting:
+    - [ ] `js/exporters/createExporters.js`
+    - [ ] `js/analytics/summary.js`
+    - [ ] `js/appShell/dashboardRender/activityPanels.js`

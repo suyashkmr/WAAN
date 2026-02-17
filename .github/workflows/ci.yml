@@ -24,6 +24,9 @@ jobs:
       - name: Enforce artifact policy
         run: npm run check:artifacts
 
+      - name: Enforce module size guardrail
+        run: npm run check:module-size
+
       - name: Check unused exports
         run: npm run check:unused-exports
 

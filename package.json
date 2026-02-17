@@ -13,6 +13,7 @@
     "check:unused-exports": "eslint js apps/server/src tests",
     "check:circular": "npx --yes madge --extensions js --circular js apps/server/src",
     "check:artifacts": "bash scripts/check-artifacts.sh",
+    "check:module-size": "node scripts/check-module-size.mjs",
     "test:smoke": "vitest --run tests/appShellBoot.test.js tests/appShellBoundaryIntegration.test.js tests/controllerWiringContracts.test.js tests/compositionAssemblyContracts.test.js",
     "test": "vitest --run",
     "test:visual": "playwright test",
@@ -20,7 +21,7 @@
     "perf:stress": "node scripts/stress-large-chat.mjs",
     "release:cut": "node scripts/cut-release.cjs",
     "verify": "npm run lint && npm test",
-    "ci:verify": "npm run check:artifacts && npm run check:unused-exports && npm run verify && npm run check:circular",
+    "ci:verify": "npm run check:artifacts && npm run check:module-size && npm run check:unused-exports && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },
