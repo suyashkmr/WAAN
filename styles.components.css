@@ -1,5 +1,5 @@
 .hero-shell {
-    padding: var(--space-5) var(--space-3) var(--space-4);
+    padding: var(--hero-shell-pad-top) var(--hero-shell-pad-x) var(--hero-shell-pad-bottom);
     background: transparent;
     position: relative;
     z-index: 1;
@@ -9,7 +9,7 @@
     width: min(1100px, 100%);
     margin: 0 auto;
     display: grid;
-    gap: var(--space-4);
+    gap: var(--hero-blurb-gap);
 }
 
 @media (min-width: 900px) {
@@ -21,7 +21,7 @@
 
 .hero-blurb {
     border-radius: calc(var(--shape-large) + 10px);
-    padding: var(--space-5);
+    padding: var(--hero-blurb-pad);
     border: 1px solid color-mix(in srgb, var(--glass-border) 84%, transparent);
     background:
         linear-gradient(165deg, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 44%),
@@ -30,18 +30,18 @@
     box-shadow: var(--shadow-card-deep);
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--hero-blurb-gap);
 }
 
 .hero-brand {
     display: flex;
-    gap: var(--space-3);
+    gap: clamp(var(--space-2), 1.4vw, var(--space-3));
     align-items: center;
 }
 
 .hero-logo {
-    width: 86px;
-    height: 86px;
+    width: var(--hero-logo-size);
+    height: var(--hero-logo-size);
     border-radius: 26px;
     padding: 0.4rem;
     background: linear-gradient(150deg, color-mix(in srgb, var(--card-bg) 62%, white), color-mix(in srgb, var(--card-bg) 86%, transparent));
@@ -53,8 +53,8 @@
 }
 
 .brand-mark {
-    width: 72px;
-    height: 72px;
+    width: var(--hero-logo-mark-size);
+    height: var(--hero-logo-mark-size);
     border-radius: 20px;
     object-fit: contain;
     filter: drop-shadow(0 10px 24px rgba(8, 10, 26, 0.28));
@@ -70,18 +70,27 @@
     text-align: left;
 }
 
+.hero-brand-copy h1 {
+    font-size: var(--type-display-hero);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+}
+
 .eyebrow {
     text-transform: uppercase;
-    letter-spacing: 0.22em;
-    font-size: 0.78rem;
+    letter-spacing: var(--tracking-label);
+    font-size: var(--type-label-xs);
     color: var(--muted);
-    margin: 0 0 0.4rem;
+    margin: 0 0 var(--space-1);
+    line-height: var(--leading-snug);
 }
 
 .subtitle {
     color: var(--muted);
-    font-size: var(--font-size-md);
+    font-size: var(--type-body-lg);
+    line-height: var(--leading-relaxed);
     margin-top: var(--space-2);
+    max-width: 54ch;
 }
 
 .hero-status {
@@ -109,7 +118,8 @@
 .hero-status-copy {
     margin: 0;
     color: var(--muted);
-    font-size: var(--font-size-sm);
+    font-size: var(--type-body-sm);
+    line-height: var(--leading-relaxed);
 }
 
 .hero-live-card {
@@ -710,25 +720,25 @@
 }
 
 .headline {
-    font-size: clamp(1.95rem, 3vw, 2.35rem);
-    letter-spacing: -0.01em;
-    line-height: 1.12;
+    font-size: var(--type-title-lg);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
 }
 
 .title-large,
 .card-title-group h2 {
-    font-size: clamp(1.28rem, 1.8vw, 1.5rem);
-    letter-spacing: -0.005em;
+    font-size: var(--type-title-md);
+    letter-spacing: var(--tracking-tight);
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    line-height: 1.2;
+    gap: var(--space-2);
+    line-height: var(--leading-snug);
 }
 
 .title-medium {
-    font-size: clamp(1.08rem, 1.3vw, 1.2rem);
+    font-size: var(--type-title-sm);
     letter-spacing: 0.005em;
-    line-height: 1.28;
+    line-height: var(--leading-snug);
 }
 
 .label-medium,
@@ -743,8 +753,8 @@
 
 main {
     display: grid;
-    gap: 1.5rem;
-    padding: 0 1.5rem 2rem;
+    gap: var(--layout-main-gap);
+    padding: 0 var(--layout-main-pad-x) var(--layout-main-pad-bottom);
     max-width: 1100px;
     margin: 0 auto;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -781,8 +791,8 @@ main > .card.half-span {
     overflow: hidden;
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
     border-radius: var(--shape-large);
-    padding: 1.65rem;
-    margin-bottom: 1.5rem;
+    padding: var(--card-padding);
+    margin-bottom: var(--layout-main-gap);
     border: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
     box-shadow: var(--shadow-card), inset 0 1px 0 color-mix(in srgb, white 15%, transparent);
     background-image: linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
@@ -852,7 +862,7 @@ main > .card.half-span {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--card-stack-gap);
     flex-wrap: wrap;
 }
 
@@ -861,19 +871,19 @@ main > .card.half-span {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    gap: 0.75rem;
+    gap: var(--card-stack-gap);
 }
 
 .card-header-actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-1);
 }
 
 .card-header h2 {
     margin: 0;
-    font-size: 1.22rem;
-    letter-spacing: 0.005em;
+    font-size: var(--type-title-md);
+    letter-spacing: var(--tracking-tight);
 }
 
 .card-toggle {
@@ -902,7 +912,7 @@ main > .card.half-span {
 }
 
 .card-content {
-    margin-top: 1rem;
+    margin-top: var(--card-section-gap);
 }
 
 .card.collapsed .card-content {
@@ -924,8 +934,8 @@ main.is-loading .card-content {
 .section-note {
     margin-top: 0;
     color: color-mix(in srgb, var(--text) 85%, transparent);
-    font-size: 0.95rem;
-    line-height: 1.62;
+    font-size: var(--type-body-sm);
+    line-height: var(--leading-relaxed);
     max-width: 65ch;
 }
 
@@ -4391,7 +4401,7 @@ footer {
 
     main {
         grid-template-columns: repeat(8, minmax(0, 1fr));
-        gap: 1.35rem;
+        gap: var(--layout-main-gap);
     }
 
     main > .page-controls,
@@ -4404,17 +4414,17 @@ footer {
 }
 
 @media (max-width: 720px) {
-    header h1 {
-        font-size: clamp(1.75rem, 7vw, 2.4rem);
+    .hero-brand-copy h1 {
+        font-size: var(--type-display-hero-mobile);
     }
 
     .subtitle {
-        font-size: 0.9rem;
+        font-size: var(--type-body-sm);
     }
 
     main {
-        padding: 0 0.9rem 1.4rem;
-        gap: 1.05rem;
+        padding: 0 var(--layout-main-pad-x) var(--layout-main-pad-bottom);
+        gap: var(--layout-main-gap);
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }
 
@@ -4552,7 +4562,7 @@ footer {
 
 @media (max-width: 640px) {
     .card {
-        padding: 1.05rem;
+        padding: var(--card-padding);
     }
 
     main {
