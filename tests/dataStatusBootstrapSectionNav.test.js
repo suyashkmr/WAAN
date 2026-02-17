@@ -8,6 +8,9 @@ describe("dataStatus controller details", () => {
     const dashboardRoot = document.createElement("main");
     const heroStatusBadge = document.createElement("span");
     const heroStatusCopy = document.createElement("span");
+    const heroStatusMetaCopy = document.createElement("span");
+    const heroSyncDot = document.createElement("span");
+    const notifyRelayReady = vi.fn();
 
     const deps = {
       setDatasetEmptyMessage: vi.fn(),
@@ -17,6 +20,7 @@ describe("dataStatus controller details", () => {
       },
       formatRelayAccount: vi.fn(() => "Alice"),
       formatNumber: vi.fn(value => String(value)),
+      notifyRelayReady,
     };
 
     const controller = createDataStatusController({
@@ -24,6 +28,8 @@ describe("dataStatus controller details", () => {
         dashboardRoot,
         heroStatusBadge,
         heroStatusCopy,
+        heroStatusMetaCopy,
+        heroSyncDot,
         datasetEmptyStateManager: { setAvailability: vi.fn() },
       },
       deps,
@@ -41,6 +47,7 @@ describe("dataStatus controller details", () => {
     controller.updateHeroRelayStatus({ status: "waiting_qr", lastQr: false });
     expect(heroStatusBadge.textContent).toBe("Scan the QR code");
     expect(heroStatusCopy.textContent).toContain("Press Connect");
+    expect(heroStatusMetaCopy.textContent).toContain("Waiting for phone link");
 
     controller.updateHeroRelayStatus({ status: "waiting_qr", lastQr: true });
     expect(heroStatusCopy.textContent).toContain("Linked Devices");
@@ -50,7 +57,28 @@ describe("dataStatus controller details", () => {
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0 });
     expect(heroStatusBadge.textContent).toBe("Relay connected");
-    expect(heroStatusCopy.textContent).toBe("Syncing chats now...");
+    expect(heroStatusCopy.textContent).toBe("Connected. Syncing chats…");
+    expect(heroSyncDot.dataset.state).toBe("syncing");
+    expect(dashboardRoot.classList.contains("is-syncing")).toBe(true);
+    expect(notifyRelayReady).toHaveBeenCalledTimes(0);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
+    expect(heroStatusCopy.textContent).toContain("Insights are ready");
+    expect(heroSyncDot.dataset.state).toBe("ready");
+    expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
+    expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+    expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(true);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 4, syncingChats: true });
+    expect(heroSyncDot.dataset.state).toBe("syncing");
+    expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(false);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 4, syncingChats: false });
+    expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: true });
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
+    expect(notifyRelayReady).toHaveBeenCalledTimes(2);
 
     controller.setDashboardLoadingState(true);
     expect(dashboardRoot.classList.contains("is-loading")).toBe(true);
@@ -62,6 +90,8 @@ describe("dataStatus controller details", () => {
         dashboardRoot: null,
         heroStatusBadge: null,
         heroStatusCopy: null,
+        heroStatusMetaCopy: null,
+        heroSyncDot: null,
         datasetEmptyStateManager: { setAvailability: vi.fn() },
       },
       deps: {
@@ -77,6 +107,55 @@ describe("dataStatus controller details", () => {
 
     expect(() => controller.updateHeroRelayStatus({ status: "running" })).not.toThrow();
     expect(() => controller.setDashboardLoadingState(true)).not.toThrow();
+  });
+
+  it("does not re-notify while remaining in ready state after celebration timeout", () => {
+    vi.useFakeTimers();
+    try {
+      const dashboardRoot = document.createElement("main");
+      const heroStatusBadge = document.createElement("span");
+      const heroStatusCopy = document.createElement("span");
+      const heroStatusMetaCopy = document.createElement("span");
+      const heroSyncDot = document.createElement("span");
+      const readyStep = document.createElement("span");
+      readyStep.dataset.step = "ready";
+      const notifyRelayReady = vi.fn();
+
+      const controller = createDataStatusController({
+        elements: {
+          dashboardRoot,
+          heroStatusBadge,
+          heroStatusCopy,
+          heroStatusMetaCopy,
+          heroSyncDot,
+          heroMilestoneSteps: [readyStep],
+          datasetEmptyStateManager: { setAvailability: vi.fn() },
+        },
+        deps: {
+          setDatasetEmptyMessage: vi.fn(),
+          savedViewsController: {
+            setDataAvailability: vi.fn(),
+            refreshUI: vi.fn(),
+          },
+          formatRelayAccount: vi.fn(() => "Alice"),
+          formatNumber: vi.fn(value => String(value)),
+          notifyRelayReady,
+        },
+      });
+
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
+      expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(1300);
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
+      expect(notifyRelayReady).toHaveBeenCalledTimes(1);
+
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: true });
+      controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 6, syncingChats: false });
+      expect(notifyRelayReady).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -117,31 +196,33 @@ describe("bootstrap controller transitions", () => {
     card.append(toggle, content);
     document.body.append(card);
 
+    const deps = {
+      initEventHandlers: vi.fn(),
+      initRelayControls: vi.fn(),
+      initThemeControls: vi.fn(),
+      initCompactMode: vi.fn(),
+      initAccessibilityControls: vi.fn(),
+      setDataAvailabilityState: vi.fn(),
+      onboardingController: { start: vi.fn(), skip: vi.fn(), advance: vi.fn() },
+      startRelaySession: vi.fn(),
+      stopRelaySession: vi.fn(),
+      buildSectionNav: vi.fn(),
+      setupSectionNavTracking: vi.fn(),
+      searchController: { init: vi.fn() },
+      savedViewsController: { init: vi.fn(), setDataAvailability: vi.fn() },
+      getDataAvailable: vi.fn(() => false),
+      refreshChatSelector: vi.fn(),
+      updateStatus: vi.fn(),
+      relayServiceName: "Relay",
+      prefersReducedMotion: vi.fn(() => false),
+    };
+
     const controller = createBootstrapController({
       elements: {
         onboardingSkipButton: null,
         onboardingNextButton: null,
       },
-      deps: {
-        initEventHandlers: vi.fn(),
-        initRelayControls: vi.fn(),
-        initThemeControls: vi.fn(),
-        initCompactMode: vi.fn(),
-        initAccessibilityControls: vi.fn(),
-        setDataAvailabilityState: vi.fn(),
-        onboardingController: { start: vi.fn(), skip: vi.fn(), advance: vi.fn() },
-        startRelaySession: vi.fn(),
-        stopRelaySession: vi.fn(),
-        buildSectionNav: vi.fn(),
-        setupSectionNavTracking: vi.fn(),
-        searchController: { init: vi.fn() },
-        savedViewsController: { init: vi.fn(), setDataAvailability: vi.fn() },
-        getDataAvailable: vi.fn(() => false),
-        refreshChatSelector: vi.fn(),
-        updateStatus: vi.fn(),
-        relayServiceName: "Relay",
-        prefersReducedMotion: vi.fn(() => false),
-      },
+      deps,
     });
 
     controller.initAppBootstrap();

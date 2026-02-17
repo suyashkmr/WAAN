@@ -1,3 +1,7 @@
+import { createExportFileHelpers } from "./exporters/io.js";
+import { buildMessageSubtypeConfig } from "./exporters/messageSubtype.js";
+import { measurePerfSync, measurePerfAsync } from "./perf.js";
+
 export function createExporters({
   getDatasetAnalytics,
   getDatasetEntries,
@@ -23,6 +27,11 @@ export function createExporters({
   const exportCache = new Map();
   let cacheFingerprint = null;
   let cacheRangeKey = null;
+  const { buildFilename, buildReportFilename, downloadTextFile, downloadCSV } = createExportFileHelpers({
+    getDatasetLabel,
+    getCurrentRange,
+    describeRange,
+  });
 
   function getFingerprintKey() {
     const fingerprint = typeof getDatasetFingerprint === "function" ? getDatasetFingerprint() : null;
@@ -50,46 +59,6 @@ export function createExporters({
       exportCache.set(key, value);
     }
     return value;
-  }
-  function buildFilename(suffix) {
-    const label = (getDatasetLabel() || "relay-chat")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    const range = describeRange(getCurrentRange());
-    return `${label}_${range.replace(/[^a-z0-9]+/gi, "-")}_${suffix}.csv`;
-  }
-
-  function buildReportFilename(suffix, extension) {
-    const label = (getDatasetLabel() || "relay-chat")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    const range = describeRange(getCurrentRange());
-    const sanitizedRange = range.replace(/[^a-z0-9]+/gi, "-");
-    return `${label}_${sanitizedRange}_${suffix}.${extension}`;
-  }
-
-  function downloadTextFile(filename, content, mime) {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-
-  function downloadCSV(filename, headers, rows) {
-    if (!rows.length) return;
-    const escape = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
-    const csvLines = [
-      headers.map(escape).join(","),
-      ...rows.map(row => row.map(escape).join(",")),
-    ];
-    downloadTextFile(filename, csvLines.join("\r\n"), "text/csv;charset=utf-8;");
   }
 
   function exportParticipants() {
@@ -263,50 +232,11 @@ export function createExporters({
       updateStatus("Load a chat summary before exporting.", "warning");
       return;
     }
-    const messageTypes = analytics.message_types || {};
-    const systemDetails = analytics.system_summary?.details || {};
-    const typeConfig = {
-      media: {
-        label: "media messages",
-        entries: messageTypes.media?.entries || [],
-        headers: ["Timestamp", "Sender", "Message"],
-        mapRow: entry => [
-          formatSnapshotTimestamp(entry, formatTimestampDisplay),
-          entry.sender || "",
-          entry.message || "",
-        ],
-      },
-      links: {
-        label: "link messages",
-        entries: messageTypes.links?.entries || [],
-        headers: ["Timestamp", "Sender", "Message"],
-        mapRow: entry => [
-          formatSnapshotTimestamp(entry, formatTimestampDisplay),
-          entry.sender || "",
-          entry.message || "",
-        ],
-      },
-      polls: {
-        label: "polls",
-        entries: (messageTypes.polls?.entries && messageTypes.polls.entries.length
-          ? messageTypes.polls.entries
-          : analytics.polls?.entries) || [],
-        headers: ["Timestamp", "Sender", "Title", "Options"],
-        mapRow: entry => [
-          formatSnapshotTimestamp(entry, formatTimestampDisplay),
-          entry.sender || "",
-          entry.title || "",
-          Array.isArray(entry.options) ? entry.options.filter(Boolean).join(" | ") : "",
-        ],
-      },
-      joins: buildSystemExportConfig(systemDetails.joins, "join events"),
-      added: buildSystemExportConfig(systemDetails.added, "member additions"),
-      left: buildSystemExportConfig(systemDetails.left, "members leaving"),
-      removed: buildSystemExportConfig(systemDetails.removed, "member removals"),
-      changed: buildSystemExportConfig(systemDetails.changed, "setting changes"),
-      join_requests: buildSystemExportConfig(systemDetails.join_requests, "join requests"),
-      other: buildSystemExportConfig(systemDetails.other, "other system events"),
-    }[type];
+    const typeConfig = buildMessageSubtypeConfig({
+      type,
+      analytics,
+      formatTimestampDisplay,
+    });
 
     if (!typeConfig) {
       updateStatus("That export isn't available.", "warning");
@@ -324,20 +254,6 @@ export function createExporters({
     downloadCSV(buildFilename(type), typeConfig.headers, rows);
   }
 
-  function buildSystemExportConfig(entries = [], label) {
-    return {
-      label,
-      entries: Array.isArray(entries) ? entries : [],
-      headers: ["Timestamp", "Message", "Participants", "Subtype"],
-      mapRow: entry => [
-        formatSnapshotTimestamp(entry, formatTimestampDisplay),
-        entry.message || "",
-        Number.isFinite(entry.participant_count) ? entry.participant_count : "",
-        entry.system_subtype || "",
-      ],
-    };
-  }
-
   function exportChatJson() {
     const entries = getDatasetEntries();
     if (!entries.length) {
@@ -347,7 +263,9 @@ export function createExporters({
     const rangeValue = normalizeRangeValue(getCurrentRange());
     const subset = filterEntriesByRange(entries, rangeValue);
     const payload = subset.length ? subset : entries;
-    const dataStr = JSON.stringify(payload, null, 2);
+    const dataStr = measurePerfSync("export.chat_json.stringify", () => JSON.stringify(payload, null, 2), {
+      rows: payload.length,
+    });
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
@@ -399,11 +317,13 @@ export function createExporters({
       updateStatus("Run a search before exporting.", "warning");
       return;
     }
-    const rows = results.map(result => [
+    const rows = measurePerfSync("export.search_results.rows", () => results.map(result => [
       formatTimestampDisplay(result.timestamp),
       result.sender || "",
       (result.message || "").replace(/\r?\n/g, " "),
-    ]);
+    ]), {
+      rows: results.length,
+    });
     downloadCSV(
       buildFilename("search"),
       ["Timestamp", "Participant", "Message"],
@@ -419,7 +339,10 @@ export function createExporters({
     }
     const theme = getExportThemeConfig();
     try {
-      const { content } = await generateMarkdownReport(analytics, theme);
+      const { content } = await measurePerfAsync(
+        "export.report_markdown.generate",
+        () => generateMarkdownReport(analytics, theme),
+      );
       downloadTextFile(
         buildReportFilename("report", "md"),
         content,
@@ -440,7 +363,10 @@ export function createExporters({
     }
     const theme = getExportThemeConfig();
     try {
-      const { content } = await generateSlidesHtml(analytics, theme);
+      const { content } = await measurePerfAsync(
+        "export.report_slides.generate",
+        () => generateSlidesHtml(analytics, theme),
+      );
       downloadTextFile(
         buildReportFilename("slides", "html"),
         content,
@@ -468,13 +394,4 @@ export function createExporters({
     handleDownloadSlidesReport,
     exportMessageSubtype,
   };
-}
-
-function formatSnapshotTimestamp(entry, formatter) {
-  if (!entry) return "";
-  if (entry.timestamp) {
-    return formatter(entry.timestamp);
-  }
-  if (entry.timestamp_text) return entry.timestamp_text;
-  return "";
 }

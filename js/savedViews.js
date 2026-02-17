@@ -1,12 +1,17 @@
 import {
   formatNumber,
   formatFloat,
-  formatDisplayDate,
   formatTimestampDisplay,
   sanitizeText,
 } from "./utils.js";
-import { computeAnalytics } from "./analytics.js";
 import { WEEKDAY_SHORT } from "./constants.js";
+import { formatViewRange, getNormalizedRangeForView } from "./savedViewsRange.js";
+import {
+  buildViewSnapshot,
+  computeSnapshotForView as computeSavedViewSnapshotForView,
+  ensureViewSnapshot as ensureSavedViewSnapshot,
+} from "./savedViewsSnapshot.js";
+import { renderSavedViewsComparison } from "./savedViewsCompare.js";
 
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
@@ -61,30 +66,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
   let dataAvailable = false;
 
-  function buildViewSnapshot(analytics) {
-    if (!analytics) return null;
-    const topSender = Array.isArray(analytics.top_senders) ? analytics.top_senders[0] : null;
-    const topHour = analytics.hourly_summary?.topHour || null;
-
-    return {
-      generatedAt: new Date().toISOString(),
-      totalMessages: analytics.total_messages ?? 0,
-      uniqueSenders: analytics.unique_senders ?? 0,
-      systemEvents: analytics.system_summary?.count ?? 0,
-      averageWords: analytics.averages?.words ?? 0,
-      averageChars: analytics.averages?.characters ?? 0,
-      weeklyAverage: analytics.weekly_summary?.averagePerWeek ?? 0,
-      dailyAverage: analytics.hourly_summary?.averagePerDay ?? 0,
-      dateRange: analytics.date_range ?? null,
-      topSender: topSender
-        ? { sender: topSender.sender, count: topSender.count, share: topSender.share ?? null }
-        : null,
-      topHour: topHour
-        ? { dayIndex: topHour.dayIndex, hour: topHour.hour, count: topHour.count }
-        : null,
-    };
-  }
-
   function captureCurrentView(name) {
     const entries = getDatasetEntries();
     if (!entries.length) return null;
@@ -118,128 +99,24 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     return views.find(view => view.id === id) || null;
   }
 
-  function coerceRangeValue(value) {
-    if (value == null) return null;
-    if (typeof value === "string") {
-      if (value === "all" || value === "custom") return value;
-      const numeric = Number(value);
-      if (Number.isFinite(numeric)) return numeric;
-      const match = value.match(/(\d+)/);
-      if (match) return Number(match[1]);
-      return value;
-    }
-    return value;
-  }
+  const normalizeRangeForView = view => getNormalizedRangeForView(view, normalizeRangeValue);
 
-  function normalizeRangeCandidate(candidate) {
-    if (candidate == null) return null;
+  const computeSnapshotForView = view =>
+    computeSavedViewSnapshotForView({
+      view,
+      getDatasetEntries,
+      filterEntriesByRange,
+      getNormalizedRangeForView: normalizeRangeForView,
+    });
 
-    if (typeof candidate === "object") {
-      if (candidate.type === "custom" || "start" in candidate || "end" in candidate) {
-        const rangeObject = candidate.type === "custom"
-          ? { type: "custom", start: candidate.start ?? null, end: candidate.end ?? null }
-          : { type: "custom", start: candidate.start ?? null, end: candidate.end ?? null };
-        return typeof normalizeRangeValue === "function"
-          ? normalizeRangeValue(rangeObject)
-          : rangeObject;
-      }
-      if ("value" in candidate) {
-        return normalizeRangeCandidate(candidate.value);
-      }
-      return null;
-    }
+  const ensureViewSnapshot = view =>
+    ensureSavedViewSnapshot({
+      view,
+      updateSavedView,
+      computeSnapshotForView,
+    });
 
-    const normalized = typeof normalizeRangeValue === "function"
-      ? normalizeRangeValue(candidate)
-      : candidate;
-
-    if (
-      typeof normalized === "string"
-      && normalized !== "all"
-      && normalized !== "custom"
-      && !Number.isFinite(Number(normalized))
-    ) {
-      const digits = normalized.match(/(\d+)/);
-      if (digits) {
-        return Number(digits[1]);
-      }
-    }
-
-    return coerceRangeValue(normalized);
-  }
-
-  function getNormalizedRangeForView(view) {
-    if (!view) return "all";
-    const candidates = [view.rangeData, view.range, view.rangeLabel];
-    for (const candidate of candidates) {
-      if (candidate == null) continue;
-      const normalized = normalizeRangeCandidate(candidate);
-      if (!normalized) continue;
-      if (normalized === "custom") {
-        if (view.rangeData && typeof view.rangeData === "object") {
-          const customNormalized = normalizeRangeCandidate(view.rangeData);
-          if (customNormalized && customNormalized !== "custom") {
-            return customNormalized;
-          }
-        }
-        continue;
-      }
-      return normalized;
-    }
-    return "all";
-  }
-
-  function computeSnapshotForView(view) {
-    const entries = getDatasetEntries();
-    if (!entries.length) return null;
-    const normalizedRange = getNormalizedRangeForView(view);
-    const subset =
-      typeof filterEntriesByRange === "function"
-        ? filterEntriesByRange(entries, normalizedRange)
-        : entries;
-    if (!subset.length) {
-      return {
-        generatedAt: new Date().toISOString(),
-        totalMessages: 0,
-        uniqueSenders: 0,
-        systemEvents: 0,
-        averageWords: 0,
-        averageChars: 0,
-        weeklyAverage: 0,
-        dailyAverage: 0,
-        dateRange: typeof normalizedRange === "object" ? normalizedRange : null,
-        topSender: null,
-        topHour: null,
-      };
-    }
-    try {
-      const analytics = computeAnalytics(subset);
-      return buildViewSnapshot(analytics);
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  function ensureViewSnapshot(view) {
-    if (!view) return null;
-    if (view.snapshot) return view.snapshot;
-    const snapshot = computeSnapshotForView(view);
-    if (snapshot) {
-      updateSavedView(view.id, { snapshot });
-    }
-    return snapshot;
-  }
-
-  function formatViewRange(view) {
-    if (!view) return "—";
-    if (typeof view.rangeData === "object" && view.rangeData) {
-      const start = view.rangeData.start ? formatDisplayDate(view.rangeData.start) : "—";
-      const end = view.rangeData.end ? formatDisplayDate(view.rangeData.end) : "—";
-      return `${start} → ${end}`;
-    }
-    return describeRange(view.rangeData ?? view.range);
-  }
+  const formatSavedViewRange = view => formatViewRange(view, describeRange);
 
   function formatSavedViewTopHour(snapshot) {
     if (!snapshot?.topHour) {
@@ -255,7 +132,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     const snapshot = ensureViewSnapshot(view);
     const viewId = String(view?.id ?? "");
     const viewName = view?.name || "Untitled view";
-    const rangeLabel = view.rangeLabel || formatViewRange(view);
+    const rangeLabel = view.rangeLabel || formatSavedViewRange(view);
     const createdAtLabel = view.createdAt ? formatTimestampDisplay(view.createdAt) : "";
     const totalMessages = snapshot ? formatNumber(snapshot.totalMessages ?? 0) : "—";
     const participants = snapshot ? formatNumber(snapshot.uniqueSenders ?? 0) : "—";
@@ -363,148 +240,20 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function renderComparisonSummary(primaryId, secondaryId) {
-    if (!compareSummaryEl) return;
-    const allViews = getSavedViews();
-    if (allViews.length < 2) {
-      compareSummaryEl.classList.add("empty");
-      compareSummaryEl.textContent = allViews.length
-        ? "Save one more view to enable comparisons."
-        : "Save a view to start building comparisons.";
-      return;
-    }
-    const selection = getCompareSelection();
-    const primaryView = getSavedViewById(primaryId ?? selection.primary);
-    const secondaryView = getSavedViewById(secondaryId ?? selection.secondary);
-
-    if (!primaryView || !secondaryView) {
-      compareSummaryEl.classList.add("empty");
-      compareSummaryEl.innerHTML = "<p>Pick two saved views to compare their activity side-by-side.</p>";
-      return;
-    }
-
-    const primarySnapshot = ensureViewSnapshot(primaryView);
-    const secondarySnapshot = ensureViewSnapshot(secondaryView);
-
-    if (!primarySnapshot || !secondarySnapshot) {
-      compareSummaryEl.classList.add("empty");
-      compareSummaryEl.innerHTML = "<p>Unable to compute comparison for these views. Try re-saving them.</p>";
-      return;
-    }
-
-    compareSummaryEl.classList.remove("empty");
-    const metrics = [
-      { key: "range", label: "Date Range", get: (snapshot, view) => formatViewRange(view), diff: false },
-      { key: "totalMessages", label: "Messages", get: snapshot => snapshot.totalMessages, diff: true, digits: 0 },
-      { key: "uniqueSenders", label: "Participants", get: snapshot => snapshot.uniqueSenders, diff: true, digits: 0 },
-      { key: "averageWords", label: "Avg words per message", get: snapshot => snapshot.averageWords, diff: true, digits: 1 },
-      { key: "averageChars", label: "Avg characters per message", get: snapshot => snapshot.averageChars, diff: true, digits: 1 },
-      { key: "weeklyAverage", label: "Avg per week", get: snapshot => snapshot.weeklyAverage, diff: true, digits: 1 },
-      { key: "dailyAverage", label: "Avg per day", get: snapshot => snapshot.dailyAverage, diff: true, digits: 1 },
-      {
-        key: "topSender",
-        label: "Top Sender",
-        get: snapshot =>
-          snapshot.topSender
-            ? `${snapshot.topSender.sender} (${formatNumber(snapshot.topSender.count)} msgs)`
-            : null,
-        diff: false,
-      },
-      {
-        key: "topHour",
-        label: "Top Hour",
-        get: snapshot => {
-          if (!snapshot.topHour) return null;
-          const weekday = WEEKDAY_SHORT?.[snapshot.topHour.dayIndex]
-            ?? `Day ${snapshot.topHour.dayIndex + 1}`;
-          return `${weekday} ${String(snapshot.topHour.hour).padStart(2, "0")}:00 (${formatNumber(snapshot.topHour.count)} msgs)`;
-        },
-        diff: false,
-      },
-    ];
-
-    const buildColumn = (heading, view, snapshot) => {
-      const items = metrics
-        .map(metric => {
-          const value = metric.get(snapshot, view);
-          const display =
-            value === null || value === undefined
-              ? "—"
-              : typeof value === "number" && !Number.isNaN(value)
-                ? metric.digits && metric.digits > 0
-                  ? formatFloat(value, metric.digits)
-                  : formatNumber(value)
-                : sanitizeText(String(value));
-          return `
-            <li>
-              <span class="compare-label">${sanitizeText(metric.label)}</span>
-              <span class="compare-value">${display}</span>
-            </li>
-          `;
-        })
-        .join("");
-      return `
-        <div class="compare-column">
-          <h3>${sanitizeText(heading)} · ${sanitizeText(view.name)}</h3>
-          <ul class="compare-metrics">
-            ${items}
-          </ul>
-        </div>
-      `;
-    };
-
-    const buildDiffColumn = () => {
-      const rows = metrics
-        .filter(metric => metric.diff)
-        .map(metric => {
-          const valueA = metric.get(primarySnapshot);
-          const valueB = metric.get(secondarySnapshot);
-          if (valueA === null || valueA === undefined || valueB === null || valueB === undefined) {
-            return `
-              <li>
-                <span class="compare-label">${sanitizeText(metric.label)}</span>
-                <span class="compare-value">—</span>
-              </li>
-            `;
-          }
-          const diff = valueB - valueA;
-          const digits = metric.digits ?? 0;
-          const formatted =
-            Math.abs(diff) < 0.0001
-              ? "0"
-              : digits && digits > 0
-                ? formatFloat(diff, digits)
-                : formatNumber(diff);
-          const prefix = diff > 0 && !formatted.startsWith("+") ? "+" : "";
-          const className = diff > 0
-            ? "compare-value compare-diff positive"
-            : diff < 0
-              ? "compare-value compare-diff negative"
-              : "compare-value";
-          return `
-            <li>
-              <span class="compare-label">${sanitizeText(metric.label)}</span>
-              <span class="${className}">${sanitizeText(`${prefix}${formatted}`)}</span>
-            </li>
-          `;
-        })
-        .join("");
-      return `
-        <div class="compare-column">
-          <h3>Difference (B - A)</h3>
-          <ul class="compare-metrics">
-            ${rows}
-          </ul>
-        </div>
-      `;
-    };
-
-    compareSummaryEl.innerHTML = `
-      <div class="compare-summary-grid">
-        ${buildColumn("View A", primaryView, primarySnapshot)}
-        ${buildColumn("View B", secondaryView, secondarySnapshot)}
-        ${buildDiffColumn()}
-      </div>
-    `;
+    renderSavedViewsComparison({
+      compareSummaryEl,
+      allViews: getSavedViews(),
+      selection: getCompareSelection(),
+      primaryId,
+      secondaryId,
+      getSavedViewById,
+      ensureViewSnapshot,
+      formatSavedViewRange,
+      formatTopHourLabel: formatSavedViewTopHour,
+      formatNumber,
+      formatFloat,
+      sanitizeText,
+    });
   }
 
   function refreshUI() {

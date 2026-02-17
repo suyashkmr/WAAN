@@ -55,6 +55,6 @@ Then follow `docs/relay-troubleshooting.md`.
 
 ## Latest Sign-off
 
-- Date: 2026-02-16
+- Date: 2026-02-17
 - Status: PASS
-- Verified by: user-confirmed manual packaged-app smoke run
+- Verified by: user-confirmed relay running + sync-path/status payload check

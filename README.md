@@ -224,6 +224,16 @@ Relay troubleshooting: `docs/relay-troubleshooting.md`
 - `docs/app-shell-architecture.md` - dashboard architecture notes
 - `docs/release-smoke-checklist.md` - packaged smoke checklist / relay checks
 
+## Acknowledgments
+
+WAAN’s live relay capabilities are built on top of
+[`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js), an
+excellent open-source project created and maintained by
+[PedroSLopez](https://github.com/pedroslopez).
+
+Huge thanks for the thoughtful engineering and sustained open-source work that
+make projects like this possible.
+
 ## License
 
 - Code is licensed under MIT: `LICENSE`

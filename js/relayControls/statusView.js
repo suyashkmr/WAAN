@@ -2,9 +2,9 @@ export function describeRelayStatus(status, { relayServiceName, brandName, forma
   const baseMessage = (() => {
     switch (status.status) {
       case "starting":
-        return `Starting ${relayServiceName}. Launching the relay browser…`;
+        return `Starting ${relayServiceName}. Opening browser…`;
       case "waiting_qr":
-        return "Waiting for you to scan the QR code from your phone.";
+        return "Waiting for QR scan.";
       case "running":
         return status.account
           ? `Connected as ${formatRelayAccount(status.account)}.`
@@ -57,7 +57,7 @@ export function updateRelayBanner({
   if (!status) {
     relayBannerEl.dataset.status = "offline";
     relayBannerMessage.textContent = "Relay offline.";
-    relayBannerMeta.textContent = "Launch the relay desktop app, press Connect, then pick a mirrored chat.";
+    relayBannerMeta.textContent = "Open the relay app, press Connect, then choose a chat.";
     return;
   }
   relayBannerEl.dataset.status = status.status || "unknown";
@@ -71,7 +71,7 @@ export function updateRelayBanner({
     const relative = formatRelativeTime(status.chatsSyncedAt);
     metaParts.push(relative ? `Synced ${relative}` : `Synced ${formatDisplayDate(status.chatsSyncedAt)}`);
   } else {
-    metaParts.push("Waiting to sync chats");
+    metaParts.push("Sync pending");
   }
   if (Number.isFinite(status.chatCount)) {
     metaParts.push(`${formatNumber(status.chatCount)} chats indexed`);

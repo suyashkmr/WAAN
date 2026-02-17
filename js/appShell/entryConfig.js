@@ -19,6 +19,9 @@ export function buildControllerWiringArgs({
       ...searchRefs,
       heroStatusBadge: runtimeRefs.heroStatusBadge,
       heroStatusCopy: runtimeRefs.heroStatusCopy,
+      heroStatusMetaCopy: runtimeRefs.heroStatusMetaCopy,
+      heroSyncDot: runtimeRefs.heroSyncDot,
+      heroMilestoneSteps: runtimeRefs.heroMilestoneSteps,
       themeToggleInputs: runtimeRefs.themeToggleInputs,
     },
     state,
@@ -33,6 +36,7 @@ export function buildControllerWiringArgs({
     dataStatus: {
       datasetEmptyStateManager,
       setDatasetEmptyMessage,
+      updateStatus: state.updateStatus,
     },
   };
 }
