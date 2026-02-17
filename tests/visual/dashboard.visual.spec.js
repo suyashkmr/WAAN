@@ -78,8 +78,10 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   }
 
   async function prepareStableFrame(page) {
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
+    await page.waitForLoadState("load");
+    await page.waitForTimeout(200);
     await page.addStyleTag({
       content: `*,
 *::before,
@@ -116,6 +118,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const syncProgress = document.getElementById("relay-sync-progress");
       if (syncProgress) syncProgress.classList.add("hidden");
     });
+    await page.waitForTimeout(100);
   }
 
   test.beforeEach(async ({ page }) => {

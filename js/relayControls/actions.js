@@ -1,6 +1,7 @@
+import { logPerfDuration } from "../perf.js";
+
 export function createRelayActionsController({
   relayUiState,
-  relayStartButton,
   relayReloadAllButton,
   relayStatusEl,
   apiBase,
@@ -15,8 +16,6 @@ export function createRelayActionsController({
   updateStatus,
   withGlobalBusy,
   setRemoteChatList,
-  getRemoteChatList,
-  getRemoteChatsLastFetchedAt,
   refreshChatSelector,
   applyEntriesToApp,
   encodeChatSelectorValue,
@@ -27,6 +26,8 @@ export function createRelayActionsController({
   markMessagesActive,
   handleSyncError,
 }) {
+  let statusRequestPromise = null;
+
   async function startRelaySession() {
     if (!relayBase) return;
     setRelayControlsDisabled(true);
@@ -101,6 +102,7 @@ export function createRelayActionsController({
     if (!silent) {
       beginManualSyncUi();
     }
+    const syncStartedAt = globalThis.performance?.now?.() ?? Date.now();
     const task = async () => {
       try {
         await fetchJson(`${relayBase}/relay/sync`, { method: "POST" });
@@ -125,6 +127,8 @@ export function createRelayActionsController({
     } else {
       syncedCount = await withGlobalBusy(task, "Syncing chats from the relay…");
     }
+    const syncFinishedAt = globalThis.performance?.now?.() ?? Date.now();
+    logPerfDuration("relay.sync_chats", syncFinishedAt - syncStartedAt, { syncedCount, silent });
     if (!silent && syncedCount && electronAPI?.notifySyncSummary) {
       electronAPI.notifySyncSummary({ syncedChats: syncedCount });
     }
@@ -158,6 +162,7 @@ export function createRelayActionsController({
   }
 
   async function refreshRemoteChats({ silent = true } = {}) {
+    const startedAt = globalThis.performance?.now?.() ?? Date.now();
     let chatCount = 0;
     try {
       const payload = await fetchJson(`${apiBase}/chats`);
@@ -176,29 +181,40 @@ export function createRelayActionsController({
     } finally {
       await refreshChatSelector();
     }
+    const finishedAt = globalThis.performance?.now?.() ?? Date.now();
+    logPerfDuration("relay.refresh_remote_chats", finishedAt - startedAt, { chatCount, silent });
     return chatCount;
   }
 
   async function refreshRelayStatus({ silent = false } = {}) {
     if (!relayBase || !relayStatusEl) return null;
-    try {
-      const status = await fetchJson(`${relayBase}/relay/status`);
-      applyRelayStatus(status);
-      relayUiState.status = status;
-      return status;
-    } catch (error) {
-      console.error("Failed to refresh relay status", error);
-      if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
-        updateStatus(
-          `${relayServiceName} is offline. Launch the desktop relay and press Connect to enable live loading.`,
-          "warning",
-        );
-        relayUiState.lastErrorNotice = Date.now();
+    if (statusRequestPromise) return statusRequestPromise;
+    const startedAt = globalThis.performance?.now?.() ?? Date.now();
+    statusRequestPromise = (async () => {
+      try {
+        const status = await fetchJson(`${relayBase}/relay/status`);
+        applyRelayStatus(status);
+        relayUiState.status = status;
+        return status;
+      } catch (error) {
+        console.error("Failed to refresh relay status", error);
+        if (!silent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
+          updateStatus(
+            `${relayServiceName} is offline. Launch the desktop relay and press Connect to enable live loading.`,
+            "warning",
+          );
+          relayUiState.lastErrorNotice = Date.now();
+        }
+        relayUiState.status = null;
+        applyRelayStatus(null);
+        return null;
+      } finally {
+        const finishedAt = globalThis.performance?.now?.() ?? Date.now();
+        logPerfDuration("relay.refresh_status", finishedAt - startedAt, { silent });
+        statusRequestPromise = null;
       }
-      relayUiState.status = null;
-      applyRelayStatus(null);
-      return null;
-    }
+    })();
+    return statusRequestPromise;
   }
 
   function startStatusPolling() {

@@ -3,6 +3,7 @@ import {
 } from "./utils.js";
 import {
   getDatasetEntries,
+  getDatasetFingerprint,
   getSearchState,
   setSearchQuery,
   setSearchResults,
@@ -15,6 +16,7 @@ import {
   buildSearchResultItem,
   buildResultsSummaryText,
 } from "./search/renderUtils.js";
+import { logPerfDuration } from "./perf.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
@@ -40,6 +42,42 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
   let searchWorkerInstance = null;
   let searchWorkerRequestId = 0;
   const searchWorkerRequests = new Map();
+  let participantOptionsCacheKey = "";
+  let resultsRenderCacheKey = "";
+
+  function buildSummaryCacheKey(summary) {
+    if (!summary) return "none";
+    return JSON.stringify({
+      total: Number(summary.total) || 0,
+      truncated: Boolean(summary.truncated),
+      hitsPerDay: Array.isArray(summary.hitsPerDay)
+        ? summary.hitsPerDay.map(item => ({
+            date: item?.date || "",
+            count: Number(item?.count) || 0,
+          }))
+        : [],
+      topParticipants: Array.isArray(summary.topParticipants)
+        ? summary.topParticipants.map(item => ({
+            sender: item?.sender || "",
+            count: Number(item?.count) || 0,
+            share: Number(item?.share) || 0,
+          }))
+        : [],
+      filters: Array.isArray(summary.filters) ? summary.filters.map(value => String(value || "")) : [],
+    });
+  }
+
+  function buildResultsCacheKey(results) {
+    if (!Array.isArray(results) || !results.length) return "none";
+    return JSON.stringify(
+      results.map(item => ({
+        sender: item?.sender || "",
+        timestamp: item?.timestamp || "",
+        message: item?.message || "",
+        messageHtml: item?.messageHtml || "",
+      })),
+    );
+  }
 
   function applyStateToForm() {
     const state = getSearchState();
@@ -94,6 +132,11 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
   function populateParticipants() {
     if (!participantSelect) return;
     const entries = getEntries();
+    const datasetFingerprint = getDatasetFingerprint() || "";
+    const selectedStateValue = getSearchState()?.query.participant ?? "";
+    const selectedUiValue = participantSelect.value || "";
+    const nextCacheKey = `${datasetFingerprint}|${entries.length}|${selectedStateValue}|${selectedUiValue}`;
+    if (nextCacheKey === participantOptionsCacheKey) return;
     const senders = new Set();
     entries.forEach(entry => {
       if (entry.type === "message" && entry.sender) {
@@ -131,6 +174,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
       participantSelect.value = "";
     }
     participantSelect.disabled = options.length === 0;
+    participantOptionsCacheKey = nextCacheKey;
   }
 
   function renderResults() {
@@ -142,6 +186,24 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     const summary = state?.summary ?? null;
     const hasRunSearch = Boolean(state?.lastRun);
     const lastRunFiltered = Boolean(state?.lastRunHasFilters);
+    const datasetFingerprint = getDatasetFingerprint() || "";
+    const summaryKey = buildSummaryCacheKey(summary);
+    const resultsKey = buildResultsCacheKey(results);
+    const nextRenderCacheKey = [
+      datasetFingerprint,
+      query.text ?? "",
+      query.participant ?? "",
+      query.start ?? "",
+      query.end ?? "",
+      String(total),
+      String(results.length),
+      String(hasRunSearch),
+      String(lastRunFiltered),
+      String(state?.lastRun || ""),
+      summaryKey,
+      resultsKey,
+    ].join("|");
+    if (nextRenderCacheKey === resultsRenderCacheKey) return;
 
     const hasFilters = hasSearchFilters(query);
     resultsSummaryEl.textContent = buildResultsSummaryText({
@@ -162,6 +224,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         : "Add filters above to search the chat history.";
       resultsListEl.appendChild(empty);
       renderSearchInsights({ insightsEl, summary: null, resultLimit });
+      resultsRenderCacheKey = nextRenderCacheKey;
       return;
     }
 
@@ -179,6 +242,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     }
 
     renderSearchInsights({ insightsEl, summary, resultLimit });
+    resultsRenderCacheKey = nextRenderCacheKey;
   }
 
   function setSearchProgress(scanned, total) {
@@ -257,6 +321,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     const endBound = endDate ? endDate.getTime() : null;
     const requestHasFilters = hasSearchFilters(query);
     const requestLimit = requestHasFilters ? resultLimit : entries.length;
+    const startedAt = globalThis.performance?.now?.() ?? Date.now();
 
     return new Promise((resolve, reject) => {
       searchWorkerRequests.set(requestId, {
@@ -311,12 +376,23 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
           const prefix = requestHasFilters ? "Found" : "Listed";
           updateStatus(`${prefix} ${formatNumber(total)} messages.`, "success");
         }
+        const finishedAt = globalThis.performance?.now?.() ?? Date.now();
+        logPerfDuration("search.run", finishedAt - startedAt, {
+          entries: entries.length,
+          matched: total,
+          limited: requestLimit < entries.length,
+        });
       })
       .catch(error => {
         if (requestId !== activeSearchRequest) return;
         hideSearchProgress();
         console.error(error);
         updateStatus("Search could not complete.", "error");
+        const finishedAt = globalThis.performance?.now?.() ?? Date.now();
+        logPerfDuration("search.run.failed", finishedAt - startedAt, {
+          entries: entries.length,
+          error: error?.message || "unknown",
+        });
       });
   }
 
@@ -342,6 +418,8 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     if (participantSelect) participantSelect.value = "";
     if (startInput) startInput.value = "";
     if (endInput) endInput.value = "";
+    resultsRenderCacheKey = "";
+    participantOptionsCacheKey = "";
     renderResults();
     if (showToast) updateStatus("Search filters cleared.", "info");
   }

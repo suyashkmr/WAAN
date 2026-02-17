@@ -196,7 +196,6 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     loadRemoteChat,
   } = createRelayActionsController({
     relayUiState,
-    relayStartButton,
     relayReloadAllButton,
     relayStatusEl,
     apiBase: API_BASE,
@@ -211,8 +210,6 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     updateStatus,
     withGlobalBusy,
     setRemoteChatList,
-    getRemoteChatList,
-    getRemoteChatsLastFetchedAt,
     refreshChatSelector,
     applyEntriesToApp,
     encodeChatSelectorValue,

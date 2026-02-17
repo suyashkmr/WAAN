@@ -1,5 +1,6 @@
 import { createExportFileHelpers } from "./exporters/io.js";
 import { buildMessageSubtypeConfig } from "./exporters/messageSubtype.js";
+import { measurePerfSync, measurePerfAsync } from "./perf.js";
 
 export function createExporters({
   getDatasetAnalytics,
@@ -59,6 +60,7 @@ export function createExporters({
     }
     return value;
   }
+
   function exportParticipants() {
     const analytics = getDatasetAnalytics();
     const participantView = getParticipantView();
@@ -261,7 +263,9 @@ export function createExporters({
     const rangeValue = normalizeRangeValue(getCurrentRange());
     const subset = filterEntriesByRange(entries, rangeValue);
     const payload = subset.length ? subset : entries;
-    const dataStr = JSON.stringify(payload, null, 2);
+    const dataStr = measurePerfSync("export.chat_json.stringify", () => JSON.stringify(payload, null, 2), {
+      rows: payload.length,
+    });
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
@@ -313,11 +317,13 @@ export function createExporters({
       updateStatus("Run a search before exporting.", "warning");
       return;
     }
-    const rows = results.map(result => [
+    const rows = measurePerfSync("export.search_results.rows", () => results.map(result => [
       formatTimestampDisplay(result.timestamp),
       result.sender || "",
       (result.message || "").replace(/\r?\n/g, " "),
-    ]);
+    ]), {
+      rows: results.length,
+    });
     downloadCSV(
       buildFilename("search"),
       ["Timestamp", "Participant", "Message"],
@@ -333,7 +339,10 @@ export function createExporters({
     }
     const theme = getExportThemeConfig();
     try {
-      const { content } = await generateMarkdownReport(analytics, theme);
+      const { content } = await measurePerfAsync(
+        "export.report_markdown.generate",
+        () => generateMarkdownReport(analytics, theme),
+      );
       downloadTextFile(
         buildReportFilename("report", "md"),
         content,
@@ -354,7 +363,10 @@ export function createExporters({
     }
     const theme = getExportThemeConfig();
     try {
-      const { content } = await generateSlidesHtml(analytics, theme);
+      const { content } = await measurePerfAsync(
+        "export.report_slides.generate",
+        () => generateSlidesHtml(analytics, theme),
+      );
       downloadTextFile(
         buildReportFilename("slides", "html"),
         content,

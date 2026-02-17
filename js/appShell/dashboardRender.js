@@ -14,6 +14,7 @@ import {
   toggleParticipantRow,
 } from "./dashboardRender/participantsPanel.js";
 import { createHighlightsStatsController } from "./dashboardRender/highlightsStats.js";
+import { logPerfDuration, measurePerfSync } from "../perf.js";
 
 export function createDashboardRenderController({ elements, deps }) {
   const {
@@ -107,21 +108,36 @@ export function createDashboardRenderController({ elements, deps }) {
   let renderTaskToken = 0;
   const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
 
+  function measureRenderStep(label, task, details = null) {
+    measurePerfSync(`dashboard.${label}`, task, details);
+  }
+
+  function scheduleMeasuredDeferred(label, task, token, details = null) {
+    scheduleDeferredRender(() => {
+      measureRenderStep(label, task, details);
+    }, token);
+  }
+
   function renderDashboard(analytics) {
     const label = getDatasetLabel();
     const currentToken = ++renderTaskToken;
+    const renderStartedAt = globalThis.performance?.now?.() ?? Date.now();
+    const totalMessages = Number(analytics?.total_messages) || 0;
 
-    renderSummarySection({
-      analytics,
-      label,
-      summaryEl,
-    });
-    renderParticipants(analytics);
-    renderHourlyPanel(analytics);
-    renderDailyPanel(analytics);
-    scheduleDeferredRender(() => renderWeeklyPanel(analytics), currentToken);
+    measureRenderStep("summary", () => {
+      renderSummarySection({
+        analytics,
+        label,
+        summaryEl,
+      });
+    }, { totalMessages });
+    measureRenderStep("participants", () => renderParticipants(analytics), { totalMessages });
+    measureRenderStep("hourly", () => renderHourlyPanel(analytics), { totalMessages });
+    measureRenderStep("daily", () => renderDailyPanel(analytics), { totalMessages });
+    scheduleMeasuredDeferred("weekly", () => renderWeeklyPanel(analytics), currentToken, { totalMessages });
 
-    scheduleDeferredRender(
+    scheduleMeasuredDeferred(
+      "sentiment",
       () =>
         renderSentimentSection({
           sentiment: analytics.sentiment ?? null,
@@ -135,10 +151,12 @@ export function createDashboardRenderController({ elements, deps }) {
           helpers: { formatSentimentScore },
         }),
       currentToken,
+      { totalMessages },
     );
 
-    renderWeekdayPanel(analytics);
-    scheduleDeferredRender(
+    measureRenderStep("weekday", () => renderWeekdayPanel(analytics), { totalMessages });
+    scheduleMeasuredDeferred(
+      "time_of_day",
       () =>
         renderTimeOfDayPanel(analytics, {
           container: timeOfDayChartContainer,
@@ -147,9 +165,11 @@ export function createDashboardRenderController({ elements, deps }) {
           calloutsEl: timeOfDayCalloutsEl,
         }),
       currentToken,
+      { totalMessages },
     );
 
-    scheduleDeferredRender(
+    scheduleMeasuredDeferred(
+      "message_types",
       () =>
         renderMessageTypesSection({
           data: analytics.message_types ?? null,
@@ -159,9 +179,11 @@ export function createDashboardRenderController({ elements, deps }) {
           },
         }),
       currentToken,
+      { totalMessages },
     );
 
-    scheduleDeferredRender(
+    scheduleMeasuredDeferred(
+      "polls",
       () =>
         renderPollsSection({
           data: analytics.polls ?? null,
@@ -173,13 +195,19 @@ export function createDashboardRenderController({ elements, deps }) {
           },
         }),
       currentToken,
+      { totalMessages },
     );
 
-    renderStatistics(analytics);
-    scheduleDeferredRender(() => searchPopulateParticipants(), currentToken);
-    scheduleDeferredRender(() => searchRenderResults(), currentToken);
-    scheduleDeferredRender(() => renderHighlights(analytics.highlights ?? []), currentToken);
+    measureRenderStep("statistics", () => renderStatistics(analytics), { totalMessages });
+    scheduleMeasuredDeferred("search_participants", () => searchPopulateParticipants(), currentToken, { totalMessages });
+    scheduleMeasuredDeferred("search_results", () => searchRenderResults(), currentToken, { totalMessages });
+    scheduleMeasuredDeferred("highlights", () => renderHighlights(analytics.highlights ?? []), currentToken, {
+      totalMessages,
+      highlightCount: Array.isArray(analytics?.highlights) ? analytics.highlights.length : 0,
+    });
     setDataAvailabilityState(Boolean(analytics));
+    const renderFinishedAt = globalThis.performance?.now?.() ?? Date.now();
+    logPerfDuration("dashboard.total_render", renderFinishedAt - renderStartedAt, { totalMessages });
   }
 
   return {
