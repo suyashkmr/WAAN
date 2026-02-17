@@ -110,6 +110,10 @@
                         Need to start manually? Run <code>npm start --workspace apps/server</code> in a terminal, wait
                         for “Relay listening”, then press Connect.
                     </p>
+                    <p class="live-help warning">
+                        Account safety notice: WAAN is not affiliated with WhatsApp/Meta. Non-official client usage or
+                        automation can lead to temporary or permanent account restrictions. Start with a secondary account.
+                    </p>
                     <p class="live-help">macOS launch blocked? See <a href="#faq-macos-gatekeeper">FAQ setup help</a>.
                     </p>
                     <div class="relay-sync-progress hidden" id="relay-sync-progress" aria-live="polite">
@@ -981,6 +985,16 @@
                         <p>If blocked again, Control-click the app in Finder and choose <em>Open</em> once.</p>
                         <p>Last resort (Terminal):
                             <code>xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code>
+                        </p>
+                    </li>
+                    <li id="faq-account-safety">
+                        <h3>Can WhatsApp block my account for using WAAN?</h3>
+                        <p>It is possible. WAAN is not an official WhatsApp client and uses automation around WhatsApp Web.
+                            WhatsApp/Meta decides enforcement and may apply temporary or permanent restrictions.</p>
+                        <p>Recommended: start with a secondary account before linking a primary one.</p>
+                        <p>Official policies:
+                            <a href="https://www.whatsapp.com/legal/terms-of-service" target="_blank" rel="noopener noreferrer">WhatsApp Terms of Service</a>,
+                            <a href="https://www.whatsapp.com/legal/business-terms" target="_blank" rel="noopener noreferrer">WhatsApp Business Terms</a>.
                         </p>
                     </li>
                     <li>

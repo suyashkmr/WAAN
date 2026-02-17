@@ -9,6 +9,16 @@ WAAN is available as:
 - A web dashboard served from this repo
 - A macOS Electron desktop app (distributed as `.dmg`)
 
+## Important Account Risk Notice
+
+WAAN is not affiliated with, endorsed by, or supported by WhatsApp/Meta.
+WAAN uses automation around WhatsApp Web. Any automation or non-official client
+usage can violate WhatsApp terms and may lead to temporary or permanent account
+restrictions.
+
+Use WAAN at your own risk. For first-time setup/testing, use a secondary
+WhatsApp account before linking a primary account.
+
 Release assets are currently distributed via GitHub Releases (`v1.1.0` includes
 Apple Silicon DMG + ZIP).
 
@@ -115,10 +125,11 @@ On first run, WAAN shows a guided setup flow in the empty state:
 
 ### 1. Connect your WhatsApp account
 
-1. In WAAN, click **Connect** in the relay card.
-2. Scan the QR code from WhatsApp on your phone:
+1. For first-time setup, use a secondary WhatsApp account first.
+2. In WAAN, click **Connect** in the relay card.
+3. Scan the QR code from WhatsApp on your phone:
    *Linked devices* -> *Link a device*.
-3. Wait until the status shows connected.
+4. Wait until the status shows connected.
 
 ### 2. Sync and select a chat
 
@@ -235,6 +246,21 @@ On first run, WAAN shows a guided setup flow in the empty state:
 - `chat lines` includes both user messages and system entries.
 - Most percentages are relative to `Total Messages` (not total chat lines).
 - Sentiment is a lightweight lexicon-based score and should be treated as directional, not clinically precise.
+
+## FAQ
+
+### Can WAAN usage get my WhatsApp account restricted?
+
+Yes, it can. WAAN uses WhatsApp Web automation and is not an official WhatsApp
+client. Account enforcement decisions are controlled by WhatsApp/Meta and may
+include temporary or permanent restrictions.
+
+Review official policies:
+
+- WhatsApp Terms of Service: `https://www.whatsapp.com/legal/terms-of-service`
+- WhatsApp Business Terms (if applicable): `https://www.whatsapp.com/legal/business-terms`
+
+Recommended: test with a secondary account before connecting your primary account.
 
 ## Scripts
 
