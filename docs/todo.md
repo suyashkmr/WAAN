@@ -80,9 +80,9 @@ Use this as the working backlog for the current visual sprint.
   - [ ] Keep feature churn paused while review comments are in progress.
   - [ ] Land only review-driven fixes until sign-off.
 - [ ] Verification gates:
-  - [ ] Run `npm run ci:verify`.
-  - [ ] Run `npm run test:visual`.
-  - [ ] Execute `docs/release-smoke-checklist.md` end-to-end.
+  - [x] Run `npm run ci:verify`.
+  - [x] Run `npm run test:visual`.
+  - [x] Execute `docs/release-smoke-checklist.md` end-to-end.
 - [ ] Release handoff:
   - [ ] Prepare concise release notes (visual sprint, accessibility, modularity, visual baseline trim).
   - [ ] Confirm merge checklist and branch sync status before release cut.
