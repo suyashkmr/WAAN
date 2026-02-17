@@ -9,6 +9,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     logDrawerToggleButton,
     logDrawerCloseButton,
     logDrawerClearButton,
+    firstRunOpenRelayButton,
+    firstRunPrimaryActionButton,
   } = elements;
 
   const {
@@ -21,6 +23,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     handleLogClear,
     handleLogDrawerDocumentClick,
     handleLogDrawerKeydown,
+    handleFirstRunOpenRelay,
+    handleFirstRunPrimaryAction,
     refreshRelayStatus,
     startStatusPolling,
     initLogStream,
@@ -73,6 +77,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     logDrawerToggleButton?.addEventListener("click", openLogDrawer);
     logDrawerCloseButton?.addEventListener("click", closeLogDrawer);
     logDrawerClearButton?.addEventListener("click", handleLogClear);
+    firstRunOpenRelayButton?.addEventListener("click", handleFirstRunOpenRelay);
+    firstRunPrimaryActionButton?.addEventListener("click", handleFirstRunPrimaryAction);
 
     document.addEventListener("click", handleLogDrawerDocumentClick);
     document.addEventListener("keydown", handleLogDrawerKeydown);

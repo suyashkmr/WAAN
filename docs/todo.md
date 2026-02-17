@@ -90,8 +90,8 @@ Use this as the working backlog for the current visual sprint.
 ## Next Sprint: Trust + Adoption
 
 - [ ] Onboarding + activation:
-  - [ ] Add a first-run guided setup flow for relay link + first chat load.
-  - [ ] Add in-app install/run help for macOS Gatekeeper/unsigned app warnings.
+  - [x] Add a first-run guided setup flow for relay link + first chat load.
+  - [x] Add in-app install/run help for macOS Gatekeeper/unsigned app warnings.
 - [ ] Reliability hardening:
   - [ ] Strengthen relay reconnect/backoff behavior and recovery UX.
   - [ ] Reduce transient status flicker and add stricter relay transition tests.

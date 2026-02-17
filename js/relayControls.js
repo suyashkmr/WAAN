@@ -46,6 +46,9 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     relaySyncProgressEl,
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
+    firstRunSetup,
+    firstRunSetupSteps,
+    firstRunPrimaryActionButton,
   } = elements;
 
   const {
@@ -59,6 +62,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     setDashboardLoadingState,
     setDatasetEmptyMessage,
     setDataAvailabilityState,
+    getDataAvailable,
     updateHeroRelayStatus,
     applyEntriesToApp,
     encodeChatSelectorValue,
@@ -72,6 +76,78 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     lastErrorNotice: null,
     primaryAction: "connect",
   };
+
+  function scrollToElement(target) {
+    if (!target) return;
+    target.scrollIntoView({ behavior: "auto", block: "center" });
+  }
+
+  function updateFirstRunSetup({ status, hasData = false } = {}) {
+    if (!firstRunSetup || !firstRunSetupSteps?.length) return;
+    if (hasData) {
+      firstRunSetup.setAttribute("hidden", "");
+      return;
+    }
+    firstRunSetup.removeAttribute("hidden");
+
+    const state = status?.status || "offline";
+    const chatCount = Number(status?.chatCount ?? 0);
+
+    firstRunSetupSteps.forEach(step => {
+      const stepId = step.dataset.setupStep;
+      let value = "pending";
+      if (stepId === "connect") {
+        value = state === "offline" || state === "error" ? "active" : "complete";
+      } else if (stepId === "link") {
+        if (state === "offline" || state === "error") value = "pending";
+        else if (state === "waiting_qr" || state === "starting") value = "active";
+        else value = "complete";
+      } else if (stepId === "load") {
+        if (hasData) value = "complete";
+        else if (state === "running" && chatCount > 0) value = "active";
+        else value = "pending";
+      }
+      step.dataset.state = value;
+    });
+
+    if (firstRunPrimaryActionButton) {
+      firstRunPrimaryActionButton.dataset.action = "connect";
+      firstRunPrimaryActionButton.disabled = relayUiState.controlsLocked;
+      if (state === "running" && chatCount > 0) {
+        firstRunPrimaryActionButton.textContent = "Choose Loaded Chat";
+        firstRunPrimaryActionButton.dataset.action = "select-chat";
+      } else if (state === "starting") {
+        firstRunPrimaryActionButton.textContent = "Starting Relay…";
+        firstRunPrimaryActionButton.disabled = true;
+      } else if (state === "waiting_qr") {
+        firstRunPrimaryActionButton.textContent = "Waiting for QR Scan";
+        firstRunPrimaryActionButton.disabled = true;
+      } else if (state === "running") {
+        firstRunPrimaryActionButton.textContent = "Syncing Chats…";
+        firstRunPrimaryActionButton.disabled = true;
+      } else {
+        firstRunPrimaryActionButton.textContent = "Connect Relay";
+      }
+    }
+  }
+
+  function handleFirstRunOpenRelay() {
+    const relayCard = document.getElementById("relay-live-card");
+    scrollToElement(relayCard);
+  }
+
+  function handleFirstRunPrimaryAction() {
+    const action = firstRunPrimaryActionButton?.dataset.action || "connect";
+    if (action === "select-chat") {
+      const selector = document.getElementById("chat-selector");
+      scrollToElement(selector);
+      selector?.focus();
+      return;
+    }
+    if (relayStartButton && !relayStartButton.disabled) {
+      relayStartButton.click();
+    }
+  }
   const {
     beginManualSyncUi,
     markChatsFetched,
@@ -239,6 +315,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     });
     updateRelayOnboarding({ status, relayOnboardingSteps });
     if (!status) {
+      updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);
       relayStatusEl.textContent = `Relay offline. Open the desktop relay to connect ${BRAND_NAME}.`;
       if (relayAccountEl) relayAccountEl.textContent = "";
@@ -308,6 +385,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
         setDatasetEmptyMessage("Scan the QR code", "Link your phone to start mirroring messages.");
       }
     }
+    updateFirstRunSetup({ status, hasData: Boolean(getDataAvailable?.()) });
 
     if (running) {
       const lastFetchedAt = typeof getRemoteChatsLastFetchedAt === "function"
@@ -357,5 +435,8 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     handleLogDrawerKeydown,
     initLogStream,
     isLogDrawerOpen,
+    handleFirstRunOpenRelay,
+    handleFirstRunPrimaryAction,
+    updateFirstRunSetup,
   };
 }

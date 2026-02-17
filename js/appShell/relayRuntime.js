@@ -33,6 +33,8 @@ export function createRelayRuntime({
     closeLogDrawer,
     handleLogDrawerDocumentClick,
     handleLogDrawerKeydown,
+    handleFirstRunOpenRelay,
+    handleFirstRunPrimaryAction,
     initLogStream,
     isLogDrawerOpen,
   } = relayController;
@@ -49,6 +51,8 @@ export function createRelayRuntime({
       handleLogClear,
       handleLogDrawerDocumentClick,
       handleLogDrawerKeydown,
+      handleFirstRunOpenRelay,
+      handleFirstRunPrimaryAction,
       refreshRelayStatus,
       startStatusPolling,
       initLogStream,

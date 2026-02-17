@@ -4129,6 +4129,73 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     max-width: 60ch;
 }
 
+.first-run-setup {
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.7rem;
+}
+
+.first-run-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.first-run-step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.55rem;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--glass-border) 75%, transparent);
+    background: color-mix(in srgb, var(--surface-elevated) 52%, transparent);
+    color: var(--muted);
+}
+
+.first-run-step-index {
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    border: 1px solid currentColor;
+}
+
+.first-run-step-copy {
+    font-size: 0.92rem;
+}
+
+.first-run-step[data-state="active"] {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 56%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.first-run-step[data-state="complete"] {
+    color: var(--success);
+    border-color: color-mix(in srgb, var(--success) 56%, transparent);
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
+.first-run-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.first-run-actions a.ghost-button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
 .empty-illustration {
     position: relative;
     width: 96px;
@@ -5002,6 +5069,10 @@ footer {
 
     .dataset-empty-copy {
         width: 100%;
+    }
+
+    .first-run-step-copy {
+        font-size: 0.88rem;
     }
 
     .stat {

@@ -2,6 +2,13 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { createRelayController } from "../js/relayControls.js";
 
 function buildRelayElements() {
+  const relayLiveCard = document.createElement("section");
+  relayLiveCard.id = "relay-live-card";
+  document.body.appendChild(relayLiveCard);
+  const chatSelector = document.createElement("select");
+  chatSelector.id = "chat-selector";
+  document.body.appendChild(chatSelector);
+
   const relayStartButton = document.createElement("button");
   const relayStopButton = document.createElement("button");
   const relayLogoutButton = document.createElement("button");
@@ -28,6 +35,16 @@ function buildRelayElements() {
   relaySyncProgressEl.append(chatsStep, messagesStep);
   const relaySyncChatsMeta = document.createElement("div");
   const relaySyncMessagesMeta = document.createElement("div");
+  const firstRunSetup = document.createElement("div");
+  const firstRunStepConnect = document.createElement("div");
+  firstRunStepConnect.dataset.setupStep = "connect";
+  const firstRunStepLink = document.createElement("div");
+  firstRunStepLink.dataset.setupStep = "link";
+  const firstRunStepLoad = document.createElement("div");
+  firstRunStepLoad.dataset.setupStep = "load";
+  const firstRunSetupSteps = [firstRunStepConnect, firstRunStepLink, firstRunStepLoad];
+  const firstRunOpenRelayButton = document.createElement("button");
+  const firstRunPrimaryActionButton = document.createElement("button");
 
   return {
     relayStartButton,
@@ -51,6 +68,10 @@ function buildRelayElements() {
     relaySyncProgressEl,
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
+    firstRunSetup,
+    firstRunSetupSteps,
+    firstRunOpenRelayButton,
+    firstRunPrimaryActionButton,
   };
 }
 
@@ -181,5 +202,50 @@ describe("relayControls", () => {
     expect(helpers.setRemoteChatList).toHaveBeenCalledWith([
       { id: "chat-1", name: "General", messageCount: 10 },
     ]);
+  });
+
+  it("updates first-run setup guide state from relay status", async () => {
+    const runningStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 3,
+      syncingChats: false,
+    };
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) return runningStatus;
+          if (url.endsWith("/api/chats")) return { chats: [] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.firstRunSetupSteps[0].dataset.state).toBe("complete");
+    expect(elements.firstRunSetupSteps[1].dataset.state).toBe("complete");
+    expect(elements.firstRunSetupSteps[2].dataset.state).toBe("active");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
   });
 });

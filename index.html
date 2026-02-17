@@ -110,6 +110,8 @@
                         Need to start manually? Run <code>npm start --workspace apps/server</code> in a terminal, wait
                         for “Relay listening”, then press Connect.
                     </p>
+                    <p class="live-help">macOS launch blocked? See <a href="#faq-macos-gatekeeper">FAQ setup help</a>.
+                    </p>
                     <div class="relay-sync-progress hidden" id="relay-sync-progress" aria-live="polite">
                         <h4>Sync progress</h4>
                         <div class="relay-sync-steps">
@@ -223,6 +225,33 @@
                 <h3 id="dataset-empty-heading">No chat is selected yet.</h3>
                 <p id="dataset-empty-copy">Open Relay Controls, scan the QR code, then choose a chat from “Loaded
                     chats”.</p>
+                <div class="first-run-setup" id="first-run-setup" aria-label="First run setup guide">
+                    <ol class="first-run-steps">
+                        <li class="first-run-step" data-setup-step="connect" data-state="active">
+                            <span class="first-run-step-index">1</span>
+                            <span class="first-run-step-copy">Start and connect ChatScope Relay.</span>
+                        </li>
+                        <li class="first-run-step" data-setup-step="link" data-state="pending">
+                            <span class="first-run-step-index">2</span>
+                            <span class="first-run-step-copy">Scan the QR code from Linked Devices on your phone.</span>
+                        </li>
+                        <li class="first-run-step" data-setup-step="load" data-state="pending">
+                            <span class="first-run-step-index">3</span>
+                            <span class="first-run-step-copy">Choose a conversation from “Loaded chats”.</span>
+                        </li>
+                    </ol>
+                    <div class="first-run-actions">
+                        <button type="button" class="ghost-button tiny" id="first-run-open-relay">
+                            Open Relay Controls
+                        </button>
+                        <button type="button" class="ghost-button tiny primary" id="first-run-primary-action">
+                            Connect Relay
+                        </button>
+                        <a class="ghost-button tiny" id="first-run-macos-help-link" href="#faq-macos-gatekeeper">
+                            macOS launch help
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -944,6 +973,15 @@
                         <h3>How do I connect my account?</h3>
                         <p>Click Connect, then on your phone open chat app → Linked Devices → Link a device and scan
                             the QR code shown on this screen. After that, choose a conversation from “Loaded chats”.</p>
+                    </li>
+                    <li id="faq-macos-gatekeeper">
+                        <h3>macOS says the relay app is damaged or from an unidentified developer. What should I do?</h3>
+                        <p>Open <code>ChatScope Relay.app</code> from Finder, then go to System Settings → Privacy &amp;
+                            Security and allow the app under Security by clicking <em>Open Anyway</em>.</p>
+                        <p>If blocked again, Control-click the app in Finder and choose <em>Open</em> once.</p>
+                        <p>Last resort (Terminal):
+                            <code>xattr -dr com.apple.quarantine "/Applications/ChatScope Relay.app"</code>
+                        </p>
                     </li>
                     <li>
                         <h3>Why do I sometimes see a sync warning, but chats still load?</h3>
