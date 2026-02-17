@@ -262,6 +262,15 @@ Review official policies:
 
 Recommended: test with a secondary account before connecting your primary account.
 
+### What is WAAN's privacy model?
+
+WAAN processes chat data locally on your device. By default, WAAN does not
+upload your chat content to WAAN-operated servers.
+
+Data may leave your device only when you explicitly export/share files or logs.
+
+See full privacy details in `PRIVACY.md`.
+
 ## Scripts
 
 - `npm run lint` - lint dashboard + server code
@@ -276,6 +285,7 @@ Recommended: test with a secondary account before connecting your primary accoun
 - `docs/app-shell-architecture.md` - dashboard architecture notes
 - `docs/release-smoke-checklist.md` - packaged smoke checklist / relay checks
 - `docs/performance-at-scale.md` - large-chat benchmark runbook and bottlenecks
+- `PRIVACY.md` - privacy notice and data handling model
 
 ## Acknowledgments
 
