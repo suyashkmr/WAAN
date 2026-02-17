@@ -6,6 +6,7 @@ const runtimeConfig =
 export const BRAND_NAME = "ChatScope";
 export const RELAY_SERVICE_NAME = "ChatScope Relay";
 export const RELAY_CLIENT_LABEL = "ChatScope Relay";
+export const ISSUE_REPORT_BASE_URL = "https://github.com/suyashkmr/WAAN/issues/new";
 
 export const API_BASE = runtimeConfig.apiBase || "http://127.0.0.1:3334/api";
 export const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4546";

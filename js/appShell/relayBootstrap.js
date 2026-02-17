@@ -8,6 +8,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     relayClearStorageButton,
     logDrawerToggleButton,
     logDrawerCloseButton,
+    logDrawerExportButton,
+    logDrawerReportButton,
     logDrawerClearButton,
     firstRunOpenRelayButton,
     firstRunPrimaryActionButton,
@@ -20,6 +22,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     handleReloadAllChats,
     openLogDrawer,
     closeLogDrawer,
+    handleExportDiagnostics,
+    handleReportIssue,
     handleLogClear,
     handleLogDrawerDocumentClick,
     handleLogDrawerKeydown,
@@ -76,6 +80,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
     logDrawerToggleButton?.addEventListener("click", openLogDrawer);
     logDrawerCloseButton?.addEventListener("click", closeLogDrawer);
+    logDrawerExportButton?.addEventListener("click", handleExportDiagnostics);
+    logDrawerReportButton?.addEventListener("click", handleReportIssue);
     logDrawerClearButton?.addEventListener("click", handleLogClear);
     firstRunOpenRelayButton?.addEventListener("click", handleFirstRunOpenRelay);
     firstRunPrimaryActionButton?.addEventListener("click", handleFirstRunPrimaryAction);

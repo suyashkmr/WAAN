@@ -102,6 +102,8 @@ export function createAppDomRefs() {
     logDrawerToggleButton: domCache.getById("log-drawer-toggle"),
     logDrawerEl: domCache.getById("relay-log-drawer"),
     logDrawerCloseButton: domCache.getById("relay-log-close"),
+    logDrawerExportButton: domCache.getById("relay-log-export"),
+    logDrawerReportButton: domCache.getById("relay-log-report"),
     logDrawerClearButton: domCache.getById("relay-log-clear"),
     logDrawerList: domCache.getById("relay-log-list"),
     logDrawerConnectionLabel: domCache.getById("relay-log-connection"),

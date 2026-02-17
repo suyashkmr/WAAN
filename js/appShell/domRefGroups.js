@@ -49,6 +49,8 @@ export function createAppDomRefGroups(refs) {
       logDrawerToggleButton: refs.logDrawerToggleButton,
       logDrawerEl: refs.logDrawerEl,
       logDrawerCloseButton: refs.logDrawerCloseButton,
+      logDrawerExportButton: refs.logDrawerExportButton,
+      logDrawerReportButton: refs.logDrawerReportButton,
       logDrawerClearButton: refs.logDrawerClearButton,
       logDrawerList: refs.logDrawerList,
       logDrawerConnectionLabel: refs.logDrawerConnectionLabel,

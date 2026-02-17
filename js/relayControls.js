@@ -12,6 +12,7 @@ import {
   RELAY_POLL_INTERVAL_MS,
   REMOTE_CHAT_REFRESH_INTERVAL_MS,
   REMOTE_MESSAGE_LIMIT,
+  ISSUE_REPORT_BASE_URL,
 } from "./config.js";
 import { createRelaySyncProgressController } from "./relayControls/syncProgress.js";
 import { createRelayLogController } from "./relayControls/logStream.js";
@@ -66,6 +67,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     setDatasetEmptyMessage,
     setDataAvailabilityState,
     getDataAvailable,
+    getDatasetLabel,
     updateHeroRelayStatus,
     applyEntriesToApp,
     encodeChatSelectorValue,
@@ -112,13 +114,22 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     handleLogDrawerDocumentClick,
     handleLogDrawerKeydown,
     handleLogClear,
+    handleExportDiagnostics,
+    handleReportIssue,
     initLogStream,
   } = createRelayLogController({
+    brandName: BRAND_NAME,
+    relayServiceName: RELAY_SERVICE_NAME,
     relayBase: RELAY_BASE,
     logDrawerToggleButton,
     logDrawerEl,
     logDrawerList,
     logDrawerConnectionLabel,
+    issueBaseUrl: ISSUE_REPORT_BASE_URL,
+    getRelayStatus: () => relayUiState.status,
+    getDatasetLabel,
+    getDataAvailable,
+    getRemoteChatCount: () => getRemoteChatList().length,
     fetchJson,
     updateStatus,
   });
@@ -257,6 +268,8 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     handleLogDrawerDocumentClick,
     handleLogDrawerKeydown,
     initLogStream,
+    handleExportDiagnostics,
+    handleReportIssue,
     isLogDrawerOpen,
     handleFirstRunOpenRelay,
     handleFirstRunPrimaryAction,

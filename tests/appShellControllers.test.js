@@ -87,6 +87,8 @@ describe("appShell controllers", () => {
     const relayClearStorageButton = document.createElement("button");
     const logDrawerToggleButton = document.createElement("button");
     const logDrawerCloseButton = document.createElement("button");
+    const logDrawerExportButton = document.createElement("button");
+    const logDrawerReportButton = document.createElement("button");
     const logDrawerClearButton = document.createElement("button");
     const relayStatusEl = document.createElement("div");
 
@@ -97,6 +99,8 @@ describe("appShell controllers", () => {
       handleReloadAllChats: vi.fn(),
       openLogDrawer: vi.fn(),
       closeLogDrawer: vi.fn(),
+      handleExportDiagnostics: vi.fn(),
+      handleReportIssue: vi.fn(),
       handleLogClear: vi.fn(),
       handleLogDrawerDocumentClick: vi.fn(),
       handleLogDrawerKeydown: vi.fn(),
@@ -123,6 +127,8 @@ describe("appShell controllers", () => {
         relayClearStorageButton,
         logDrawerToggleButton,
         logDrawerCloseButton,
+        logDrawerExportButton,
+        logDrawerReportButton,
         logDrawerClearButton,
       },
       handlers,
@@ -136,6 +142,8 @@ describe("appShell controllers", () => {
     relayReloadAllButton.click();
     logDrawerToggleButton.click();
     logDrawerCloseButton.click();
+    logDrawerExportButton.click();
+    logDrawerReportButton.click();
     logDrawerClearButton.click();
 
     await Promise.resolve();
@@ -146,6 +154,8 @@ describe("appShell controllers", () => {
     expect(handlers.handleReloadAllChats).toHaveBeenCalledTimes(1);
     expect(handlers.openLogDrawer).toHaveBeenCalledTimes(1);
     expect(handlers.closeLogDrawer).toHaveBeenCalledTimes(1);
+    expect(handlers.handleExportDiagnostics).toHaveBeenCalledTimes(1);
+    expect(handlers.handleReportIssue).toHaveBeenCalledTimes(1);
     expect(handlers.handleLogClear).toHaveBeenCalledTimes(1);
     expect(handlers.refreshRelayStatus).toHaveBeenCalledWith({ silent: true });
     expect(handlers.startStatusPolling).toHaveBeenCalledTimes(1);

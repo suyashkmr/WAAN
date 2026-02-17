@@ -1,11 +1,25 @@
+import {
+  buildDiagnosticsFilename,
+  buildDiagnosticsSnapshot,
+  buildIssueReportBody,
+  buildIssueReportUrl,
+} from "./diagnosticsBundle.js";
+
 const MAX_LOG_ENTRIES = 400;
 
 export function createRelayLogController({
+  brandName,
+  relayServiceName,
   relayBase,
   logDrawerToggleButton,
   logDrawerEl,
   logDrawerList,
   logDrawerConnectionLabel,
+  issueBaseUrl,
+  getRelayStatus,
+  getDatasetLabel,
+  getDataAvailable,
+  getRemoteChatCount,
   fetchJson,
   updateStatus,
 }) {
@@ -104,6 +118,67 @@ export function createRelayLogController({
     }
   }
 
+  function downloadTextFile(filename, content, mime = "application/json;charset=utf-8;") {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function handleExportDiagnostics() {
+    try {
+      const payload = buildDiagnosticsSnapshot({
+        brandName,
+        relayServiceName,
+        relayStatus: getRelayStatus?.() || null,
+        relayLogs: relayLogState.entries.slice(),
+        relayConnectionLabel: logDrawerConnectionLabel?.textContent || "",
+        datasetLabel: getDatasetLabel?.() || null,
+        hasData: getDataAvailable?.() || false,
+        remoteChatCount: getRemoteChatCount?.(),
+      });
+      const filename = buildDiagnosticsFilename({ brandName, now: new Date() });
+      downloadTextFile(filename, JSON.stringify(payload, null, 2));
+      updateStatus("Downloaded diagnostics bundle.", "success");
+    } catch (error) {
+      console.error("Failed to export diagnostics bundle", error);
+      updateStatus("Couldn't export diagnostics bundle.", "warning");
+    }
+  }
+
+  function handleReportIssue() {
+    try {
+      const snapshot = buildDiagnosticsSnapshot({
+        brandName,
+        relayServiceName,
+        relayStatus: getRelayStatus?.() || null,
+        relayLogs: relayLogState.entries.slice(),
+        relayConnectionLabel: logDrawerConnectionLabel?.textContent || "",
+        datasetLabel: getDatasetLabel?.() || null,
+        hasData: getDataAvailable?.() || false,
+        remoteChatCount: getRemoteChatCount?.(),
+      });
+      const body = buildIssueReportBody({ snapshot, maxLogLines: 40 });
+      const url = buildIssueReportUrl({
+        issueBaseUrl,
+        title: "[Bug] ",
+        body,
+      });
+      if (typeof window !== "undefined" && window.open) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      updateStatus("Opened prefilled issue report.", "info");
+    } catch (error) {
+      console.error("Failed to open issue report", error);
+      updateStatus("Couldn't open prefilled issue report.", "warning");
+    }
+  }
+
   function initLogStream() {
     if (!relayBase || relayLogState.eventSource) return;
     if (typeof EventSource === "undefined") {
@@ -146,6 +221,8 @@ export function createRelayLogController({
     handleLogDrawerDocumentClick,
     handleLogDrawerKeydown,
     handleLogClear,
+    handleExportDiagnostics,
+    handleReportIssue,
     initLogStream,
   };
 }

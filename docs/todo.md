@@ -102,8 +102,8 @@ Use this as the working backlog for the current visual sprint.
   - [x] Set up signed + notarized macOS build pipeline.
   - [x] Automate version/tag/release flow so artifact names always match release tags.
 - [ ] Product confidence:
-  - [ ] Add diagnostics/log bundle export for issue triage.
-  - [ ] Add a report-issue flow with prefilled runtime diagnostics.
+  - [x] Add diagnostics/log bundle export for issue triage.
+  - [x] Add a report-issue flow with prefilled runtime diagnostics.
 
 ## Final Modularity Closure
 
