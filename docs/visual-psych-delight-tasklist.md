@@ -39,10 +39,10 @@ Use this as the working backlog for the current visual sprint.
 
 - [x] Remove unused vendor parser (`js/vendor/whatsapp-chat-parser.js`).
 - [ ] Split high-complexity modules:
-  - [ ] `js/savedViews.js`
-  - [ ] `js/exportShared.js`
-  - [ ] `js/analytics.js`
-  - [ ] `apps/server/src/relay/relayManager.js`
+  - [x] `js/savedViews.js`
+  - [x] `js/exportShared.js`
+  - [x] `js/analytics.js`
+  - [x] `apps/server/src/relay/relayManager.js`
 - [ ] Trim visual artifact footprint where practical:
-  - [ ] Keep critical coverage, avoid redundant near-duplicate snapshots
-  - [ ] Revisit baseline granularity if CI time grows
+  - [x] Keep critical coverage, avoid redundant near-duplicate snapshots
+  - [x] Revisit baseline granularity if CI time grows

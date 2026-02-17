@@ -1,6 +1,14 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("WAAN Dashboard Visual Baselines", () => {
+  function shouldCaptureSectionBaseline(projectName) {
+    return projectName === "desktop-1440" || projectName === "mobile-390";
+  }
+
+  function shouldCaptureRelayStateBaseline(projectName) {
+    return projectName === "desktop-1440" || projectName === "mobile-390";
+  }
+
   async function applyRelayScenario(page, scenario) {
     await page.evaluate(state => {
       const heroBadge = document.getElementById("hero-status-badge");
@@ -169,6 +177,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches highlights section baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     const section = page.locator("#insight-highlights");
     await section.scrollIntoViewIfNeeded();
@@ -181,6 +190,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches participants section baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     const section = page.locator("#participants");
     await section.scrollIntoViewIfNeeded();
@@ -193,6 +203,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches time-of-day section baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     const section = page.locator("#timeofday-trend");
     await section.scrollIntoViewIfNeeded();
@@ -205,6 +216,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches relay offline state baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     const panel = page.locator("#hero-panel");
     await expect(panel).toBeVisible();
@@ -216,6 +228,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches relay waiting QR state baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     await applyRelayScenario(page, "waiting_qr");
     const panel = page.locator("#hero-panel");
@@ -228,6 +241,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches relay running syncing state baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     await applyRelayScenario(page, "running_syncing");
     const panel = page.locator("#hero-panel");
@@ -240,6 +254,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches relay running ready state baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     await applyRelayScenario(page, "running_ready");
     const panel = page.locator("#hero-panel");
