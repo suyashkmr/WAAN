@@ -1,6 +1,20 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("WAAN Dashboard Visual Baselines", () => {
+  async function prepareStableFrame(page) {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.locator("main")).toBeVisible();
+    await page.addStyleTag({
+      content: `*,
+*::before,
+*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }`,
+    });
+    await page.evaluate(() => {
+      const status = document.getElementById("data-status");
+      if (status) status.classList.remove("is-active", "is-exiting");
+    });
+  }
+
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("waan-reduce-motion", "true");
@@ -11,18 +25,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches dashboard baseline", async ({ page }, testInfo) => {
-    await page.goto("/", { waitUntil: "networkidle" });
-    await expect(page.locator("main")).toBeVisible();
-    await page.addStyleTag({
-      content: `*,
-*::before,
-*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }`,
-    });
-
-    await page.evaluate(() => {
-      const status = document.getElementById("data-status");
-      if (status) status.classList.remove("is-active", "is-exiting");
-    });
+    await prepareStableFrame(page);
 
     await expect(page).toHaveScreenshot(`dashboard-${testInfo.project.name}.png`, {
       fullPage: false,
@@ -33,13 +36,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches interactive states baseline", async ({ page }, testInfo) => {
-    await page.goto("/", { waitUntil: "networkidle" });
-    await expect(page.locator("main")).toBeVisible();
-    await page.addStyleTag({
-      content: `*,
-*::before,
-*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }`,
-    });
+    await prepareStableFrame(page);
     await page.addStyleTag({
       content: `.ghost-button.visual-hover-state {
   background: color-mix(in srgb, var(--accent) 15%, transparent) !important;
@@ -51,11 +48,6 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   outline: 3px solid color-mix(in srgb, var(--accent) 20%, transparent) !important;
   outline-offset: 2px !important;
 }`,
-    });
-
-    await page.evaluate(() => {
-      const status = document.getElementById("data-status");
-      if (status) status.classList.remove("is-active", "is-exiting");
     });
 
     await page.evaluate(() => {
@@ -75,6 +67,42 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
     await expect(page).toHaveScreenshot(`dashboard-interactive-${testInfo.project.name}.png`, {
       fullPage: false,
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches highlights section baseline", async ({ page }, testInfo) => {
+    await prepareStableFrame(page);
+    const section = page.locator("#insight-highlights");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-highlights-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches participants section baseline", async ({ page }, testInfo) => {
+    await prepareStableFrame(page);
+    const section = page.locator("#participants");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-participants-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches time-of-day section baseline", async ({ page }, testInfo) => {
+    await prepareStableFrame(page);
+    const section = page.locator("#timeofday-trend");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-timeofday-${testInfo.project.name}.png`, {
       caret: "hide",
       maxDiffPixelRatio: 0.01,
       timeout: 15000,

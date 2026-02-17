@@ -188,6 +188,11 @@
     --motion-duration-slow: 560ms;
     --motion-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
     --motion-ease-emphasis: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --motion-distance-xs: 2px;
+    --motion-distance-sm: 6px;
+    --motion-distance-md: 12px;
+    --motion-delay-hero: 120ms;
+    --motion-delay-card-step: 40ms;
 }
 
 html {
