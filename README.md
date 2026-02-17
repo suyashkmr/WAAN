@@ -53,6 +53,21 @@ If you installed WAAN from a released `.dmg`:
 
 The desktop app starts the local dashboard and relay services automatically.
 
+### macOS Gatekeeper Note
+
+If macOS says `WAAN.app` is damaged or from an unidentified developer:
+
+1. Open `WAAN.app` from Finder.
+2. Go to **System Settings -> Privacy & Security**.
+3. Under Security, click **Open Anyway**.
+4. If needed, Control-click `WAAN.app` in Finder and choose **Open** once.
+
+Last resort (Terminal):
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/WAAN.app"
+```
+
 ## Run Electron Locally (Developer)
 
 ```bash
