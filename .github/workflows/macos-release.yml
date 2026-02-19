@@ -37,21 +37,21 @@ jobs:
           test "$TAG_VERSION" = "$ROOT_VERSION"
           test "$TAG_VERSION" = "$ELECTRON_VERSION"
 
-      - name: Build signed + notarized macOS artifacts
-        if: ${{ secrets.CSC_LINK != '' }}
+      - name: Build macOS artifacts (signed when secrets are present)
         working-directory: electron
-        env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npm run dist
-
-      - name: Build unsigned macOS artifacts (no signing secrets)
-        if: ${{ secrets.CSC_LINK == '' }}
-        working-directory: electron
-        run: npm run dist
+        run: |
+          if [ -n "${{ secrets.CSC_LINK }}" ]; then
+            echo "Signing credentials detected; running signed/notarized build path."
+            CSC_LINK="${{ secrets.CSC_LINK }}" \
+            CSC_KEY_PASSWORD="${{ secrets.CSC_KEY_PASSWORD }}" \
+            APPLE_ID="${{ secrets.APPLE_ID }}" \
+            APPLE_APP_SPECIFIC_PASSWORD="${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
+            APPLE_TEAM_ID="${{ secrets.APPLE_TEAM_ID }}" \
+            npm run dist
+          else
+            echo "No signing certificate configured; running unsigned build path."
+            npm run dist
+          fi
 
       - name: Publish/Update GitHub release assets
         if: startsWith(github.ref, 'refs/tags/v')
