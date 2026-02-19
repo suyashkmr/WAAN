@@ -4,8 +4,8 @@ Completed tasks were removed for clarity (history remains in git).
 
 ## Immediate Next Tasks
 
-- [ ] Split `js/exporters/createExporters.js` below the module-size guardrail and remove it from the temporary allowlist.
-- [ ] Split `js/analytics/summary.js` below the module-size guardrail and remove it from the temporary allowlist.
+- [x] Split `js/exporters/createExporters.js` below the module-size guardrail and remove it from the temporary allowlist.
+- [x] Split `js/analytics/summary.js` below the module-size guardrail and remove it from the temporary allowlist.
 
 ## Modularity Guardrail Triggers (Process)
 
@@ -15,6 +15,6 @@ Completed tasks were removed for clarity (history remains in git).
 
 ## Guardrail Follow-up
 
-- [ ] Remove temporary module-size allowlist entries by splitting:
-  - [ ] `js/exporters/createExporters.js`
-  - [ ] `js/analytics/summary.js`
+- [x] Remove temporary module-size allowlist entries by splitting:
+  - [x] `js/exporters/createExporters.js`
+  - [x] `js/analytics/summary.js`

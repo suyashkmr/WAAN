@@ -6,8 +6,6 @@ const MAX_LINES = 350;
 const ROOT = process.cwd();
 const SCAN_DIRS = ["js", "apps/server/src"];
 const TEMP_ALLOWLIST = new Set([
-  "js/exporters/createExporters.js",
-  "js/analytics/summary.js",
 ]);
 
 function walk(dir, acc = []) {
