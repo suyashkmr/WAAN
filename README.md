@@ -318,6 +318,7 @@ For deeper triage, attach the JSON created by **Export Diagnostics**.
 - `docs/app-shell-architecture.md` - dashboard architecture notes
 - `docs/release-smoke-checklist.md` - packaged smoke checklist / relay checks
 - `docs/performance-at-scale.md` - large-chat benchmark runbook and bottlenecks
+- `docs/engineering-guardrails.md` - PR guardrail triggers for modularity refactors
 - `PRIVACY.md` - privacy notice and data handling model
 
 ## Acknowledgments
