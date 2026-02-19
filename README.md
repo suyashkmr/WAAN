@@ -19,8 +19,7 @@ restrictions.
 Use WAAN at your own risk. For first-time setup/testing, use a secondary
 WhatsApp account before linking a primary account.
 
-Release assets are currently distributed via GitHub Releases (`v1.1.0` includes
-Apple Silicon DMG + ZIP).
+Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 
 ## What It Does
 
@@ -175,6 +174,12 @@ On first run, WAAN shows a guided setup flow in the empty state:
 - **Log Out & Unlink** logs out from the linked account.
 - **Clear Cached Chats** removes locally mirrored relay chat data.
 
+### 6. Export diagnostics / report issues
+
+- Open **View Relay Logs** from the toolbar.
+- Click **Export Diagnostics** to download a local JSON diagnostics bundle.
+- Click **Report Issue** to open a prefilled GitHub issue draft with runtime diagnostics and recent relay logs.
+
 ## Data Points Explained
 
 ### Core summary cards
@@ -292,13 +297,20 @@ Data may leave your device only when you explicitly export/share files or logs.
 
 See full privacy details in `PRIVACY.md`.
 
+### How do I report issues quickly with useful diagnostics?
+
+Use **View Relay Logs** -> **Report Issue** to open a prefilled GitHub issue.
+For deeper triage, attach the JSON created by **Export Diagnostics**.
+
 ## Scripts
 
 - `npm run lint` - lint dashboard + server code
+- `npm run check:module-size` - enforce module-size guardrail limits
 - `npm test` - run test suite
 - `npm run verify` - lint + tests
 - `npm run ci:verify` - full local quality gate
 - `npm run perf:stress` - synthetic large-chat stress benchmark
+- `npm run release:cut -- <version|patch|minor|major>` - bump versions, commit, tag, and push release trigger
 
 ## Project Docs
 
