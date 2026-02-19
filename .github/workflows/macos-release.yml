@@ -38,6 +38,7 @@ jobs:
           test "$TAG_VERSION" = "$ELECTRON_VERSION"
 
       - name: Build signed + notarized macOS artifacts
+        if: ${{ secrets.CSC_LINK != '' }}
         working-directory: electron
         env:
           CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -45,6 +46,11 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run dist
+
+      - name: Build unsigned macOS artifacts (no signing secrets)
+        if: ${{ secrets.CSC_LINK == '' }}
+        working-directory: electron
         run: npm run dist
 
       - name: Publish/Update GitHub release assets
