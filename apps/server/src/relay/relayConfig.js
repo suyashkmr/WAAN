@@ -42,6 +42,18 @@ function getRelayConfig() {
     return rounded;
   })();
 
+  const RELAY_BROWSER_PATH = (() => {
+    const raw = process.env.WAAN_RELAY_BROWSER_PATH;
+    if (typeof raw !== "string") return null;
+    const trimmed = raw.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  })();
+
+  const RELAY_DISABLE_GPU = (() => {
+    if (process.env.WAAN_RELAY_DISABLE_GPU === undefined) return true;
+    return process.env.WAAN_RELAY_DISABLE_GPU === "true";
+  })();
+
   return {
     DEFAULT_MESSAGE_LIMIT,
     RELAY_HEADLESS,
@@ -49,6 +61,8 @@ function getRelayConfig() {
     PRIMARY_SYNC_RETRY_ATTEMPTS,
     PRIMARY_SYNC_RETRY_DELAY_MS,
     STARTUP_PRIMARY_RESYNC_DELAY_MS,
+    RELAY_BROWSER_PATH,
+    RELAY_DISABLE_GPU,
   };
 }
 

@@ -4,6 +4,8 @@ function setupRelayClient(manager) {
   manager.client = createRelayClient({
     dataDir: manager.config.dataDir,
     headless: manager.relayConfig.RELAY_HEADLESS,
+    browserPath: manager.relayConfig.RELAY_BROWSER_PATH,
+    disableGpu: manager.relayConfig.RELAY_DISABLE_GPU,
   });
 
   wireRelayClientEvents(manager.client, {

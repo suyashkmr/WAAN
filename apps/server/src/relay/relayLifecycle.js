@@ -1,7 +1,19 @@
 const path = require("path");
+const fs = require("fs");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
-function createRelayClient({ dataDir, headless }) {
+function resolveBrowserExecutablePath(explicitPath) {
+  if (explicitPath) {
+    if (!fs.existsSync(explicitPath)) {
+      throw new Error(`Configured relay browser executable does not exist: ${explicitPath}`);
+    }
+    return explicitPath;
+  }
+  // Default to Puppeteer's browser resolution unless the user explicitly overrides it.
+  return null;
+}
+
+function createRelayClient({ dataDir, headless, browserPath, disableGpu }) {
   const sessionDir = path.join(dataDir, "relay-session");
   const puppeteerArgs = [
     "--no-sandbox",
@@ -9,14 +21,19 @@ function createRelayClient({ dataDir, headless }) {
     "--disable-dev-shm-usage",
     "--disable-extensions",
   ];
+  if (disableGpu) {
+    puppeteerArgs.push("--disable-gpu");
+  }
   if (!headless) {
     puppeteerArgs.push("--start-minimized");
   }
+  const executablePath = resolveBrowserExecutablePath(browserPath);
 
   return new Client({
     puppeteer: {
       headless,
       args: puppeteerArgs,
+      ...(executablePath ? { executablePath } : {}),
     },
     authStrategy: new LocalAuth({ dataPath: sessionDir, clientId: "waan" }),
   });

@@ -94,6 +94,18 @@ Mode semantics:
 - `primary`: primary only (good for diagnosing fallback masking concerns).
 - `fallback`: fallback only (good for diagnosing primary instability/noise).
 
+## Browser Crash On Startup (Chrome for Testing)
+
+If relay startup crashes inside `Google Chrome for Testing` (SIGTRAP/EXC_BREAKPOINT), force WAAN to use a stable browser binary:
+
+```bash
+WAAN_RELAY_BROWSER_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ./WAAN.app/Contents/MacOS/WAAN
+```
+
+Optional flags:
+- `WAAN_RELAY_DISABLE_GPU=true` (default) to reduce GPU-driver related launch crashes.
+- `WAAN_RELAY_DISABLE_GPU=false` only for debugging if GPU is required.
+
 ## Escalation Data
 
 When opening an issue, include:
@@ -102,4 +114,4 @@ When opening an issue, include:
 2. Exact failure timestamps and log block around sync.
 3. `relay/status` response payload.
 4. Whether fallback loaded chats and the final synced count.
-5. Active env vars (`WAAN_RELAY_SYNC_MODE`, `WAAN_RELAY_HEADLESS`, ports).
+5. Active env vars (`WAAN_RELAY_SYNC_MODE`, `WAAN_RELAY_HEADLESS`, `WAAN_RELAY_BROWSER_PATH`, `WAAN_RELAY_DISABLE_GPU`, ports).

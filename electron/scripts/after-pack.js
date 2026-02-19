@@ -13,8 +13,20 @@ async function copyDir(src, dest) {
       if (entry.isDirectory()) {
         await copyDir(srcPath, destPath);
       } else if (entry.isSymbolicLink()) {
-        const link = await fs.readlink(srcPath);
-        await fs.symlink(link, destPath);
+        // Dereference symlinks so packaged apps do not contain broken CI absolute links.
+        let resolvedPath;
+        try {
+          resolvedPath = await fs.realpath(srcPath);
+        } catch (error) {
+          console.warn(`[WAAN] Skipping broken symlink during packaging: ${srcPath}`);
+          return;
+        }
+        const resolvedStats = await fs.lstat(resolvedPath);
+        if (resolvedStats.isDirectory()) {
+          await copyDir(resolvedPath, destPath);
+          return;
+        }
+        await fs.copyFile(resolvedPath, destPath);
       } else {
         await fs.copyFile(srcPath, destPath);
       }
