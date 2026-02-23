@@ -111,7 +111,7 @@ describe("chat selection controller", () => {
     errorSpy.mockRestore();
   });
 
-  it("warns when legacy local value is selected and repopulates selector", async () => {
+  it("warns when a legacy non-remote selector value is used", async () => {
     const { controller } = createChatSelection({
       activeChatId: "remote:chat-9",
     });

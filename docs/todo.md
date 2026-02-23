@@ -37,11 +37,17 @@ Completed tasks were removed for clarity (history remains in git).
 
 ### Modularity Refactors
 
-- [ ] Split `createAppCompositionAssembly` into smaller orchestrators (`js/appShell/compositionAssembly.js`).
-  - [ ] Define new module boundaries and dependency direction.
-  - [ ] Extract orchestrators incrementally without behavior changes.
-  - [ ] Add/adjust tests for assembly wiring contracts.
-  - [ ] Verify startup, relay integration, and export lifecycle end-to-end.
+- [x] Split `createAppCompositionAssembly` into smaller orchestrators (`js/appShell/compositionAssembly.js`).
+  - [x] Define new module boundaries and dependency direction.
+  - [x] Extract orchestrators incrementally without behavior changes.
+  - [x] Add/adjust tests for assembly wiring contracts.
+  - [x] Verify startup, relay integration, and export lifecycle end-to-end.
+- [ ] Thin `createAppCompositionAssembly` to mapping-only orchestration.
+  - [ ] Extract relay element/dependency mapping into a dedicated relay composition adapter.
+  - [ ] Extract dataset lifecycle dependency mapping into a dedicated dataset composition adapter.
+  - [ ] Keep `createAppCompositionAssembly` focused on orchestrator composition + final API surface wiring.
+  - [ ] Enforce concrete size target for `js/appShell/compositionAssembly.js` (<= 350 lines excluding imports/exports).
+  - [ ] Verify no regressions via boundary tests + full `ci:verify`.
 - [ ] Move DOM prep and Electron-specific hooks out of controller wiring into dedicated adapters (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/relayControls.js`).
   - [ ] Isolate DOM-only concerns into view adapters.
   - [ ] Isolate Electron/platform concerns into platform adapter layer.
@@ -97,10 +103,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Remove or isolate `saveChatDataset`/`listChatDatasets` usage paths (`js/state/chatLibraryState.js`).
   - [x] Remove dead wiring dependencies from composition/controller wiring layers.
   - [x] Verify no regressions in dataset rendering, analytics, and export flows.
-- [ ] Clean up related copy/docs/tests after remote-only cutover.
-  - [ ] Remove stale UI copy that implies local chat library usage.
-  - [ ] Update tests that assume mixed local+remote selector groups.
-  - [ ] Run smoke + targeted tests and capture migration notes before marking complete.
+- [x] Clean up related copy/docs/tests after remote-only cutover.
+  - [x] Remove stale UI copy that implies local chat library usage.
+  - [x] Update tests that assume mixed local+remote selector groups.
+  - [x] Run smoke + targeted tests and capture migration notes before marking complete.
 
 ## Process Guardrail
 

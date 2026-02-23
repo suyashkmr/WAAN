@@ -1,0 +1,158 @@
+import {
+  createExportRuntime,
+  createDatasetLifecycleRuntime,
+  createBusyRuntimeController,
+  createRelayRuntime,
+} from "../index.js";
+
+export function createExportOrchestrator({ state, utils, analytics, constants, wiring }) {
+  return createExportRuntime({
+    brandName: constants.brandName,
+    getExportFilterSummary: wiring.getExportFilterSummary,
+    getExportThemeConfig: wiring.getExportThemeConfig,
+    getDatasetFingerprint: state.getDatasetFingerprint,
+    getDatasetAnalytics: state.getDatasetAnalytics,
+    getDatasetEntries: state.getDatasetEntries,
+    getDatasetLabel: state.getDatasetLabel,
+    getCurrentRange: state.getCurrentRange,
+    getParticipantView: wiring.getParticipantView,
+    getSearchState: state.getSearchState,
+    updateStatus: state.updateStatus,
+    formatNumber: utils.formatNumber,
+    formatFloat: utils.formatFloat,
+    formatTimestampDisplay: utils.formatTimestampDisplay,
+    computeTimeOfDayDataset: analytics.computeTimeOfDayDataset,
+    formatHourLabel: analytics.formatHourLabel,
+    describeRange: wiring.describeRange,
+    filterEntriesByRange: wiring.filterEntriesByRange,
+    normalizeRangeValue: wiring.normalizeRangeValue,
+  });
+}
+
+export function createDatasetRelayOrchestrator({
+  dom,
+  state,
+  utils,
+  constants,
+  wiring,
+  electronAPI,
+}) {
+  const { applyEntriesToApp } = createDatasetLifecycleRuntime({
+    rangeSelect: dom.rangeSelect,
+    deps: {
+      setDatasetEntries: state.setDatasetEntries,
+      setDatasetFingerprint: state.setDatasetFingerprint,
+      setDatasetParticipantDirectory: state.setDatasetParticipantDirectory,
+      clearAnalyticsCache: state.clearAnalyticsCache,
+      setDatasetLabel: state.setDatasetLabel,
+      setCurrentRange: state.setCurrentRange,
+      setCustomRange: state.setCustomRange,
+      resetHourlyFilters: state.resetHourlyFilters,
+      resetWeekdayFilters: state.resetWeekdayFilters,
+      computeDatasetFingerprint: state.computeDatasetFingerprint,
+      setCachedAnalytics: state.setCachedAnalytics,
+      setDatasetAnalytics: state.setDatasetAnalytics,
+      setActiveChatId: state.setActiveChatId,
+      computeAnalyticsWithWorker: wiring.computeAnalyticsWithWorker,
+      renderDashboard: wiring.renderDashboard,
+      updateCustomRangeBounds: wiring.updateCustomRangeBounds,
+      refreshChatSelector: wiring.refreshChatSelector,
+      updateStatus: state.updateStatus,
+      setDashboardLoadingState: wiring.setDashboardLoadingState,
+      formatNumber: utils.formatNumber,
+      nextAnalyticsRequestToken: wiring.analyticsRequestTracker.nextToken,
+      isAnalyticsRequestCurrent: wiring.analyticsRequestTracker.isCurrent,
+      resetSavedViewsForNewDataset: () => wiring.savedViewsController.resetForNewDataset(),
+      resetSearchState: () => wiring.searchController.resetState(),
+      populateSearchParticipants: () => wiring.searchController.populateParticipants(),
+    },
+  });
+
+  const busyRuntimeController = createBusyRuntimeController({
+    globalProgressEl: dom.globalProgressEl,
+    globalProgressLabel: dom.globalProgressLabel,
+  });
+  const { withGlobalBusy } = busyRuntimeController;
+
+  const relayRuntime = createRelayRuntime({
+    relayElements: {
+      relayStartButton: dom.relayStartButton,
+      relayStopButton: dom.relayStopButton,
+      relayLogoutButton: dom.relayLogoutButton,
+      relayReloadAllButton: dom.relayReloadAllButton,
+      relayStatusEl: dom.relayStatusEl,
+      relayAccountEl: dom.relayAccountEl,
+      relayQrContainer: dom.relayQrContainer,
+      relayQrImage: dom.relayQrImage,
+      relayHelpText: dom.relayHelpText,
+      relayBannerEl: dom.relayBannerEl,
+      relayBannerMessage: dom.relayBannerMessage,
+      relayBannerMeta: dom.relayBannerMeta,
+      relayOnboardingSteps: dom.relayOnboardingSteps,
+      logDrawerToggleButton: dom.logDrawerToggleButton,
+      logDrawerEl: dom.logDrawerEl,
+      logDrawerList: dom.logDrawerList,
+      logDrawerConnectionLabel: dom.logDrawerConnectionLabel,
+      relayClearStorageButton: dom.relayClearStorageButton,
+      relaySyncProgressEl: dom.relaySyncProgressEl,
+      relaySyncChatsMeta: dom.relaySyncChatsMeta,
+      relaySyncMessagesMeta: dom.relaySyncMessagesMeta,
+      firstRunSetup: dom.firstRunSetup,
+      firstRunSetupSteps: dom.firstRunSetupSteps,
+      firstRunOpenRelayButton: dom.firstRunOpenRelayButton,
+      firstRunPrimaryActionButton: dom.firstRunPrimaryActionButton,
+    },
+    relayHelpers: {
+      updateStatus: state.updateStatus,
+      withGlobalBusy,
+      fetchJson: state.fetchJson,
+      setRemoteChatList: wiring.setRemoteChatList,
+      getRemoteChatList: wiring.getRemoteChatList,
+      getRemoteChatsLastFetchedAt: wiring.getRemoteChatsLastFetchedAt,
+      refreshChatSelector: wiring.refreshChatSelector,
+      setDashboardLoadingState: wiring.setDashboardLoadingState,
+      setDatasetEmptyMessage: state.setDatasetEmptyMessage,
+      setDataAvailabilityState: wiring.setDataAvailabilityState,
+      getDataAvailable: wiring.getDataAvailable,
+      getDatasetLabel: state.getDatasetLabel,
+      updateHeroRelayStatus: wiring.updateHeroRelayStatus,
+      applyEntriesToApp,
+      encodeChatSelectorValue: wiring.encodeChatSelectorValue,
+    },
+    electronAPI,
+    bootstrapElements: {
+      relayStartButton: dom.relayStartButton,
+      relayStatusEl: dom.relayStatusEl,
+      relayStopButton: dom.relayStopButton,
+      relayLogoutButton: dom.relayLogoutButton,
+      relayReloadAllButton: dom.relayReloadAllButton,
+      relayClearStorageButton: dom.relayClearStorageButton,
+      logDrawerToggleButton: dom.logDrawerToggleButton,
+      logDrawerCloseButton: dom.logDrawerCloseButton,
+      logDrawerExportButton: dom.logDrawerExportButton,
+      logDrawerReportButton: dom.logDrawerReportButton,
+      logDrawerClearButton: dom.logDrawerClearButton,
+      firstRunOpenRelayButton: dom.firstRunOpenRelayButton,
+      firstRunPrimaryActionButton: dom.firstRunPrimaryActionButton,
+    },
+    fetchJson: state.fetchJson,
+    apiBase: constants.apiBase,
+    setRemoteChatList: wiring.setRemoteChatList,
+    refreshChatSelector: wiring.refreshChatSelector,
+    updateStatus: state.updateStatus,
+  });
+
+  return {
+    applyEntriesToApp,
+    ...relayRuntime,
+  };
+}
+
+export function createSelectionOrchestrator({ wiring, loadRemoteChat, updateStatus }) {
+  return async function handleChatSelectionChange(event) {
+    return wiring.handleChatSelectionChangeCore(event, {
+      loadRemoteChat,
+      updateStatus,
+    });
+  };
+}

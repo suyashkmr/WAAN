@@ -2,7 +2,7 @@
 
 WAAN reads chats directly from ChatScope using
 [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). Chat data
-is mirrored through the relay and then loaded into WAAN's local chat library.
+is mirrored through the relay and rendered directly in WAAN's active dataset.
 
 ## 1. Start the relay server
 
@@ -26,13 +26,13 @@ The first run downloads a headless Chromium build for ChatScope Web and stores t
 2. Use the **Connect to ChatScope** card:
    - Click **Connect**. The relay generates a QR code.
    - On your phone open ChatScope → *Linked devices* → *Link a device* and scan the QR.
-3. Once connected, WAAN shows your account name and lists mirrored chats under
-   the **Loaded chats** selector (grouped under *ChatScope account*).
+3. Once connected, WAAN shows your account name and lists mirrored chats in the
+   chat selector (grouped under *ChatScope account*).
 
 ## 3. Load a chat
 
 Select any chat from the *ChatScope account* group. WAAN fetches recent
-messages (default limit: `4000`) and renders analytics for that conversation.
+messages (default limit: `5000`) and renders analytics for that conversation.
 
 - Click **Refresh chats** after new conversations arrive.
 - Use **Disconnect** to log out.
@@ -47,6 +47,11 @@ messages (default limit: `4000`) and renders analytics for that conversation.
 - **Pre-release packaged-app smoke**: run `docs/release-smoke-checklist.md`.
 
 > The relay stores parsed chats under `~/Library/Application Support/WAAN/storage/chats`. Remove this directory if you want a clean slate.
+
+## Migration Notes (2026-02-24)
+
+- The legacy in-memory local chat library and `Your chats` selector group were removed.
+- Chat selection is now remote-only via the relay-backed *ChatScope account* list.
 
 ## Configuring the UI endpoints
 
