@@ -68,23 +68,23 @@ Completed tasks were removed for clarity (history remains in git).
 
 ### Dead Code Cleanup
 
-- [ ] Remove likely orphaned `cloud-relay/` after final validation.
-  - [ ] Confirm no runtime/build/docs dependency exists.
-  - [ ] Remove directory and update docs if needed.
-  - [ ] Run smoke checks after removal.
+- [x] Remove likely orphaned `cloud-relay/` after final validation.
+  - [x] Confirm no runtime/build/docs dependency exists.
+  - [x] Remove directory and update docs if needed.
+  - [x] Run smoke checks after removal.
 - [ ] Validate whether `mobile/android-app/` is still required; remove if unused.
   - [ ] Confirm ownership and current usage with team.
   - [ ] Remove project only after explicit confirmation.
   - [ ] Validate CI/build/docs are unaffected.
-- [ ] Remove dead helper `scripts/build-macos-installer.sh`.
-  - [ ] Confirm no scripted/manual dependency remains.
-  - [ ] Remove script and any stale references.
-- [ ] Validate manual usage of `scripts/resync-chats.js` before any deletion.
-  - [ ] Confirm operator usage pattern.
-  - [ ] If unused, remove and document replacement path.
-- [ ] Clear generated artifacts when stale (`playwright-report/`, `test-results/`).
-  - [ ] Remove stale artifacts during cleanup passes.
-  - [ ] Keep `.gitignore` coverage intact.
+- [x] Remove dead helper `scripts/build-macos-installer.sh`.
+  - [x] Confirm no scripted/manual dependency remains.
+  - [x] Remove script and any stale references.
+- [x] Validate manual usage of `scripts/resync-chats.js` before any deletion.
+  - [x] Confirm operator usage pattern (no repo/docs invocations; UI `Resync chats` is the documented/operator path; script targets stale default API URL `http://localhost:3030`).
+  - [x] If unused, remove and document replacement path.
+- [x] Clear generated artifacts when stale (`playwright-report/`, `test-results/`).
+  - [x] Remove stale artifacts during cleanup passes.
+  - [x] Keep `.gitignore` coverage intact.
 
 ### Local Chat Library Retirement (Remote-Only Product Flow)
 
