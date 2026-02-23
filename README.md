@@ -118,6 +118,7 @@ Required GitHub repository secrets:
 
 Release flow:
 
+0. Add curated notes file for the tag at `docs/release-notes/vX.Y.Z.md`.
 1. Cut a release in one command:
    `npm run release:cut -- <version|patch|minor|major>`
 2. The script bumps root + Electron versions, commits, tags, and pushes.
