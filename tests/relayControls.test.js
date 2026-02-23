@@ -401,4 +401,29 @@ describe("relayControls", () => {
       helpers.fetchJson.mock.calls.filter(([url]) => url === "http://127.0.0.1:4546/relay/status").length,
     ).toBeGreaterThanOrEqual(2);
   });
+
+  it("loads remote chat without full-fetch by default and supports explicit full fetch", async () => {
+    const { controller, helpers } = createController({
+      fetchJson: vi.fn(async url => {
+        if (url.includes("/api/chats/chat-1%40c.us/messages?")) {
+          return {
+            entries: [{ id: "m1", timestamp: "2026-02-23T00:00:00.000Z", message: "hello" }],
+            label: "General",
+            participants: [],
+          };
+        }
+        return {};
+      }),
+    });
+
+    await controller.loadRemoteChat("chat-1@c.us");
+    expect(helpers.fetchJson).toHaveBeenCalledWith(
+      "http://127.0.0.1:3334/api/chats/chat-1%40c.us/messages?limit=5000&refresh=1",
+    );
+
+    await controller.loadRemoteChat("chat-1@c.us", { full: true, limit: 2500 });
+    expect(helpers.fetchJson).toHaveBeenCalledWith(
+      "http://127.0.0.1:3334/api/chats/chat-1%40c.us/messages?limit=2500&refresh=1&full=2500",
+    );
+  });
 });

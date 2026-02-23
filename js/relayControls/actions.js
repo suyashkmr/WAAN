@@ -1,5 +1,5 @@
 import { logPerfDuration } from "../perf.js";
-
+import { loadRemoteChatFromRelay } from "./loadRemoteChat.js";
 export function createRelayActionsController({
   relayUiState,
   relayReloadAllButton,
@@ -32,9 +32,7 @@ export function createRelayActionsController({
   let statusRequestPromise = null;
   let statusRequestMeta = null;
 
-  function nowMs() {
-    return Date.now();
-  }
+  const nowMs = () => Date.now();
 
   function buildRetryDelayMs(failureCount) {
     const exponentialDelay = relayPollIntervalMs * (2 ** Math.min(failureCount, 4));
@@ -266,92 +264,57 @@ export function createRelayActionsController({
   }
 
   function startStatusPolling() {
-    if (relayUiState.pollTimer) {
-      clearTimeout(relayUiState.pollTimer);
-    }
-    if (
-      relayUiState.pollVisibilityListener &&
-      typeof document !== "undefined" &&
-      typeof document.removeEventListener === "function"
-    ) {
-      document.removeEventListener("visibilitychange", relayUiState.pollVisibilityListener);
+    const hasDocument = typeof document !== "undefined";
+    const docRef = hasDocument ? document : null;
+    if (relayUiState.pollTimer) clearTimeout(relayUiState.pollTimer);
+    if (relayUiState.pollVisibilityListener && typeof docRef?.removeEventListener === "function") {
+      docRef.removeEventListener("visibilitychange", relayUiState.pollVisibilityListener);
       relayUiState.pollVisibilityListener = null;
     }
     relayUiState.statusFailureCount = 0;
     relayUiState.nextPollDelayMs = relayPollIntervalMs;
-
-    const isDocumentHidden = () =>
-      typeof document !== "undefined" &&
-      (document.hidden || document.visibilityState === "hidden");
+    const isDocumentHidden = () => Boolean(docRef?.hidden || docRef?.visibilityState === "hidden");
 
     const poll = async () => {
-      const hiddenAtStart = isDocumentHidden();
-      console.debug("[relay.poll] tick", {
-        phase: "start",
-        hidden: hiddenAtStart,
-        timestamp: new Date().toISOString(),
-      });
       if (isDocumentHidden()) {
-        console.debug("[relay.poll] skipped while hidden");
         relayUiState.pollTimer = null;
         return;
       }
       await refreshRelayStatus({ silent: true, fromPolling: true });
       if (isDocumentHidden()) {
-        console.debug("[relay.poll] paused after refresh because view is hidden");
         relayUiState.pollTimer = null;
         return;
       }
       const delayMs = Number(relayUiState.nextPollDelayMs) || relayPollIntervalMs;
-      console.debug("[relay.poll] scheduled next tick", { delayMs });
       relayUiState.pollTimer = setTimeout(poll, delayMs);
     };
 
-    if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+    if (typeof docRef?.addEventListener === "function") {
       relayUiState.pollVisibilityListener = () => {
         if (isDocumentHidden()) return;
         if (relayUiState.pollTimer || statusRequestPromise) return;
-        console.debug("[relay.poll] resuming after visibility restore");
         poll();
       };
-      document.addEventListener("visibilitychange", relayUiState.pollVisibilityListener);
+      docRef.addEventListener("visibilitychange", relayUiState.pollVisibilityListener);
     }
     poll();
   }
 
   async function loadRemoteChat(chatId, options = {}) {
-    if (!chatId) return;
-    const limit = Number(options.limit) || remoteMessageLimit;
-    const params = new URLSearchParams({ limit: String(limit), refresh: "1", full: String(limit) });
-    if (options.refresh === false) {
-      params.delete("refresh");
-    }
-    if (options.fullLimit) params.set("full", String(options.fullLimit));
-    const endpoint = `${apiBase}/chats/${encodeURIComponent(chatId)}/messages?${params.toString()}`;
-    await withGlobalBusy(async () => {
-      updateStatus("Fetching messages directly from the relay…", "info");
-      try {
-        const payload = await fetchJson(endpoint);
-        const entries = Array.isArray(payload.entries) ? payload.entries : [];
-        const label = payload.label || `${brandName} chat`;
-        await applyEntriesToApp(entries, label, {
-          datasetId: `remote-${chatId}`,
-          selectionValue: encodeChatSelectorValue("remote", chatId),
-          statusMessage:
-            options.statusMessage ??
-            `${options.reloaded ? "Reloaded" : "Loaded"} ${formatNumber(entries.length)} messages from ${label}.`,
-          persist: false,
-          participants: Array.isArray(payload.participants) ? payload.participants : [],
-        });
-      } catch (error) {
-        console.error(error);
-        updateStatus(
-          `We couldn't reach ${relayServiceName}. Make sure the desktop relay is running (or start it with \`npm start --workspace apps/server\`).`,
-          "error",
-        );
-        throw error;
-      }
-    }, "Fetching messages…");
+    return loadRemoteChatFromRelay({
+      chatId,
+      options,
+      apiBase,
+      remoteMessageLimit,
+      brandName,
+      relayServiceName,
+      fetchJson,
+      updateStatus,
+      withGlobalBusy,
+      applyEntriesToApp,
+      encodeChatSelectorValue,
+      formatNumber,
+    });
   }
 
   const relayPrimaryActionHandlers = {

@@ -30,10 +30,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Add visibility-aware polling guard.
   - [x] Ensure polling resumes reliably on tab focus/visibility restore.
   - [x] Verify no stale status regressions after resume.
-- [ ] Reduce default remote message fetch limit and avoid full-fetch unless explicitly requested (`js/config.js`, `js/relayControls/actions.js`).
-  - [ ] Set a lower default limit based on current UI needs.
-  - [ ] Gate full-fetch behind an explicit user/system trigger.
-  - [ ] Verify message rendering, pagination/load-more behavior, and sync timings.
+- [x] Reduce default remote message fetch limit and avoid full-fetch unless explicitly requested (`js/config.js`, `js/relayControls/actions.js`).
+  - [x] Set a lower default limit based on current UI needs.
+  - [x] Gate full-fetch behind an explicit user/system trigger.
+  - [x] Verify message rendering, pagination/load-more behavior, and sync timings.
 
 ### Modularity Refactors
 

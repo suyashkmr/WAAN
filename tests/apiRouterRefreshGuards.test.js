@@ -172,6 +172,31 @@ describe("apiRouter chat refresh guards", () => {
     }
   });
 
+  it("uses request limit for sync when full is omitted", async () => {
+    const buildApiRouter = await loadBuildApiRouter();
+    const chatId = "chat-limit@c.us";
+    const store = createStore({
+      metaById: new Map([[chatId, { id: chatId, name: "Chat Limit", participants: [] }]]),
+      entriesById: new Map([[chatId, [{ id: "m1", timestamp: "2026-02-23T00:00:00.000Z" }]]]),
+    });
+    const relayManager = createRelayManager();
+    const logger = createLogger();
+    const { port, close } = await startServer(buildApiRouter, { store, relayManager, logger });
+
+    try {
+      const result = await requestJson(
+        port,
+        `/api/chats/${encodeURIComponent(chatId)}/messages?refresh=true&limit=5000`,
+      );
+      expect(result.status).toBe(200);
+      expect(relayManager.syncChats).toHaveBeenCalledTimes(1);
+      expect(relayManager.ensureChatSynced).toHaveBeenCalledTimes(1);
+      expect(relayManager.ensureChatSynced).toHaveBeenCalledWith(chatId, { limit: 5000 });
+    } finally {
+      await close();
+    }
+  });
+
   it("throttles ensureChatSynced for empty chats inside the stale window", async () => {
     const buildApiRouter = await loadBuildApiRouter();
     const chatId = "chat-empty@c.us";

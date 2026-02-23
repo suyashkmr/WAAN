@@ -88,12 +88,13 @@ function buildApiRouter({ store, relayManager, logger }) {
       }
       if (autoSync) {
         const currentEntries = await store.getEntries(chatId, 1);
+        const syncLimit = fullLimit ?? limit;
         const shouldEnsure =
           refresh ||
           (currentEntries.length === 0 &&
             isRefreshAttemptStale(attemptState.lastEnsureChatSyncAt, staleMs));
         if (shouldEnsure) {
-          await relayManager.ensureChatSynced(chatId, { limit: fullLimit });
+          await relayManager.ensureChatSynced(chatId, { limit: syncLimit });
           attemptState.lastEnsureChatSyncAt = Date.now();
           setAttemptState(chatId, attemptState);
         }

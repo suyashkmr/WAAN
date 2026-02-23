@@ -13,7 +13,7 @@ export const RELAY_BASE = runtimeConfig.relayBase || "http://127.0.0.1:4546";
 
 export const RELAY_POLL_INTERVAL_MS = 5000;
 export const REMOTE_CHAT_REFRESH_INTERVAL_MS = 20000;
-export const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 50000;
+export const REMOTE_MESSAGE_LIMIT = Number(runtimeConfig.remoteMessageLimit) || 5000;
 
 export const STATUS_AUTO_HIDE_DELAY_MS = 3500;
 export const STATUS_EXIT_DURATION_MS = 220;
