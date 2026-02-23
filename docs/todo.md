@@ -42,12 +42,12 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Extract orchestrators incrementally without behavior changes.
   - [x] Add/adjust tests for assembly wiring contracts.
   - [x] Verify startup, relay integration, and export lifecycle end-to-end.
-- [ ] Thin `createAppCompositionAssembly` to mapping-only orchestration.
-  - [ ] Extract relay element/dependency mapping into a dedicated relay composition adapter.
-  - [ ] Extract dataset lifecycle dependency mapping into a dedicated dataset composition adapter.
-  - [ ] Keep `createAppCompositionAssembly` focused on orchestrator composition + final API surface wiring.
-  - [ ] Enforce concrete size target for `js/appShell/compositionAssembly.js` (<= 350 lines excluding imports/exports).
-  - [ ] Verify no regressions via boundary tests + full `ci:verify`.
+- [x] Thin `createAppCompositionAssembly` to mapping-only orchestration.
+  - [x] Extract relay element/dependency mapping into a dedicated relay composition adapter.
+  - [x] Extract dataset lifecycle dependency mapping into a dedicated dataset composition adapter.
+  - [x] Keep `createAppCompositionAssembly` focused on orchestrator composition + final API surface wiring.
+  - [x] Enforce concrete size target for `js/appShell/compositionAssembly.js` (<= 350 lines excluding imports/exports).
+  - [x] Verify no regressions via boundary tests + full `ci:verify`.
 - [ ] Move DOM prep and Electron-specific hooks out of controller wiring into dedicated adapters (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/relayControls.js`).
   - [ ] Isolate DOM-only concerns into view adapters.
   - [ ] Isolate Electron/platform concerns into platform adapter layer.
