@@ -5,7 +5,9 @@ export function createSectionNavController({
   let sectionNavLinks = [];
   let sectionNavItems = [];
   let sectionNavObserver = null;
+  let sectionNavViewportListener = null;
   let activeSectionId = null;
+  const intersectingSections = new Map();
 
   function setActiveSectionNav(targetId) {
     if (!targetId || activeSectionId === targetId) return;
@@ -39,6 +41,65 @@ export function createSectionNavController({
     }
 
     const navItems = sectionNavItems.slice();
+    const viewportAnchorY = () => {
+      const viewportHeight = Number(window.innerHeight) || 0;
+      return viewportHeight > 0 ? Math.round(viewportHeight * 0.28) : 200;
+    };
+    const resolveActiveSectionId = () => {
+      if (!navItems.length) return null;
+      const anchorY = viewportAnchorY();
+      const positioned = navItems
+        .map(item => {
+          const rect = item.target.getBoundingClientRect();
+          const top = Number(rect?.top) || 0;
+          const bottom = Number(rect?.bottom);
+          return {
+            id: item.id,
+            top,
+            bottom: Number.isFinite(bottom) ? bottom : null,
+            ratio: Number(intersectingSections.get(item.id)) || 0,
+          };
+        });
+
+      const containing = positioned
+        .filter(item => item.bottom !== null && item.top <= anchorY && item.bottom >= anchorY)
+        .sort((a, b) => {
+          if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+          return b.top - a.top;
+        });
+      if (containing.length) return containing[0].id;
+
+      const hasVisible = positioned.some(item => item.ratio > 0);
+      if (hasVisible) {
+        const passed = positioned
+          .filter(item => item.ratio > 0 && item.top <= anchorY)
+          .sort((a, b) => {
+            if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+            return b.top - a.top;
+          });
+        if (passed.length) return passed[0].id;
+
+        const visibleAhead = positioned
+          .filter(item => item.ratio > 0)
+          .sort((a, b) => {
+            if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+            return a.top - b.top;
+          });
+        if (visibleAhead.length) return visibleAhead[0].id;
+      }
+
+      const nearestToTop = positioned
+        .slice()
+        .sort((a, b) => Math.abs(a.top) - Math.abs(b.top))[0];
+      if (nearestToTop) return nearestToTop.id;
+
+      const upcoming = positioned.sort((a, b) => a.top - b.top);
+      return upcoming[0]?.id ?? null;
+    };
+    const syncActiveSection = () => {
+      const nextId = resolveActiveSectionId();
+      if (nextId) setActiveSectionNav(nextId);
+    };
 
     navItems.forEach(({ link, id }) => {
       link.addEventListener("click", () => {
@@ -65,23 +126,25 @@ export function createSectionNavController({
       sectionNavObserver.disconnect();
       sectionNavObserver = null;
     }
+    if (sectionNavViewportListener) {
+      window.removeEventListener("scroll", sectionNavViewportListener);
+      window.removeEventListener("resize", sectionNavViewportListener);
+      sectionNavViewportListener = null;
+    }
+    intersectingSections.clear();
 
     sectionNavObserver = new IntersectionObserver(
       observerEntries => {
-        const visible = observerEntries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible.length) {
-          setActiveSectionNav(visible[0].target.id);
-          return;
-        }
-        const nearest = navItems
-          .map(item => ({
-            id: item.id,
-            distance: Math.abs(item.target.getBoundingClientRect().top),
-          }))
-          .sort((a, b) => a.distance - b.distance)[0];
-        if (nearest) setActiveSectionNav(nearest.id);
+        observerEntries.forEach(entry => {
+          const id = entry?.target?.id;
+          if (!id) return;
+          if (entry.isIntersecting) {
+            intersectingSections.set(id, entry.intersectionRatio);
+            return;
+          }
+          intersectingSections.delete(id);
+        });
+        syncActiveSection();
       },
       {
         root: null,
@@ -91,21 +154,11 @@ export function createSectionNavController({
     );
 
     navItems.forEach(({ target }) => sectionNavObserver.observe(target));
+    sectionNavViewportListener = () => syncActiveSection();
+    window.addEventListener("scroll", sectionNavViewportListener, { passive: true });
+    window.addEventListener("resize", sectionNavViewportListener);
 
-    const initial =
-      navItems
-        .map(item => ({
-          id: item.id,
-          top: item.target.getBoundingClientRect().top,
-        }))
-        .filter(Boolean)
-        .sort((a, b) => {
-          if (a.top >= 0 && b.top >= 0) return a.top - b.top;
-          if (a.top >= 0) return -1;
-          if (b.top >= 0) return 1;
-          return a.top - b.top;
-        })[0] || navItems[0];
-    if (initial) setActiveSectionNav(initial.id);
+    syncActiveSection();
   }
 
   return {

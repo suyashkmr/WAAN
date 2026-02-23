@@ -102,6 +102,91 @@ describe("sectionNav detailed", () => {
     expect(links[1].classList.contains("active")).toBe(true);
   });
 
+  it("keeps the best visible section active across partial observer callbacks", () => {
+    const container = document.createElement("div");
+    const one = document.createElement("section");
+    one.id = "one";
+    one.getBoundingClientRect = () => ({ top: 20 });
+    const two = document.createElement("section");
+    two.id = "two";
+    two.getBoundingClientRect = () => ({ top: 40 });
+    document.body.append(container, one, two);
+
+    let callback;
+    class MockIntersectionObserver {
+      constructor(cb) {
+        callback = cb;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    globalThis.IntersectionObserver = MockIntersectionObserver;
+    window.IntersectionObserver = MockIntersectionObserver;
+
+    const controller = createSectionNavController({
+      containerEl: container,
+      navItemsConfig: [
+        { id: "one", label: "One" },
+        { id: "two", label: "Two" },
+      ],
+    });
+
+    controller.buildSectionNav();
+    controller.setupSectionNavTracking();
+
+    callback?.([
+      { isIntersecting: true, intersectionRatio: 0.85, target: one },
+      { isIntersecting: true, intersectionRatio: 0.2, target: two },
+    ]);
+
+    const links = container.querySelectorAll("a");
+    expect(links[0].classList.contains("active")).toBe(true);
+
+    // Observer callbacks can arrive with only one section update.
+    callback?.([{ isIntersecting: true, intersectionRatio: 0.25, target: two }]);
+    expect(links[0].classList.contains("active")).toBe(true);
+  });
+
+  it("does not promote non-visible passed sections when visible entries exist", () => {
+    const container = document.createElement("div");
+    const above = document.createElement("section");
+    above.id = "above";
+    above.getBoundingClientRect = () => ({ top: -40, bottom: 20 });
+    const visible = document.createElement("section");
+    visible.id = "visible";
+    visible.getBoundingClientRect = () => ({ top: 260, bottom: 560 });
+    document.body.append(container, above, visible);
+
+    let callback;
+    class MockIntersectionObserver {
+      constructor(cb) {
+        callback = cb;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    globalThis.IntersectionObserver = MockIntersectionObserver;
+    window.IntersectionObserver = MockIntersectionObserver;
+
+    const controller = createSectionNavController({
+      containerEl: container,
+      navItemsConfig: [
+        { id: "above", label: "Above" },
+        { id: "visible", label: "Visible" },
+      ],
+    });
+
+    controller.buildSectionNav();
+    controller.setupSectionNavTracking();
+    callback?.([
+      { isIntersecting: false, intersectionRatio: 0, target: above },
+      { isIntersecting: true, intersectionRatio: 0.2, target: visible },
+    ]);
+
+    const links = container.querySelectorAll("a");
+    expect(links[1].classList.contains("active")).toBe(true);
+  });
+
   it("prefers first non-negative top on initial activation and handles all-negative ordering", () => {
     const containerA = document.createElement("div");
     const neg = document.createElement("section");
@@ -155,6 +240,6 @@ describe("sectionNav detailed", () => {
     secondController.setupSectionNavTracking();
 
     const secondLinks = containerB.querySelectorAll("a");
-    expect(secondLinks[0].classList.contains("active")).toBe(true);
+    expect(secondLinks[1].classList.contains("active")).toBe(true);
   });
 });
