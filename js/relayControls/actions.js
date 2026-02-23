@@ -269,13 +269,53 @@ export function createRelayActionsController({
     if (relayUiState.pollTimer) {
       clearTimeout(relayUiState.pollTimer);
     }
+    if (
+      relayUiState.pollVisibilityListener &&
+      typeof document !== "undefined" &&
+      typeof document.removeEventListener === "function"
+    ) {
+      document.removeEventListener("visibilitychange", relayUiState.pollVisibilityListener);
+      relayUiState.pollVisibilityListener = null;
+    }
     relayUiState.statusFailureCount = 0;
     relayUiState.nextPollDelayMs = relayPollIntervalMs;
+
+    const isDocumentHidden = () =>
+      typeof document !== "undefined" &&
+      (document.hidden || document.visibilityState === "hidden");
+
     const poll = async () => {
+      const hiddenAtStart = isDocumentHidden();
+      console.debug("[relay.poll] tick", {
+        phase: "start",
+        hidden: hiddenAtStart,
+        timestamp: new Date().toISOString(),
+      });
+      if (isDocumentHidden()) {
+        console.debug("[relay.poll] skipped while hidden");
+        relayUiState.pollTimer = null;
+        return;
+      }
       await refreshRelayStatus({ silent: true, fromPolling: true });
+      if (isDocumentHidden()) {
+        console.debug("[relay.poll] paused after refresh because view is hidden");
+        relayUiState.pollTimer = null;
+        return;
+      }
       const delayMs = Number(relayUiState.nextPollDelayMs) || relayPollIntervalMs;
+      console.debug("[relay.poll] scheduled next tick", { delayMs });
       relayUiState.pollTimer = setTimeout(poll, delayMs);
     };
+
+    if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+      relayUiState.pollVisibilityListener = () => {
+        if (isDocumentHidden()) return;
+        if (relayUiState.pollTimer || statusRequestPromise) return;
+        console.debug("[relay.poll] resuming after visibility restore");
+        poll();
+      };
+      document.addEventListener("visibilitychange", relayUiState.pollVisibilityListener);
+    }
     poll();
   }
 

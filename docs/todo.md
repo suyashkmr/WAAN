@@ -21,15 +21,15 @@ Completed tasks were removed for clarity (history remains in git).
 
 ### Efficiency Quick Wins
 
-- [ ] Guard `GET /chats/:chatId/messages` so sync/fetch runs only when needed (`apps/server/src/http/apiRouter.js`).
+- [x] Guard `GET /chats/:chatId/messages` so sync/fetch runs only when needed (`apps/server/src/http/apiRouter.js`).
   - [x] Define refresh conditions (explicit `refresh`, missing cache, or stale threshold).
   - [x] Implement guarded sync path and preserve existing response contract.
   - [x] Add/adjust tests for guarded and forced-refresh cases.
-  - [ ] Verify chat load, reload, and multi-chat navigation behavior manually.
-- [ ] Pause relay status polling when the dashboard tab is hidden (`js/relayControls/actions.js`).
-  - [ ] Add visibility-aware polling guard.
-  - [ ] Ensure polling resumes reliably on tab focus/visibility restore.
-  - [ ] Verify no stale status regressions after resume.
+  - [x] Verify chat load, reload, and multi-chat navigation behavior manually.
+- [x] Pause relay status polling when the dashboard tab is hidden (`js/relayControls/actions.js`).
+  - [x] Add visibility-aware polling guard.
+  - [x] Ensure polling resumes reliably on tab focus/visibility restore.
+  - [x] Verify no stale status regressions after resume.
 - [ ] Reduce default remote message fetch limit and avoid full-fetch unless explicitly requested (`js/config.js`, `js/relayControls/actions.js`).
   - [ ] Set a lower default limit based on current UI needs.
   - [ ] Gate full-fetch behind an explicit user/system trigger.

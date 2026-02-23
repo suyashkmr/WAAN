@@ -114,6 +114,7 @@ function createController(overrides = {}) {
 describe("relayControls", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("startRelaySession starts relay, refreshes status, and enables autostart", async () => {
@@ -356,5 +357,48 @@ describe("relayControls", () => {
       "warning",
     );
     errorSpy.mockRestore();
+  });
+
+  it("pauses status polling while hidden and resumes on visibility restore", async () => {
+    vi.useFakeTimers();
+    let hidden = true;
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => hidden,
+    });
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => (hidden ? "hidden" : "visible"),
+    });
+
+    const { controller, helpers } = createController({
+      fetchJson: vi.fn(async url => {
+        if (url.endsWith("/relay/status")) {
+          return {
+            status: "running",
+            account: { pushName: "Alice" },
+            chatCount: 2,
+            syncingChats: false,
+          };
+        }
+        if (url.endsWith("/api/chats")) return { chats: [] };
+        return {};
+      }),
+      getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+    });
+
+    controller.startStatusPolling();
+    await Promise.resolve();
+    expect(helpers.fetchJson).not.toHaveBeenCalledWith("http://127.0.0.1:4546/relay/status");
+
+    hidden = false;
+    document.dispatchEvent(new Event("visibilitychange"));
+    await Promise.resolve();
+    expect(helpers.fetchJson).toHaveBeenCalledWith("http://127.0.0.1:4546/relay/status");
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(
+      helpers.fetchJson.mock.calls.filter(([url]) => url === "http://127.0.0.1:4546/relay/status").length,
+    ).toBeGreaterThanOrEqual(2);
   });
 });
