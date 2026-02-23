@@ -55,6 +55,10 @@ Open the URL in your browser and load chat data from the UI.
 
 If you installed WAAN from a released `.dmg`:
 
+Prerequisite:
+
+- Install Google Chrome or Chromium on the Mac before starting relay sync.
+
 1. Open the `.dmg` and drag `WAAN.app` to `Applications`.
 2. Launch `WAAN.app`.
 3. On first launch, use the app menu and in-app controls to connect relay sync
@@ -274,6 +278,14 @@ On first run, WAAN shows a guided setup flow in the empty state:
 - Sentiment is a lightweight lexicon-based score and should be treated as directional, not clinically precise.
 
 ## FAQ
+
+### Does WAAN require Chrome or Chromium for relay sync?
+
+Yes. WAAN relay needs a local browser engine and currently supports installed
+Google Chrome or Chromium on macOS.
+
+If relay fails to start on a fresh machine, install Chrome/Chromium first, then
+relaunch `WAAN.app`.
 
 ### Can WAAN usage get my WhatsApp account restricted?
 
