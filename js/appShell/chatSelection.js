@@ -116,12 +116,15 @@ export function createChatSelectionController({
     loadRemoteChat,
     updateStatus,
   }) {
-    const decoded = decodeChatSelectorValue(event.target.value);
+    const target = event?.target;
+    const selectionValue = target?.value || "";
+    const forceReload = event?.force === true || event?.detail?.force === true;
+    const decoded = decodeChatSelectorValue(selectionValue);
     if (!decoded) return;
-    if (event.target.value === getActiveChatId()) return;
+    if (!forceReload && selectionValue === getActiveChatId()) return;
     const { source, id } = decoded;
     try {
-      event.target.disabled = true;
+      target.disabled = true;
       if (source === "local") {
         const dataset = getChatDatasetById(id);
         if (!dataset) {
@@ -132,20 +135,24 @@ export function createChatSelectionController({
         await applyEntriesToApp(dataset.entries, dataset.label, {
           datasetId: dataset.id,
           analyticsOverride: dataset.analytics ?? null,
-          statusMessage: `Switched to ${dataset.label}.`,
-          selectionValue: event.target.value,
+          statusMessage: `${forceReload ? "Reloaded" : "Switched to"} ${dataset.label}.`,
+          selectionValue,
           participants: dataset.meta?.participants || [],
           participantDirectoryData: dataset.participantDirectory ?? null,
           entriesNormalized: true,
         });
       } else if (source === "remote") {
-        await loadRemoteChat(id);
+        if (forceReload) {
+          await loadRemoteChat(id, { reloaded: true });
+        } else {
+          await loadRemoteChat(id);
+        }
       }
     } catch (error) {
       console.error(error);
       updateStatus("We couldn't switch chats.", "error");
     } finally {
-      event.target.disabled = false;
+      target.disabled = false;
     }
   }
 

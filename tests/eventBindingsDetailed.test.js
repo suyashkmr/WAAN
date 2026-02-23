@@ -160,6 +160,34 @@ describe("event bindings detailed", () => {
     expect(handlers.handleParticipantRowToggle).toHaveBeenCalledTimes(1);
   });
 
+  it("supports forced chat reselect via double-click and Enter", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const chatSelector = document.createElement("select");
+    chatSelector.innerHTML = '<option value="remote:chat-1">Chat 1</option>';
+    chatSelector.value = "remote:chat-1";
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: { chatSelector },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+    chatSelector.dispatchEvent(new Event("dblclick"));
+    chatSelector.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+
+    expect(handlers.handleChatSelectionChange).toHaveBeenCalledTimes(2);
+    expect(handlers.handleChatSelectionChange).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ force: true }),
+    );
+    expect(handlers.handleChatSelectionChange).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ force: true }),
+    );
+  });
+
   it("updates weekday filters and brush labels", () => {
     const handlers = createHandlers();
     const deps = createDeps();

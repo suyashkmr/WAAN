@@ -297,7 +297,9 @@ export function createRelayActionsController({
         await applyEntriesToApp(entries, label, {
           datasetId: `remote-${chatId}`,
           selectionValue: encodeChatSelectorValue("remote", chatId),
-          statusMessage: `Loaded ${formatNumber(entries.length)} messages from ${label}.`,
+          statusMessage:
+            options.statusMessage ??
+            `${options.reloaded ? "Reloaded" : "Loaded"} ${formatNumber(entries.length)} messages from ${label}.`,
           persist: false,
           participants: Array.isArray(payload.participants) ? payload.participants : [],
         });

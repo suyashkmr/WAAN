@@ -113,6 +113,64 @@ describe("chat selection controller", () => {
     expect(target.disabled).toBe(false);
   });
 
+  it("reloads active local chat when forced", async () => {
+    const { controller } = createChatSelection({
+      activeChatId: "local:dataset-1",
+      localChats: [{ id: "dataset-1", label: "Team" }],
+    });
+    const target = { value: "local:dataset-1", disabled: false };
+    const applyEntriesToApp = vi.fn(async () => {});
+
+    await controller.handleChatSelectionChange(
+      { target, force: true },
+      {
+        getChatDatasetById: vi.fn(() => ({
+          id: "dataset-1",
+          label: "Team",
+          entries: [{ sender: "Ana", message: "hello" }],
+          analytics: { total_messages: 1 },
+          meta: { participants: ["Ana"] },
+          participantDirectory: { participants: ["Ana"] },
+        })),
+        applyEntriesToApp,
+        loadRemoteChat: vi.fn(),
+        updateStatus: vi.fn(),
+      },
+    );
+
+    expect(applyEntriesToApp).toHaveBeenCalledTimes(1);
+    expect(applyEntriesToApp).toHaveBeenCalledWith(
+      expect.any(Array),
+      "Team",
+      expect.objectContaining({
+        statusMessage: "Reloaded Team.",
+      }),
+    );
+    expect(target.disabled).toBe(false);
+  });
+
+  it("reloads active remote chat when forced", async () => {
+    const { controller } = createChatSelection({
+      activeChatId: "remote:chat-9",
+      localChats: [{ id: "dataset-1", label: "Team" }],
+    });
+    const loadRemoteChat = vi.fn(async () => {});
+    const target = { value: "remote:chat-9", disabled: false };
+
+    await controller.handleChatSelectionChange(
+      { target, force: true },
+      {
+        getChatDatasetById: vi.fn(),
+        applyEntriesToApp: vi.fn(),
+        loadRemoteChat,
+        updateStatus: vi.fn(),
+      },
+    );
+
+    expect(loadRemoteChat).toHaveBeenCalledWith("chat-9", { reloaded: true });
+    expect(target.disabled).toBe(false);
+  });
+
   it("loads remote chat and handles switch errors", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { controller } = createChatSelection({

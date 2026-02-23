@@ -76,6 +76,15 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   function initEventHandlers() {
     if (chatSelector) {
       chatSelector.addEventListener("change", handleChatSelectionChange);
+      chatSelector.addEventListener("dblclick", () => {
+        if (!chatSelector.value) return;
+        void handleChatSelectionChange({ target: chatSelector, force: true });
+      });
+      chatSelector.addEventListener("keydown", event => {
+        if (event.key !== "Enter" || !chatSelector.value) return;
+        event.preventDefault();
+        void handleChatSelectionChange({ target: chatSelector, force: true });
+      });
     }
     if (rangeSelect) {
       rangeSelect.addEventListener("change", handleRangeChange);
