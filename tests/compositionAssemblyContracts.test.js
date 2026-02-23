@@ -107,11 +107,9 @@ describe("compositionAssembly contracts", () => {
         resetHourlyFilters: vi.fn(),
         resetWeekdayFilters: vi.fn(),
         computeDatasetFingerprint: vi.fn(() => "fp"),
-        saveChatDataset: vi.fn(() => ({ id: "dataset-1" })),
         setCachedAnalytics: vi.fn(),
         setDatasetAnalytics: vi.fn(),
         setActiveChatId: vi.fn(),
-        getChatDatasetById: vi.fn(() => null),
         setDatasetEmptyMessage: vi.fn(),
         fetchJson: vi.fn(async () => ({})),
       },
@@ -167,7 +165,6 @@ describe("compositionAssembly contracts", () => {
     expect(h.handleChatSelectionChangeCore).toHaveBeenCalledWith(
       event,
       expect.objectContaining({
-        applyEntriesToApp: h.applyEntriesToApp,
         loadRemoteChat: h.loadRemoteChat,
         updateStatus: handleUpdateStatus,
       }),

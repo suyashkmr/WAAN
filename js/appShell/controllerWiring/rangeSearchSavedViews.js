@@ -20,7 +20,6 @@ export function createRangeSearchSavedViewsWiring({
     brandName: constants.brandName,
     formatNumber: utils.formatNumber,
     formatDisplayDate: utils.formatDisplayDate,
-    listChatDatasets: state.listChatDatasets,
     getActiveChatId: state.getActiveChatId,
     setActiveChatId: state.setActiveChatId,
   });

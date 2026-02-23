@@ -72,10 +72,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Confirm no runtime/build/docs dependency exists.
   - [x] Remove directory and update docs if needed.
   - [x] Run smoke checks after removal.
-- [ ] Validate whether `mobile/android-app/` is still required; remove if unused.
-  - [ ] Confirm ownership and current usage with team.
-  - [ ] Remove project only after explicit confirmation.
-  - [ ] Validate CI/build/docs are unaffected.
+- [x] Validate whether `mobile/android-app/` is still required; remove if unused.
+  - [x] Confirm ownership/current usage via repo validation (no runtime/build/docs references found).
+  - [x] Remove project once validated unused.
+  - [x] Validate CI/build/docs are unaffected.
 - [x] Remove dead helper `scripts/build-macos-installer.sh`.
   - [x] Confirm no scripted/manual dependency remains.
   - [x] Remove script and any stale references.
@@ -88,15 +88,15 @@ Completed tasks were removed for clarity (history remains in git).
 
 ### Local Chat Library Retirement (Remote-Only Product Flow)
 
-- [ ] Remove user-facing local chat selector flow (`Your chats`) now that product flow is remote-only.
-  - [ ] Confirm no required user journey depends on local chat library behavior.
-  - [ ] Remove local branch handling from chat selection controller (`js/appShell/chatSelection.js`).
-  - [ ] Keep forced reselect/reload behavior for remote chats intact.
-  - [ ] Add/update tests for remote-only selector behavior.
-- [ ] Deprecate in-memory local chat library state that is no longer referenced.
-  - [ ] Remove or isolate `saveChatDataset`/`listChatDatasets` usage paths (`js/state/chatLibraryState.js`).
-  - [ ] Remove dead wiring dependencies from composition/controller wiring layers.
-  - [ ] Verify no regressions in dataset rendering, analytics, and export flows.
+- [x] Remove user-facing local chat selector flow (`Your chats`) now that product flow is remote-only.
+  - [x] Confirm no required user journey depends on local chat library behavior.
+  - [x] Remove local branch handling from chat selection controller (`js/appShell/chatSelection.js`).
+  - [x] Keep forced reselect/reload behavior for remote chats intact.
+  - [x] Add/update tests for remote-only selector behavior.
+- [x] Deprecate in-memory local chat library state that is no longer referenced.
+  - [x] Remove or isolate `saveChatDataset`/`listChatDatasets` usage paths (`js/state/chatLibraryState.js`).
+  - [x] Remove dead wiring dependencies from composition/controller wiring layers.
+  - [x] Verify no regressions in dataset rendering, analytics, and export flows.
 - [ ] Clean up related copy/docs/tests after remote-only cutover.
   - [ ] Remove stale UI copy that implies local chat library usage.
   - [ ] Update tests that assume mixed local+remote selector groups.

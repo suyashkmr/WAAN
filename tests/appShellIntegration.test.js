@@ -94,7 +94,6 @@ describe("appShell integration", () => {
         resetHourlyFilters: vi.fn(),
         resetWeekdayFilters: vi.fn(),
         computeDatasetFingerprint: vi.fn(() => "fp-int"),
-        saveChatDataset: vi.fn(() => ({ id: "chat-int" })),
         setCachedAnalytics: (key, value) => analyticsCache.set(key, value),
         setDatasetAnalytics: value => {
           datasetAnalytics = value;
@@ -105,7 +104,6 @@ describe("appShell integration", () => {
         computeAnalyticsWithWorker,
         renderDashboard,
         updateCustomRangeBounds: vi.fn(),
-        encodeChatSelectorValue: (source, id) => `${source}:${id}`,
         refreshChatSelector: vi.fn(async () => {}),
         updateStatus,
         setDashboardLoadingState: vi.fn(),
@@ -147,7 +145,7 @@ describe("appShell integration", () => {
     });
 
     expect(renderDashboard).toHaveBeenCalledWith(expect.objectContaining({ total_messages: 2 }));
-    expect(activeChatId).toBe("local:chat-int");
+    expect(activeChatId).toBeNull();
     expect(currentRange).toBe("all");
 
     rangeSelect.value = "1";

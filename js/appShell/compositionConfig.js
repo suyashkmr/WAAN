@@ -22,7 +22,6 @@ export function createControllerWiringConfig({
   setDatasetEmptyMessage,
 }) {
   const controllerWiringState = {
-    listChatDatasets: stateStore.listChatDatasets,
     getActiveChatId: stateStore.getActiveChatId,
     setActiveChatId: stateStore.setActiveChatId,
     getDatasetEntries: stateStore.getDatasetEntries,
@@ -102,11 +101,9 @@ export function createCompositionAssemblyConfig({
     resetHourlyFilters: stateStore.resetHourlyFilters,
     resetWeekdayFilters: stateStore.resetWeekdayFilters,
     computeDatasetFingerprint: stateStore.computeDatasetFingerprint,
-    saveChatDataset: stateStore.saveChatDataset,
     setCachedAnalytics: stateStore.setCachedAnalytics,
     setDatasetAnalytics: stateStore.setDatasetAnalytics,
     setActiveChatId: stateStore.setActiveChatId,
-    getChatDatasetById: stateStore.getChatDatasetById,
     setDatasetEmptyMessage,
     fetchJson,
   };

@@ -5,14 +5,12 @@ import { createExportPipeline } from "../js/appShell/exportPipeline.js";
 function createChatSelection(options = {}) {
   const chatSelector = document.createElement("select");
   let activeChatId = options.activeChatId ?? "";
-  const listChatDatasets = vi.fn(() => options.localChats ?? []);
 
   const controller = createChatSelectionController({
     chatSelector,
     brandName: "ChatScope",
     formatNumber: value => String(value),
     formatDisplayDate: value => String(value),
-    listChatDatasets,
     getActiveChatId: () => activeChatId,
     setActiveChatId: value => {
       activeChatId = value;
@@ -22,7 +20,6 @@ function createChatSelection(options = {}) {
   return {
     controller,
     chatSelector,
-    listChatDatasets,
     getActiveChatId: () => activeChatId,
   };
 }
@@ -42,17 +39,9 @@ describe("chat selection controller", () => {
     expect(chatSelector.options[0].textContent).toBe("No chats loaded yet");
   });
 
-  it("renders local and remote groups and preserves active value", async () => {
+  it("renders remote group and preserves active value", async () => {
     const { controller, chatSelector, getActiveChatId } = createChatSelection({
       activeChatId: "remote:chat-2",
-      localChats: [
-        {
-          id: "dataset-1",
-          label: "Team",
-          messageCount: 12,
-          dateRange: { start: "2025-01-01", end: "2025-01-10" },
-        },
-      ],
     });
 
     controller.setRemoteChatList([
@@ -62,9 +51,8 @@ describe("chat selection controller", () => {
     await controller.refreshChatSelector();
 
     expect(chatSelector.disabled).toBe(false);
-    expect(chatSelector.querySelectorAll("optgroup").length).toBe(2);
-    expect(chatSelector.options[0].textContent).toContain("Team");
-    expect(chatSelector.options[1].textContent).toContain("General");
+    expect(chatSelector.querySelectorAll("optgroup").length).toBe(1);
+    expect(chatSelector.options[0].textContent).toContain("General");
     expect(chatSelector.value).toBe("remote:chat-2");
     expect(getActiveChatId()).toBe("remote:chat-2");
     expect(controller.getRemoteChatList().length).toBe(1);
@@ -75,84 +63,9 @@ describe("chat selection controller", () => {
     });
   });
 
-  it("loads local dataset and forwards metadata to applyEntriesToApp", async () => {
-    const { controller } = createChatSelection({
-      activeChatId: "remote:chat-1",
-      localChats: [{ id: "dataset-1", label: "Team" }],
-    });
-    const target = { value: "local:dataset-1", disabled: false };
-    const applyEntriesToApp = vi.fn(async () => {});
-
-    await controller.handleChatSelectionChange(
-      { target },
-      {
-        getChatDatasetById: vi.fn(() => ({
-          id: "dataset-1",
-          label: "Team",
-          entries: [{ sender: "Ana", message: "hello" }],
-          analytics: { total_messages: 1 },
-          meta: { participants: ["Ana"] },
-          participantDirectory: { participants: ["Ana"] },
-        })),
-        applyEntriesToApp,
-        loadRemoteChat: vi.fn(),
-        updateStatus: vi.fn(),
-      },
-    );
-
-    expect(applyEntriesToApp).toHaveBeenCalledWith(
-      [{ sender: "Ana", message: "hello" }],
-      "Team",
-      expect.objectContaining({
-        datasetId: "dataset-1",
-        statusMessage: "Switched to Team.",
-        selectionValue: "local:dataset-1",
-        entriesNormalized: true,
-      }),
-    );
-    expect(target.disabled).toBe(false);
-  });
-
-  it("reloads active local chat when forced", async () => {
-    const { controller } = createChatSelection({
-      activeChatId: "local:dataset-1",
-      localChats: [{ id: "dataset-1", label: "Team" }],
-    });
-    const target = { value: "local:dataset-1", disabled: false };
-    const applyEntriesToApp = vi.fn(async () => {});
-
-    await controller.handleChatSelectionChange(
-      { target, force: true },
-      {
-        getChatDatasetById: vi.fn(() => ({
-          id: "dataset-1",
-          label: "Team",
-          entries: [{ sender: "Ana", message: "hello" }],
-          analytics: { total_messages: 1 },
-          meta: { participants: ["Ana"] },
-          participantDirectory: { participants: ["Ana"] },
-        })),
-        applyEntriesToApp,
-        loadRemoteChat: vi.fn(),
-        updateStatus: vi.fn(),
-      },
-    );
-
-    expect(applyEntriesToApp).toHaveBeenCalledTimes(1);
-    expect(applyEntriesToApp).toHaveBeenCalledWith(
-      expect.any(Array),
-      "Team",
-      expect.objectContaining({
-        statusMessage: "Reloaded Team.",
-      }),
-    );
-    expect(target.disabled).toBe(false);
-  });
-
   it("reloads active remote chat when forced", async () => {
     const { controller } = createChatSelection({
       activeChatId: "remote:chat-9",
-      localChats: [{ id: "dataset-1", label: "Team" }],
     });
     const loadRemoteChat = vi.fn(async () => {});
     const target = { value: "remote:chat-9", disabled: false };
@@ -174,8 +87,7 @@ describe("chat selection controller", () => {
   it("loads remote chat and handles switch errors", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { controller } = createChatSelection({
-      activeChatId: "local:dataset-1",
-      localChats: [{ id: "dataset-1", label: "Team" }],
+      activeChatId: "remote:chat-1",
     });
     const updateStatus = vi.fn();
     const loadRemoteChat = vi.fn(async () => {
@@ -199,26 +111,27 @@ describe("chat selection controller", () => {
     errorSpy.mockRestore();
   });
 
-  it("reports missing local dataset and repopulates selector", async () => {
-    const { controller, listChatDatasets } = createChatSelection({
+  it("warns when legacy local value is selected and repopulates selector", async () => {
+    const { controller } = createChatSelection({
       activeChatId: "remote:chat-9",
-      localChats: [{ id: "dataset-1", label: "Team" }],
     });
+    controller.setRemoteChatList([{ id: "chat-9", name: "Team" }]);
+    await controller.refreshChatSelector();
     const updateStatus = vi.fn();
     const target = { value: "local:missing", disabled: false };
 
     await controller.handleChatSelectionChange(
       { target },
       {
-        getChatDatasetById: vi.fn(() => null),
-        applyEntriesToApp: vi.fn(),
         loadRemoteChat: vi.fn(),
         updateStatus,
       },
     );
 
-    expect(updateStatus).toHaveBeenCalledWith("We couldn't load that chat.", "error");
-    expect(listChatDatasets).toHaveBeenCalled();
+    expect(updateStatus).toHaveBeenCalledWith(
+      "Local chat datasets are no longer available in this build.",
+      "warning",
+    );
     expect(target.disabled).toBe(false);
   });
 });

@@ -3,7 +3,6 @@ import {
   serializeParticipantDirectory,
   deserializeParticipantDirectory,
   normalizeEntriesWithDirectory,
-  buildParticipantRoster,
 } from "./participantDirectory.js";
 
 export function createDatasetLifecycleController({ elements, deps }) {
@@ -20,14 +19,12 @@ export function createDatasetLifecycleController({ elements, deps }) {
     resetHourlyFilters,
     resetWeekdayFilters,
     computeDatasetFingerprint,
-    saveChatDataset,
     setCachedAnalytics,
     setDatasetAnalytics,
     setActiveChatId,
     computeAnalyticsWithWorker,
     renderDashboard,
     updateCustomRangeBounds,
-    encodeChatSelectorValue,
     refreshChatSelector,
     updateStatus,
     setDashboardLoadingState,
@@ -84,30 +81,7 @@ export function createDatasetLifecycleController({ elements, deps }) {
     setDatasetAnalytics(analytics);
     renderDashboard(analytics);
     updateCustomRangeBounds();
-
-    let savedRecord = null;
-    const persistDataset = options.persist !== false;
-    const participantRoster = buildParticipantRoster(participantDirectory);
-
-    if (persistDataset) {
-      savedRecord = saveChatDataset({
-        id: options.datasetId ?? undefined,
-        label,
-        entries: normalizedEntries,
-        analytics,
-        fingerprint,
-        participantDirectory: directorySnapshot,
-        meta: {
-          messageCount: analytics.total_messages,
-          dateRange: analytics.date_range,
-          participants: participantRoster,
-        },
-      });
-    }
-
-    const selectionValue =
-      options.selectionValue ??
-      (persistDataset && savedRecord ? encodeChatSelectorValue("local", savedRecord.id) : null);
+    const selectionValue = options.selectionValue ?? null;
     if (selectionValue) {
       setActiveChatId(selectionValue);
     }
@@ -120,7 +94,7 @@ export function createDatasetLifecycleController({ elements, deps }) {
       )} messages).`;
     updateStatus(statusMessage, "info");
     setDashboardLoadingState(false);
-    return { analytics, datasetId: savedRecord?.id ?? null };
+    return { analytics, datasetId: null };
   }
 
   return {

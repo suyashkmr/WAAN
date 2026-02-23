@@ -9,7 +9,7 @@ describe("appShell controllers", () => {
     vi.restoreAllMocks();
   });
 
-  it("datasetLifecycle applyEntriesToApp resets state and persists dataset", async () => {
+  it("datasetLifecycle applyEntriesToApp resets state without local dataset persistence", async () => {
     const rangeSelect = document.createElement("select");
     const optionAll = document.createElement("option");
     optionAll.value = "all";
@@ -33,14 +33,12 @@ describe("appShell controllers", () => {
       resetHourlyFilters: vi.fn(),
       resetWeekdayFilters: vi.fn(),
       computeDatasetFingerprint: vi.fn(() => "fp-1"),
-      saveChatDataset: vi.fn(() => ({ id: "dataset-1" })),
       setCachedAnalytics: vi.fn(),
       setDatasetAnalytics: vi.fn(),
       setActiveChatId: vi.fn(),
       computeAnalyticsWithWorker: vi.fn(async () => analytics),
       renderDashboard: vi.fn(),
       updateCustomRangeBounds: vi.fn(),
-      encodeChatSelectorValue: vi.fn((kind, id) => `${kind}:${id}`),
       refreshChatSelector: vi.fn(async () => {}),
       updateStatus: vi.fn(),
       setDashboardLoadingState: vi.fn(),
@@ -72,11 +70,10 @@ describe("appShell controllers", () => {
     expect(deps.setCurrentRange).toHaveBeenCalledWith("all");
     expect(deps.setCustomRange).toHaveBeenCalledWith(null);
     expect(rangeSelect.value).toBe("all");
-    expect(deps.saveChatDataset).toHaveBeenCalledTimes(1);
-    expect(deps.setActiveChatId).toHaveBeenCalledWith("local:dataset-1");
+    expect(deps.setActiveChatId).not.toHaveBeenCalled();
     expect(deps.renderDashboard).toHaveBeenCalledWith(analytics);
     expect(deps.refreshChatSelector).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({ analytics, datasetId: "dataset-1" });
+    expect(result).toEqual({ analytics, datasetId: null });
   });
 
   it("relayBootstrap wires controls and starts polling", async () => {

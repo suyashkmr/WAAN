@@ -64,7 +64,6 @@ export function createAppCompositionAssembly({
       resetHourlyFilters: state.resetHourlyFilters,
       resetWeekdayFilters: state.resetWeekdayFilters,
       computeDatasetFingerprint: state.computeDatasetFingerprint,
-      saveChatDataset: state.saveChatDataset,
       setCachedAnalytics: state.setCachedAnalytics,
       setDatasetAnalytics: state.setDatasetAnalytics,
       setActiveChatId: state.setActiveChatId,
@@ -169,8 +168,6 @@ export function createAppCompositionAssembly({
 
   async function handleChatSelectionChange(event) {
     return wiring.handleChatSelectionChangeCore(event, {
-      getChatDatasetById: state.getChatDatasetById,
-      applyEntriesToApp,
       loadRemoteChat,
       updateStatus: state.updateStatus,
     });
