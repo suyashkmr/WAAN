@@ -11,6 +11,7 @@ export function createRelayActionsController({
   relayPollIntervalMs,
   remoteMessageLimit,
   electronAPI,
+  visibilityAdapter,
   formatNumber,
   fetchJson,
   updateStatus,
@@ -264,16 +265,15 @@ export function createRelayActionsController({
   }
 
   function startStatusPolling() {
-    const hasDocument = typeof document !== "undefined";
-    const docRef = hasDocument ? document : null;
+    const addVisibilityListener = visibilityAdapter?.addChangeListener;
+    const isDocumentHidden = () => Boolean(visibilityAdapter?.isHidden?.());
     if (relayUiState.pollTimer) clearTimeout(relayUiState.pollTimer);
-    if (relayUiState.pollVisibilityListener && typeof docRef?.removeEventListener === "function") {
-      docRef.removeEventListener("visibilitychange", relayUiState.pollVisibilityListener);
-      relayUiState.pollVisibilityListener = null;
+    if (relayUiState.pollVisibilityCleanup) {
+      relayUiState.pollVisibilityCleanup();
+      relayUiState.pollVisibilityCleanup = null;
     }
     relayUiState.statusFailureCount = 0;
     relayUiState.nextPollDelayMs = relayPollIntervalMs;
-    const isDocumentHidden = () => Boolean(docRef?.hidden || docRef?.visibilityState === "hidden");
 
     const poll = async () => {
       if (isDocumentHidden()) {
@@ -289,13 +289,13 @@ export function createRelayActionsController({
       relayUiState.pollTimer = setTimeout(poll, delayMs);
     };
 
-    if (typeof docRef?.addEventListener === "function") {
-      relayUiState.pollVisibilityListener = () => {
+    if (typeof addVisibilityListener === "function") {
+      const handleVisibilityChange = () => {
         if (isDocumentHidden()) return;
         if (relayUiState.pollTimer || statusRequestPromise) return;
         poll();
       };
-      docRef.addEventListener("visibilitychange", relayUiState.pollVisibilityListener);
+      relayUiState.pollVisibilityCleanup = addVisibilityListener(handleVisibilityChange);
     }
     poll();
   }

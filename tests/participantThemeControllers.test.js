@@ -191,4 +191,28 @@ describe("theme ui controller", () => {
     mediaListener();
     expect(document.documentElement.dataset.colorScheme).toBe("light");
   });
+
+  it("uses runtime system dark scheme for export when preference is system without injected media query", () => {
+    const originalMatchMedia = window.matchMedia;
+    try {
+      window.matchMedia = vi.fn().mockReturnValue({ matches: true });
+
+      const controller = createThemeUiController({
+        themeToggleInputs: [],
+        mediaQuery: null,
+        exportThemeStyles: {
+          light: { label: "Light" },
+          dark: { label: "Dark" },
+        },
+      });
+
+      controller.initThemeControls();
+
+      expect(document.documentElement.dataset.theme).toBe("system");
+      expect(document.documentElement.dataset.colorScheme).toBe("dark");
+      expect(controller.getExportThemeConfig()).toEqual({ id: "dark", label: "Dark" });
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
 });

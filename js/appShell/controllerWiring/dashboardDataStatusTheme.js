@@ -7,6 +7,7 @@ import {
   createThemeUiController,
   formatRelayAccount,
 } from "../index.js";
+import { createDashboardViewAdapter } from "./dashboardViewAdapter.js";
 
 export function createDashboardDataStatusThemeWiring({
   dom,
@@ -17,8 +18,7 @@ export function createDashboardDataStatusThemeWiring({
   savedViewsController,
   rangeApi,
   dashboardControllerApi,
-  documentRef = document,
-  windowRef = window,
+  viewAdapter = createDashboardViewAdapter(),
 }) {
   const dataStatusController = createDataStatusController({
     elements: {
@@ -45,9 +45,7 @@ export function createDashboardDataStatusThemeWiring({
     getDataAvailable,
   } = dataStatusController;
   setDashboardLoadingState(true);
-  documentRef.querySelectorAll(".summary-value").forEach(element => {
-    element.setAttribute("data-skeleton", "value");
-  });
+  viewAdapter.applySummarySkeletonState();
 
   const participantFilters = {
     topCount: Number(dom.participantsTopSelect?.value ?? 25) || 0,
@@ -154,7 +152,7 @@ export function createDashboardDataStatusThemeWiring({
 
   const themeUiController = createThemeUiController({
     themeToggleInputs: dom.themeToggleInputs,
-    mediaQuery: windowRef.matchMedia ? windowRef.matchMedia("(prefers-color-scheme: dark)") : null,
+    mediaQuery: viewAdapter.getThemeMediaQuery(),
     exportThemeStyles: EXPORT_THEME_STYLES,
   });
   const { initThemeControls, getExportThemeConfig } = themeUiController;

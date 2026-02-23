@@ -14,12 +14,12 @@ import {
   REMOTE_MESSAGE_LIMIT,
   ISSUE_REPORT_BASE_URL,
 } from "./config.js";
-import { createRelaySyncProgressController } from "./relayControls/syncProgress.js";
-import { createRelayLogController } from "./relayControls/logStream.js";
 import { createRelayActionsController } from "./relayControls/actions.js";
-import { createFirstRunSetupController } from "./relayControls/firstRunSetup.js";
 import { applyRelayPrimaryAction as applyRelayPrimaryActionUi } from "./relayControls/primaryAction.js";
 import { createRelayStatusApplyController } from "./relayControls/statusApply.js";
+import { createRelayPlatformAdapter } from "./relayControls/platformAdapter.js";
+import { createRelayUiState, setRelayControlsDisabled as applyRelayControlsDisabled } from "./relayControls/controllerState.js";
+import { createRelaySupportControllers } from "./relayControls/controllerSupport.js";
 import {
   describeRelayStatus,
   formatRelayAccount,
@@ -27,7 +27,7 @@ import {
   updateRelayOnboarding,
 } from "./relayControls/statusView.js";
 
-export function createRelayController({ elements, helpers, electronAPI = window.electronAPI }) {
+export function createRelayController({ elements, helpers, electronAPI = null, platform = null }) {
   const {
     relayStartButton,
     relayStopButton,
@@ -72,82 +72,23 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     applyEntriesToApp,
     encodeChatSelectorValue,
   } = helpers;
+  const relayPlatform = platform ?? createRelayPlatformAdapter({ electronAPI });
 
-  const relayUiState = {
-    status: null,
-    controlsLocked: false,
-    pollTimer: null,
-    lastStatusKind: null,
-    lastAppliedStateKind: null,
-    lastErrorNotice: null,
-    primaryAction: "connect",
-  };
-  const firstRunSetupController = createFirstRunSetupController({
-    firstRunSetup,
-    firstRunSetupSteps,
-    firstRunPrimaryActionButton,
-    relayStartButton,
-    getControlsLocked: () => relayUiState.controlsLocked,
-    getDataAvailable,
-  });
-  const {
-    updateFirstRunSetup,
-    handleFirstRunOpenRelay,
-    handleFirstRunPrimaryAction,
-  } = firstRunSetupController;
-  const {
-    beginManualSyncUi,
-    markChatsFetched,
-    markMessagesActive,
-    updateSyncProgressFromStatus,
-    handleSyncError,
-  } = createRelaySyncProgressController({
-    relaySyncProgressEl,
-    relaySyncChatsMeta,
-    relaySyncMessagesMeta,
-    formatNumber,
-  });
-  const {
-    openLogDrawer,
-    closeLogDrawer,
-    isLogDrawerOpen,
-    handleLogDrawerDocumentClick,
-    handleLogDrawerKeydown,
-    handleLogClear,
-    handleExportDiagnostics,
-    handleReportIssue,
-    initLogStream,
-  } = createRelayLogController({
-    brandName: BRAND_NAME,
-    relayServiceName: RELAY_SERVICE_NAME,
-    relayBase: RELAY_BASE,
-    logDrawerToggleButton,
-    logDrawerEl,
-    logDrawerList,
-    logDrawerConnectionLabel,
-    issueBaseUrl: ISSUE_REPORT_BASE_URL,
-    getRelayStatus: () => relayUiState.status,
-    getDatasetLabel,
-    getDataAvailable,
-    getRemoteChatCount: () => getRemoteChatList().length,
-    fetchJson,
-    updateStatus,
-  });
+  const relayUiState = createRelayUiState();
 
   function setRelayControlsDisabled(disabled) {
-    relayUiState.controlsLocked = disabled;
-    [
-      relayStartButton,
-      relayStopButton,
-      relayLogoutButton,
-      relayReloadAllButton,
-      relayClearStorageButton,
-    ].forEach(button => {
-      if (button) button.disabled = disabled;
+    applyRelayControlsDisabled({
+      relayUiState,
+      disabled,
+      buttons: [
+        relayStartButton,
+        relayStopButton,
+        relayLogoutButton,
+        relayReloadAllButton,
+        relayClearStorageButton,
+      ],
+      applyRelayPrimaryAction,
     });
-    if (!disabled) {
-      applyRelayPrimaryAction(relayUiState.status);
-    }
   }
 
   function applyRelayPrimaryAction(status) {
@@ -165,6 +106,62 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       brandName: BRAND_NAME,
       formatRelayAccount: formatRelayAccountLabel,
     });
+  const {
+    firstRunSetupController,
+    relaySyncProgressController,
+    relayLogController,
+  } = createRelaySupportControllers({
+    elements: {
+      firstRunSetup,
+      firstRunSetupSteps,
+      firstRunPrimaryActionButton,
+      relayStartButton,
+      relaySyncProgressEl,
+      relaySyncChatsMeta,
+      relaySyncMessagesMeta,
+      logDrawerToggleButton,
+      logDrawerEl,
+      logDrawerList,
+      logDrawerConnectionLabel,
+    },
+    deps: {
+      getControlsLocked: () => relayUiState.controlsLocked,
+      getDataAvailable,
+      formatNumber,
+      brandName: BRAND_NAME,
+      relayServiceName: RELAY_SERVICE_NAME,
+      relayBase: RELAY_BASE,
+      issueBaseUrl: ISSUE_REPORT_BASE_URL,
+      getRelayStatus: () => relayUiState.status,
+      getDatasetLabel,
+      getRemoteChatCount: () => getRemoteChatList().length,
+      fetchJson,
+      updateStatus,
+    },
+  });
+  const {
+    updateFirstRunSetup,
+    handleFirstRunOpenRelay,
+    handleFirstRunPrimaryAction,
+  } = firstRunSetupController;
+  const {
+    beginManualSyncUi,
+    markChatsFetched,
+    markMessagesActive,
+    updateSyncProgressFromStatus,
+    handleSyncError,
+  } = relaySyncProgressController;
+  const {
+    openLogDrawer,
+    closeLogDrawer,
+    isLogDrawerOpen,
+    handleLogDrawerDocumentClick,
+    handleLogDrawerKeydown,
+    handleLogClear,
+    handleExportDiagnostics,
+    handleReportIssue,
+    initLogStream,
+  } = relayLogController;
   let applyRelayStatus = () => {};
 
   const {
@@ -188,7 +185,8 @@ export function createRelayController({ elements, helpers, electronAPI = window.
     relayServiceName: RELAY_SERVICE_NAME,
     relayPollIntervalMs: RELAY_POLL_INTERVAL_MS,
     remoteMessageLimit: REMOTE_MESSAGE_LIMIT,
-    electronAPI,
+    electronAPI: relayPlatform.electronAPI,
+    visibilityAdapter: relayPlatform.visibilityAdapter,
     formatNumber,
     fetchJson,
     updateStatus,
@@ -231,7 +229,7 @@ export function createRelayController({ elements, helpers, electronAPI = window.
       formatRelativeTime,
       describeRelayStatusForUi,
       formatRelayAccountLabel,
-      electronAPI,
+      electronAPI: relayPlatform.electronAPI,
       updateHeroRelayStatus,
       updateRelayBanner,
       updateRelayOnboarding,

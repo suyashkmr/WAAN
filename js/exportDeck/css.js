@@ -225,7 +225,17 @@ export function buildExportDeckCss(theme, { mode = "screen" } = {}) {
       margin: 0.5in;
     }
     body {
-      background: #fff;
+      background: var(--deck-bg);
+      color: var(--deck-text);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .slide,
+    .cover-slide,
+    .stat-card,
+    .callout {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }` : ""}
   `;
 }

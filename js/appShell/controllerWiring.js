@@ -1,5 +1,6 @@
 import { createRangeSearchSavedViewsWiring } from "./controllerWiring/rangeSearchSavedViews.js";
 import { createDashboardDataStatusThemeWiring } from "./controllerWiring/dashboardDataStatusTheme.js";
+import { createDashboardViewAdapter } from "./controllerWiring/dashboardViewAdapter.js";
 
 export function createAppControllerWiring({
   dom,
@@ -8,8 +9,8 @@ export function createAppControllerWiring({
   constants,
   callbacks,
   dataStatus,
-  documentRef = document,
-  windowRef = window,
+  documentRef = globalThis.document ?? null,
+  windowRef = globalThis.window ?? null,
 }) {
   let dashboardRenderController = null;
   const dashboardControllerApi = {
@@ -70,8 +71,7 @@ export function createAppControllerWiring({
       applyCustomRange: rangeSearchSavedViewsWiring.applyCustomRange,
     },
     dashboardControllerApi,
-    documentRef,
-    windowRef,
+    viewAdapter: createDashboardViewAdapter({ documentRef, windowRef }),
   });
 
   return {

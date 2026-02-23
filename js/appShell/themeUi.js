@@ -9,18 +9,32 @@ export function createThemeUiController({
     mediaQuery,
   };
 
+  function detectSystemScheme() {
+    if (themeState.mediaQuery && typeof themeState.mediaQuery.matches === "boolean") {
+      return themeState.mediaQuery.matches ? "dark" : "light";
+    }
+    try {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+    } catch (error) {
+      console.warn("Unable to resolve system color scheme.", error);
+    }
+    return "light";
+  }
+
+  function resolveColorScheme(preference) {
+    if (preference === "dark") return "dark";
+    if (preference === "light") return "light";
+    return detectSystemScheme();
+  }
+
   function applyTheme(preference) {
     const root = document.documentElement;
     if (!root) return;
     root.dataset.theme = preference;
     localStorage.setItem(storageKey, preference);
-    if (preference === "system" && themeState.mediaQuery) {
-      root.dataset.colorScheme = themeState.mediaQuery.matches ? "dark" : "light";
-    } else if (preference === "dark") {
-      root.dataset.colorScheme = "dark";
-    } else {
-      root.dataset.colorScheme = "light";
-    }
+    root.dataset.colorScheme = resolveColorScheme(preference);
   }
 
   function initThemeControls() {
@@ -48,8 +62,8 @@ export function createThemeUiController({
 
   function getInterfaceColorScheme() {
     const root = document.documentElement;
-    const scheme = root?.dataset.colorScheme === "light" ? "light" : "dark";
-    return scheme === "light" ? "light" : "dark";
+    const preference = root?.dataset.theme || themeState.preference || "system";
+    return resolveColorScheme(preference);
   }
 
   function getExportThemeConfig() {

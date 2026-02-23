@@ -48,14 +48,14 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Keep `createAppCompositionAssembly` focused on orchestrator composition + final API surface wiring.
   - [x] Enforce concrete size target for `js/appShell/compositionAssembly.js` (<= 350 lines excluding imports/exports).
   - [x] Verify no regressions via boundary tests + full `ci:verify`.
-- [ ] Move DOM prep and Electron-specific hooks out of controller wiring into dedicated adapters (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/relayControls.js`).
-  - [ ] Isolate DOM-only concerns into view adapters.
-  - [ ] Isolate Electron/platform concerns into platform adapter layer.
-  - [ ] Verify headless/test wiring still works with adapter split.
-- [ ] Break up overloaded UI/relay modules into focused units (`js/ui.js`, `js/relayControls.js`).
-  - [ ] Separate state coordination, rendering helpers, and persistence/preferences.
-  - [ ] Minimize public APIs for each new module.
-  - [ ] Add targeted tests for extracted modules and integration seams.
+- [x] Move DOM prep and Electron-specific hooks out of controller wiring into dedicated adapters (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/relayControls.js`).
+  - [x] Isolate DOM-only concerns into view adapters.
+  - [x] Isolate Electron/platform concerns into platform adapter layer.
+  - [x] Verify headless/test wiring still works with adapter split.
+- [x] Break up overloaded UI/relay modules into focused units (`js/ui.js`, `js/relayControls.js`).
+  - [x] Separate state coordination, rendering helpers, and persistence/preferences.
+  - [x] Minimize public APIs for each new module.
+  - [x] Add targeted tests for extracted modules and integration seams.
 
 ### Efficiency Deep Work
 
