@@ -2,15 +2,55 @@ const path = require("path");
 const fs = require("fs");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
+function fileExists(filePath) {
+  if (!filePath) return false;
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function resolveAutoBrowserPath() {
+  if (process.platform === "darwin") {
+    const candidates = [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      path.join(
+        process.env.HOME || "",
+        "Applications",
+        "Google Chrome.app",
+        "Contents",
+        "MacOS",
+        "Google Chrome"
+      ),
+      "/Applications/Chromium.app/Contents/MacOS/Chromium",
+      path.join(
+        process.env.HOME || "",
+        "Applications",
+        "Chromium.app",
+        "Contents",
+        "MacOS",
+        "Chromium"
+      ),
+    ];
+    return candidates.find(fileExists) || null;
+  }
+
+  return null;
+}
+
 function resolveBrowserExecutablePath(explicitPath) {
   if (explicitPath) {
-    if (!fs.existsSync(explicitPath)) {
+    if (!fileExists(explicitPath)) {
       throw new Error(`Configured relay browser executable does not exist: ${explicitPath}`);
     }
     return explicitPath;
   }
-  // Default to Puppeteer's browser resolution unless the user explicitly overrides it.
-  return null;
+
+  // Prefer an installed local browser on packaged macOS builds to avoid
+  // relying on a pre-populated Puppeteer download cache.
+  return resolveAutoBrowserPath();
 }
 
 function createRelayClient({ dataDir, headless, browserPath, disableGpu }) {
