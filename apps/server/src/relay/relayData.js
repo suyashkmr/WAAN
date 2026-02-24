@@ -63,7 +63,13 @@ function formatTimestampLabel(isoString) {
   return `${day}/${month}/${year}, ${hours}:${minutes}`;
 }
 
-async function buildChatMetaUpdate({ chat, contactCache, logger }) {
+async function buildChatMetaUpdate({
+  chat,
+  contactCache,
+  logger,
+  existingMeta = null,
+  skipUnchanged = false,
+}) {
   const chatId = normaliseJid(chat.id);
   if (!chatId) return null;
   const name =
@@ -73,8 +79,23 @@ async function buildChatMetaUpdate({ chat, contactCache, logger }) {
     (chat.contact && (chat.contact.name || chat.contact.pushname)) ||
     stripRelaySuffix(chatId);
   const lastMessageTimestamp = chat.timestamp ? new Date(chat.timestamp * 1000).toISOString() : null;
+  const nextBasePatch = {
+    name,
+    isGroup: Boolean(chat.isGroup),
+    unreadCount: Number(chat.unreadCount) || 0,
+    lastMessageAt: lastMessageTimestamp,
+  };
+  const baseUnchanged =
+    Boolean(existingMeta) &&
+    existingMeta.name === nextBasePatch.name &&
+    Boolean(existingMeta.isGroup) === nextBasePatch.isGroup &&
+    Number(existingMeta.unreadCount || 0) === nextBasePatch.unreadCount &&
+    (existingMeta.lastMessageAt || null) === nextBasePatch.lastMessageAt;
 
   let participantList = Array.isArray(chat.participants) ? chat.participants : null;
+  if (!participantList && baseUnchanged && Array.isArray(existingMeta?.participants)) {
+    participantList = existingMeta.participants;
+  }
   if ((!participantList || !participantList.length) && typeof chat.fetchParticipants === "function") {
     try {
       participantList = await chat.fetchParticipants();
@@ -90,6 +111,7 @@ async function buildChatMetaUpdate({ chat, contactCache, logger }) {
       const participantId = normaliseJid(participant?.id);
       if (!participantId) return;
       const label =
+        participant?.label ||
         participant?.name ||
         participant?.pushname ||
         participant?.shortName ||
@@ -106,13 +128,25 @@ async function buildChatMetaUpdate({ chat, contactCache, logger }) {
     });
   }
 
+  const participantsUnchanged =
+    Array.isArray(existingMeta?.participants) &&
+    existingMeta.participants.length === participants.length &&
+    existingMeta.participants.every((participant, index) => {
+      const next = participants[index];
+      return (
+        next &&
+        participant?.id === next.id &&
+        participant?.label === next.label
+      );
+    });
+  if (skipUnchanged && baseUnchanged && participantsUnchanged) {
+    return null;
+  }
+
   return {
     chatId,
     patch: {
-      name,
-      isGroup: Boolean(chat.isGroup),
-      unreadCount: Number(chat.unreadCount) || 0,
-      lastMessageAt: lastMessageTimestamp,
+      ...nextBasePatch,
       participants,
     },
   };

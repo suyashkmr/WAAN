@@ -176,9 +176,16 @@ class RelayManager extends EventEmitter {
       const persistDurationMs = await persistSyncedChatMeta({
         chats,
         store: this.store,
-        buildChatMetaUpdate: chat => this.buildChatMetaUpdate(chat),
+        buildChatMetaUpdate: (chat, buildOptions) =>
+          this.buildChatMetaUpdate(chat, buildOptions),
         persistChatMeta: (chat, persistOptions) =>
           this.persistChatMeta(chat, persistOptions),
+        getExistingChatMeta: chat => {
+          const chatId = normaliseJid(chat?.id);
+          if (!chatId || typeof this.store?.getChatMeta !== "function") return null;
+          return this.store.getChatMeta(chatId);
+        },
+        enrichmentConcurrency: this.relayConfig.RELAY_META_ENRICH_CONCURRENCY,
       });
       applySyncSuccessState(this, {
         chats,
@@ -295,11 +302,12 @@ class RelayManager extends EventEmitter {
     });
   }
 
-  async buildChatMetaUpdate(chat) {
+  async buildChatMetaUpdate(chat, options = {}) {
     return buildChatMetaUpdate({
       chat,
       contactCache: this.contactCache,
       logger: this.logger,
+      ...options,
     });
   }
 

@@ -63,10 +63,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Design write strategy (batch window or transactional queue).
   - [x] Implement incremental writes with fallback/recovery path.
   - [x] Measure write amplification before/after and capture results.
-- [ ] Parallelize/cap metadata enrichment during sync and skip unchanged updates (`apps/server/src/relay/relaySync.js`, `apps/server/src/relay/relayData.js`).
-  - [ ] Add bounded concurrency for participant/meta enrichment.
-  - [ ] Skip or short-circuit unchanged records.
-  - [ ] Verify sync correctness and error handling under degraded network.
+- [x] Parallelize/cap metadata enrichment during sync and skip unchanged updates (`apps/server/src/relay/relaySync.js`, `apps/server/src/relay/relayData.js`).
+  - [x] Add bounded concurrency for participant/meta enrichment.
+  - [x] Skip or short-circuit unchanged records.
+  - [x] Verify sync correctness and error handling under degraded network.
 - [ ] Add incremental/indexed search-worker strategy to avoid full data scans per query (`js/searchWorker.js`).
   - [ ] Define index shape and invalidation/update strategy.
   - [ ] Implement incremental index updates on dataset changes.

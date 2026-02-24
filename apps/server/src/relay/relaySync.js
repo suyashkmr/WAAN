@@ -5,6 +5,33 @@ async function waitBeforeRetry(delayMs) {
   await new Promise(resolve => setTimeout(resolve, delayMs));
 }
 
+function clampEnrichmentConcurrency(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 6;
+  const rounded = Math.trunc(parsed);
+  if (rounded < 1) return 1;
+  if (rounded > 24) return 24;
+  return rounded;
+}
+
+async function mapWithConcurrency(items, concurrency, worker) {
+  const normalizedItems = Array.isArray(items) ? items : [];
+  if (!normalizedItems.length) return [];
+  const limit = Math.min(clampEnrichmentConcurrency(concurrency), normalizedItems.length);
+  const results = new Array(normalizedItems.length);
+  let cursor = 0;
+  const runners = Array.from({ length: limit }, async () => {
+    while (true) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= normalizedItems.length) return;
+      results[index] = await worker(normalizedItems[index], index);
+    }
+  });
+  await Promise.all(runners);
+  return results;
+}
+
 async function getChatsFromStoreFallback(client) {
   if (!client || !client.pupPage) {
     throw new Error("Fallback chat sync unavailable: browser page is not ready.");
@@ -55,20 +82,43 @@ async function persistSyncedChatMeta({
   store,
   buildChatMetaUpdate,
   persistChatMeta,
+  getExistingChatMeta = null,
+  enrichmentConcurrency = 6,
 }) {
   let persistDurationMs = 0;
+  const normalizedChats = Array.isArray(chats) ? chats : [];
   const bulkMetaUpdates =
     store && typeof store.upsertChatMetaBulk === "function" ? [] : null;
 
-  for (const chat of chats) {
-    const persistStartedAt = Date.now();
-    if (bulkMetaUpdates) {
-      const update = await buildChatMetaUpdate(chat);
-      if (update) bulkMetaUpdates.push(update);
-    } else {
+  if (bulkMetaUpdates) {
+    const enrichmentResults = await mapWithConcurrency(
+      normalizedChats,
+      enrichmentConcurrency,
+      async chat => {
+        const persistStartedAt = Date.now();
+        const existingMeta = typeof getExistingChatMeta === "function"
+          ? getExistingChatMeta(chat)
+          : null;
+        const update = await buildChatMetaUpdate(chat, {
+          existingMeta,
+          skipUnchanged: true,
+        });
+        const durationMs = Math.max(0, Date.now() - persistStartedAt);
+        return { update, durationMs };
+      },
+    );
+    enrichmentResults.forEach(result => {
+      persistDurationMs += result?.durationMs || 0;
+      if (result?.update) {
+        bulkMetaUpdates.push(result.update);
+      }
+    });
+  } else {
+    for (const chat of normalizedChats) {
+      const persistStartedAt = Date.now();
       await persistChatMeta(chat, { waitForPersist: false });
+      persistDurationMs += Math.max(0, Date.now() - persistStartedAt);
     }
-    persistDurationMs += Math.max(0, Date.now() - persistStartedAt);
   }
 
   if (!bulkMetaUpdates && store && typeof store.flushMetadata === "function") {

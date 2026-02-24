@@ -54,6 +54,15 @@ function getRelayConfig() {
     return process.env.WAAN_RELAY_DISABLE_GPU === "true";
   })();
 
+  const RELAY_META_ENRICH_CONCURRENCY = (() => {
+    const raw = Number(process.env.WAAN_RELAY_META_ENRICH_CONCURRENCY);
+    if (!Number.isFinite(raw)) return 6;
+    const rounded = Math.trunc(raw);
+    if (rounded < 1) return 1;
+    if (rounded > 24) return 24;
+    return rounded;
+  })();
+
   return {
     DEFAULT_MESSAGE_LIMIT,
     RELAY_HEADLESS,
@@ -63,6 +72,7 @@ function getRelayConfig() {
     STARTUP_PRIMARY_RESYNC_DELAY_MS,
     RELAY_BROWSER_PATH,
     RELAY_DISABLE_GPU,
+    RELAY_META_ENRICH_CONCURRENCY,
   };
 }
 
