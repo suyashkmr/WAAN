@@ -270,6 +270,19 @@ Completed tasks were removed for clarity (history remains in git).
     - [x] Mirrored section-nav active treatment to `aria-current="page"` state for consistent highlight behavior.
     - [x] Verified automated checks after interaction-polish pass (`npm run ci:verify`).
     - [x] Manually verify nav highlight + relay/status feedback transitions across scroll and status updates.
+- [x] Focused CSS modularization refactor (`styles.components.css`) to reduce regression surface.
+  - [x] Extract shared app-shell/header chrome selectors into `styles/components/app-shell.css`.
+  - [x] Extract section navigation styling into `styles/components/navigation.css`.
+  - [x] Extract relay surface styling into `styles/components/relay.css` (status banner, sync progress, log drawer, QR shell).
+  - [x] Extract search + saved-view styling into `styles/components/search-saved.css` (saved-view cards, compare UI, search controls/results/progress/insights).
+  - [x] Extract analytics highlights/accent mapping styling into `styles/components/analytics.css` (highlight cards, guided insights, analytics accent tokens).
+  - [x] Wire import order in `styles.css` to load split modules before legacy component sheet.
+  - [x] Remove duplicated extracted blocks from `styles.components.css`.
+  - [x] Verify no behavior regression via full `npm run ci:verify`.
+  - [x] Continue extraction for remaining analytics panel styling (weekday/hourly/time-of-day chart systems) in similarly scoped slices.
+    - [x] Added `styles/components/analytics-charts.css` for weekday/hourly/time-of-day chart + calendar/heatmap systems.
+    - [x] Moved chart-specific responsive overrides (`max-width: 720px`, `max-width: 640px`) into the new module.
+    - [x] Verified no behavior regression via full `npm run ci:verify`.
 - [ ] Improve information density and readability on analytics-heavy views.
   - [ ] Rebalance panel content hierarchy (primary metric, secondary context, tertiary metadata).
   - [ ] Tune table/list row density, sticky headers, and truncation handling for desktop and mobile.

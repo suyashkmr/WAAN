@@ -1,0 +1,262 @@
+.highlights {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    --card-accent: var(--accent);
+}
+
+.highlight-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.guided-insights {
+    margin-top: 1.25rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.guided-card {
+    border-radius: var(--shape-medium);
+    border: 1px solid var(--border);
+    padding: 0.9rem 1rem;
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.guided-card .cta-link {
+    align-self: flex-start;
+    font-size: var(--type-body-sm);
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.guided-insights-empty {
+    margin: 0;
+    color: var(--muted);
+}
+
+@media (min-width: 900px) {
+    .highlight-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+}
+
+.highlight-card {
+    position: relative;
+    border-radius: 1rem;
+    padding: 1.25rem 1.2rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 180px;
+    background: linear-gradient(160deg,
+        color-mix(in srgb, var(--highlight-accent, var(--accent)) 30%, transparent) 0%,
+        rgba(15, 23, 42, 0.72) 65%);
+    border: 1px solid color-mix(in srgb, var(--highlight-accent, var(--accent)) 28%, var(--border));
+    box-shadow: var(--shadow-card-deep);
+    overflow: hidden;
+}
+
+.highlight-card[data-accent="growth"] {
+    --highlight-accent: #7d8aff;
+}
+
+.highlight-card[data-accent="engagement"] {
+    --highlight-accent: #58d4c3;
+}
+
+.highlight-card[data-accent="risk"] {
+    --highlight-accent: #f6c343;
+}
+
+.highlight-card .highlight-label {
+    font-size: var(--type-label-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted);
+}
+
+.highlight-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+}
+
+.highlight-headline {
+    margin: 0.2rem 0 0.25rem;
+    font-size: var(--type-body-md);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.highlight-card .highlight-value {
+    font-weight: 700;
+    font-size: var(--type-title-md);
+    line-height: var(--leading-snug);
+}
+
+.highlight-card .highlight-descriptor {
+    font-size: var(--type-body-sm);
+    color: color-mix(in srgb, var(--highlight-accent, var(--accent)) 22%, var(--muted));
+}
+
+.highlight-card .highlight-meta {
+    font-size: var(--type-label-sm);
+    color: color-mix(in srgb, var(--muted) 80%, transparent);
+    margin-top: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.info-note-inline {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+}
+
+.info-note-inline svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.highlight-card.links {
+    --highlight-accent: var(--accent);
+}
+
+.highlight-card.activity {
+    --highlight-accent: var(--positive);
+}
+
+.highlight-card.contributors {
+    --highlight-accent: #60a5fa;
+}
+
+.highlight-card.weekday {
+    --highlight-accent: var(--neutral-tone);
+}
+
+.highlight-card.engagement {
+    --highlight-accent: #f59e0b;
+}
+
+.highlight-card.activity-streak {
+    --highlight-accent: #38bdf8;
+}
+
+.highlight-card[hidden] {
+    display: none !important;
+}
+
+.highlight-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--highlight-accent, var(--accent)) 40%, transparent) 0%, transparent 55%);
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.highlight-card .badge {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--highlight-accent, var(--accent)) 55%, var(--text));
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    border-radius: 999px;
+    padding: 0.18rem 0.5rem;
+    border: 1px dashed color-mix(in srgb, var(--highlight-accent, var(--accent)) 45%, transparent);
+}
+
+.highlight-card .highlight-meta {
+    margin-top: auto;
+    font-size: 0.75rem;
+    color: rgba(226, 232, 240, 0.75);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.highlight-card .highlight-meta svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.75;
+}
+
+.highlight-card .highlight-items {
+    margin: 0.2rem 0 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.25rem;
+    list-style-position: inside;
+    font-size: 0.85rem;
+    color: rgba(226, 232, 240, 0.92);
+}
+
+.highlight-card .highlight-items li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.65rem;
+}
+
+.highlight-card .highlight-items .item-label {
+    font-weight: 600;
+}
+
+.highlight-card .highlight-items .item-value {
+    font-variant-numeric: tabular-nums;
+    color: rgba(226, 232, 240, 0.8);
+    white-space: nowrap;
+    text-align: right;
+}
+
+#daily-activity {
+    --card-accent: #38bdf8;
+}
+
+#hourly-activity {
+    --card-accent: #60a5fa;
+}
+
+#timeofday-trend {
+    --card-accent: #22d3ee;
+}
+
+#sentiment-overview,
+#weekday-trend,
+#timeofday-trend,
+#message-types {
+    scroll-margin-top: 7rem;
+}
+
+.sentiment {
+    --card-accent: var(--positive);
+}
+
+#weekly-trend {
+    --card-accent: #fbbf24;
+}
+
+#weekday-trend {
+    --card-accent: #f97316;
+}
+
+.message-types {
+    --card-accent: #6366f1;
+}
+
+.participants {
+    --card-accent: #c084fc;
+}

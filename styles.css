@@ -1,2 +1,8 @@
 @import url("./styles.base.css");
+@import url("./styles/components/app-shell.css");
+@import url("./styles/components/navigation.css");
+@import url("./styles/components/relay.css");
+@import url("./styles/components/search-saved.css");
+@import url("./styles/components/analytics.css");
+@import url("./styles/components/analytics-charts.css");
 @import url("./styles.components.css");

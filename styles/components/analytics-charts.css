@@ -1,0 +1,830 @@
+.hourly-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.weekday-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.weekday-controls .segmented-option {
+    display: inline-flex;
+    position: relative;
+    cursor: pointer;
+}
+
+.weekday-controls .segmented-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.weekday-controls .segmented-option span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    min-width: 120px;
+    text-align: center;
+}
+
+.weekday-controls .segmented-option input:checked + span {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    color: var(--accent);
+    box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent) 50%, transparent);
+    transform: translateY(-1px);
+}
+
+.weekday-controls .segmented-option input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.weekday-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.timeofday-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.timeofday-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 1rem;
+}
+
+.timeofday-summary {
+    font-size: 0.88rem;
+    color: var(--muted);
+}
+
+.timeofday-sparkline {
+    width: 100%;
+    min-height: 160px;
+    background: color-mix(in srgb, var(--muted) 8%, transparent);
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 26%, var(--border));
+    box-shadow: 0 10px 24px rgba(7, 11, 20, 0.14);
+}
+
+.timeofday-sparkline svg {
+    width: 100%;
+    height: 140px;
+    display: block;
+}
+
+.timeofday-sparkline .baseline {
+    stroke: var(--chart-grid-line);
+    stroke-dasharray: 4 4;
+}
+
+.timeofday-sparkline .focus-band {
+    fill: var(--chart-focus-band);
+    stroke: none;
+}
+
+.timeofday-sparkline .sparkline-fill {
+    fill: url(#sparkline-gradient);
+    opacity: 0.8;
+}
+
+.timeofday-sparkline .sparkline-line {
+    fill: none;
+    stroke: color-mix(in srgb, var(--card-accent, var(--accent)) 70%, var(--accent));
+    stroke-width: 2.5;
+}
+
+.timeofday-sparkline .weekend-line {
+    fill: none;
+    stroke: var(--chart-weekend-line);
+    stroke-width: 2;
+    stroke-dasharray: 6 6;
+}
+
+.timeofday-sparkline .sparkline-peak {
+    fill: var(--chart-peak-fill);
+    stroke: var(--chart-peak-stroke);
+    stroke-width: 1.5;
+}
+
+.timeofday-sparkline .axis-line {
+    stroke: var(--chart-grid-line);
+}
+
+.timeofday-sparkline .axis-tick {
+    stroke: var(--chart-grid-line);
+}
+
+.timeofday-sparkline .axis-label {
+    font-size: 0.7rem;
+    fill: var(--chart-axis-label);
+}
+
+.timeofday-band-grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.timeofday-band {
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.95rem;
+    border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 30%, var(--border));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--card-accent, var(--accent)) 13%, transparent) 0%, color-mix(in srgb, var(--muted) 7%, transparent) 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.timeofday-band.top {
+    border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 65%, var(--border));
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--chart-focus-band) 70%, transparent);
+}
+
+.timeofday-band .band-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--card-accent, var(--accent)) 55%, var(--text));
+}
+
+.timeofday-band .band-count {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.timeofday-band .band-share {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.timeofday-callouts {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.timeofday-callout {
+    padding: 0.9rem;
+    border-radius: 0.95rem;
+    border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 28%, var(--border));
+    background: color-mix(in srgb, var(--muted) 7%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.timeofday-callout.focus {
+    border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 60%, var(--border));
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--chart-focus-band) 70%, transparent);
+}
+
+.timeofday-callout strong {
+    font-size: 0.95rem;
+}
+
+.timeofday-callout span {
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.timeofday-callout .badge {
+    align-self: flex-start;
+    font-size: 0.75rem;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    color: color-mix(in srgb, var(--card-accent, var(--accent)) 65%, var(--text));
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    border: 1px dashed color-mix(in srgb, var(--card-accent, var(--accent)) 40%, transparent);
+}
+
+.timeofday-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    display: inline-block;
+    border: 1px solid rgba(15, 23, 42, 0.15);
+}
+
+.legend-swatch.main {
+    background: color-mix(in srgb, var(--card-accent, var(--accent)) 80%, var(--accent));
+}
+
+.legend-swatch.weekend {
+    background: repeating-linear-gradient(135deg, var(--chart-weekend-line), var(--chart-weekend-line) 4px, color-mix(in srgb, var(--chart-weekend-line) 34%, transparent) 4px, color-mix(in srgb, var(--chart-weekend-line) 34%, transparent) 8px);
+}
+
+.legend-swatch.baseline {
+    background: linear-gradient(90deg, transparent 25%, var(--chart-grid-line) 25%, var(--chart-grid-line) 75%, transparent 75%);
+}
+
+.legend-swatch.focus {
+    background: color-mix(in srgb, var(--chart-focus-band) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--chart-focus-band) 100%, transparent);
+}
+
+.weekday-bar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.75rem;
+}
+
+.weekday-item {
+    background:
+        linear-gradient(164deg, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 62%),
+        color-mix(in srgb, var(--muted) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+    border-radius: 0.9rem;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 8px 20px rgba(8, 12, 24, 0.12);
+}
+
+.weekday-bar-container {
+    position: relative;
+    height: 140px;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--muted) 8%, transparent);
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+}
+
+.weekday-bar-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 34%, transparent), color-mix(in srgb, var(--accent) 16%, transparent));
+    border-radius: 0.75rem 0.75rem 0 0;
+    transition: height 0.2s ease;
+}
+
+.weekday-bar-fill.above {
+    background: color-mix(in srgb, var(--positive) 30%, transparent);
+    border-top: 2px solid var(--positive);
+}
+
+.weekday-bar-fill.below {
+    background: color-mix(in srgb, var(--negative) 30%, transparent);
+    border-top: 2px solid var(--negative);
+}
+
+.weekday-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.weekday-label {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.weekday-count {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.weekday-share {
+    font-variant-numeric: tabular-nums;
+}
+
+.weekday-badge {
+    align-self: flex-start;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.weekday-badge.positive {
+    color: color-mix(in srgb, var(--positive) 65%, var(--text));
+    border-color: color-mix(in srgb, var(--positive) 45%, transparent);
+}
+
+.weekday-badge.negative {
+    color: color-mix(in srgb, var(--negative) 65%, var(--text));
+    border-color: color-mix(in srgb, var(--negative) 45%, transparent);
+}
+
+.weekday-heatmap-mobile {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    overflow: hidden;
+}
+
+.weekday-heatmap-row {
+    display: grid;
+    grid-template-columns: 72px repeat(2, minmax(0, 1fr));
+}
+
+.weekday-heatmap-row.header {
+    background: color-mix(in srgb, var(--muted) 18%, transparent);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.weekday-heatmap-mobile .heatmap-cell {
+    padding: 0.6rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--muted) 20%, transparent);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.weekday-heatmap-mobile .heatmap-cell.label {
+    justify-content: flex-start;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.corner {
+    justify-content: flex-start;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.heat {
+    border-left: 1px solid color-mix(in srgb, var(--muted) 35%, transparent);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.level-0 {
+    background: color-mix(in srgb, var(--muted) 12%, transparent);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.level-1 {
+    background: var(--calendar-level-1);
+    color: var(--text);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.level-2 {
+    background: var(--calendar-level-2);
+    color: var(--text);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.level-3 {
+    background: var(--calendar-level-3);
+    color: var(--text);
+}
+
+.weekday-heatmap-mobile .heatmap-cell.level-4 {
+    background: var(--calendar-level-4);
+    color: var(--calendar-level-4-fg);
+}
+
+.weekday-heatmap-row:last-child .heatmap-cell {
+    border-bottom: none;
+}
+
+.toggle-group,
+.brush-group {
+    background: color-mix(in srgb, var(--muted) 12%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 0.85rem;
+    padding: 0.65rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.toggle-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.toggle-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
+
+.brush-inputs {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.brush-inputs input[type="range"] {
+    flex: 1;
+}
+
+.brush-labels {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.brush-summary {
+    margin-bottom: 0.65rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.hourly-filter-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+}
+
+.calendar-chart {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.2rem;
+    max-height: 340px;
+    overflow-y: auto;
+    padding-bottom: 0.6rem;
+    padding-right: 0.4rem;
+}
+
+.calendar-month {
+    background:
+        linear-gradient(164deg, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 66%),
+        color-mix(in srgb, var(--muted) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+    border-radius: 1rem;
+    padding: 0.8rem 0.9rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-width: 240px;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(7, 11, 22, 0.1);
+}
+
+.calendar-month-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.calendar-weekdays span {
+    padding: 0.15rem 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(48px, 1fr);
+    gap: 0.25rem;
+}
+
+.calendar-day {
+    height: 100%;
+    min-width: 0;
+    border-radius: 0.7rem;
+    border: 1px solid color-mix(in srgb, var(--muted) 25%, transparent);
+    background: color-mix(in srgb, var(--muted) 8%, transparent);
+    padding: 0.28rem 0.35rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    transition: transform var(--motion-duration-fast) var(--motion-ease-out), box-shadow var(--motion-duration-fast) var(--motion-ease-out), border-color var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.calendar-day.filler {
+    visibility: hidden;
+    pointer-events: none;
+    height: 100%;
+}
+
+.calendar-day.inactive {
+    background: transparent;
+    border: 1px dashed color-mix(in srgb, var(--muted) 35%, transparent);
+    color: var(--muted);
+}
+
+.calendar-day.level-0 {
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
+}
+
+.calendar-day.level-1 {
+    background: var(--calendar-level-1);
+}
+
+.calendar-day.level-2 {
+    background: var(--calendar-level-2);
+}
+
+.calendar-day.level-3 {
+    background: var(--calendar-level-3);
+}
+
+.calendar-day.level-4 {
+    background: var(--calendar-level-4);
+    color: var(--calendar-level-4-fg);
+    border-color: transparent;
+}
+
+.calendar-day.level-4 .day-number,
+.calendar-day.level-4 .day-count {
+    color: var(--calendar-level-4-fg);
+}
+
+.calendar-day.zero .day-count {
+    color: var(--muted);
+}
+
+.calendar-day:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(8, 13, 24, 0.18);
+}
+
+.day-number {
+    font-size: clamp(0.6rem, 1.2vw, 0.7rem);
+    font-weight: 600;
+    color: var(--muted);
+    align-self: flex-start;
+}
+
+.day-count {
+    font-size: clamp(0.7rem, 1.5vw, 0.82rem);
+    font-weight: 600;
+    color: var(--text);
+    margin-top: auto;
+    line-height: 1.15;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.calendar-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    grid-column: 1 / -1;
+}
+
+.calendar-legend .legend-cells {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.legend-cell {
+    width: 20px;
+    height: 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 10%, transparent);
+}
+
+.legend-cell.level-0 {
+    background: color-mix(in srgb, var(--muted) 18%, transparent);
+}
+
+.legend-cell.level-1 {
+    background: var(--calendar-level-1);
+}
+
+.legend-cell.level-2 {
+    background: var(--calendar-level-2);
+}
+
+.legend-cell.level-3 {
+    background: var(--calendar-level-3);
+}
+
+.legend-cell.level-4 {
+    background: var(--calendar-level-4);
+}
+
+.hourly-heatmap {
+    overflow-x: auto;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-bottom: 0.75rem;
+    padding-right: 0.5rem;
+    border-radius: 0.95rem;
+    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: 72px repeat(7, minmax(56px, 1fr));
+    grid-auto-rows: 36px;
+    gap: 0.28rem;
+    align-items: stretch;
+}
+
+.heatmap-cell {
+    border-radius: 0.62rem;
+    background: color-mix(in srgb, var(--muted) 15%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0.35rem;
+    text-align: center;
+}
+
+.heatmap-cell.header {
+    background: transparent;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.75rem;
+    z-index: 2;
+}
+
+.heatmap-cell.header.weekday {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    position: sticky;
+    top: 0;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--border) 55%, transparent);
+    z-index: 4;
+}
+
+.heatmap-cell.header.hour-label {
+    justify-content: flex-end;
+    padding-right: 0.6rem;
+}
+
+.heatmap-cell.corner {
+    background: transparent;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    box-shadow: 2px 2px 0 color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.heat-cell {
+    border: 1px solid color-mix(in srgb, var(--muted) 34%, transparent);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.heat-cell.level-0 {
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
+}
+
+.heat-cell.level-1 {
+    background: var(--calendar-level-1);
+}
+
+.heat-cell.level-2 {
+    background: var(--calendar-level-2);
+}
+
+.heat-cell.level-3 {
+    background: var(--calendar-level-3);
+}
+
+.heat-cell.level-4 {
+    background: var(--calendar-level-4);
+    color: var(--calendar-level-4-fg);
+    border-color: transparent;
+}
+
+.heat-cell.muted {
+    opacity: 0.4;
+}
+
+.heat-cell.anomaly {
+    position: relative;
+    border-color: var(--warning);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+.heat-cell:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(7, 10, 18, 0.18);
+}
+
+.heat-cell.level-0,
+.heat-cell.level-1,
+.heat-cell.level-2,
+.heat-cell.level-3 {
+    color: var(--text);
+}
+
+.hourly-anomalies {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.hourly-anomalies .badge {
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--warning) 50%, transparent);
+    color: color-mix(in srgb, var(--warning) 65%, var(--text));
+}
+
+@media (max-width: 720px) {
+    .hourly-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .weekday-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .timeofday-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .timeofday-sparkline svg {
+        height: 150px;
+    }
+
+    .timeofday-band-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+
+    .timeofday-callouts {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .weekday-controls .toggle-group,
+    .weekday-controls .brush-group {
+        width: 100%;
+    }
+
+    .weekday-bar-grid {
+        display: none;
+    }
+
+    .weekday-heatmap-mobile {
+        display: block;
+    }
+}
