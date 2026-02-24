@@ -72,7 +72,7 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Implement incremental index updates on dataset changes.
   - [x] Benchmark query latency and worker CPU before/after.
 
-### Post-Current-List: UI Polish (Tailwind CSS + shadcn/ui)
+### Post-Current-List: UI Polish (Tailwind CSS + Shoelace primitives)
 
 - [x] Define UI migration scope and acceptance criteria before implementation.
   - [x] Freeze target surfaces for phase 1.
@@ -114,10 +114,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Add Tailwind config, content globs, and build integration.
   - [x] Map existing design tokens/CSS vars to Tailwind theme extensions.
   - [x] Verify production build output size and purge behavior.
-- [ ] Introduce shadcn/ui foundation and shared primitives.
-  - [ ] Install/generate core primitives (button, input, select, dialog, tooltip, tabs, card).
-  - [ ] Wire primitives to existing theme variables and motion/accessibility settings.
-  - [ ] Document component usage rules to avoid ad-hoc styling drift.
+- [x] Introduce Shoelace foundation and shared primitives (shadcn/ui-compatible alternative for vanilla JS runtime).
+  - [x] Install/generate core primitives (button, input, select, dialog, tooltip, tabs, card).
+  - [x] Wire primitives to existing theme variables and motion/accessibility settings.
+  - [x] Document component usage rules to avoid ad-hoc styling drift.
 - [ ] Migrate one vertical slice first before broad rollout.
   - [ ] Replace one end-to-end surface (for example dashboard hero + section nav + summary cards).
   - [ ] Validate behavior parity with existing keyboard/mouse flows.

@@ -1,0 +1,59 @@
+:root,
+.sl-theme-light,
+.sl-theme-dark {
+    --sl-font-sans: var(--font-family-base);
+    --sl-color-primary-50: color-mix(in srgb, var(--accent) 12%, var(--bg));
+    --sl-color-primary-100: color-mix(in srgb, var(--accent) 20%, var(--bg));
+    --sl-color-primary-200: color-mix(in srgb, var(--accent) 34%, var(--bg));
+    --sl-color-primary-300: color-mix(in srgb, var(--accent) 48%, var(--bg));
+    --sl-color-primary-400: color-mix(in srgb, var(--accent) 64%, var(--bg));
+    --sl-color-primary-500: var(--accent);
+    --sl-color-primary-600: color-mix(in srgb, var(--accent) 88%, #000);
+    --sl-color-primary-700: color-mix(in srgb, var(--accent) 76%, #000);
+    --sl-color-primary-800: color-mix(in srgb, var(--accent) 64%, #000);
+    --sl-color-primary-900: color-mix(in srgb, var(--accent) 52%, #000);
+    --sl-color-neutral-0: var(--bg);
+    --sl-color-neutral-50: color-mix(in srgb, var(--card-bg) 90%, var(--bg));
+    --sl-color-neutral-100: color-mix(in srgb, var(--card-bg) 82%, var(--bg));
+    --sl-color-neutral-200: color-mix(in srgb, var(--card-bg) 70%, var(--bg));
+    --sl-color-neutral-300: color-mix(in srgb, var(--muted) 44%, var(--bg));
+    --sl-color-neutral-400: color-mix(in srgb, var(--muted) 65%, var(--bg));
+    --sl-color-neutral-500: var(--muted);
+    --sl-color-neutral-600: color-mix(in srgb, var(--muted) 78%, var(--text));
+    --sl-color-neutral-700: color-mix(in srgb, var(--text) 78%, var(--bg));
+    --sl-color-neutral-800: color-mix(in srgb, var(--text) 88%, var(--bg));
+    --sl-color-neutral-900: var(--text);
+    --sl-panel-background-color: var(--card-bg);
+    --sl-panel-border-color: var(--border);
+    --sl-input-background-color: color-mix(in srgb, var(--card-bg) 88%, transparent);
+    --sl-input-border-color: var(--border);
+    --sl-input-border-color-focus: var(--accent);
+    --sl-input-color: var(--text);
+    --sl-input-placeholder-color: var(--muted);
+    --sl-border-radius-medium: var(--shape-medium);
+    --sl-border-radius-large: var(--shape-large);
+    --sl-shadow-small: var(--shadow-soft);
+    --sl-shadow-medium: var(--shadow-card);
+    --sl-shadow-large: var(--shadow-card-strong);
+    --sl-transition-fast: var(--motion-duration-fast);
+    --sl-transition-medium: var(--motion-duration-medium);
+    --sl-transition-slow: var(--motion-duration-slow);
+}
+
+:root[data-sl-motion="reduced"] {
+    --sl-transition-fast: 0ms;
+    --sl-transition-medium: 0ms;
+    --sl-transition-slow: 0ms;
+}
+
+:root[data-sl-contrast="high"] {
+    --sl-panel-border-color: color-mix(in srgb, var(--border) 85%, #fff);
+    --sl-input-border-color: color-mix(in srgb, var(--border) 85%, #fff);
+}
+
+sl-card::part(base) {
+    border-color: var(--border);
+    border-radius: var(--shape-medium);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-card);
+}
