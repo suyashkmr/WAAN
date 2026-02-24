@@ -17,6 +17,7 @@
 <body>
     <div class="ambient-field" aria-hidden="true"></div>
     <nav class="section-nav" aria-label="Section shortcuts">
+        <p class="section-nav-kicker section-kicker">Jump to</p>
         <div class="section-nav-inner"></div>
     </nav>
 
@@ -29,7 +30,7 @@
                             decoding="async">
                     </div>
                     <div class="hero-brand-copy">
-                        <p class="eyebrow">ChatScope Relay</p>
+                        <p class="eyebrow section-kicker">ChatScope Relay</p>
                         <h1>ChatScope Conversation Analytics</h1>
                         <p class="subtitle">Link once, view everything. Start the desktop relay, pick any chat, and let
                             ChatScope keep the highlights ready.</p>
@@ -855,12 +856,17 @@
             data-accent="saved-views">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                <path
-                                    d="M17 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V7zM7 5h7v4H7zm7 14H7v-6h7zm3-12h-2V5h1z" />
-                            </svg></span>Saved Setups</h2>
-                    <button type="button" class="card-toggle" aria-expanded="true"
-                        data-target="saved-views-content">▾</button>
+                    <div>
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M17 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V7zM7 5h7v4H7zm7 14H7v-6h7zm3-12h-2V5h1z" />
+                                </svg></span>Saved Setups</h2>
+                        <p class="card-subtitle">Save and replay filter combinations to compare patterns faster.</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="saved-views-content">▾</button>
+                    </div>
                 </div>
             </div>
             <div class="card-content" id="saved-views-content">
@@ -963,11 +969,17 @@
         <sl-card class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq">
             <div class="card-header">
                 <div class="card-title-group">
-                    <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                <path
-                                    d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" />
-                            </svg></span>FAQ</h2>
-                    <button type="button" class="card-toggle" aria-expanded="true" data-target="faq-content">▾</button>
+                    <div>
+                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" />
+                                </svg></span>FAQ</h2>
+                        <p class="card-subtitle">Operational and safety answers for relay setup, sync, and exports.</p>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="faq-content">▾</button>
+                    </div>
                 </div>
             </div>
             <div class="card-content" id="faq-content">

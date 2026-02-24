@@ -160,6 +160,45 @@ Completed tasks were removed for clarity (history remains in git).
     - [x] `npm run ci:verify`
     - [x] Manual UI smoke
 
+### UI Beautification Backlog (Tailwind + Shoelace)
+
+- [x] Unify visual hierarchy across hero, section nav, and panel headers.
+  - [x] Define one reusable header pattern (title, meta, actions) for migrated panels.
+  - [x] Standardize section intro treatment (icon, label, descriptor).
+  - [x] Verify readability and alignment in light/dark at desktop + mobile.
+- [ ] Normalize spacing and rhythm across migrated surfaces.
+  - [ ] Enforce consistent spacing scale for mobile/tablet/desktop containers.
+  - [ ] Remove one-off margin/padding overrides where a shared token can be used.
+  - [ ] Validate no clipping/overlap regressions in dense dashboard layouts.
+- [ ] Refine typography scale and information density.
+  - [ ] Lock type ramp for hero title, panel titles, body text, metadata text.
+  - [ ] Tune line-length and wrapping for analytics-heavy cards/tables.
+  - [ ] Verify keyboard focus readability and a11y contrast for text states.
+- [ ] Improve semantic status/color token usage.
+  - [ ] Add/normalize semantic tokens (`success`, `warning`, `danger`, `muted`) mapped to existing theme vars.
+  - [ ] Apply tokens consistently to relay states, badges, and helper feedback.
+  - [ ] Verify token parity in light/dark + high-contrast mode.
+- [ ] Polish hero and section-nav interactions.
+  - [ ] Tighten active-section indicator behavior and transition polish.
+  - [ ] Improve hero status chip visual differentiation across relay states.
+  - [ ] Confirm reduced-motion compatibility for all transitions.
+- [ ] Improve dense data-surface usability.
+  - [ ] Standardize table hover/focus/striping/sticky-header treatments.
+  - [ ] Add contextual tooltip/popover help for truncated or ambiguous metrics.
+  - [ ] Validate keyboard and screen-reader behavior on enriched controls.
+- [ ] Harden form/search/saved-view visual consistency.
+  - [ ] Normalize control heights, label spacing, helper/error states for `sl-input`/`sl-select`/`sl-button`.
+  - [ ] Improve saved-view affordances (active state, dirty indicator, recency hint).
+  - [ ] Verify programmatic state sync remains visually accurate.
+- [ ] Standardize empty/loading/error states.
+  - [ ] Define reusable visual patterns for empty/loading/error cards and panels.
+  - [ ] Add clear action affordances for recovery paths.
+  - [ ] Verify parity across dashboard, search, and saved-view surfaces.
+- [ ] Deepen theming polish.
+  - [ ] Tune dark-mode elevation and border separation for cards/panels.
+  - [ ] Add subtle background depth treatment that preserves readability.
+  - [ ] Verify exported PDF/theme behavior remains aligned with active scheme.
+
 ### Dead Code Cleanup
 
 - [x] Remove likely orphaned `cloud-relay/` after final validation.
