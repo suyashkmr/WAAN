@@ -170,10 +170,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Enforce consistent spacing scale for mobile/tablet/desktop containers.
   - [x] Remove one-off margin/padding overrides where a shared token can be used.
   - [x] Validate no clipping/overlap regressions in dense dashboard layouts.
-- [ ] Refine typography scale and information density.
-  - [ ] Lock type ramp for hero title, panel titles, body text, metadata text.
-  - [ ] Tune line-length and wrapping for analytics-heavy cards/tables.
-  - [ ] Verify keyboard focus readability and a11y contrast for text states.
+- [x] Refine typography scale and information density.
+  - [x] Lock type ramp for hero title, panel titles, body text, metadata text.
+  - [x] Tune line-length and wrapping for analytics-heavy cards/tables.
+  - [x] Verify keyboard focus readability and a11y contrast for text states.
 - [ ] Improve semantic status/color token usage.
   - [ ] Add/normalize semantic tokens (`success`, `warning`, `danger`, `muted`) mapped to existing theme vars.
   - [ ] Apply tokens consistently to relay states, badges, and helper feedback.

@@ -85,7 +85,7 @@
 }
 
 .hero-brand-copy h1 {
-    font-size: clamp(1.58rem, 2.2vw, 2.2rem);
+    font-size: clamp(1.64rem, 2.4vw, 2.28rem);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-display);
     max-inline-size: 100%;
@@ -119,7 +119,8 @@
     font-size: var(--type-body-lg);
     line-height: var(--leading-relaxed);
     margin-top: var(--space-2);
-    max-width: 54ch;
+    max-width: 58ch;
+    text-wrap: pretty;
 }
 
 .hero-status {
@@ -1252,7 +1253,8 @@ body[data-reduce-motion="true"] .hero-milestone.is-ready-celebration::after {
     color: color-mix(in srgb, var(--muted) 86%, var(--text));
     font-size: var(--type-body-sm);
     line-height: var(--leading-relaxed);
-    max-width: 68ch;
+    max-width: 62ch;
+    text-wrap: pretty;
 }
 
 .card-toggle {
@@ -2538,9 +2540,11 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .search-results-summary {
-    font-size: 0.92rem;
+    font-size: var(--type-body-sm);
+    line-height: var(--leading-body);
     color: color-mix(in srgb, var(--text) 80%, transparent);
-    max-width: 65ch;
+    max-width: 62ch;
+    text-wrap: pretty;
 }
 
 .search-progress {
@@ -2710,9 +2714,12 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .search-result-message {
-    font-size: 0.95rem;
+    font-size: var(--type-body-sm);
+    line-height: var(--leading-body);
     color: var(--text);
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-width: 72ch;
 }
 
 .search-results-empty {
@@ -2747,15 +2754,16 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .summary-label {
-    font-size: 0.8rem;
+    font-size: var(--type-label-sm);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-label);
     color: var(--muted);
 }
 
 .summary-value {
-    font-size: 1.1rem;
+    font-size: var(--type-title-sm);
     font-weight: 600;
+    line-height: var(--leading-snug);
     color: var(--text);
 }
 
@@ -4681,16 +4689,18 @@ td {
 }
 
 th {
-    font-size: 0.76rem;
+    font-size: var(--type-label-xs);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-label);
     color: var(--muted);
     font-weight: 600;
+    white-space: nowrap;
 }
 
 td {
-    font-size: 0.92rem;
-    line-height: 1.45;
+    font-size: var(--type-body-sm);
+    line-height: var(--leading-body);
+    overflow-wrap: anywhere;
 }
 
 tbody tr:hover {
