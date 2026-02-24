@@ -5,6 +5,11 @@ import {
   ensureViewSnapshot as ensureSavedViewSnapshot,
 } from "./savedViewsSnapshot.js";
 import { createSavedViewsUiController } from "./savedViewsUi.js";
+import {
+  createStateSignature,
+  captureCurrentViewSignature,
+  bindSavedViewDirtyWatchers,
+} from "./savedViewsDirtyTracking.js";
 
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
@@ -61,48 +66,14 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   let activeViewId = null;
   let lastAppliedViewSignature = null;
 
-  function createComparableViewState(viewLike) {
-    const rawRangeData = viewLike?.rangeData;
-    const rangeData = rawRangeData && typeof rawRangeData === "object"
-      ? {
-          type: "custom",
-          start: rawRangeData.start ?? "",
-          end: rawRangeData.end ?? "",
-        }
-      : (rawRangeData ?? viewLike?.range ?? "all");
-    return {
-      rangeData,
-      hourlyFilters: { ...(viewLike?.hourlyFilters || {}) },
-      hourlyBrush: { ...(viewLike?.hourlyBrush || {}) },
-      weekdayFilters: { ...(viewLike?.weekdayFilters || {}) },
-      weekdayBrush: { ...(viewLike?.weekdayBrush || {}) },
-    };
-  }
-
-  function createStateSignature(viewLike) {
-    return JSON.stringify(createComparableViewState(viewLike));
-  }
-
-  function captureCurrentViewSignature() {
-    const range = getCurrentRange();
-    const customRange = getCustomRange();
-    const rangeData = range === "custom" && customRange
-      ? { type: "custom", start: customRange.start ?? "", end: customRange.end ?? "" }
-      : range;
-    const hourly = getHourlyState();
-    const weekday = getWeekdayState();
-    return createStateSignature({
-      rangeData,
-      hourlyFilters: hourly?.filters || {},
-      hourlyBrush: hourly?.brush || {},
-      weekdayFilters: weekday?.filters || {},
-      weekdayBrush: weekday?.brush || {},
-    });
-  }
-
   function isActiveViewDirty() {
     if (!activeViewId || !dataAvailable || !lastAppliedViewSignature) return false;
-    return captureCurrentViewSignature() !== lastAppliedViewSignature;
+    return captureCurrentViewSignature({
+      getCurrentRange,
+      getCustomRange,
+      getHourlyState,
+      getWeekdayState,
+    }) !== lastAppliedViewSignature;
   }
 
   function captureCurrentView(name) {
@@ -183,13 +154,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
         activeViewDirty: isActiveViewDirty(),
       }),
       onPanelAction: actionId => {
-        if (actionId === "save-view") {
-          handleSaveView();
-          return;
-        }
-        if (actionId === "focus-range") {
-          rangeSelect?.focus();
-        }
+        if (actionId === "save-view") return handleSaveView();
+        if (actionId === "focus-range") rangeSelect?.focus();
       },
     },
   });
@@ -316,10 +282,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     updateStatus("Comparison updated.", "info");
   }
 
-  async function handleSavedViewGalleryClick(event) {
-    const card = event.target.closest(".saved-view-card");
-    if (!card) return;
-    const viewId = card.dataset.viewId;
+  async function applySavedViewById(viewId) {
     if (!viewId) return;
     const view = getSavedViewById(viewId);
     if (!view) {
@@ -331,21 +294,18 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     if (listSelect) listSelect.value = viewId;
   }
 
+  async function handleSavedViewGalleryClick(event) {
+    const card = event.target.closest(".saved-view-card");
+    if (!card) return;
+    await applySavedViewById(card.dataset.viewId);
+  }
+
   async function handleSavedViewGalleryKeydown(event) {
     if (event.key !== "Enter" && event.key !== " ") return;
     const card = event.target.closest(".saved-view-card");
     if (!card) return;
     event.preventDefault();
-    const viewId = card.dataset.viewId;
-    if (!viewId) return;
-    const view = getSavedViewById(viewId);
-    if (!view) {
-      updateStatus("That saved view is missing.", "error");
-      refreshUI();
-      return;
-    }
-    await applySavedView(view);
-    if (listSelect) listSelect.value = viewId;
+    await applySavedViewById(card.dataset.viewId);
   }
 
   function attachEvents() {
@@ -358,30 +318,12 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     }
     if (compareButton) compareButton.addEventListener("click", handleCompareViews);
 
-    const refreshOnStateChange = () => {
-      if (!activeViewId) return;
-      refreshUI();
-    };
-    [
+    const refreshOnStateChange = () => activeViewId && refreshUI();
+    bindSavedViewDirtyWatchers({
       rangeSelect,
       customStartInput,
       customEndInput,
-      typeof document !== "undefined" ? document.getElementById("filter-weekdays") : null,
-      typeof document !== "undefined" ? document.getElementById("filter-weekends") : null,
-      typeof document !== "undefined" ? document.getElementById("filter-working") : null,
-      typeof document !== "undefined" ? document.getElementById("filter-offhours") : null,
-      typeof document !== "undefined" ? document.getElementById("hourly-brush-start") : null,
-      typeof document !== "undefined" ? document.getElementById("hourly-brush-end") : null,
-      typeof document !== "undefined" ? document.getElementById("weekday-toggle-weekdays") : null,
-      typeof document !== "undefined" ? document.getElementById("weekday-toggle-weekends") : null,
-      typeof document !== "undefined" ? document.getElementById("weekday-toggle-working") : null,
-      typeof document !== "undefined" ? document.getElementById("weekday-toggle-offhours") : null,
-      typeof document !== "undefined" ? document.getElementById("weekday-hour-start") : null,
-      typeof document !== "undefined" ? document.getElementById("weekday-hour-end") : null,
-    ].forEach(control => {
-      if (!control) return;
-      control.addEventListener("change", refreshOnStateChange);
-      control.addEventListener("input", refreshOnStateChange);
+      onStateChange: refreshOnStateChange,
     });
   }
 
