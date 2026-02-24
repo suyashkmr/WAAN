@@ -74,14 +74,46 @@ Completed tasks were removed for clarity (history remains in git).
 
 ### Post-Current-List: UI Polish (Tailwind CSS + shadcn/ui)
 
-- [ ] Define UI migration scope and acceptance criteria before implementation.
-  - [ ] Freeze target surfaces for phase 1 (for example hero, section nav, cards, relay controls).
-  - [ ] Define parity checklist: dark/light theme behavior, accessibility toggles, Electron layout, responsive breakpoints.
-  - [ ] Capture baseline screenshots and interaction notes for regression comparison.
-- [ ] Introduce Tailwind CSS pipeline and design-token mapping.
-  - [ ] Add Tailwind config, content globs, and build integration.
-  - [ ] Map existing design tokens/CSS vars to Tailwind theme extensions.
-  - [ ] Verify production build output size and purge behavior.
+- [x] Define UI migration scope and acceptance criteria before implementation.
+  - [x] Freeze target surfaces for phase 1.
+    - [x] Include `#hero-panel` surface (hero headline, status badge/copy/meta, milestone strip).
+    - [x] Include section navigation strip (`.section-nav`, active-state/highlight behavior).
+    - [x] Include overview summary cards in `#summary` (count/stat card wrappers and shared card chrome).
+    - [x] Include relay status/banner + primary relay controls surface (`#relay-status-banner`, relay action controls).
+    - [x] Keep phase-1 out of scope: search panel, saved views, export controls, deep analytics panels.
+  - [x] Define parity checklist: dark/light theme behavior, accessibility toggles, Electron layout, responsive breakpoints.
+    - [x] Theme parity checklist (phase-1 surfaces):
+      - [x] `theme=light`, `theme=dark`, and `theme=system` render correctly for `#hero-panel`, `.section-nav`, `#summary`, and `#relay-status-banner`.
+      - [x] Active/inactive/hover/focus/disabled states remain visually distinct in both schemes.
+      - [x] Hero relay states (`Not connected`, `waiting_qr`, `starting`, `running`) preserve readability and status emphasis in both schemes.
+      - [x] Save-as-PDF/export theme selection remains aligned with active theme behavior.
+    - [x] Accessibility parity checklist (phase-1 surfaces):
+      - [x] Keyboard tab order is stable; all phase-1 interactive elements are focusable with visible focus indicators.
+      - [x] `data-reduce-motion=\"true\"` disables non-essential transitions/animations for phase-1 elements.
+      - [x] `data-contrast=\"high\"` preserves readable text, borders, and status chips across phase-1 elements.
+      - [x] Nav + relay controls remain operable without pointer input.
+    - [x] Electron/runtime parity checklist:
+      - [x] Electron packaged app layout matches browser/dev baseline for phase-1 surfaces at default window size.
+      - [x] Relay banner updates and hero status updates render without clipped/overflowing controls.
+      - [x] No dependence on browser-only devtools workflow for parity verification.
+    - [x] Responsive parity checklist:
+      - [x] Verify at 1280px, 1024px, 768px, and 390px widths for phase-1 surfaces.
+      - [x] Section nav remains usable (no overlap/truncation that blocks navigation).
+      - [x] Hero and summary cards keep readable hierarchy (no collapsed/overlapping text).
+      - [x] Relay status/banner actions remain visible and reachable without horizontal scroll.
+    - [x] Verification evidence requirements:
+      - [x] Capture before/after screenshots for each phase-1 surface in light + dark at desktop and mobile widths.
+      - [x] Record one manual keyboard traversal note and one relay-status transition note per scheme.
+      - [x] Keep parent task open until all above checks are executed post-implementation.
+  - [x] Capture baseline screenshots and interaction notes for regression comparison.
+    - [x] Execute baseline capture using `docs/ui-phase1-baseline-capture.md`.
+    - [x] Save required screenshots under `docs/ui-baseline/` with the documented naming convention.
+    - [x] Record baseline notes in `docs/ui-baseline/phase1-notes.md` (keyboard traversal + relay status transition).
+    - [x] Confirm light + dark evidence exists before phase-1 migration starts.
+- [x] Introduce Tailwind CSS pipeline and design-token mapping.
+  - [x] Add Tailwind config, content globs, and build integration.
+  - [x] Map existing design tokens/CSS vars to Tailwind theme extensions.
+  - [x] Verify production build output size and purge behavior.
 - [ ] Introduce shadcn/ui foundation and shared primitives.
   - [ ] Install/generate core primitives (button, input, select, dialog, tooltip, tabs, card).
   - [ ] Wire primitives to existing theme variables and motion/accessibility settings.
