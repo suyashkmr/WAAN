@@ -1,103 +1,109 @@
-import { getTimestamp } from "./analytics.js";
 import { toISODate, sanitizeText, formatDisplayDate } from "./utils.js";
+import {
+  createDatasetIndexCache,
+  ensureIndexedDataset,
+  resolveIndexedCandidates,
+  normalizeTokenList,
+} from "./search/workerIndex.js";
 
 const cancelledJobs = new Set();
+const datasetIndexCache = createDatasetIndexCache();
 
-self.onmessage = event => {
-  const { id, type, payload } = event.data || {};
-  if (typeof id === "undefined") return;
+if (typeof self !== "undefined") {
+  self.onmessage = event => {
+    const { id, type, payload } = event.data || {};
+    if (typeof id === "undefined") return;
 
-  if (type === "cancel") {
-    cancelledJobs.add(id);
-    return;
-  }
+    if (type === "cancel") {
+      cancelledJobs.add(id);
+      return;
+    }
+    if (type !== "search") return;
 
-  if (type !== "search") return;
-
-  try {
-    const { entries = [], query = {}, resultLimit = 200, startMs = null, endMs = null } = payload || {};
-    const result = runSearch(id, entries, query, resultLimit, startMs, endMs);
-    if (!result) return;
-    self.postMessage({ id, type: "result", ...result });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    self.postMessage({ id, type: "error", error: message });
-  } finally {
-    cancelledJobs.delete(id);
-  }
-};
+    try {
+      const {
+        entries = [],
+        query = {},
+        resultLimit = 200,
+        startMs = null,
+        endMs = null,
+        datasetFingerprint = "",
+      } = payload || {};
+      const result = runSearch({
+        jobId: id,
+        entries,
+        query,
+        resultLimit,
+        startMs,
+        endMs,
+        datasetFingerprint,
+      });
+      if (!result) return;
+      self.postMessage({ id, type: "result", ...result });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      self.postMessage({ id, type: "error", error: message });
+    } finally {
+      cancelledJobs.delete(id);
+    }
+  };
+}
 
 function isCancelled(id) {
   return cancelledJobs.has(id);
 }
 
-function runSearch(jobId, entries, query, resultLimit, startMs, endMs) {
+function runSearch({ jobId, entries, query, resultLimit, startMs, endMs, datasetFingerprint }) {
   if (!Array.isArray(entries) || !entries.length) {
     return { results: [], total: 0, summary: null };
   }
-
-  const tokens = query.text
-    ? query.text
-        .toLowerCase()
-        .split(/\s+/)
-        .map(token => token.trim())
-        .filter(Boolean)
-    : [];
-  const participant = query.participant ? String(query.participant).toLowerCase() : "";
-
-  const validStart = typeof startMs === "number" ? startMs : null;
-  const validEnd = typeof endMs === "number" ? endMs : null;
-  const results = [];
-  let totalMatches = 0;
-  const dayCounts = new Map();
-  const participantCounts = new Map();
-  const totalEntries = entries.length;
 
   if (isCancelled(jobId)) {
     self.postMessage({ id: jobId, type: "cancelled" });
     return null;
   }
 
-  for (let i = 0; i < totalEntries; i += 1) {
+  ensureIndexedDataset(datasetIndexCache, { entries, datasetFingerprint });
+  const tokens = normalizeTokenList(query.text);
+  const validStart = typeof startMs === "number" ? startMs : null;
+  const validEnd = typeof endMs === "number" ? endMs : null;
+  const candidateIndexes = resolveIndexedCandidates(datasetIndexCache, query);
+  const results = [];
+  let totalMatches = 0;
+  const dayCounts = new Map();
+  const participantCounts = new Map();
+  const totalCandidates = candidateIndexes.length;
+
+  if (isCancelled(jobId)) {
+    self.postMessage({ id: jobId, type: "cancelled" });
+    return null;
+  }
+
+  for (let i = 0; i < totalCandidates; i += 1) {
     if (isCancelled(jobId)) {
       self.postMessage({ id: jobId, type: "cancelled" });
       return null;
     }
     if (i % 500 === 0) {
-      self.postMessage({ id: jobId, type: "progress", scanned: i, total: totalEntries });
+      self.postMessage({ id: jobId, type: "progress", scanned: i, total: totalCandidates });
     }
-    const entry = entries[i];
-    if (!entry || entry.type !== "message") continue;
-    const sender = entry.sender || "";
-    if (participant && sender.toLowerCase() !== participant) continue;
-
-    const timestamp = getTimestamp(entry);
-    const tsMs = timestamp instanceof Date ? timestamp.getTime() : Number(new Date(timestamp).getTime());
-    if (!tsMs || Number.isNaN(tsMs)) continue;
-    if (validStart !== null && tsMs < validStart) continue;
-    if (validEnd !== null && tsMs > validEnd) continue;
-
-    const searchText =
-      entry.search_text ??
-      (typeof entry.message === "string" ? entry.message.toLowerCase() : "");
-    if (tokens.length && (!searchText || !tokens.every(token => searchText.includes(token)))) {
-      continue;
-    }
+    const record = datasetIndexCache.messageRecords[candidateIndexes[i]];
+    if (!record) continue;
+    if (validStart !== null && record.tsMs < validStart) continue;
+    if (validEnd !== null && record.tsMs > validEnd) continue;
 
     totalMatches += 1;
-    const dayKey = tsMs ? toISODate(new Date(tsMs)) : null;
-    if (dayKey) {
-      dayCounts.set(dayKey, (dayCounts.get(dayKey) || 0) + 1);
-    }
-    const senderKey = sender || "[Unknown]";
+    const dayKey = toISODate(new Date(record.tsMs));
+    dayCounts.set(dayKey, (dayCounts.get(dayKey) || 0) + 1);
+    const senderKey = record.sender || "[Unknown]";
     participantCounts.set(senderKey, (participantCounts.get(senderKey) || 0) + 1);
 
     if (results.length < resultLimit) {
       results.push({
-        sender,
-        timestamp: new Date(tsMs).toISOString(),
-        message: entry.message || "",
-        messageHtml: highlightMessage(entry.message || "", tokens),
+        sender: record.sender,
+        timestamp: record.timestampIso,
+        message: record.message,
+        messageHtml: highlightMessage(record.message, tokens),
       });
     }
   }
@@ -107,8 +113,7 @@ function runSearch(jobId, entries, query, resultLimit, startMs, endMs) {
     return null;
   }
 
-  self.postMessage({ id: jobId, type: "progress", scanned: totalEntries, total: totalEntries });
-
+  self.postMessage({ id: jobId, type: "progress", scanned: totalCandidates, total: totalCandidates });
   const summary = totalMatches
     ? buildSearchSummary({
         query,

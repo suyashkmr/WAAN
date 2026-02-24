@@ -20,6 +20,12 @@ Chat metadata write-amplification benchmark:
 npm run perf:chatstore
 ```
 
+Search worker index benchmark:
+
+```bash
+npm run perf:searchworker
+```
+
 ## What It Measures
 
 - Dataset fingerprint computation (`computeDatasetFingerprint`)
@@ -58,6 +64,24 @@ Run captured on February 24, 2026 (`generatedAt=2026-02-24T03:44:23.950Z`):
 Interpretation:
 - Metadata writes are now coalesced instead of one-write-per-update.
 - Incremental message append path still emits occasional flushes during long bursts (timer-window boundary), but remains substantially lower than pre-batching behavior.
+
+## Search Worker Indexed Query Benchmark (Measured)
+
+Run captured on February 24, 2026 (`generatedAt=2026-02-24T04:22:28.572Z`), dataset size `120000` messages:
+
+| Metric | Duration (ms) | Notes |
+| --- | ---: | --- |
+| Index build | 263.78 | Indexed messages: 120000 |
+| keyword (full scan) | 26.96 | matched=600 |
+| keyword (indexed) | 1.55 | matched=600, speedup=17.39x |
+| participant+keyword (full scan) | 8.00 | matched=3750 |
+| participant+keyword (indexed) | 2.36 | matched=3750, speedup=3.39x |
+| keyword+date-range (full scan) | 21.04 | matched=40001 |
+| keyword+date-range (indexed) | 3.57 | matched=40001, speedup=5.89x |
+
+Interpretation:
+- Search now pays one index-build cost per dataset version, then queries run over indexed candidate sets instead of full message scans.
+- Repeated keyword/participant/date-filter queries show material latency reductions with the indexed path.
 
 ## Next Improvements
 

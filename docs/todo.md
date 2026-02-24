@@ -67,10 +67,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Add bounded concurrency for participant/meta enrichment.
   - [x] Skip or short-circuit unchanged records.
   - [x] Verify sync correctness and error handling under degraded network.
-- [ ] Add incremental/indexed search-worker strategy to avoid full data scans per query (`js/searchWorker.js`).
-  - [ ] Define index shape and invalidation/update strategy.
-  - [ ] Implement incremental index updates on dataset changes.
-  - [ ] Benchmark query latency and worker CPU before/after.
+- [x] Add incremental/indexed search-worker strategy to avoid full data scans per query (`js/searchWorker.js`).
+  - [x] Define index shape and invalidation/update strategy.
+  - [x] Implement incremental index updates on dataset changes.
+  - [x] Benchmark query latency and worker CPU before/after.
 
 ### Post-Current-List: UI Polish (Tailwind CSS + shadcn/ui)
 

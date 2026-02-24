@@ -138,6 +138,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     const { requestId: nextRequestId, promise } = searchWorkerClient.runSearchRequest({
       payload: {
         entries,
+        datasetFingerprint: getDatasetFingerprint(),
         query,
         resultLimit: requestLimit,
         startMs: startBound,
