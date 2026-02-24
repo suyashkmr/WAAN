@@ -258,9 +258,18 @@ Completed tasks were removed for clarity (history remains in git).
     - [x] Verified automated checks after consolidation (`npm run ci:verify`).
     - [x] Manually verify visual parity for hero card, section-nav row, and analytics panel headers in light/dark + compact mode.
 - [ ] Raise interaction polish to modern baseline.
-  - [ ] Standardize hover/focus/active/disabled/loading treatments for all Shoelace-backed controls.
-  - [ ] Add consistent transition timing/easing tokens and honor reduced-motion mode across all animated surfaces.
-  - [ ] Improve active navigation and state-change feedback (relay state, section transitions, loading/error changes) for clarity without visual noise.
+  - [x] Standardize hover/focus/active/disabled/loading treatments for all Shoelace-backed controls.
+    - [x] Added explicit state styling for `sl-button.ui-button-proxy` (hover, focus-visible, active, disabled, loading) in `styles.components.css`.
+    - [x] Added explicit state styling for `sl-input.ui-field-proxy` and `sl-select.ui-field-proxy` (hover, focus-within, disabled, invalid) in `styles.components.css`.
+    - [x] Manually verify control-state parity in search/saved-view/export flows (mouse + keyboard).
+  - [x] Add consistent transition timing/easing tokens and honor reduced-motion mode across all animated surfaces.
+    - [x] Mapped Shoelace focus/disabled transition variables in `styles.shoelace.css`.
+    - [x] Added reduced-motion transition suppression for Shoelace proxy controls and section nav in `styles.components.css`.
+    - [x] Manually verify reduced-motion behavior with `data-reduce-motion="true"` on migrated control surfaces.
+  - [x] Improve active navigation and state-change feedback (relay state, section transitions, loading/error changes) for clarity without visual noise.
+    - [x] Mirrored section-nav active treatment to `aria-current="page"` state for consistent highlight behavior.
+    - [x] Verified automated checks after interaction-polish pass (`npm run ci:verify`).
+    - [x] Manually verify nav highlight + relay/status feedback transitions across scroll and status updates.
 - [ ] Improve information density and readability on analytics-heavy views.
   - [ ] Rebalance panel content hierarchy (primary metric, secondary context, tertiary metadata).
   - [ ] Tune table/list row density, sticky headers, and truncation handling for desktop and mobile.

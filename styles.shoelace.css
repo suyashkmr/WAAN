@@ -39,6 +39,10 @@
     --sl-input-border-color-focus: var(--accent);
     --sl-input-color: var(--text);
     --sl-input-placeholder-color: var(--muted);
+    --sl-focus-ring-color: color-mix(in srgb, var(--accent) 42%, transparent);
+    --sl-focus-ring-width: 3px;
+    --sl-focus-ring: 0 0 0 var(--sl-focus-ring-width) var(--sl-focus-ring-color);
+    --sl-disabled-opacity: 0.48;
     --sl-border-radius-medium: var(--shape-medium);
     --sl-border-radius-large: var(--shape-large);
     --sl-shadow-small: var(--shadow-soft);

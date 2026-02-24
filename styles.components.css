@@ -1237,7 +1237,7 @@ body[data-reduce-motion="true"] .hero-live-card {
 
 body[data-reduce-motion="true"] .hero-blurb:hover .hero-logo,
 body[data-reduce-motion="true"] .hero-blurb:hover .brand-mark,
-body[data-reduce-motion="true"] .card:hover .section-icon {
+body[data-reduce-motion="true"] :is(.card, .app-panel-shell):hover .section-icon {
     transform: none;
 }
 
@@ -1254,6 +1254,19 @@ body[data-reduce-motion="true"] .hero-milestone.is-ready-celebration::after {
 body[data-reduce-motion="true"] .section-nav a.active {
     transform: none;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+body[data-reduce-motion="true"] .section-nav a[aria-current="page"] {
+    transform: none;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+body[data-reduce-motion="true"] sl-button.ui-button-proxy::part(base),
+body[data-reduce-motion="true"] sl-input.ui-field-proxy::part(base),
+body[data-reduce-motion="true"] sl-select.ui-field-proxy::part(combobox),
+body[data-reduce-motion="true"] sl-select.ui-field-proxy::part(display-input),
+body[data-reduce-motion="true"] .section-nav a {
+    transition: none;
 }
 
 @keyframes card-in {
@@ -2685,6 +2698,11 @@ sl-select.ui-field-proxy::part(display-input) {
     min-height: 2.45rem;
     border-radius: 0.72rem;
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    transition:
+        border-color var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+        background var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 sl-input.ui-field-proxy::part(form-control-label),
@@ -2699,13 +2717,77 @@ sl-select.ui-field-proxy[aria-invalid="true"]::part(combobox) {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--negative) 38%, transparent);
 }
 
+sl-input.ui-field-proxy:hover::part(base),
+sl-select.ui-field-proxy:hover::part(combobox) {
+    border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+}
+
+sl-input.ui-field-proxy:focus-within::part(base),
+sl-select.ui-field-proxy:focus-within::part(combobox),
+sl-select.ui-field-proxy:focus-within::part(display-input) {
+    border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+}
+
+sl-input.ui-field-proxy[disabled]::part(base),
+sl-select.ui-field-proxy[disabled]::part(combobox),
+sl-select.ui-field-proxy[disabled]::part(display-input) {
+    opacity: 0.58;
+    border-color: color-mix(in srgb, var(--border) 72%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+}
+
 sl-button.ui-button-proxy::part(base) {
     min-height: 2.45rem;
     border-radius: 0.72rem;
+    border-color: color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    color: color-mix(in srgb, var(--text) 94%, transparent);
+    box-shadow: var(--shadow-soft);
+    transition:
+        border-color var(--motion-duration-fast) var(--motion-ease-out),
+        background var(--motion-duration-fast) var(--motion-ease-out),
+        color var(--motion-duration-fast) var(--motion-ease-out),
+        transform var(--motion-duration-fast) var(--motion-ease-emphasis),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-emphasis);
 }
 
 sl-button.ui-button-proxy.ui-button-proxy-small::part(base) {
     min-height: 2.1rem;
+}
+
+sl-button.ui-button-proxy:hover:not([disabled]):not([loading])::part(base) {
+    border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
+    background: color-mix(in srgb, var(--accent) 16%, var(--card-bg));
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-card);
+}
+
+sl-button.ui-button-proxy:active:not([disabled]):not([loading])::part(base) {
+    transform: translateY(1px) scale(0.995);
+    box-shadow: var(--shadow-soft);
+}
+
+sl-button.ui-button-proxy:focus-visible::part(base) {
+    border-color: color-mix(in srgb, var(--accent) 52%, var(--border));
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent),
+        var(--shadow-card);
+}
+
+sl-button.ui-button-proxy[disabled]::part(base) {
+    opacity: 0.52;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+sl-button.ui-button-proxy[loading]::part(base) {
+    cursor: progress;
+    border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
+    background: color-mix(in srgb, var(--accent) 14%, var(--card-bg));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .search-actions {
@@ -4591,6 +4673,13 @@ sl-button.ui-button-proxy.ui-button-proxy-small::part(base) {
     transform: translateY(-1px);
 }
 
+.section-nav a[aria-current="page"] {
+    color: color-mix(in srgb, var(--accent) 86%, var(--text));
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
+    transform: translateY(-1px);
+}
+
 .section-nav a:hover,
 .section-nav a:focus-visible {
     color: color-mix(in srgb, var(--accent) 82%, var(--text));
@@ -4613,6 +4702,10 @@ sl-button.ui-button-proxy.ui-button-proxy-small::part(base) {
         box-shadow: none;
     }
     .section-nav a.active {
+        transform: none;
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+    .section-nav a[aria-current="page"] {
         transform: none;
         box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
     }
