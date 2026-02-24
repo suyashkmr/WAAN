@@ -58,6 +58,52 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
   let dataAvailable = false;
+  let activeViewId = null;
+  let lastAppliedViewSignature = null;
+
+  function createComparableViewState(viewLike) {
+    const rawRangeData = viewLike?.rangeData;
+    const rangeData = rawRangeData && typeof rawRangeData === "object"
+      ? {
+          type: "custom",
+          start: rawRangeData.start ?? "",
+          end: rawRangeData.end ?? "",
+        }
+      : (rawRangeData ?? viewLike?.range ?? "all");
+    return {
+      rangeData,
+      hourlyFilters: { ...(viewLike?.hourlyFilters || {}) },
+      hourlyBrush: { ...(viewLike?.hourlyBrush || {}) },
+      weekdayFilters: { ...(viewLike?.weekdayFilters || {}) },
+      weekdayBrush: { ...(viewLike?.weekdayBrush || {}) },
+    };
+  }
+
+  function createStateSignature(viewLike) {
+    return JSON.stringify(createComparableViewState(viewLike));
+  }
+
+  function captureCurrentViewSignature() {
+    const range = getCurrentRange();
+    const customRange = getCustomRange();
+    const rangeData = range === "custom" && customRange
+      ? { type: "custom", start: customRange.start ?? "", end: customRange.end ?? "" }
+      : range;
+    const hourly = getHourlyState();
+    const weekday = getWeekdayState();
+    return createStateSignature({
+      rangeData,
+      hourlyFilters: hourly?.filters || {},
+      hourlyBrush: hourly?.brush || {},
+      weekdayFilters: weekday?.filters || {},
+      weekdayBrush: weekday?.brush || {},
+    });
+  }
+
+  function isActiveViewDirty() {
+    if (!activeViewId || !dataAvailable || !lastAppliedViewSignature) return false;
+    return captureCurrentViewSignature() !== lastAppliedViewSignature;
+  }
 
   function captureCurrentView(name) {
     const entries = getDatasetEntries();
@@ -132,6 +178,19 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       ensureViewSnapshot,
       formatSavedViewRange,
       dataAvailableGetter: () => dataAvailable,
+      getActiveViewContext: () => ({
+        activeViewId,
+        activeViewDirty: isActiveViewDirty(),
+      }),
+      onPanelAction: actionId => {
+        if (actionId === "save-view") {
+          handleSaveView();
+          return;
+        }
+        if (actionId === "focus-range") {
+          rangeSelect?.focus();
+        }
+      },
     },
   });
   const {
@@ -142,6 +201,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
 
   function resetForNewDataset() {
     clearSavedViews();
+    activeViewId = null;
+    lastAppliedViewSignature = null;
     refreshUI();
   }
 
@@ -175,6 +236,11 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     syncWeekdayControlsWithState();
 
     await applyRangeAndRender(rangeValue);
+    const lastAppliedAt = new Date().toISOString();
+    activeViewId = view.id || null;
+    lastAppliedViewSignature = createStateSignature(view);
+    updateSavedView(view.id, { lastAppliedAt });
+    refreshUI();
     updateStatus(`Applied saved view "${view.name}".`, "success");
   }
 
@@ -227,6 +293,10 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     refreshUI();
     renderComparisonSummary();
     if (listSelect) listSelect.value = "";
+    if (activeViewId === id) {
+      activeViewId = null;
+      lastAppliedViewSignature = null;
+    }
     updateStatus("Saved view removed.", "success");
   }
 
@@ -287,6 +357,32 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       gallery.addEventListener("keydown", handleSavedViewGalleryKeydown);
     }
     if (compareButton) compareButton.addEventListener("click", handleCompareViews);
+
+    const refreshOnStateChange = () => {
+      if (!activeViewId) return;
+      refreshUI();
+    };
+    [
+      rangeSelect,
+      customStartInput,
+      customEndInput,
+      typeof document !== "undefined" ? document.getElementById("filter-weekdays") : null,
+      typeof document !== "undefined" ? document.getElementById("filter-weekends") : null,
+      typeof document !== "undefined" ? document.getElementById("filter-working") : null,
+      typeof document !== "undefined" ? document.getElementById("filter-offhours") : null,
+      typeof document !== "undefined" ? document.getElementById("hourly-brush-start") : null,
+      typeof document !== "undefined" ? document.getElementById("hourly-brush-end") : null,
+      typeof document !== "undefined" ? document.getElementById("weekday-toggle-weekdays") : null,
+      typeof document !== "undefined" ? document.getElementById("weekday-toggle-weekends") : null,
+      typeof document !== "undefined" ? document.getElementById("weekday-toggle-working") : null,
+      typeof document !== "undefined" ? document.getElementById("weekday-toggle-offhours") : null,
+      typeof document !== "undefined" ? document.getElementById("weekday-hour-start") : null,
+      typeof document !== "undefined" ? document.getElementById("weekday-hour-end") : null,
+    ].forEach(control => {
+      if (!control) return;
+      control.addEventListener("change", refreshOnStateChange);
+      control.addEventListener("input", refreshOnStateChange);
+    });
   }
 
   function setDataAvailabilityState(flag) {
@@ -296,6 +392,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       if (!dataAvailable) nameInput.value = "";
     }
     updateControlsDisabled();
+    refreshUI();
   }
 
   return {

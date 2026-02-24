@@ -124,6 +124,7 @@ describe("savedViews controller", () => {
     expect(elements.nameInput.disabled).toBe(true);
     expect(elements.saveButton.disabled).toBe(true);
     expect(elements.nameInput.placeholder).toBe("Load a chat first");
+    expect(elements.gallery.querySelector(".panel-state--loading")).toBeTruthy();
   });
 
   it("saves, applies, and deletes a view via UI handlers", async () => {
@@ -159,9 +160,66 @@ describe("savedViews controller", () => {
     const controller = createSavedViewsController({ elements, dependencies });
 
     controller.init();
+    controller.setDataAvailability(false);
     controller.resetForNewDataset();
 
     expect(dependencies.clearSavedViews).toHaveBeenCalledTimes(1);
-    expect(elements.gallery.textContent).toContain("Save views to see quick previews here.");
+    expect(elements.gallery.textContent).toContain("Load a chat to use saved views");
+  });
+
+  it("shows empty gallery recovery actions when data is available", () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+
+    const action = elements.gallery.querySelector('[data-panel-action="save-view"]');
+    expect(action).toBeTruthy();
+    action?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(dependencies.addSavedView).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows active, dirty, and recency affordances for applied saved views", async () => {
+    const elements = buildElements();
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All";
+    const customOption = document.createElement("option");
+    customOption.value = "custom";
+    customOption.textContent = "Custom";
+    elements.rangeSelect.append(allOption, customOption);
+
+    const dependencies = buildDependencies();
+    let currentRange = "all";
+    dependencies.getCurrentRange = vi.fn(() => currentRange);
+    dependencies.getCustomRange = vi.fn(() => null);
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Morning pulse";
+    elements.saveButton.click();
+    elements.listSelect.value = "view-1";
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    const activeCard = elements.gallery.querySelector(".saved-view-card.is-active");
+    expect(activeCard).toBeTruthy();
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
+    expect(activeCard?.textContent).toContain("Active");
+    expect(activeCard?.textContent).toContain("Used");
+    expect(dependencies.updateSavedView).toHaveBeenCalledWith(
+      "view-1",
+      expect.objectContaining({ lastAppliedAt: expect.any(String) }),
+    );
+
+    currentRange = "custom";
+    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    const dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
+    expect(dirtyCard).toBeTruthy();
+    expect(dirtyCard?.textContent).toContain("Unsaved changes");
   });
 });

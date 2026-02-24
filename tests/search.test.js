@@ -174,4 +174,18 @@ describe("search controller", () => {
 
     expect(workerInstances.length).toBe(0);
   });
+
+  it("renders recovery state when search runs without dataset", () => {
+    const elements = buildElements();
+    const controller = createSearchController({ elements });
+    controller.init();
+
+    elements.keywordInput.value = "hello";
+    elements.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+    expect(workerInstances.length).toBe(0);
+    expect(elements.resultsListEl.querySelector(".panel-state--error")).toBeTruthy();
+    expect(elements.resultsListEl.textContent).toContain("Load a chat first");
+    expect(elements.resultsListEl.querySelector('[data-panel-action="retry-search"]')).toBeTruthy();
+  });
 });

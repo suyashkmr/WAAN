@@ -12,9 +12,33 @@ export function createSectionNavController({
   function setActiveSectionNav(targetId) {
     if (!targetId || activeSectionId === targetId) return;
     activeSectionId = targetId;
+    if (containerEl) {
+      containerEl.dataset.activeSection = targetId;
+    }
     sectionNavLinks.forEach(link => {
       const linkTarget = link.getAttribute("href")?.replace(/^#/, "");
-      link.classList.toggle("active", linkTarget === targetId);
+      const isActive = linkTarget === targetId;
+      link.classList.toggle("active", isActive);
+      if (isActive) {
+        link.setAttribute("aria-current", "page");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+    const activeLink = sectionNavLinks.find(
+      link => link.getAttribute("href")?.replace(/^#/, "") === targetId,
+    );
+    const reduceMotionFlag =
+      typeof document !== "undefined" ? document.body?.dataset?.reduceMotion === "true" : false;
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      ((typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+        reduceMotionFlag);
+    activeLink?.scrollIntoView?.({
+      inline: "center",
+      block: "nearest",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
     });
   }
 
@@ -100,7 +124,6 @@ export function createSectionNavController({
       const nextId = resolveActiveSectionId();
       if (nextId) setActiveSectionNav(nextId);
     };
-
     navItems.forEach(({ link, id }) => {
       link.addEventListener("click", () => {
         setActiveSectionNav(id);

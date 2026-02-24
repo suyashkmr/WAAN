@@ -178,26 +178,26 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Add/normalize semantic tokens (`success`, `warning`, `danger`, `muted`) mapped to existing theme vars.
   - [x] Apply tokens consistently to relay states, badges, and helper feedback.
   - [x] Verify token parity in light/dark + high-contrast mode.
-- [ ] Polish hero and section-nav interactions.
-  - [ ] Tighten active-section indicator behavior and transition polish.
-  - [ ] Improve hero status chip visual differentiation across relay states.
-  - [ ] Confirm reduced-motion compatibility for all transitions.
-- [ ] Improve dense data-surface usability.
-  - [ ] Standardize table hover/focus/striping/sticky-header treatments.
-  - [ ] Add contextual tooltip/popover help for truncated or ambiguous metrics.
-  - [ ] Validate keyboard and screen-reader behavior on enriched controls.
-- [ ] Harden form/search/saved-view visual consistency.
-  - [ ] Normalize control heights, label spacing, helper/error states for `sl-input`/`sl-select`/`sl-button`.
-  - [ ] Improve saved-view affordances (active state, dirty indicator, recency hint).
-  - [ ] Verify programmatic state sync remains visually accurate.
-- [ ] Standardize empty/loading/error states.
-  - [ ] Define reusable visual patterns for empty/loading/error cards and panels.
-  - [ ] Add clear action affordances for recovery paths.
-  - [ ] Verify parity across dashboard, search, and saved-view surfaces.
-- [ ] Deepen theming polish.
-  - [ ] Tune dark-mode elevation and border separation for cards/panels.
-  - [ ] Add subtle background depth treatment that preserves readability.
-  - [ ] Verify exported PDF/theme behavior remains aligned with active scheme.
+- [x] Polish hero and section-nav interactions.
+  - [x] Tighten active-section indicator behavior and transition polish.
+  - [x] Improve hero status chip visual differentiation across relay states.
+  - [x] Confirm reduced-motion compatibility for all transitions.
+- [x] Improve dense data-surface usability.
+  - [x] Standardize table hover/focus/striping/sticky-header treatments.
+  - [x] Add contextual tooltip/popover help for truncated or ambiguous metrics.
+  - [x] Validate keyboard and screen-reader behavior on enriched controls.
+- [x] Harden form/search/saved-view visual consistency.
+  - [x] Normalize control heights, label spacing, helper/error states for `sl-input`/`sl-select`/`sl-button`.
+  - [x] Improve saved-view affordances (active state, dirty indicator, recency hint).
+  - [x] Verify programmatic state sync remains visually accurate.
+- [x] Standardize empty/loading/error states.
+  - [x] Define reusable visual patterns for empty/loading/error cards and panels.
+  - [x] Add clear action affordances for recovery paths.
+  - [x] Verify parity across dashboard, search, and saved-view surfaces.
+- [x] Deepen theming polish.
+  - [x] Tune dark-mode elevation and border separation for cards/panels.
+  - [x] Add subtle background depth treatment that preserves readability.
+  - [x] Verify exported PDF/theme behavior remains aligned with active scheme.
 
 ### Dead Code Cleanup
 

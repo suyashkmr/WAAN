@@ -84,6 +84,8 @@ describe("sectionNav controller", () => {
 
     expect(links[1].classList.contains("active")).toBe(true);
     expect(links[0].classList.contains("active")).toBe(false);
+    expect(links[1].getAttribute("aria-current")).toBe("page");
+    expect(container.dataset.activeSection).toBe("activity");
 
     const focusSpy = vi.spyOn(links[1], "focus").mockImplementation(() => {});
     links[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));

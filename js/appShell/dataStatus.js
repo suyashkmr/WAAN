@@ -97,7 +97,12 @@ export function createDataStatusController({ elements, deps }) {
 
   function updateHeroRelayStatus(status) {
     if (!heroStatusBadge || !heroStatusCopy) return;
+    const setHeroBadgeState = state => {
+      if (!heroStatusBadge) return;
+      heroStatusBadge.dataset.state = state;
+    };
     if (!status) {
+      setHeroBadgeState("offline");
       heroStatusBadge.textContent = "Not connected";
       heroStatusCopy.textContent = "Open Relay Controls, then press Connect.";
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
@@ -115,6 +120,7 @@ export function createDataStatusController({ elements, deps }) {
       const isSyncing = Boolean(status.syncingChats) || chatCount === 0;
       setDashboardSyncState(isSyncing);
       if (chatCount > 0 && !isSyncing) {
+        setHeroBadgeState("ready");
         heroStatusCopy.textContent = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
         applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
         updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTime()}` });
@@ -126,6 +132,7 @@ export function createDataStatusController({ elements, deps }) {
           readyCelebrated = true;
         }
       } else {
+        setHeroBadgeState("syncing");
         heroStatusCopy.textContent = chatCount > 0
           ? `${formatNumber(chatCount)} chats indexed. Syncing updates…`
           : "Connected. Syncing chats…";
@@ -142,6 +149,7 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "waiting_qr") {
+      setHeroBadgeState("waiting");
       heroStatusBadge.textContent = "Scan the QR code";
       if (status.lastQr) {
         heroStatusCopy.textContent =
@@ -157,6 +165,7 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "starting") {
+      setHeroBadgeState("starting");
       heroStatusBadge.textContent = "Starting relay";
       heroStatusCopy.textContent = "Starting relay…";
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
@@ -166,6 +175,7 @@ export function createDataStatusController({ elements, deps }) {
       return;
     }
 
+    setHeroBadgeState("offline");
     heroStatusBadge.textContent = "Not connected";
     heroStatusCopy.textContent = "Open Relay Controls, then press Connect.";
     applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });

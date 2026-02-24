@@ -49,4 +49,24 @@ test.describe("WAAN Accessibility Smoke", () => {
         .toBe(selector.slice(1));
     }
   });
+
+  test("keeps dense data-surface metric help controls keyboard focusable", async ({ page }) => {
+    const selectors = [
+      '[aria-describedby="participants-share-note"]',
+      '[aria-describedby="participants-avg-words-note"]',
+    ];
+
+    for (const selector of selectors) {
+      const visibleTarget = page.locator(`${selector}:visible`).first();
+      if (await visibleTarget.count()) {
+        await expect(visibleTarget).toBeVisible();
+        await visibleTarget.focus();
+        await expect
+          .poll(async () => page.evaluate(() => document.activeElement?.getAttribute("aria-describedby") || ""))
+          .toBe((await visibleTarget.getAttribute("aria-describedby")) || "");
+      } else {
+        await expect(page.locator(selector).first()).toHaveCount(1);
+      }
+    }
+  });
 });

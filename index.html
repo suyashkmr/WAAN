@@ -224,7 +224,7 @@
             </div>
         </div>
 
-        <div id="dataset-empty-callout" class="dataset-empty full-span hidden" aria-live="polite">
+        <div id="dataset-empty-callout" class="dataset-empty panel-state panel-state--empty full-span hidden" aria-live="polite">
             <div class="empty-illustration" aria-hidden="true">
                 <span></span>
                 <span></span>
@@ -370,8 +370,36 @@
                                 <th>Rank</th>
                                 <th>Participant</th>
                                 <th>Messages</th>
-                                <th>Share</th>
-                                <th>Avg Words</th>
+                                <th>
+                                    <span class="table-th-label">
+                                        Share
+                                        <button type="button" class="info-note-button info-note-inline table-metric-help"
+                                            aria-label="Share means percent of messages in the current participant scope"
+                                            aria-describedby="participants-share-note">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                                            </svg>
+                                            <span class="info-tooltip" id="participants-share-note" role="tooltip">Share is
+                                                the participant's message percentage in the selected timeframe/filter.</span>
+                                        </button>
+                                    </span>
+                                </th>
+                                <th>
+                                    <span class="table-th-label">
+                                        Avg Words
+                                        <button type="button" class="info-note-button info-note-inline table-metric-help"
+                                            aria-label="Average words per message for each participant"
+                                            aria-describedby="participants-avg-words-note">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                                            </svg>
+                                            <span class="info-tooltip" id="participants-avg-words-note" role="tooltip">Avg
+                                                Words is the mean words used per message by that participant.</span>
+                                        </button>
+                                    </span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody></tbody>

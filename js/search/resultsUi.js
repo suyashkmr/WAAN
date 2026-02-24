@@ -1,3 +1,5 @@
+import { renderPanelState } from "../ui/panelState.js";
+
 export function createSearchResultsUiController({
   resultsSummaryEl,
   resultsListEl,
@@ -10,9 +12,14 @@ export function createSearchResultsUiController({
   buildResultsSummaryText,
   buildSearchResultItem,
   renderSearchInsights,
+  handleStateAction,
 }) {
   let resultsRenderCacheKey = "";
   let renderToken = 0;
+
+  function cancelPendingRender() {
+    renderToken += 1;
+  }
 
   function appendNoticeIfNeeded({ resultsListEl, lastRunFiltered, total, renderedCount }) {
     if (lastRunFiltered && total > renderedCount) {
@@ -21,6 +28,45 @@ export function createSearchResultsUiController({
       note.textContent = "Narrow your filters to see more matches.";
       resultsListEl.appendChild(note);
     }
+  }
+
+  function renderResultsState({ tone = "empty", title = "", message = "", actions = [] } = {}) {
+    cancelPendingRender();
+    if (insightsEl) {
+      renderSearchInsights({ insightsEl, summary: null, resultLimit });
+    }
+    renderPanelState({
+      container: resultsListEl,
+      tone,
+      title,
+      message,
+      actions,
+      onAction: actionId => {
+        if (typeof handleStateAction === "function") handleStateAction(actionId);
+      },
+    });
+  }
+
+  function renderLoadingState(message = "Searching messages…") {
+    renderResultsState({
+      tone: "loading",
+      title: "Searching messages",
+      message,
+    });
+  }
+
+  function renderErrorState(message = "Search could not complete.") {
+    renderResultsState({
+      tone: "error",
+      title: "Search failed",
+      message,
+      actions: [{ id: "retry-search", label: "Try again" }],
+    });
+  }
+
+  function clearStateOverride() {
+    cancelPendingRender();
+    resultsRenderCacheKey = "";
   }
 
   function renderResults() {
@@ -46,7 +92,7 @@ export function createSearchResultsUiController({
     if (nextRenderCacheKey === resultsRenderCacheKey) return;
 
     const hasFilters = hasSearchFilters(query);
-    renderToken += 1;
+    cancelPendingRender();
     const activeRenderToken = renderToken;
     resultsSummaryEl.textContent = buildResultsSummaryText({
       hasRunSearch,
@@ -59,12 +105,14 @@ export function createSearchResultsUiController({
 
     resultsListEl.innerHTML = "";
     if (!total) {
-      const empty = document.createElement("div");
-      empty.className = "search-results-empty";
-      empty.textContent = hasFilters
-        ? "No matching messages. Try other names, words, or dates."
-        : "Add filters above to search the chat history.";
-      resultsListEl.appendChild(empty);
+      renderResultsState({
+        tone: hasRunSearch ? "empty" : "loading",
+        title: hasRunSearch ? "No matching messages" : "Search this chat",
+        message: hasFilters
+          ? "Try different keywords, participants, or dates."
+          : "Add keywords, participant, or date filters to find messages.",
+        actions: hasFilters ? [{ id: "clear-search-filters", label: "Clear filters" }] : [],
+      });
       renderSearchInsights({ insightsEl, summary: null, resultLimit });
       resultsRenderCacheKey = nextRenderCacheKey;
       return;
@@ -122,5 +170,8 @@ export function createSearchResultsUiController({
   return {
     renderResults,
     resetResultsRenderCache,
+    renderLoadingState,
+    renderErrorState,
+    clearStateOverride,
   };
 }

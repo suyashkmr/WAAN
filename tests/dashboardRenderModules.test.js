@@ -149,9 +149,13 @@ describe("dashboardRender modules", () => {
     const toggle = document.createElement("button");
     toggle.className = "participant-toggle";
     toggle.setAttribute("aria-expanded", "false");
+    const name = document.createElement("span");
+    name.className = "participant-name";
+    name.textContent = "Alice";
     const icon = document.createElement("span");
     icon.className = "toggle-icon";
     icon.textContent = "▸";
+    toggle.appendChild(name);
     toggle.appendChild(icon);
     toggleCell.appendChild(toggle);
     row.appendChild(toggleCell);
@@ -168,6 +172,7 @@ describe("dashboardRender modules", () => {
     };
     toggleParticipantRow(expandEvent, participantsBody);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(toggle.getAttribute("aria-label")).toBe("Hide details for Alice");
     expect(icon.textContent).toBe("▾");
     expect(row.classList.contains("expanded")).toBe(true);
     expect(detailRow.classList.contains("hidden")).toBe(false);
@@ -178,6 +183,7 @@ describe("dashboardRender modules", () => {
     };
     toggleParticipantRow(collapseEvent, participantsBody);
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-label")).toBe("Show details for Alice");
     expect(icon.textContent).toBe("▸");
     expect(row.classList.contains("expanded")).toBe(false);
     expect(detailRow.classList.contains("hidden")).toBe(true);

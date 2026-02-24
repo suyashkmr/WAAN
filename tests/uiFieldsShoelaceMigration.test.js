@@ -41,6 +41,8 @@ describe("search/saved-view field shoelace migration", () => {
 
     expect(document.getElementById("search-keyword-sl")?.tagName.toLowerCase()).toBe("sl-input");
     expect(document.getElementById("search-participant-sl")?.tagName.toLowerCase()).toBe("sl-select");
+    expect(document.getElementById("search-keyword-sl")?.classList.contains("ui-field-proxy")).toBe(true);
+    expect(document.getElementById("search-participant-sl")?.classList.contains("ui-field-proxy")).toBe(true);
     expect(document.getElementById("saved-view-name")?.dataset.uiPrimitiveProxy).toBe("true");
   });
 

@@ -84,8 +84,26 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     buildResultsSummaryText,
     buildSearchResultItem,
     renderSearchInsights,
+    handleStateAction: actionId => {
+      if (actionId === "clear-search-filters") {
+        resetFilters(false);
+        updateStatus("Search filters cleared.", "info");
+        return;
+      }
+      if (actionId === "retry-search") {
+        handleSubmit({
+          preventDefault() {},
+        });
+      }
+    },
   });
-  const { renderResults, resetResultsRenderCache } = resultsUiController;
+  const {
+    renderResults,
+    resetResultsRenderCache,
+    renderLoadingState,
+    renderErrorState,
+    clearStateOverride,
+  } = resultsUiController;
 
   function applyStateToForm() {
     applySearchStateToInputs({
@@ -111,6 +129,8 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     const entries = getEntries();
     if (!entries.length) {
       updateStatus("Load a chat file before searching.", "warning");
+      clearStateOverride();
+      renderErrorState("Load a chat first, then run this search again.");
       hideSearchProgress();
       return;
     }
@@ -152,6 +172,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     });
     requestId = nextRequestId;
     activeSearchRequest = requestId;
+    renderLoadingState("Scanning messages with current filters…");
     showSearchProgress(entries.length);
 
     return promise
@@ -159,6 +180,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         if (!payload || payload.cancelled) return;
         const { results, total, summary } = payload;
         if (requestId !== activeSearchRequest) return;
+        clearStateOverride();
         hideSearchProgress();
         setSearchResults(
           results.map(result => ({
@@ -198,6 +220,8 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         hideSearchProgress();
         console.error(error);
         updateStatus("Search could not complete.", "error");
+        clearStateOverride();
+        renderErrorState("Search could not complete. Try again.");
         const finishedAt = globalThis.performance?.now?.() ?? Date.now();
         logPerfDuration("search.run.failed", finishedAt - startedAt, {
           entries: entries.length,
@@ -231,6 +255,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
       endInput,
     });
     resetResultsRenderCache();
+    clearStateOverride();
     resetParticipantOptionsCache();
     renderResults();
     if (showToast) updateStatus("Search filters cleared.", "info");

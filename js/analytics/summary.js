@@ -238,6 +238,7 @@ export function renderParticipants({
   const buildRows = (entry, index) => {
     const rowId = entry.id || `participant-${index}`;
     const detailId = `${rowId}-detail`;
+    const senderLabel = entry.sender || "Unknown";
     const row = document.createElement("tr");
     row.className = "participant-row";
     row.dataset.rowId = rowId;
@@ -250,7 +251,7 @@ export function renderParticipants({
       <td data-label="Participant">
         <button type="button" class="participant-toggle" aria-expanded="false" aria-controls="${detailId}">
           <span class="toggle-icon">▸</span>
-          <span class="participant-name">${sanitizeText(entry.sender || "Unknown")}</span>
+          <span class="participant-name">${sanitizeText(senderLabel)}</span>
         </button>
       </td>
       <td data-label="Messages">${formatNumber(entry.count)}</td>
@@ -264,6 +265,23 @@ export function renderParticipants({
       </td>
       <td data-label="Avg Words">${avgWords !== null ? avgWords : "—"}</td>
     `;
+    const toggle = row.querySelector(".participant-toggle");
+    if (toggle) {
+      toggle.setAttribute("aria-label", `Show details for ${senderLabel}`);
+    }
+    const participantNameEl = row.querySelector(".participant-name");
+    if (participantNameEl) participantNameEl.setAttribute("title", senderLabel);
+    const shareCell = row.querySelector('td[data-label="Share"]');
+    if (shareCell) {
+      shareCell.setAttribute("title", `Share of messages in selected scope: ${shareValue}`);
+    }
+    const avgWordsCell = row.querySelector('td[data-label="Avg Words"]');
+    if (avgWordsCell) {
+      avgWordsCell.setAttribute(
+        "title",
+        avgWords !== null ? `Average words per message: ${avgWords}` : "Average words per message: unavailable",
+      );
+    }
     const detailRow = document.createElement("tr");
     detailRow.className = "participant-detail-row hidden";
     detailRow.id = detailId;

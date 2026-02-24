@@ -87,11 +87,13 @@ function migrateButtonIdsToShoelaceProxy({
     copyAttributes(button, slButton, { skip: ["type", "id"] });
     slButton.id = `${id}-sl`;
     slButton.textContent = button.textContent || "";
+    slButton.classList.add("ui-button-proxy");
 
     const variant = getRelayButtonVariant(button);
     if (variant !== "default") slButton.setAttribute("variant", variant);
     if (button.classList.contains("small") || button.classList.contains("tiny")) {
       slButton.setAttribute("size", "small");
+      slButton.classList.add("ui-button-proxy-small");
     }
     slButton.disabled = Boolean(button.disabled);
     slButton.dataset.uiPrimitive = "sl-button";

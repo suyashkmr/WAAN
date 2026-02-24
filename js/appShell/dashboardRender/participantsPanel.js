@@ -81,6 +81,8 @@ export function toggleParticipantRow(event, participantsBody) {
   const detailRow = participantsBody.querySelector(`tr.participant-detail-row[data-row-id="${rowId}"]`);
   const isExpanded = toggle.getAttribute("aria-expanded") === "true";
   toggle.setAttribute("aria-expanded", String(!isExpanded));
+  const participantName = toggle.querySelector(".participant-name")?.textContent?.trim() || "participant";
+  toggle.setAttribute("aria-label", `${!isExpanded ? "Hide" : "Show"} details for ${participantName}`);
   const icon = toggle.querySelector(".toggle-icon");
   if (icon) icon.textContent = !isExpanded ? "▾" : "▸";
   row.classList.toggle("expanded", !isExpanded);

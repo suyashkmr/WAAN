@@ -43,9 +43,11 @@ describe("dataStatus controller details", () => {
 
     controller.updateHeroRelayStatus(null);
     expect(heroStatusBadge.textContent).toBe("Not connected");
+    expect(heroStatusBadge.dataset.state).toBe("offline");
 
     controller.updateHeroRelayStatus({ status: "waiting_qr", lastQr: false });
     expect(heroStatusBadge.textContent).toBe("Scan the QR code");
+    expect(heroStatusBadge.dataset.state).toBe("waiting");
     expect(heroStatusCopy.textContent).toContain("Press Connect");
     expect(heroStatusMetaCopy.textContent).toContain("Waiting for phone link");
 
@@ -54,9 +56,11 @@ describe("dataStatus controller details", () => {
 
     controller.updateHeroRelayStatus({ status: "starting" });
     expect(heroStatusBadge.textContent).toBe("Starting relay");
+    expect(heroStatusBadge.dataset.state).toBe("starting");
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0 });
     expect(heroStatusBadge.textContent).toBe("Relay connected");
+    expect(heroStatusBadge.dataset.state).toBe("syncing");
     expect(heroStatusCopy.textContent).toBe("Connected. Syncing chats…");
     expect(heroSyncDot.dataset.state).toBe("syncing");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(true);
@@ -68,6 +72,7 @@ describe("dataStatus controller details", () => {
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
     expect(notifyRelayReady).toHaveBeenCalledTimes(1);
     expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(true);
+    expect(heroStatusBadge.dataset.state).toBe("ready");
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 4, syncingChats: true });
     expect(heroSyncDot.dataset.state).toBe("syncing");

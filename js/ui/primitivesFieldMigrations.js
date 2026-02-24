@@ -73,6 +73,7 @@ function attachInputProxy({
   const proxy = documentRef.createElement("sl-input");
   proxy.id = `${legacyInput.id}-sl`;
   proxy.dataset.uiPrimitive = "sl-input";
+  proxy.classList.add("ui-field-proxy", "ui-field-proxy-input");
   proxy.type = legacyInput.type || "text";
   proxy.placeholder = legacyInput.placeholder || "";
 
@@ -150,6 +151,7 @@ function attachSelectProxy({
   const proxy = documentRef.createElement("sl-select");
   proxy.id = `${legacySelect.id}-sl`;
   proxy.dataset.uiPrimitive = "sl-select";
+  proxy.classList.add("ui-field-proxy", "ui-field-proxy-select");
 
   const syncFromLegacy = () => {
     buildProxyOptions({ documentRef, select: legacySelect, proxy });

@@ -24,6 +24,7 @@ describe("search/filter/saved/export control shoelace migration", () => {
     expect(document.getElementById("download-pdf-sl")?.tagName.toLowerCase()).toBe("sl-button");
     expect(document.getElementById("run-search-sl")?.tagName.toLowerCase()).toBe("sl-button");
     expect(document.getElementById("save-view-sl")?.tagName.toLowerCase()).toBe("sl-button");
+    expect(document.getElementById("run-search-sl")?.classList.contains("ui-button-proxy")).toBe(true);
     expect(document.getElementById("download-pdf")?.dataset.uiPrimitiveProxy).toBe("true");
   });
 
