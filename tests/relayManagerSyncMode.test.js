@@ -99,6 +99,7 @@ describe("relayManager sync mode behavior", () => {
     expect(manager.client.getChats).toHaveBeenCalledTimes(1);
     expect(manager.getChatsFromStoreFallback).not.toHaveBeenCalled();
     expect(store.upsertChatMeta).toHaveBeenCalledTimes(1);
+    expect(store.upsertChatMeta.mock.calls[0][2]).toEqual({ waitForPersist: false });
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
     expect(status.syncPath).toBe("primary");

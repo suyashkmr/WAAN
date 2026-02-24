@@ -66,9 +66,15 @@ async function persistSyncedChatMeta({
       const update = await buildChatMetaUpdate(chat);
       if (update) bulkMetaUpdates.push(update);
     } else {
-      await persistChatMeta(chat);
+      await persistChatMeta(chat, { waitForPersist: false });
     }
     persistDurationMs += Math.max(0, Date.now() - persistStartedAt);
+  }
+
+  if (!bulkMetaUpdates && store && typeof store.flushMetadata === "function") {
+    const flushStartedAt = Date.now();
+    await store.flushMetadata();
+    persistDurationMs += Math.max(0, Date.now() - flushStartedAt);
   }
 
   if (bulkMetaUpdates && bulkMetaUpdates.length) {

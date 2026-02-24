@@ -59,10 +59,10 @@ Completed tasks were removed for clarity (history remains in git).
 
 ### Efficiency Deep Work
 
-- [ ] Batch chat metadata persistence and avoid full per-chat rewrites on incremental updates (`apps/server/src/store/chatStore.js`).
-  - [ ] Design write strategy (batch window or transactional queue).
-  - [ ] Implement incremental writes with fallback/recovery path.
-  - [ ] Measure write amplification before/after and capture results.
+- [x] Batch chat metadata persistence and avoid full per-chat rewrites on incremental updates (`apps/server/src/store/chatStore.js`).
+  - [x] Design write strategy (batch window or transactional queue).
+  - [x] Implement incremental writes with fallback/recovery path.
+  - [x] Measure write amplification before/after and capture results.
 - [ ] Parallelize/cap metadata enrichment during sync and skip unchanged updates (`apps/server/src/relay/relaySync.js`, `apps/server/src/relay/relayData.js`).
   - [ ] Add bounded concurrency for participant/meta enrichment.
   - [ ] Skip or short-circuit unchanged records.
@@ -71,6 +71,37 @@ Completed tasks were removed for clarity (history remains in git).
   - [ ] Define index shape and invalidation/update strategy.
   - [ ] Implement incremental index updates on dataset changes.
   - [ ] Benchmark query latency and worker CPU before/after.
+
+### Post-Current-List: UI Polish (Tailwind CSS + shadcn/ui)
+
+- [ ] Define UI migration scope and acceptance criteria before implementation.
+  - [ ] Freeze target surfaces for phase 1 (for example hero, section nav, cards, relay controls).
+  - [ ] Define parity checklist: dark/light theme behavior, accessibility toggles, Electron layout, responsive breakpoints.
+  - [ ] Capture baseline screenshots and interaction notes for regression comparison.
+- [ ] Introduce Tailwind CSS pipeline and design-token mapping.
+  - [ ] Add Tailwind config, content globs, and build integration.
+  - [ ] Map existing design tokens/CSS vars to Tailwind theme extensions.
+  - [ ] Verify production build output size and purge behavior.
+- [ ] Introduce shadcn/ui foundation and shared primitives.
+  - [ ] Install/generate core primitives (button, input, select, dialog, tooltip, tabs, card).
+  - [ ] Wire primitives to existing theme variables and motion/accessibility settings.
+  - [ ] Document component usage rules to avoid ad-hoc styling drift.
+- [ ] Migrate one vertical slice first before broad rollout.
+  - [ ] Replace one end-to-end surface (for example dashboard hero + section nav + summary cards).
+  - [ ] Validate behavior parity with existing keyboard/mouse flows.
+  - [ ] Keep rollback path until parity is confirmed.
+- [ ] Expand migration to remaining app surfaces in controlled phases.
+  - [ ] Relay controls and status/banner surfaces.
+  - [ ] Search, filters, saved views, and export controls.
+  - [ ] Remaining dashboard panels and utility views.
+- [ ] Validate visual quality, accessibility, and runtime performance.
+  - [ ] Run responsive checks (desktop + mobile viewport set) and Electron smoke checks.
+  - [ ] Run accessibility checks (focus order, contrast, reduced motion, high contrast).
+  - [ ] Track paint/render/perf regressions and fix before completion.
+- [ ] Remove legacy styling paths only after parity is confirmed.
+  - [ ] Remove dead CSS/selectors and obsolete style helpers.
+  - [ ] Update docs/tests to reflect new UI stack.
+  - [ ] Run full `ci:verify` + manual UI smoke before marking complete.
 
 ### Dead Code Cleanup
 

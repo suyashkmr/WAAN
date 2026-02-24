@@ -177,7 +177,8 @@ class RelayManager extends EventEmitter {
         chats,
         store: this.store,
         buildChatMetaUpdate: chat => this.buildChatMetaUpdate(chat),
-        persistChatMeta: chat => this.persistChatMeta(chat),
+        persistChatMeta: (chat, persistOptions) =>
+          this.persistChatMeta(chat, persistOptions),
       });
       applySyncSuccessState(this, {
         chats,
@@ -284,12 +285,13 @@ class RelayManager extends EventEmitter {
     updateRelayState(this, patch);
   }
 
-  async persistChatMeta(chat) {
+  async persistChatMeta(chat, options = {}) {
     await persistChatMeta({
       chat,
       store: this.store,
       contactCache: this.contactCache,
       logger: this.logger,
+      ...options,
     });
   }
 

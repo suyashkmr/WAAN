@@ -14,6 +14,12 @@ Optional custom sizes:
 npm run perf:stress -- --sizes=75000,150000,250000
 ```
 
+Chat metadata write-amplification benchmark:
+
+```bash
+npm run perf:chatstore
+```
+
 ## What It Measures
 
 - Dataset fingerprint computation (`computeDatasetFingerprint`)
@@ -39,6 +45,19 @@ npm run perf:stress -- --sizes=75000,150000,250000
 - Full analytics recomputation when loading very large chats.
 - Search worker scan cost on broad filters over very large datasets.
 - Any panel that renders many complex rows without virtualization.
+
+## ChatStore Metadata Write Amplification (Measured)
+
+Run captured on February 24, 2026 (`generatedAt=2026-02-24T03:44:23.950Z`):
+
+| Scenario | Iterations | Before writes | After writes | Reduction | Duration (ms) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `upsertChatMeta` single-update path | 1000 | 1000 | 1 | 99.9% | 13 |
+| `appendMessage` incremental sync path | 400 | 400 | 11 | 97.25% | 101 |
+
+Interpretation:
+- Metadata writes are now coalesced instead of one-write-per-update.
+- Incremental message append path still emits occasional flushes during long bursts (timer-window boundary), but remains substantially lower than pre-batching behavior.
 
 ## Next Improvements
 

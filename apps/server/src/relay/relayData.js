@@ -118,12 +118,18 @@ async function buildChatMetaUpdate({ chat, contactCache, logger }) {
   };
 }
 
-async function persistChatMeta({ chat, store, contactCache, logger }) {
+async function persistChatMeta({
+  chat,
+  store,
+  contactCache,
+  logger,
+  waitForPersist = true,
+}) {
   const update = await buildChatMetaUpdate({ chat, contactCache, logger });
   if (!update) return;
   await store.upsertChatMeta(update.chatId, {
     ...update.patch,
-  });
+  }, { waitForPersist });
 }
 
 function extractPollInfo(message) {

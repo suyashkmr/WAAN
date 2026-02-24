@@ -11,6 +11,9 @@ class ChatStore extends EventEmitter {
     this.chatsDir = path.join(this.storageDir, "chats");
     this.metadata = new Map();
     this.entriesCache = new Map();
+    this.metadataDirty = false;
+    this.metadataPersistTimer = null;
+    this.metadataPersistDelayMs = 75;
     fs.ensureDirSync(this.chatsDir);
   }
 
@@ -41,6 +44,41 @@ class ChatStore extends EventEmitter {
       chats: Array.from(this.metadata.values()),
     };
     await fs.outputJson(this.metadataPath, payload, { spaces: 2 });
+  }
+
+  async scheduleMetadataPersist({ immediate = false } = {}) {
+    this.metadataDirty = true;
+    if (immediate) {
+      return this.flushMetadata();
+    }
+    if (this.metadataPersistTimer) {
+      return;
+    }
+    this.metadataPersistTimer = setTimeout(() => {
+      this.metadataPersistTimer = null;
+      this.flushMetadata().catch(error => {
+        this.logger.warn("Failed to persist chat metadata: %s", error.message);
+      });
+    }, this.metadataPersistDelayMs);
+  }
+
+  async flushMetadata() {
+    if (this.metadataPersistTimer) {
+      clearTimeout(this.metadataPersistTimer);
+      this.metadataPersistTimer = null;
+    }
+    if (!this.metadataDirty) {
+      return;
+    }
+    while (this.metadataDirty) {
+      this.metadataDirty = false;
+      try {
+        await this.persistMetadata();
+      } catch (error) {
+        this.metadataDirty = true;
+        throw error;
+      }
+    }
   }
 
   async loadEntries(chatId) {
@@ -97,7 +135,8 @@ class ChatStore extends EventEmitter {
     return entries.slice(entries.length - limit);
   }
 
-  async upsertChatMeta(chatId, patch = {}) {
+  async upsertChatMeta(chatId, patch = {}, options = {}) {
+    const { waitForPersist = true } = options;
     const existing = this.metadata.get(chatId) || {
       id: chatId,
       name: patch.name || chatId,
@@ -114,8 +153,19 @@ class ChatStore extends EventEmitter {
     if (patch.participants) {
       updated.participants = patch.participants;
     }
+    const previous = this.metadata.get(chatId);
+    const changed = JSON.stringify(previous || null) !== JSON.stringify(updated);
     this.metadata.set(chatId, updated);
-    await this.persistMetadata();
+    if (!changed) {
+      if (waitForPersist && this.metadataDirty) {
+        await this.flushMetadata();
+      }
+      return updated;
+    }
+    await this.scheduleMetadataPersist();
+    if (waitForPersist) {
+      await this.flushMetadata();
+    }
     this.emit("chats:updated", this.listChats());
     return updated;
   }
@@ -146,13 +196,20 @@ class ChatStore extends EventEmitter {
       if (patch.participants) {
         updated.participants = patch.participants;
       }
+      const previous = this.metadata.get(chatId);
+      const changed = JSON.stringify(previous || null) !== JSON.stringify(updated);
       this.metadata.set(chatId, updated);
-      applied.push(updated);
+      if (changed) {
+        applied.push(updated);
+      }
     });
     if (!applied.length) {
+      if (this.metadataDirty) {
+        await this.flushMetadata();
+      }
       return [];
     }
-    await this.persistMetadata();
+    await this.scheduleMetadataPersist({ immediate: true });
     this.emit("chats:updated", this.listChats());
     return applied;
   }
@@ -192,6 +249,11 @@ class ChatStore extends EventEmitter {
   async clearAll() {
     this.metadata.clear();
     this.entriesCache.clear();
+    this.metadataDirty = false;
+    if (this.metadataPersistTimer) {
+      clearTimeout(this.metadataPersistTimer);
+      this.metadataPersistTimer = null;
+    }
     await fs.remove(this.metadataPath).catch(() => {});
     await fs.emptyDir(this.chatsDir);
     this.emit("chats:cleared");
