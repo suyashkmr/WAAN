@@ -195,11 +195,11 @@ export function buildExportDeckCss(theme, { mode = "screen" } = {}) {
     }
     .callout p {
       margin: 0;
-      color: var(--deck-muted);
+      color: color-mix(in srgb, var(--deck-text) 72%, var(--deck-muted));
     }
     .empty {
       margin: 0;
-      color: var(--deck-muted);
+      color: color-mix(in srgb, var(--deck-text) 68%, var(--deck-muted));
       font-style: italic;
     }
     .print-page {
@@ -223,6 +223,10 @@ export function buildExportDeckCss(theme, { mode = "screen" } = {}) {
     @page {
       size: A4;
       margin: 0.5in;
+    }
+    html, body {
+      background: var(--deck-bg) !important;
+      color: var(--deck-text) !important;
     }
     body {
       background: var(--deck-bg);

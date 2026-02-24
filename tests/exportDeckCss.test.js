@@ -17,6 +17,25 @@ describe("export deck css", () => {
     expect(css).toContain("body {");
     expect(css).toContain("background: var(--deck-bg);");
     expect(css).toContain("print-color-adjust: exact;");
+    expect(css).toContain("html, body {");
+    expect(css).toContain("background: var(--deck-bg) !important;");
+    expect(css).toContain("color: var(--deck-text) !important;");
     expect(css).not.toContain("background: #fff;");
+  });
+
+  it("preserves light theme colors in print mode", () => {
+    const css = buildExportDeckCss(
+      {
+        dark: false,
+        canvas: "#f8fafc",
+        text: "#0f172a",
+      },
+      { mode: "print" },
+    );
+
+    expect(css).toContain("color-scheme: light;");
+    expect(css).toContain("--deck-bg: #f8fafc;");
+    expect(css).toContain("--deck-text: #0f172a;");
+    expect(css).toContain("html, body {");
   });
 });

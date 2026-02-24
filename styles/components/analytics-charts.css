@@ -75,8 +75,9 @@
 }
 
 .timeofday-summary {
-    font-size: 0.88rem;
-    color: var(--muted);
+    font-size: 0.84rem;
+    color: color-mix(in srgb, var(--muted) 88%, var(--text));
+    line-height: 1.38;
 }
 
 .timeofday-sparkline {
@@ -166,18 +167,20 @@
 }
 
 .timeofday-band .band-label {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: color-mix(in srgb, var(--card-accent, var(--accent)) 55%, var(--text));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .timeofday-band .band-count {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
 }
 
 .timeofday-band .band-share {
-    font-size: 0.8rem;
+    font-size: 0.76rem;
     color: var(--muted);
 }
 
@@ -313,8 +316,8 @@
 .weekday-meta {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.85rem;
+    gap: 0.22rem;
+    font-size: 0.8rem;
     color: var(--muted);
 }
 
@@ -325,7 +328,7 @@
 }
 
 .weekday-count {
-    font-size: 1rem;
+    font-size: 1.08rem;
     font-weight: 600;
     color: var(--text);
 }
