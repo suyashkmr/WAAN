@@ -135,6 +135,21 @@
     --card-padding: clamp(1.05rem, 2vw, 1.65rem);
     --card-stack-gap: clamp(0.75rem, 1.2vw, 1rem);
     --card-section-gap: clamp(0.85rem, 1.4vw, 1.15rem);
+    --section-header-title-gap: var(--space-1);
+    --section-header-meta-gap: var(--space-1);
+    --section-header-intro-gap: var(--space-0);
+    --section-nav-shell-top: var(--space-1);
+    --section-nav-shell-margin-top: clamp(0.6rem, 1vw, 0.82rem);
+    --section-nav-shell-margin-bottom: clamp(1rem, 1.6vw, 1.35rem);
+    --section-nav-shell-pad-y: clamp(0.28rem, 0.48vw, 0.38rem);
+    --section-nav-shell-pad-x: clamp(0.48rem, 0.8vw, 0.62rem);
+    --section-nav-inner-gap: clamp(0.45rem, 0.8vw, 0.58rem);
+    --section-nav-inner-pad-y: var(--space-0);
+    --section-nav-inner-pad-x: clamp(0.3rem, 0.7vw, 0.45rem);
+    --section-nav-kicker-pad-y: var(--space-0);
+    --section-nav-kicker-pad-x: clamp(0.4rem, 0.75vw, 0.5rem);
+    --section-nav-item-pad-y: clamp(0.26rem, 0.44vw, 0.34rem);
+    --section-nav-item-pad-x: clamp(0.64rem, 1.05vw, 0.82rem);
 
     --bg: var(--md-surface);
     --card-bg: color-mix(in srgb, var(--md-surface-container) 92%, transparent);

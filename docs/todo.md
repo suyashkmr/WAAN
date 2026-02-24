@@ -166,10 +166,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Define one reusable header pattern (title, meta, actions) for migrated panels.
   - [x] Standardize section intro treatment (icon, label, descriptor).
   - [x] Verify readability and alignment in light/dark at desktop + mobile.
-- [ ] Normalize spacing and rhythm across migrated surfaces.
-  - [ ] Enforce consistent spacing scale for mobile/tablet/desktop containers.
-  - [ ] Remove one-off margin/padding overrides where a shared token can be used.
-  - [ ] Validate no clipping/overlap regressions in dense dashboard layouts.
+- [x] Normalize spacing and rhythm across migrated surfaces.
+  - [x] Enforce consistent spacing scale for mobile/tablet/desktop containers.
+  - [x] Remove one-off margin/padding overrides where a shared token can be used.
+  - [x] Validate no clipping/overlap regressions in dense dashboard layouts.
 - [ ] Refine typography scale and information density.
   - [ ] Lock type ramp for hero title, panel titles, body text, metadata text.
   - [ ] Tune line-length and wrapping for analytics-heavy cards/tables.

@@ -1243,7 +1243,7 @@ body[data-reduce-motion="true"] .hero-milestone.is-ready-celebration::after {
     letter-spacing: var(--tracking-tight);
     display: inline-flex;
     align-items: center;
-    gap: 0.52rem;
+    gap: var(--section-header-title-gap);
     text-wrap: balance;
 }
 
@@ -1508,11 +1508,11 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 .card-heading {
     display: inline-flex;
     align-items: flex-start;
-    gap: 0.4rem;
+    gap: var(--section-header-meta-gap);
 }
 
 .card-title-group .card-heading {
-    margin-bottom: 0.12rem;
+    margin-bottom: var(--section-header-intro-gap);
 }
 
 .live-card .card-title-group {
@@ -4300,14 +4300,14 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 .section-nav {
     position: sticky;
-    top: 0.5rem;
+    top: var(--section-nav-shell-top);
     z-index: 320;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: min(1100px, calc(100% - 1.5rem));
-    margin: 0.75rem auto 1.25rem;
-    padding: 0.36rem 0.5rem 0.28rem;
+    width: min(1100px, calc(100% - var(--space-4)));
+    margin: var(--section-nav-shell-margin-top) auto var(--section-nav-shell-margin-bottom);
+    padding: var(--section-nav-shell-pad-y) var(--section-nav-shell-pad-x);
     background: color-mix(in srgb, var(--glass-bg) 94%, transparent);
     border-radius: 999px;
     border: 1px solid var(--glass-border);
@@ -4321,16 +4321,16 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 .section-nav-inner {
     display: flex;
-    gap: 0.55rem;
+    gap: var(--section-nav-inner-gap);
     flex-wrap: wrap;
     justify-content: center;
-    padding: 0.2rem 0.4rem;
+    padding: var(--section-nav-inner-pad-y) var(--section-nav-inner-pad-x);
     scroll-behavior: smooth;
 }
 
 .section-nav-kicker {
     margin: 0;
-    padding: 0.2rem 0.45rem 0.15rem;
+    padding: var(--section-nav-kicker-pad-y) var(--section-nav-kicker-pad-x);
     font-size: var(--type-label-xs);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -4349,7 +4349,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--muted);
-    padding: 0.3rem 0.72rem;
+    padding: var(--section-nav-item-pad-y) var(--section-nav-item-pad-x);
     border-radius: 999px;
     transition:
         background var(--motion-duration-fast) var(--motion-ease-out),
@@ -4396,7 +4396,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     .section-nav {
         justify-content: flex-start;
         width: 100%;
-        padding: 0.35rem 0.5rem 0.25rem;
+        padding: var(--section-nav-shell-pad-y) var(--section-nav-shell-pad-x);
     }
     .section-nav-kicker {
         margin-right: 0.2rem;
@@ -5232,7 +5232,7 @@ footer {
 .card-header .card-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-1);
 }
 
 body[data-compact="true"] {
@@ -5248,6 +5248,15 @@ body[data-compact="true"] {
     --card-padding: clamp(0.88rem, 1.3vw, 1.12rem);
     --card-stack-gap: clamp(0.55rem, 0.9vw, 0.75rem);
     --card-section-gap: clamp(0.65rem, 1vw, 0.9rem);
+    --section-header-title-gap: var(--space-0);
+    --section-header-meta-gap: var(--space-0);
+    --section-nav-shell-margin-top: var(--space-1);
+    --section-nav-shell-margin-bottom: clamp(0.85rem, 1.1vw, 1rem);
+    --section-nav-shell-pad-y: clamp(0.24rem, 0.34vw, 0.3rem);
+    --section-nav-shell-pad-x: clamp(0.38rem, 0.5vw, 0.5rem);
+    --section-nav-inner-gap: clamp(0.36rem, 0.52vw, 0.42rem);
+    --section-nav-item-pad-y: clamp(0.22rem, 0.3vw, 0.28rem);
+    --section-nav-item-pad-x: clamp(0.56rem, 0.74vw, 0.68rem);
     --type-display-hero: clamp(1.88rem, 3.2vw, 2.5rem);
     --type-title-md: clamp(1.14rem, 1.4vw, 1.34rem);
     --type-title-sm: clamp(0.98rem, 1.05vw, 1.1rem);
