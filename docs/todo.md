@@ -130,8 +130,11 @@ Completed tasks were removed for clarity (history remains in git).
   - [ ] Search, filters, saved views, and export controls.
     - [x] Migrate search/saved-view/export/filter action buttons to Shoelace `sl-button` proxies with rollback key (`waan-ui-controls-legacy`).
     - [x] Migrate search/saved-view form fields (`input`/`select`) to Shoelace proxies with rollback key (`waan-ui-controls-legacy`).
-    - [ ] Validate search/saved-view field parity (typing, date filters, participant list refresh, saved view selection) in manual flow.
+    - [x] Validate search/saved-view field parity (typing, date filters, participant list refresh, saved view selection) in manual flow.
   - [ ] Remaining dashboard panels and utility views.
+    - [x] Migrate utility view shells (`#polls-card`, `#saved-views-card`, `#search-panel`, `#faq-card`) to static Shoelace `sl-card` markup.
+    - [ ] Migrate remaining analytics/dashboard panel shells (`#insight-highlights`, `#participants`, `#hourly-activity`, `#daily-activity`, `#weekly-trend`, `#weekday-trend`, `#timeofday-trend`, `#sentiment-overview`, `#message-types`) in controlled batches.
+    - [ ] Verify section navigation/highlight behavior across all migrated panel shells.
 - [ ] Validate visual quality, accessibility, and runtime performance.
   - [ ] Run responsive checks (desktop + mobile viewport set) and Electron smoke checks.
   - [ ] Run accessibility checks (focus order, contrast, reduced motion, high contrast).

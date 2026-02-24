@@ -70,3 +70,10 @@ sl-card::part(base) {
     background: var(--card-bg);
     box-shadow: var(--shadow-card);
 }
+
+sl-card.card::part(base) {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
