@@ -1,3 +1,5 @@
+import { createEmptyState, createToolbarRow } from "./appShellPrimitives.js";
+
 export function renderPanelState({
   container,
   tone = "empty",
@@ -8,27 +10,15 @@ export function renderPanelState({
 } = {}) {
   if (!container) return null;
   const safeActions = Array.isArray(actions) ? actions.filter(Boolean) : [];
-  const wrapper = document.createElement("div");
-  wrapper.className = `panel-state panel-state--${tone}`;
-  wrapper.setAttribute("role", tone === "error" ? "alert" : "status");
-
-  if (title) {
-    const heading = document.createElement("h4");
-    heading.className = "panel-state-title";
-    heading.textContent = title;
-    wrapper.appendChild(heading);
-  }
-
-  if (message) {
-    const body = document.createElement("p");
-    body.className = "panel-state-copy";
-    body.textContent = message;
-    wrapper.appendChild(body);
-  }
+  const wrapper = createEmptyState({ documentRef: document, tone, title, message });
+  if (!wrapper) return null;
 
   if (safeActions.length) {
-    const actionsRow = document.createElement("div");
-    actionsRow.className = "panel-state-actions";
+    const actionsRow = createToolbarRow({
+      documentRef: document,
+      className: "panel-state-actions",
+    });
+    if (!actionsRow) return null;
     safeActions.forEach(action => {
       const button = document.createElement("button");
       button.type = "button";

@@ -2,6 +2,22 @@
 @tailwind utilities;
 
 @layer utilities {
+  .bg-surface-base-token {
+    background-color: theme("colors.surface.base");
+  }
+
+  .bg-surface-raised-token {
+    background-color: theme("colors.surface.raised");
+  }
+
+  .bg-surface-glass-token {
+    background-color: theme("colors.surface.glass");
+  }
+
+  .text-base-token {
+    color: theme("colors.text.base");
+  }
+
   .bg-surface-token {
     background-color: var(--card-bg);
   }
@@ -10,12 +26,36 @@
     color: var(--muted);
   }
 
+  .text-muted-strong-token {
+    color: color-mix(in srgb, theme("colors.text.base") 68%, theme("colors.text.muted"));
+  }
+
+  .border-subtle-token {
+    border-color: theme("colors.border.subtle");
+  }
+
   .border-token {
     border-color: var(--border);
   }
 
   .shadow-card-token {
     box-shadow: var(--shadow-card);
+  }
+
+  .shadow-float-token {
+    box-shadow: theme("boxShadow.float");
+  }
+
+  .status-success-token {
+    color: theme("colors.state.success");
+  }
+
+  .status-warning-token {
+    color: theme("colors.state.warning");
+  }
+
+  .status-danger-token {
+    color: theme("colors.state.danger");
   }
 
   .font-display-token {

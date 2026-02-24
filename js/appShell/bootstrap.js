@@ -1,3 +1,5 @@
+import { initAppShellPrimitives } from "../ui/appShellPrimitives.js";
+
 export function createBootstrapController({ elements, deps }) {
   const {
     onboardingSkipButton,
@@ -95,6 +97,7 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function initAppBootstrap() {
+    initAppShellPrimitives({ documentRef: document });
     initEventHandlers();
     initRelayControls();
     initThemeControls();

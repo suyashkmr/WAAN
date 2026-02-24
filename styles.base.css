@@ -122,6 +122,7 @@
     --space-5: 2.25rem;
     --space-6: 3rem;
     --space-7: 4rem;
+    --layout-content-max-width: 1100px;
     --layout-main-gap: clamp(1.05rem, 2vw, 1.5rem);
     --layout-main-pad-x: clamp(0.9rem, 2.2vw, 1.5rem);
     --layout-main-pad-bottom: clamp(1.4rem, 3vw, 2.2rem);
@@ -130,6 +131,16 @@
     --hero-shell-pad-x: var(--layout-main-pad-x);
     --hero-blurb-pad: clamp(1.15rem, 2.2vw, 2.25rem);
     --hero-blurb-gap: clamp(0.95rem, 1.8vw, 1.5rem);
+    --hero-status-gap: 0.35rem;
+    --hero-status-badge-gap: 0.4rem;
+    --hero-status-badge-pad-y: 0.35rem;
+    --hero-status-badge-pad-x: 0.95rem;
+    --hero-status-meta-gap: 0.45rem;
+    --hero-milestones-gap: 0.45rem;
+    --hero-milestone-gap: 0.35rem;
+    --hero-milestone-pad-y: 0.24rem;
+    --hero-milestone-pad-x: 0.62rem;
+    --hero-milestone-dot-size: 0.38rem;
     --hero-logo-size: clamp(72px, 9vw, 92px);
     --hero-logo-mark-size: clamp(58px, 7.2vw, 76px);
     --card-padding: clamp(1.05rem, 2vw, 1.65rem);
@@ -150,6 +161,12 @@
     --section-nav-kicker-pad-x: clamp(0.4rem, 0.75vw, 0.5rem);
     --section-nav-item-pad-y: clamp(0.26rem, 0.44vw, 0.34rem);
     --section-nav-item-pad-x: clamp(0.64rem, 1.05vw, 0.82rem);
+    --relay-banner-margin-top: var(--space-3);
+    --relay-banner-margin-bottom: 1.25rem;
+    --relay-banner-pad-y: var(--space-3);
+    --relay-banner-pad-x: var(--space-4);
+    --relay-banner-gap: var(--space-3);
+    --relay-banner-indicator-size: 0.85rem;
 
     --bg: var(--md-surface);
     --card-bg: color-mix(in srgb, var(--md-surface-container) 92%, transparent);

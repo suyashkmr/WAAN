@@ -44,6 +44,40 @@ The app respects both system `prefers-reduced-motion` and the in-app toggle. Ena
 
 `h1`, `h2`, `.card-header h2`, `.section-nav a`, `.stat-value`, and footer branding elements automatically pull from the display stack, while every other surface inherits the base family. When adding new modules, prefer `var(--font-family-display)` for short, high-impact labels (navs, hero badges) and stick with the base token for paragraphs and descriptions so the UI keeps its approachable tone.
 
+## Tailwind Token Bridge
+
+Tailwind is configured as a thin bridge over CSS variables in `tailwind.config.cjs` so theme switching, high-contrast mode, and reduced-motion mode remain automatic.
+
+### Semantic Color Utilities
+
+- `bg-surface-base`, `bg-surface-raised`, `bg-surface-raisedStrong`, `bg-surface-glass`
+- `text-text-base`, `text-text-muted`, `text-text-strong`
+- `border-border-base`, `border-border-subtle`, `border-border-strong`, `border-border-glass`
+- `text-state-success|warning|danger|neutral` and matching soft backgrounds
+
+### Typography Utilities
+
+- Families: `font-base`, `font-display`
+- Sizes: `text-label-xs`, `text-label-sm`, `text-body-sm`, `text-body-md`, `text-body-lg`, `text-title-sm`, `text-title-md`, `text-title-lg`, `text-display-hero`
+- Line heights: `leading-tight`, `leading-snug`, `leading-body`, `leading-relaxed`
+- Letter spacing: `tracking-tight`, `tracking-display`, `tracking-label`
+- Weights: `font-regular`, `font-medium`, `font-semibold`
+
+### Spatial + Motion Utilities
+
+- Spacing scale: `*-space-0` through `*-space-7` (for `margin`, `padding`, `gap`, etc.)
+- Radius: `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-full`
+- Elevation: `shadow-soft`, `shadow-float`, `shadow-card`, `shadow-card-strong`, `shadow-card-deep`, `shadow-chip`
+- Motion: `duration-fast|medium|slow`, `ease-out|emphasis`, delay + translate utilities mapped to motion tokens
+
+## Token Usage Rules
+
+- Use semantic tokens, not raw color names, for app UI (`surface`, `text`, `border`, `state`).
+- Keep Shoelace for behavior-heavy primitives (`sl-button`, `sl-input`, `sl-select`, dialogs, tooltips); style them via tokens only.
+- Use shared component classes for repeated shells (panel headers, section intros, status badges). Use direct utilities only for one-off layout composition.
+- Avoid hard-coded pixel/rgb values on migrated surfaces unless there is a documented exception in the same PR.
+- Any new state style must support both `data-contrast="high"` and `data-reduce-motion="true"` automatically through tokens.
+
 ## Accessibility Toggles
 
 - **Motion: Reduced** → `data-reduce-motion="true"` + `localStorage["waan-reduce-motion"]`. Used by JS helpers so animations and blurs are skipped both in CSS and JS (e.g., collapsible cards avoid animated heights).

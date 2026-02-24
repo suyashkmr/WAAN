@@ -235,6 +235,41 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Update tests that assume mixed local+remote selector groups.
   - [x] Run smoke + targeted tests and capture migration notes before marking complete.
 
+### Modern UI Upgrade (Tailwind + Shoelace, Design-System First)
+
+- [x] Establish a concrete visual direction and token system (tooling is not the blocker).
+  - [x] Define a single typography system (font families, size ramp, weight ramp, line-height ramp) and map it to Tailwind tokens.
+  - [x] Define spacing, radius, border, elevation, and motion tokens and remove one-off values on migrated surfaces.
+    - [x] Tokenize hero + relay migrated surfaces for shared width, spacing, and sizing values (`styles.base.css`, `styles.components.css`).
+    - [x] Expose spacing/elevation/motion token mappings through Tailwind theme extensions (`tailwind.config.cjs`).
+    - [x] Manually verify hero/relay spacing parity in light/dark at desktop + mobile after tokenization before marking complete.
+  - [x] Define semantic color roles (`bg-surface-*`, `text-*`, `border-*`, `state-*`) for light/dark/high-contrast.
+  - [x] Publish token usage rules in docs (when to use utility classes directly vs shared component classes).
+- [x] Build a reusable app-shell component language for visual consistency.
+  - [x] Implement shared primitives for `PanelShell`, `PanelHeader`, `SectionIntro`, `StatusBadge`, `ToolbarRow`, and `EmptyState`.
+  - [x] Refactor hero, section nav, and dashboard panel headers to use those shared primitives.
+    - [x] Added shared primitives module and startup normalization hook (`js/ui/appShellPrimitives.js`, `js/appShell/bootstrap.js`).
+    - [x] Wired section-nav runtime to shared toolbar-row primitive (`js/appShell/sectionNav.js`).
+    - [x] Wired panel empty/loading/error states to shared empty-state + toolbar primitives (`js/ui/panelState.js`).
+    - [x] Added regression coverage for primitives creation + normalization (`tests/uiAppShellPrimitives.test.js`).
+  - [x] Eliminate duplicated/legacy header and card chrome variants once parity is verified.
+    - [x] Consolidated panel/header/card chrome selectors around shared app-shell classes with compatibility aliases (`styles.components.css`).
+    - [x] Removed duplicated header action chrome rule and normalized action-row styling via `app-panel-actions`.
+    - [x] Verified automated checks after consolidation (`npm run ci:verify`).
+    - [x] Manually verify visual parity for hero card, section-nav row, and analytics panel headers in light/dark + compact mode.
+- [ ] Raise interaction polish to modern baseline.
+  - [ ] Standardize hover/focus/active/disabled/loading treatments for all Shoelace-backed controls.
+  - [ ] Add consistent transition timing/easing tokens and honor reduced-motion mode across all animated surfaces.
+  - [ ] Improve active navigation and state-change feedback (relay state, section transitions, loading/error changes) for clarity without visual noise.
+- [ ] Improve information density and readability on analytics-heavy views.
+  - [ ] Rebalance panel content hierarchy (primary metric, secondary context, tertiary metadata).
+  - [ ] Tune table/list row density, sticky headers, and truncation handling for desktop and mobile.
+  - [ ] Ensure exported views (including PDF) preserve theme/readability choices and do not regress with dark mode.
+- [ ] Run a full UX parity + quality validation pass before completion.
+  - [ ] Capture updated before/after screenshots for key surfaces (hero, nav, summary, relay, search/saved views, analytics panels) at desktop + mobile in light/dark.
+  - [ ] Execute manual keyboard-only traversal and verify label/focus/tooltip parity on migrated controls.
+  - [ ] Run `npm run ci:verify` and targeted visual checks after each phase; keep parent task open until all phases pass.
+
 ## Process Guardrail
 
 - [ ] If a trigger occurs, open a focused refactor task per `docs/engineering-guardrails.md`.

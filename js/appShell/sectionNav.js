@@ -1,3 +1,5 @@
+import { decorateToolbarRow } from "../ui/appShellPrimitives.js";
+
 export function createSectionNavController({
   containerEl,
   navItemsConfig = [],
@@ -44,6 +46,7 @@ export function createSectionNavController({
 
   function buildSectionNav() {
     if (!containerEl) return;
+    decorateToolbarRow(containerEl);
     containerEl.innerHTML = "";
     sectionNavLinks = [];
     sectionNavItems = [];

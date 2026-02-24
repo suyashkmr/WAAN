@@ -6,7 +6,7 @@
 }
 
 .hero-layout {
-    width: min(1100px, 100%);
+    width: min(var(--layout-content-max-width), 100%);
     margin: 0 auto;
     display: grid;
     gap: var(--hero-blurb-gap);
@@ -126,7 +126,7 @@
 .hero-status {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--hero-status-gap);
     align-items: flex-start;
     text-align: left;
 }
@@ -134,8 +134,8 @@
 .hero-status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.95rem;
+    gap: var(--hero-status-badge-gap);
+    padding: var(--hero-status-badge-pad-y) var(--hero-status-badge-pad-x);
     border-radius: var(--shape-full);
     border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
     background: color-mix(in srgb, var(--accent) 12%, var(--card-bg));
@@ -203,7 +203,7 @@
     margin: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: var(--hero-status-meta-gap);
     font-size: var(--type-label-xs);
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -233,14 +233,14 @@
     margin-top: var(--space-1);
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: var(--hero-milestones-gap);
 }
 
 .hero-milestone {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.24rem 0.62rem;
+    gap: var(--hero-milestone-gap);
+    padding: var(--hero-milestone-pad-y) var(--hero-milestone-pad-x);
     border-radius: var(--shape-full);
     border: 1px solid color-mix(in srgb, var(--muted) 34%, transparent);
     background: color-mix(in srgb, var(--muted) 10%, transparent);
@@ -258,8 +258,8 @@
 
 .hero-milestone::before {
     content: "";
-    width: 0.38rem;
-    height: 0.38rem;
+    width: var(--hero-milestone-dot-size);
+    height: var(--hero-milestone-dot-size);
     border-radius: 999px;
     background: color-mix(in srgb, var(--muted) 72%, transparent);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--muted) 40%, transparent);
@@ -583,12 +583,12 @@
 }
 
 .relay-status-banner {
-    margin: 1rem auto 1.25rem;
-    padding: 1rem 1.5rem;
-    max-width: 1100px;
+    margin: var(--relay-banner-margin-top) auto var(--relay-banner-margin-bottom);
+    padding: var(--relay-banner-pad-y) var(--relay-banner-pad-x);
+    max-width: var(--layout-content-max-width);
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 1rem;
+    gap: var(--relay-banner-gap);
     align-items: center;
     background: color-mix(in srgb, var(--surface-elevated) 74%, var(--glass-bg));
     border: 1px solid color-mix(in srgb, var(--edge-strong) 64%, var(--glass-border));
@@ -604,8 +604,8 @@
 }
 
 .relay-banner-indicator {
-    width: 0.85rem;
-    height: 0.85rem;
+    width: var(--relay-banner-indicator-size);
+    height: var(--relay-banner-indicator-size);
     border-radius: 999px;
     background: var(--muted);
     position: relative;
@@ -1019,27 +1019,28 @@ main > .page-controls {
     grid-column: span 12;
 }
 
-main > .card {
+main > .card,
+main > .app-panel-shell {
     grid-column: span 12;
     animation: card-in var(--motion-duration-medium) var(--motion-ease-out) both;
 }
 
-main > .card:nth-of-type(2) { animation-delay: calc(var(--motion-delay-card-step) * 1); }
-main > .card:nth-of-type(3) { animation-delay: calc(var(--motion-delay-card-step) * 2); }
-main > .card:nth-of-type(4) { animation-delay: calc(var(--motion-delay-card-step) * 3); }
-main > .card:nth-of-type(5) { animation-delay: calc(var(--motion-delay-card-step) * 4); }
-main > .card:nth-of-type(n + 6) { animation-delay: calc(var(--motion-delay-card-step) * 5); }
+main > :is(.card, .app-panel-shell):nth-of-type(2) { animation-delay: calc(var(--motion-delay-card-step) * 1); }
+main > :is(.card, .app-panel-shell):nth-of-type(3) { animation-delay: calc(var(--motion-delay-card-step) * 2); }
+main > :is(.card, .app-panel-shell):nth-of-type(4) { animation-delay: calc(var(--motion-delay-card-step) * 3); }
+main > :is(.card, .app-panel-shell):nth-of-type(5) { animation-delay: calc(var(--motion-delay-card-step) * 4); }
+main > :is(.card, .app-panel-shell):nth-of-type(n + 6) { animation-delay: calc(var(--motion-delay-card-step) * 5); }
 
-main > .card.full-span,
+main > :is(.card, .app-panel-shell).full-span,
 main > .full-span {
     grid-column: 1 / -1;
 }
 
-main > .card.half-span {
+main > :is(.card, .app-panel-shell).half-span {
     grid-column: span 6;
 }
 
-.card {
+:is(.card, .app-panel-shell) {
     position: relative;
     overflow: hidden;
     background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
@@ -1056,7 +1057,7 @@ main > .card.half-span {
         border-color var(--motion-duration-medium) var(--motion-ease-out);
 }
 
-.card[data-accent] {
+:is(.card, .app-panel-shell)[data-accent] {
     --section-accent-soft: color-mix(in srgb, var(--section-accent, var(--accent)) 16%, transparent);
     --section-accent-surface: color-mix(in srgb, var(--section-accent, var(--accent)) 11%, var(--card-bg));
     --section-accent-ring: color-mix(in srgb, var(--section-accent, var(--accent)) 38%, transparent);
@@ -1068,7 +1069,7 @@ main > .card.half-span {
         linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
 }
 
-.card::after {
+:is(.card, .app-panel-shell)::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -1082,11 +1083,11 @@ main > .card.half-span {
         transform var(--motion-duration-medium) var(--motion-ease-out);
 }
 
-.card[data-accent] .card-title-group h2 {
+:is(.card, .app-panel-shell)[data-accent] :is(.card-title-group, .app-section-intro) h2 {
     color: var(--section-accent, var(--text));
 }
 
-.card[data-accent] .section-icon {
+:is(.card, .app-panel-shell)[data-accent] .section-icon {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 30%, transparent);
     color: var(--md-on-primary);
     box-shadow:
@@ -1098,13 +1099,13 @@ main > .card.half-span {
         background var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-.card[data-accent] .card-header {
+:is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) {
     position: relative;
     padding-bottom: var(--space-2);
     margin-bottom: var(--space-1);
 }
 
-.card[data-accent] .card-header::after {
+:is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header)::after {
     content: "";
     position: absolute;
     left: 0;
@@ -1119,48 +1120,48 @@ main > .card.half-span {
     );
 }
 
-.card[data-accent] .section-note {
+:is(.card, .app-panel-shell)[data-accent] .section-note {
     color: color-mix(in srgb, var(--section-accent, var(--accent)) 22%, var(--text));
 }
 
-.card[data-accent] .card-header .ghost-button:not(.primary):not(.danger) {
+:is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) .ghost-button:not(.primary):not(.danger) {
     border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 40%, transparent);
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 11%, transparent);
     color: color-mix(in srgb, var(--section-accent, var(--accent)) 64%, var(--text));
 }
 
-.card[data-accent] .card-header .ghost-button:not(.primary):not(.danger):hover {
+:is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) .ghost-button:not(.primary):not(.danger):hover {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 19%, transparent);
     border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 56%, transparent);
 }
 
-.card[data-accent] .card-toggle {
+:is(.card, .app-panel-shell)[data-accent] .card-toggle {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 20%, transparent);
     color: color-mix(in srgb, var(--section-accent, var(--accent)) 70%, var(--text));
 }
 
-.card[data-accent] .card-toggle:hover,
-.card[data-accent] .card-toggle:focus-visible {
+:is(.card, .app-panel-shell)[data-accent] .card-toggle:hover,
+:is(.card, .app-panel-shell)[data-accent] .card-toggle:focus-visible {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 36%, transparent);
 }
 
-.card[data-accent] .card-toggle:focus-visible {
+:is(.card, .app-panel-shell)[data-accent] .card-toggle:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--section-accent, var(--accent)) 62%, transparent);
     outline-offset: 2px;
 }
 
-.card[data-accent] .info-note-button {
+:is(.card, .app-panel-shell)[data-accent] .info-note-button {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 14%, var(--glass-bg));
     color: color-mix(in srgb, var(--section-accent, var(--accent)) 54%, var(--text));
 }
 
-.card[data-accent] .info-note-button:hover,
-.card[data-accent] .info-note-button:focus-visible {
+:is(.card, .app-panel-shell)[data-accent] .info-note-button:hover,
+:is(.card, .app-panel-shell)[data-accent] .info-note-button:focus-visible {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 28%, transparent);
     color: var(--section-accent-ink);
 }
 
-.card[data-accent] .info-note-button:focus-visible {
+:is(.card, .app-panel-shell)[data-accent] .info-note-button:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--section-accent, var(--accent)) 62%, transparent);
     outline-offset: 2px;
 }
@@ -1186,12 +1187,12 @@ main > .card.half-span {
     border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 36%, var(--border));
 }
 
-.card:hover::after {
+:is(.card, .app-panel-shell):hover::after {
     opacity: 1;
     transform: translateX(0);
 }
 
-.card:hover .section-icon {
+:is(.card, .app-panel-shell):hover .section-icon {
     transform: translateY(calc(var(--motion-distance-xs) * -1)) scale(1.04);
     box-shadow: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 24%, rgba(6, 10, 20, 0.35));
 }
@@ -1203,13 +1204,13 @@ main > .card.half-span {
     }
     .hero-logo,
     .brand-mark,
-    .card::after,
-    .card[data-accent] .section-icon {
+    :is(.card, .app-panel-shell)::after,
+    :is(.card, .app-panel-shell)[data-accent] .section-icon {
         transition: none;
     }
     .hero-blurb:hover .hero-logo,
     .hero-blurb:hover .brand-mark,
-    .card:hover .section-icon {
+    :is(.card, .app-panel-shell):hover .section-icon {
         transform: none;
     }
     .hero-sync-dot[data-state="syncing"] {
@@ -1277,7 +1278,35 @@ body[data-reduce-motion="true"] .section-nav a.active {
     }
 }
 
-.card-header {
+.app-panel-shell {
+    border-radius: var(--shape-large);
+}
+
+.app-panel-header {
+    gap: var(--section-header-title-gap);
+}
+
+.app-section-intro {
+    gap: var(--section-header-intro-gap);
+}
+
+.app-toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-wrap: wrap;
+}
+
+.app-status-badge {
+    border-radius: var(--shape-full);
+    font-weight: var(--font-weight-semibold);
+}
+
+.app-empty-state {
+    border-radius: var(--shape-medium);
+}
+
+:is(.card-header, .app-panel-header) {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -1285,7 +1314,7 @@ body[data-reduce-motion="true"] .section-nav a.active {
     flex-wrap: wrap;
 }
 
-.card-title-group {
+:is(.card-title-group, .app-section-intro) {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -1293,11 +1322,11 @@ body[data-reduce-motion="true"] .section-nav a.active {
     gap: var(--card-stack-gap);
 }
 
-.card-title-group > :first-child {
+:is(.card-title-group, .app-section-intro) > :first-child {
     min-width: 0;
 }
 
-.card-header-actions {
+:is(.card-header-actions, .app-panel-actions) {
     display: inline-flex;
     align-items: center;
     align-self: flex-start;
@@ -1307,7 +1336,7 @@ body[data-reduce-motion="true"] .section-nav a.active {
     margin-left: auto;
 }
 
-.card-header h2 {
+:is(.card-header, .app-panel-header) h2 {
     margin: 0;
     font-size: var(--type-title-md);
     letter-spacing: var(--tracking-tight);
@@ -1582,11 +1611,11 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     gap: var(--section-header-meta-gap);
 }
 
-.card-title-group .card-heading {
+:is(.card-title-group, .app-section-intro) .card-heading {
     margin-bottom: var(--section-header-intro-gap);
 }
 
-.live-card .card-title-group {
+.live-card :is(.card-title-group, .app-section-intro) {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -5270,18 +5299,18 @@ footer {
         width: 100%;
     }
 
-    .card-header {
+    :is(.card-header, .app-panel-header) {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .card-header-actions {
+    :is(.card-header-actions, .app-panel-actions) {
         width: 100%;
         justify-content: flex-start;
         margin-left: 0;
     }
 
-    .card-header .ghost-button {
+    :is(.card-header, .app-panel-header) .ghost-button {
         width: 100%;
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
@@ -5469,11 +5498,6 @@ footer {
         margin-right: 1rem;
     }
 }
-.card-header .card-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-}
 
 body[data-compact="true"] {
     --layout-main-gap: clamp(0.85rem, 1.2vw, 1.05rem);
@@ -5483,6 +5507,12 @@ body[data-compact="true"] {
     --hero-shell-pad-bottom: clamp(0.8rem, 1.2vw, 1.1rem);
     --hero-blurb-pad: clamp(0.9rem, 1.2vw, 1.2rem);
     --hero-blurb-gap: clamp(0.7rem, 1vw, 0.95rem);
+    --hero-status-gap: 0.28rem;
+    --hero-status-badge-pad-y: 0.28rem;
+    --hero-status-badge-pad-x: 0.8rem;
+    --hero-milestones-gap: 0.36rem;
+    --hero-milestone-pad-y: 0.2rem;
+    --hero-milestone-pad-x: 0.54rem;
     --hero-logo-size: clamp(62px, 7vw, 74px);
     --hero-logo-mark-size: clamp(48px, 5.8vw, 60px);
     --card-padding: clamp(0.88rem, 1.3vw, 1.12rem);
@@ -5497,6 +5527,12 @@ body[data-compact="true"] {
     --section-nav-inner-gap: clamp(0.36rem, 0.52vw, 0.42rem);
     --section-nav-item-pad-y: clamp(0.22rem, 0.3vw, 0.28rem);
     --section-nav-item-pad-x: clamp(0.56rem, 0.74vw, 0.68rem);
+    --relay-banner-margin-top: var(--space-2);
+    --relay-banner-margin-bottom: var(--space-3);
+    --relay-banner-pad-y: 0.82rem;
+    --relay-banner-pad-x: 1.1rem;
+    --relay-banner-gap: 0.82rem;
+    --relay-banner-indicator-size: 0.75rem;
     --type-display-hero: clamp(1.88rem, 3.2vw, 2.5rem);
     --type-title-md: clamp(1.14rem, 1.4vw, 1.34rem);
     --type-title-sm: clamp(0.98rem, 1.05vw, 1.1rem);
@@ -5508,7 +5544,7 @@ body[data-compact="true"] .card {
     border-radius: calc(var(--shape-large) - 6px);
 }
 
-body[data-compact="true"] .card-header h2 {
+body[data-compact="true"] :is(.card-header, .app-panel-header) h2 {
     font-size: var(--type-title-sm);
 }
 

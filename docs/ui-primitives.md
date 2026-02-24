@@ -26,7 +26,8 @@ WAAN uses Shoelace as the framework-agnostic primitive layer for the Tailwind mi
 
 - Use primitives for all new interactive UI in migration phases; avoid adding new ad-hoc button/input/select patterns.
 - Keep existing app-specific classes until each surface is fully migrated and parity-verified.
-- Drive colors/spacing/motion through existing tokens (`--accent`, `--border`, `--motion-*`), not hard-coded values.
+- Drive colors/spacing/motion through existing tokens (`--surface-*`, `--text-*`, `--border-*`, `--state-*`, `--motion-*`), not hard-coded values.
+- Prefer shared shell/component classes for repeated UI chrome; use Tailwind utilities for local layout composition only.
 - Respect accessibility state attributes:
   - motion: `body[data-reduce-motion="true"]`
   - contrast: `body[data-contrast="high"]`
