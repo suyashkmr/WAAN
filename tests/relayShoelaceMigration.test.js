@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { migrateRelayControlsToShoelace } from "../js/ui/primitives.js";
+import { migrateRelayControlsToShoelace } from "../js/ui/primitivesMigrations.js";
 
 function buildRelayButtons() {
   document.body.innerHTML = `

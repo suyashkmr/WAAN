@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "bootstrap": "npm install --workspaces",
-    "tailwind:build": "npx --yes tailwindcss@3.4.17 -c tailwind.config.cjs -i styles.tailwind.src.css -o styles.tailwind.css --minify",
-    "tailwind:watch": "npx --yes tailwindcss@3.4.17 -c tailwind.config.cjs -i styles.tailwind.src.css -o styles.tailwind.css --watch",
+    "tailwind:build": "BROWSERSLIST_IGNORE_OLD_DATA=1 tailwindcss -c tailwind.config.cjs -i styles.tailwind.src.css -o styles.tailwind.css --minify",
+    "tailwind:watch": "BROWSERSLIST_IGNORE_OLD_DATA=1 tailwindcss -c tailwind.config.cjs -i styles.tailwind.src.css -o styles.tailwind.css --watch",
     "check:tailwind-size": "node scripts/check-tailwind-size.mjs",
     "lint": "eslint js apps/server/src",
     "check:unused-exports": "eslint js apps/server/src tests",
@@ -43,6 +43,7 @@
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.5.0",
     "happy-dom": "^20.0.11",
+    "tailwindcss": "^3.4.17",
     "vitest": "^4.0.14"
   }
 }

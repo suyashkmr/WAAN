@@ -38,4 +38,7 @@ WAAN uses Shoelace as the framework-agnostic primitive layer for the Tailwind mi
 - `initShoelacePrimitives()` syncs Shoelace theme classes with `data-color-scheme` at runtime.
 - Relay controls migration rollback key:
   - Set `localStorage["waan-ui-relay-legacy"]="true"` to keep legacy `<button>` controls.
-- Relay status banner shell currently remains legacy `<section>` by default to preserve existing controller node references.
+- Relay status banner shell now migrates to Shoelace `sl-card` before app bootstrap (same `id` + child IDs are preserved).
+- Relay status indicator internals intentionally remain custom (`#relay-status-dot.relay-banner-indicator`) to preserve existing pulse/reduced-motion/high-contrast behavior without extra runtime dependencies.
+- Search/filter/saved/export controls rollback key:
+  - Set `localStorage["waan-ui-controls-legacy"]="true"` to keep legacy action buttons and form fields for these surfaces.

@@ -1,4 +1,12 @@
-import { initShoelacePrimitives, migrateRelayControlsToShoelace } from "./primitives.js";
+import {
+  initShoelacePrimitives,
+} from "./primitives.js";
+import {
+  migrateRelayControlsToShoelace,
+  migrateRelayStatusBannerToShoelace,
+  migrateSearchFilterSavedExportControlsToShoelace,
+} from "./primitivesMigrations.js";
+import { migrateSearchSavedViewFieldsToShoelace } from "./primitivesFieldMigrations.js";
 
 function containsShoelaceElement(root) {
   if (!root) return false;
@@ -73,8 +81,18 @@ if (typeof document !== "undefined" && typeof window !== "undefined") {
 
   void (async () => {
     await loadRuntime();
-    const ready = await waitForDefinition("sl-button");
-    if (!ready) return;
-    migrateRelayControlsToShoelace();
+    const cardReady = await waitForDefinition("sl-card");
+    if (cardReady) {
+      migrateRelayStatusBannerToShoelace();
+    }
+    const buttonsReady = await waitForDefinition("sl-button");
+    if (buttonsReady) {
+      migrateRelayControlsToShoelace();
+      migrateSearchFilterSavedExportControlsToShoelace();
+    }
+    const fieldsReady = (await waitForDefinition("sl-input")) && (await waitForDefinition("sl-select"));
+    if (fieldsReady) {
+      migrateSearchSavedViewFieldsToShoelace();
+    }
   })();
 }

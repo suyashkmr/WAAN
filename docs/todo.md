@@ -125,9 +125,12 @@ Completed tasks were removed for clarity (history remains in git).
 - [ ] Expand migration to remaining app surfaces in controlled phases.
   - [ ] Relay controls and status/banner surfaces.
     - [x] Migrate relay action controls to Shoelace `sl-button` with runtime-guarded upgrade and rollback key (`waan-ui-relay-legacy`).
-    - [ ] Migrate relay status/banner shell to Shoelace `sl-card` while preserving status semantics and IDs.
-    - [ ] Evaluate/optionally migrate relay status indicator internals to Shoelace primitives after parity verification.
+    - [x] Migrate relay status/banner shell to Shoelace `sl-card` while preserving status semantics and IDs.
+    - [x] Evaluate relay status indicator internals after parity verification; keep custom `.relay-banner-indicator` for now (animations + accessibility parity already tuned, no functional gain from replacement).
   - [ ] Search, filters, saved views, and export controls.
+    - [x] Migrate search/saved-view/export/filter action buttons to Shoelace `sl-button` proxies with rollback key (`waan-ui-controls-legacy`).
+    - [x] Migrate search/saved-view form fields (`input`/`select`) to Shoelace proxies with rollback key (`waan-ui-controls-legacy`).
+    - [ ] Validate search/saved-view field parity (typing, date filters, participant list refresh, saved view selection) in manual flow.
   - [ ] Remaining dashboard panels and utility views.
 - [ ] Validate visual quality, accessibility, and runtime performance.
   - [ ] Run responsive checks (desktop + mobile viewport set) and Electron smoke checks.

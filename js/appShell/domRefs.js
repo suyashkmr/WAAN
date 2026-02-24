@@ -87,6 +87,7 @@ export function createAppDomRefs() {
     searchParticipantSelect: domCache.getById("search-participant"),
     searchStartInput: domCache.getById("search-start"),
     searchEndInput: domCache.getById("search-end"),
+    runSearchButton: domCache.getById("run-search"),
     resetSearchButton: domCache.getById("reset-search"),
     downloadSearchButton: domCache.getById("download-search-results"),
     searchResultsSummary: domCache.getById("search-results-summary"),
