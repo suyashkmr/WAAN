@@ -17,6 +17,34 @@
     flex-wrap: wrap;
 }
 
+.app-pulse-bar {
+    margin-bottom: 0.5rem;
+    border-radius: var(--shape-large);
+    border: 1px solid color-mix(in srgb, var(--border-strong) 78%, var(--glass-border));
+    background:
+        linear-gradient(148deg, color-mix(in srgb, var(--bg-raised) 84%, transparent) 0%, color-mix(in srgb, var(--bg-glass) 86%, transparent) 100%);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(var(--glass-blur));
+}
+
+.app-pulse-bar .toolbar-group.primary {
+    position: relative;
+}
+
+.app-pulse-bar .toolbar-group.primary::after {
+    content: "";
+    position: absolute;
+    right: -0.5rem;
+    top: 0.2rem;
+    bottom: 0.2rem;
+    width: 1px;
+    background: color-mix(in srgb, var(--border-subtle) 90%, transparent);
+}
+
+.app-pulse-bar .toolbar-group.secondary {
+    color: var(--text-secondary);
+}
+
 .app-status-badge {
     border-radius: var(--shape-full);
     font-weight: var(--font-weight-semibold);
@@ -64,4 +92,10 @@
     align-items: center;
     gap: var(--section-header-title-gap);
     text-wrap: balance;
+}
+
+@media (max-width: 860px) {
+    .app-pulse-bar .toolbar-group.primary::after {
+        display: none;
+    }
 }

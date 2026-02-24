@@ -8,7 +8,8 @@
     width: min(1100px, calc(100% - var(--space-4)));
     margin: var(--section-nav-shell-margin-top) auto var(--section-nav-shell-margin-bottom);
     padding: var(--section-nav-shell-pad-y) var(--section-nav-shell-pad-x);
-    background: color-mix(in srgb, var(--surface-elevated) 70%, var(--glass-bg));
+    background:
+        linear-gradient(144deg, color-mix(in srgb, var(--bg-raised) 74%, var(--bg-glass)) 0%, color-mix(in srgb, var(--bg-glass) 88%, transparent) 100%);
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--edge-strong) 58%, var(--glass-border));
     box-shadow: var(--shadow-card);
@@ -34,10 +35,10 @@
     font-size: var(--type-label-xs);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--muted) 92%, var(--text));
+    color: var(--text-secondary);
     border-radius: var(--shape-full);
     border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 68%, transparent);
+    background: color-mix(in srgb, var(--bg-room) 78%, transparent);
     white-space: nowrap;
 }
 
@@ -47,7 +48,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--muted);
+    color: var(--text-secondary);
     padding: var(--section-nav-item-pad-y) var(--section-nav-item-pad-x);
     border-radius: 999px;
     transition:
@@ -60,7 +61,7 @@
 
 .section-nav a.active,
 .section-nav a[aria-current="page"] {
-    color: color-mix(in srgb, var(--accent) 86%, var(--text));
+    color: color-mix(in srgb, var(--accent) 72%, var(--text-primary));
     background: var(--accent-soft);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
     transform: translateY(-1px);
@@ -68,7 +69,7 @@
 
 .section-nav a:hover,
 .section-nav a:focus-visible {
-    color: color-mix(in srgb, var(--accent) 82%, var(--text));
+    color: color-mix(in srgb, var(--accent) 76%, var(--text-primary));
     background: color-mix(in srgb, var(--accent) 22%, transparent);
     outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
     outline-offset: 2px;

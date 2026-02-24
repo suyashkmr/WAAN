@@ -180,6 +180,10 @@ export function initAppShellPrimitives({ documentRef } = {}) {
     decorateToolbarRow(sectionNav, { role: "navigation" });
   }
 
+  doc.querySelectorAll(".actions-toolbar").forEach(toolbar => {
+    applyClasses(toolbar, ["app-pulse-bar"]);
+  });
+
   const heroBadge = doc.getElementById("hero-status-badge");
   if (heroBadge) {
     applyClasses(heroBadge, ["app-status-badge"]);

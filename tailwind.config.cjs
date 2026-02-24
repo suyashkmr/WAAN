@@ -8,21 +8,28 @@ module.exports = {
     extend: {
       colors: {
         bg: "var(--bg)",
+        canvas: "var(--bg-canvas)",
         surface: {
+          canvas: "var(--bg-canvas)",
+          room: "var(--bg-room)",
           base: "var(--card-bg)",
           raised: "var(--surface-elevated)",
           raisedStrong: "var(--surface-elevated-strong)",
           glass: "var(--glass-bg)",
         },
         text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          strong: "var(--text-strong)",
           base: "var(--text)",
-          muted: "var(--muted)",
-          strong: "var(--text-on-strong)",
+          subtle: "var(--muted)",
+          emphasis: "var(--text-on-strong)",
         },
         border: {
+          subtle: "var(--border-subtle)",
+          strong: "var(--border-strong)",
           base: "var(--border)",
-          subtle: "var(--edge-subtle)",
-          strong: "var(--edge-strong)",
           glass: "var(--glass-border)",
         },
         accent: {
@@ -37,6 +44,8 @@ module.exports = {
           danger: "var(--danger)",
           dangerSoft: "var(--danger-soft)",
           neutral: "var(--neutral-tone)",
+          quiet: "var(--signal-quiet)",
+          hot: "var(--signal-hot)",
         },
       },
       fontFamily: {

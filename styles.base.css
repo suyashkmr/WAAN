@@ -87,22 +87,22 @@
     --md-on-surface-variant: #bcc7de;
     --surface-tint: rgba(214, 179, 110, 0.2);
 
-    --font-family-base: "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-family-display: "Clash Display Variable", "Clash Display", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-base: "Manrope", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-display: "Sora", "Clash Display Variable", "Clash Display", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-size-xs: 0.78rem;
     --font-size-sm: 0.92rem;
     --font-size-md: 1rem;
     --font-size-lg: 1.25rem;
     --font-size-xl: clamp(1.6rem, 3vw, 3rem);
-    --type-label-xs: 0.78rem;
-    --type-label-sm: 0.84rem;
-    --type-body-sm: 0.94rem;
-    --type-body-md: 1.01rem;
-    --type-body-lg: 1.06rem;
-    --type-title-sm: clamp(1.08rem, 1.24vw, 1.22rem);
-    --type-title-md: clamp(1.3rem, 1.84vw, 1.58rem);
-    --type-title-lg: clamp(1.95rem, 3vw, 2.35rem);
-    --type-display-hero: clamp(2.15rem, 4.1vw, 3.25rem);
+    --type-label-xs: 0.75rem;
+    --type-label-sm: 0.8rem;
+    --type-body-sm: 0.9rem;
+    --type-body-md: 0.95rem;
+    --type-body-lg: 1.02rem;
+    --type-title-sm: clamp(1.02rem, 1.2vw, 1.16rem);
+    --type-title-md: clamp(1.16rem, 1.7vw, 1.36rem);
+    --type-title-lg: clamp(1.55rem, 2.4vw, 1.95rem);
+    --type-display-hero: clamp(2rem, 4vw, 3rem);
     --type-display-hero-mobile: clamp(1.75rem, 7vw, 2.4rem);
     --leading-tight: 1.12;
     --leading-snug: 1.22;
@@ -184,6 +184,22 @@
     --glass-bg: color-mix(in srgb, var(--card-bg) 75%, transparent);
     --glass-border: color-mix(in srgb, var(--border) 65%, transparent);
     --glass-blur: 18px;
+
+    --bg-canvas: var(--bg);
+    --bg-room: var(--card-bg);
+    --bg-raised: var(--surface-elevated);
+    --bg-glass: var(--glass-bg);
+    --text-primary: var(--text);
+    --text-secondary: color-mix(in srgb, var(--text) 78%, var(--muted));
+    --text-muted: var(--muted);
+    --text-strong: var(--text-on-strong);
+    --border-subtle: var(--edge-subtle);
+    --border-strong: var(--edge-strong);
+    --signal-positive: var(--positive);
+    --signal-warning: var(--warning);
+    --signal-danger: var(--negative);
+    --signal-quiet: var(--neutral-tone);
+    --signal-hot: color-mix(in srgb, var(--md-tertiary) 88%, #ffffff);
 
     --positive: #38d99d;
     --positive-soft: rgba(58, 214, 154, 0.2);
@@ -305,6 +321,21 @@ body[data-contrast="high"] {
     --warning-soft: color-mix(in srgb, var(--warning) 35%, transparent);
     --text-on-strong: #ffffff;
     --calendar-level-4-fg: #010409;
+    --bg-canvas: var(--bg);
+    --bg-room: var(--card-bg);
+    --bg-raised: var(--surface-elevated);
+    --bg-glass: var(--glass-bg);
+    --text-primary: var(--text);
+    --text-secondary: color-mix(in srgb, var(--text) 82%, var(--muted));
+    --text-muted: var(--muted);
+    --text-strong: var(--text-on-strong);
+    --border-subtle: var(--edge-subtle);
+    --border-strong: var(--edge-strong);
+    --signal-positive: var(--positive);
+    --signal-warning: var(--warning);
+    --signal-danger: var(--negative);
+    --signal-quiet: var(--neutral-tone);
+    --signal-hot: #ff7ca9;
     color: var(--text);
 }
 
