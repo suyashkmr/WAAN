@@ -7,6 +7,19 @@ import {
 } from "../utils.js";
 import { buildParticipantDetail } from "./participantDetail.js";
 
+const SUMMARY_LEGACY_MODE_STORAGE_KEY = "waan-ui-summary-legacy";
+
+function shouldUseShoelaceSummaryCards() {
+  if (typeof globalThis === "undefined") return true;
+  try {
+    const value = globalThis.localStorage?.getItem(SUMMARY_LEGACY_MODE_STORAGE_KEY);
+    if (value === "true") return false;
+  } catch {
+    // Fall through to Shoelace mode when storage is unavailable.
+  }
+  return true;
+}
+
 function computeParticipantTimeframeStats(entries, timeframe, analytics) {
   if (timeframe !== "week") return null;
   if (!entries.length) {
@@ -136,6 +149,33 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
           : "",
     },
   ];
+
+  if (shouldUseShoelaceSummaryCards()) {
+    summaryEl.innerHTML = "";
+    cards.forEach(({ title, value, hint }) => {
+      const card = document.createElement("sl-card");
+      card.className = "summary-card summary-card--shoelace";
+
+      const header = document.createElement("h3");
+      header.setAttribute("slot", "header");
+      header.textContent = title;
+      card.appendChild(header);
+
+      const valueEl = document.createElement("p");
+      valueEl.className = "value";
+      valueEl.textContent = value;
+      card.appendChild(valueEl);
+
+      if (hint) {
+        const hintEl = document.createElement("small");
+        hintEl.textContent = hint;
+        card.appendChild(hintEl);
+      }
+
+      summaryEl.appendChild(card);
+    });
+    return;
+  }
 
   summaryEl.innerHTML = cards
     .map(({ title, value, hint }) => `

@@ -1,5 +1,6 @@
 const defaultDocument = typeof document !== "undefined" ? document : null;
 const defaultMutationObserver = typeof MutationObserver !== "undefined" ? MutationObserver : null;
+const RELAY_LEGACY_MODE_STORAGE_KEY = "waan-ui-relay-legacy";
 
 function setBooleanAttr(el, key, value) {
   if (!el) return;
@@ -31,6 +32,161 @@ export function initShoelacePrimitives({
   observer.observe(root, { attributes: true, attributeFilter: ["data-color-scheme"] });
   if (body) observer.observe(body, { attributes: true, attributeFilter: ["data-contrast", "data-reduce-motion"] });
   return () => observer.disconnect();
+}
+
+function shouldUseShoelaceRelayControls(storageRef = globalThis?.localStorage) {
+  try {
+    return storageRef?.getItem(RELAY_LEGACY_MODE_STORAGE_KEY) !== "true";
+  } catch {
+    return true;
+  }
+}
+
+function copyAttributes(fromEl, toEl, { skip = [] } = {}) {
+  if (!fromEl || !toEl) return;
+  const skipSet = new Set(skip);
+  Array.from(fromEl.attributes).forEach(attr => {
+    if (skipSet.has(attr.name)) return;
+    toEl.setAttribute(attr.name, attr.value);
+  });
+}
+
+function syncProxyAttributesFromLegacy(legacyButton, proxyButton) {
+  if (!legacyButton || !proxyButton) return;
+  const mirroredAttrs = [
+    "title",
+    "aria-label",
+    "aria-pressed",
+    "aria-expanded",
+    "aria-describedby",
+    "aria-controls",
+  ];
+  mirroredAttrs.forEach(attr => {
+    const value = legacyButton.getAttribute(attr);
+    if (value === null) proxyButton.removeAttribute(attr);
+    else proxyButton.setAttribute(attr, value);
+  });
+}
+
+function attachImmediateProxySyncHooks(legacyButton, syncFromLegacy) {
+  if (!legacyButton || typeof syncFromLegacy !== "function") return;
+  const nativeSetAttribute = legacyButton.setAttribute.bind(legacyButton);
+  const nativeRemoveAttribute = legacyButton.removeAttribute.bind(legacyButton);
+  const mirrored = new Set([
+    "disabled",
+    "title",
+    "aria-label",
+    "aria-pressed",
+    "aria-expanded",
+    "aria-describedby",
+    "aria-controls",
+  ]);
+
+  legacyButton.setAttribute = (name, value) => {
+    nativeSetAttribute(name, value);
+    if (mirrored.has(String(name))) syncFromLegacy();
+  };
+  legacyButton.removeAttribute = name => {
+    nativeRemoveAttribute(name);
+    if (mirrored.has(String(name))) syncFromLegacy();
+  };
+}
+
+function getRelayButtonVariant(button) {
+  if (!button) return "default";
+  if (button.classList.contains("danger")) return "danger";
+  if (button.classList.contains("primary")) return "primary";
+  return "default";
+}
+
+export function migrateRelayControlsToShoelace({
+  documentRef = defaultDocument,
+  storageRef = globalThis?.localStorage,
+  ids = [
+    "relay-reload-all",
+    "relay-clear-storage",
+    "relay-start",
+    "relay-stop",
+    "relay-logout",
+    "first-run-open-relay",
+    "first-run-primary-action",
+  ],
+} = {}) {
+  if (!documentRef || !shouldUseShoelaceRelayControls(storageRef)) return 0;
+  let migrated = 0;
+
+  ids.forEach(id => {
+    const button = documentRef.getElementById(id);
+    if (!button || button.tagName.toLowerCase() !== "button") return;
+    if (button.dataset.uiPrimitiveProxy === "true") return;
+
+    const slButton = documentRef.createElement("sl-button");
+    copyAttributes(button, slButton, { skip: ["type", "id"] });
+    slButton.id = `${id}-sl`;
+    slButton.textContent = button.textContent || "";
+
+    const variant = getRelayButtonVariant(button);
+    if (variant !== "default") slButton.setAttribute("variant", variant);
+    if (button.classList.contains("small") || button.classList.contains("tiny")) {
+      slButton.setAttribute("size", "small");
+    }
+    slButton.disabled = Boolean(button.disabled);
+    slButton.dataset.uiPrimitive = "sl-button";
+    slButton.addEventListener("click", event => {
+      event.preventDefault();
+      if (button.disabled) return;
+      button.click();
+    });
+
+    const syncFromLegacy = () => {
+      slButton.disabled = Boolean(button.disabled);
+      if (slButton.textContent !== button.textContent) {
+        slButton.textContent = button.textContent || "";
+      }
+      syncProxyAttributesFromLegacy(button, slButton);
+    };
+    attachImmediateProxySyncHooks(button, syncFromLegacy);
+    syncFromLegacy();
+
+    if (typeof MutationObserver !== "undefined") {
+      const observer = new MutationObserver(() => syncFromLegacy());
+      observer.observe(button, {
+        attributes: true,
+        childList: true,
+        characterData: true,
+        subtree: true,
+        attributeFilter: [
+          "disabled",
+          "title",
+          "aria-label",
+          "aria-pressed",
+          "aria-expanded",
+          "aria-describedby",
+          "aria-controls",
+        ],
+      });
+    }
+
+    button.dataset.uiPrimitiveProxy = "true";
+    button.dataset.uiPrimitiveHidden = "true";
+    button.setAttribute("aria-hidden", "true");
+    button.tabIndex = -1;
+    button.style.display = "none";
+
+    button.insertAdjacentElement("afterend", slButton);
+    migrated += 1;
+  });
+
+  return migrated;
+}
+
+export function migrateRelayStatusBannerToShoelace({
+  documentRef = defaultDocument,
+  storageRef = globalThis?.localStorage,
+} = {}) {
+  if (!documentRef || !shouldUseShoelaceRelayControls(storageRef)) return false;
+  // Keep legacy banner node stable because relay controller stores direct element references.
+  return false;
 }
 
 export function createUiButton(

@@ -1,4 +1,4 @@
-import { initShoelacePrimitives } from "./primitives.js";
+import { initShoelacePrimitives, migrateRelayControlsToShoelace } from "./primitives.js";
 
 function containsShoelaceElement(root) {
   if (!root) return false;
@@ -42,4 +42,39 @@ if (typeof document !== "undefined" && typeof window !== "undefined") {
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   }
+
+  const waitForDefinition = (tagName, timeoutMs = 5000) =>
+    new Promise(resolve => {
+      if (customElements.get(tagName)) {
+        resolve(true);
+        return;
+      }
+      let done = false;
+      const timer = window.setTimeout(() => {
+        if (done) return;
+        done = true;
+        resolve(false);
+      }, timeoutMs);
+      customElements
+        .whenDefined(tagName)
+        .then(() => {
+          if (done) return;
+          done = true;
+          window.clearTimeout(timer);
+          resolve(true);
+        })
+        .catch(() => {
+          if (done) return;
+          done = true;
+          window.clearTimeout(timer);
+          resolve(false);
+        });
+    });
+
+  void (async () => {
+    await loadRuntime();
+    const ready = await waitForDefinition("sl-button");
+    if (!ready) return;
+    migrateRelayControlsToShoelace();
+  })();
 }

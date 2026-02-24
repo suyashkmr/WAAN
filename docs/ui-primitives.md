@@ -36,3 +36,6 @@ WAAN uses Shoelace as the framework-agnostic primitive layer for the Tailwind mi
 
 - This is a compatibility replacement for `shadcn/ui` in a vanilla JS + Electron app.
 - `initShoelacePrimitives()` syncs Shoelace theme classes with `data-color-scheme` at runtime.
+- Relay controls migration rollback key:
+  - Set `localStorage["waan-ui-relay-legacy"]="true"` to keep legacy `<button>` controls.
+- Relay status banner shell currently remains legacy `<section>` by default to preserve existing controller node references.

@@ -118,12 +118,15 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Install/generate core primitives (button, input, select, dialog, tooltip, tabs, card).
   - [x] Wire primitives to existing theme variables and motion/accessibility settings.
   - [x] Document component usage rules to avoid ad-hoc styling drift.
-- [ ] Migrate one vertical slice first before broad rollout.
-  - [ ] Replace one end-to-end surface (for example dashboard hero + section nav + summary cards).
-  - [ ] Validate behavior parity with existing keyboard/mouse flows.
-  - [ ] Keep rollback path until parity is confirmed.
+- [x] Migrate one vertical slice first before broad rollout.
+  - [x] Replace one end-to-end surface (phase 1: summary cards in `#summary` now render via Shoelace `sl-card`).
+  - [x] Validate behavior parity with existing keyboard/mouse flows.
+  - [x] Keep rollback path until parity is confirmed (`localStorage["waan-ui-summary-legacy"]="true"` restores legacy summary markup).
 - [ ] Expand migration to remaining app surfaces in controlled phases.
   - [ ] Relay controls and status/banner surfaces.
+    - [x] Migrate relay action controls to Shoelace `sl-button` with runtime-guarded upgrade and rollback key (`waan-ui-relay-legacy`).
+    - [ ] Migrate relay status/banner shell to Shoelace `sl-card` while preserving status semantics and IDs.
+    - [ ] Evaluate/optionally migrate relay status indicator internals to Shoelace primitives after parity verification.
   - [ ] Search, filters, saved views, and export controls.
   - [ ] Remaining dashboard panels and utility views.
 - [ ] Validate visual quality, accessibility, and runtime performance.

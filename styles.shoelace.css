@@ -57,3 +57,16 @@ sl-card::part(base) {
     background: var(--card-bg);
     box-shadow: var(--shadow-card);
 }
+
+#summary sl-card.summary-card--shoelace::part(base) {
+    height: 100%;
+}
+
+#relay-status-banner.relay-status-banner--shoelace::part(base) {
+    width: 100%;
+    padding: 0;
+    border-radius: var(--shape-medium);
+    border-color: var(--border);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-card);
+}
