@@ -174,10 +174,10 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Lock type ramp for hero title, panel titles, body text, metadata text.
   - [x] Tune line-length and wrapping for analytics-heavy cards/tables.
   - [x] Verify keyboard focus readability and a11y contrast for text states.
-- [ ] Improve semantic status/color token usage.
-  - [ ] Add/normalize semantic tokens (`success`, `warning`, `danger`, `muted`) mapped to existing theme vars.
-  - [ ] Apply tokens consistently to relay states, badges, and helper feedback.
-  - [ ] Verify token parity in light/dark + high-contrast mode.
+- [x] Improve semantic status/color token usage.
+  - [x] Add/normalize semantic tokens (`success`, `warning`, `danger`, `muted`) mapped to existing theme vars.
+  - [x] Apply tokens consistently to relay states, badges, and helper feedback.
+  - [x] Verify token parity in light/dark + high-contrast mode.
 - [ ] Polish hero and section-nav interactions.
   - [ ] Tighten active-section indicator behavior and transition polish.
   - [ ] Improve hero status chip visual differentiation across relay states.

@@ -146,10 +146,10 @@
 }
 
 .hero-status-badge.hero-status-badge-ready {
-    border-color: color-mix(in srgb, var(--positive) 60%, transparent);
-    background: color-mix(in srgb, var(--positive) 18%, var(--card-bg));
-    color: color-mix(in srgb, var(--positive) 72%, var(--text));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--positive) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--positive) 30%, rgba(4, 8, 20, 0.5));
+    border-color: color-mix(in srgb, var(--success) 60%, transparent);
+    background: color-mix(in srgb, var(--success) 18%, var(--card-bg));
+    color: color-mix(in srgb, var(--success) 72%, var(--text));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--success) 30%, rgba(4, 8, 20, 0.5));
     animation: hero-ready-glow 1.2s ease-out;
 }
 
@@ -186,8 +186,8 @@
 }
 
 .hero-sync-dot[data-state="ready"] {
-    background: var(--positive);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--positive) 34%, transparent);
+    background: var(--success);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 34%, transparent);
 }
 
 .hero-milestones {
@@ -239,14 +239,14 @@
 }
 
 .hero-milestone[data-state="complete"] {
-    border-color: color-mix(in srgb, var(--positive) 56%, transparent);
-    background: color-mix(in srgb, var(--positive) 17%, transparent);
-    color: color-mix(in srgb, var(--positive) 72%, var(--text));
+    border-color: color-mix(in srgb, var(--success) 56%, transparent);
+    background: color-mix(in srgb, var(--success) 17%, transparent);
+    color: color-mix(in srgb, var(--success) 72%, var(--text));
 }
 
 .hero-milestone[data-state="complete"]::before {
-    background: var(--positive);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--positive) 45%, transparent);
+    background: var(--success);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 45%, transparent);
 }
 
 .hero-milestone.is-ready-celebration {
@@ -281,13 +281,13 @@
 
 @keyframes hero-ready-glow {
     0% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--positive) 0%, transparent);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 0%, transparent);
     }
     55% {
-        box-shadow: 0 0 0 6px color-mix(in srgb, var(--positive) 22%, transparent), 0 16px 30px color-mix(in srgb, var(--positive) 30%, rgba(4, 8, 20, 0.5));
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 22%, transparent), 0 16px 30px color-mix(in srgb, var(--success) 30%, rgba(4, 8, 20, 0.5));
     }
     100% {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--positive) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--positive) 30%, rgba(4, 8, 20, 0.5));
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--success) 30%, rgba(4, 8, 20, 0.5));
     }
 }
 
@@ -489,11 +489,11 @@
 }
 
 .toast.success::before {
-    background: var(--positive);
+    background: var(--success);
 }
 
 .toast.error::before {
-    background: var(--negative);
+    background: var(--danger);
 }
 
 .toast.info::before {
@@ -577,12 +577,12 @@
 }
 
 .relay-status-banner[data-status="running"] .relay-banner-indicator {
-    background: var(--positive);
+    background: var(--success);
     animation: relayIndicatorPulse 2.6s var(--motion-ease-emphasis) infinite;
 }
 
 .relay-status-banner[data-status="running"] .relay-banner-indicator::after {
-    border-color: color-mix(in srgb, var(--positive) 40%, transparent);
+    border-color: color-mix(in srgb, var(--success) 40%, transparent);
     animation: relayIndicatorWave 2.6s var(--motion-ease-emphasis) infinite;
 }
 
@@ -591,12 +591,12 @@
 }
 
 .relay-status-banner[data-status="error"] .relay-banner-indicator {
-    background: var(--negative);
+    background: var(--danger);
 }
 
 .relay-status-banner[data-status="running"] {
-    border-color: color-mix(in srgb, var(--positive) 35%, var(--glass-border));
-    box-shadow: 0 30px 55px color-mix(in srgb, var(--positive) 22%, rgba(5, 7, 16, 0.35));
+    border-color: color-mix(in srgb, var(--success) 35%, var(--glass-border));
+    box-shadow: 0 30px 55px color-mix(in srgb, var(--success) 22%, rgba(5, 7, 16, 0.35));
 }
 
 .relay-status-banner[data-status="waiting_qr"] {
@@ -604,19 +604,19 @@
 }
 
 .relay-status-banner[data-status="error"] {
-    border-color: color-mix(in srgb, var(--negative) 35%, var(--glass-border));
-    box-shadow: 0 30px 55px color-mix(in srgb, var(--negative) 25%, rgba(5, 7, 16, 0.3));
+    border-color: color-mix(in srgb, var(--danger) 35%, var(--glass-border));
+    box-shadow: 0 30px 55px color-mix(in srgb, var(--danger) 25%, rgba(5, 7, 16, 0.3));
 }
 
 @keyframes relayIndicatorPulse {
     0%,
     100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--positive) 35%, transparent);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 35%, transparent);
     }
     50% {
         transform: scale(1.15);
-        box-shadow: 0 0 12px color-mix(in srgb, var(--positive) 30%, transparent);
+        box-shadow: 0 0 12px color-mix(in srgb, var(--success) 30%, transparent);
     }
 }
 
@@ -3932,7 +3932,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 
 .status-snackbar.success {
-    color: var(--positive);
+    color: var(--success);
 }
 
 .status-snackbar.warning {
@@ -3940,7 +3940,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .status-snackbar.error {
-    color: var(--negative);
+    color: var(--danger);
 }
 
 .hidden {

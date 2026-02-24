@@ -170,6 +170,10 @@
     --warning: #f4c263;
     --warning-soft: color-mix(in srgb, var(--warning) 24%, transparent);
     --neutral-tone: #9aa2c4;
+    --success: var(--positive);
+    --success-soft: var(--positive-soft);
+    --danger: var(--negative);
+    --danger-soft: var(--negative-soft);
 
     --shape-small: 12px;
     --shape-medium: 16px;

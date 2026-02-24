@@ -12,6 +12,15 @@
     --sl-color-primary-700: color-mix(in srgb, var(--accent) 76%, #000);
     --sl-color-primary-800: color-mix(in srgb, var(--accent) 64%, #000);
     --sl-color-primary-900: color-mix(in srgb, var(--accent) 52%, #000);
+    --sl-color-success-100: color-mix(in srgb, var(--success) 22%, var(--bg));
+    --sl-color-success-500: var(--success);
+    --sl-color-success-600: color-mix(in srgb, var(--success) 82%, #000);
+    --sl-color-warning-100: color-mix(in srgb, var(--warning) 24%, var(--bg));
+    --sl-color-warning-500: var(--warning);
+    --sl-color-warning-600: color-mix(in srgb, var(--warning) 84%, #000);
+    --sl-color-danger-100: color-mix(in srgb, var(--danger) 22%, var(--bg));
+    --sl-color-danger-500: var(--danger);
+    --sl-color-danger-600: color-mix(in srgb, var(--danger) 84%, #000);
     --sl-color-neutral-0: var(--bg);
     --sl-color-neutral-50: color-mix(in srgb, var(--card-bg) 90%, var(--bg));
     --sl-color-neutral-100: color-mix(in srgb, var(--card-bg) 82%, var(--bg));
