@@ -16,7 +16,6 @@ function seedBanner() {
 describe("relay status banner shoelace migration", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    localStorage.removeItem("waan-ui-relay-legacy");
   });
 
   it("migrates relay banner shell to sl-card while preserving ids/content", () => {
@@ -31,16 +30,6 @@ describe("relay status banner shoelace migration", () => {
     expect(document.getElementById("relay-status-dot")?.classList.contains("relay-banner-indicator")).toBe(true);
     expect(document.getElementById("relay-status-message")?.textContent).toContain("Relay status unknown");
     expect(document.getElementById("relay-status-meta")?.textContent).toContain("Launch relay");
-  });
-
-  it("keeps legacy banner when rollback key is enabled", () => {
-    seedBanner();
-    localStorage.setItem("waan-ui-relay-legacy", "true");
-    const migrated = migrateRelayStatusBannerToShoelace();
-    expect(migrated).toBe(false);
-
-    const banner = document.getElementById("relay-status-banner");
-    expect(banner?.tagName.toLowerCase()).toBe("section");
   });
 
   it("is idempotent when banner was already migrated", () => {

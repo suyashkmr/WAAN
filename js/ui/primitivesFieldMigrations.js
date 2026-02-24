@@ -1,13 +1,4 @@
 const defaultDocument = typeof document !== "undefined" ? document : null;
-const CONTROLS_LEGACY_MODE_STORAGE_KEY = "waan-ui-controls-legacy";
-
-function shouldUseShoelaceByStorageKey(storageKey, storageRef = globalThis?.localStorage) {
-  try {
-    return storageRef?.getItem(storageKey) !== "true";
-  } catch {
-    return true;
-  }
-}
 
 function syncCommonA11yAttrs(source, target) {
   const attrs = ["title", "aria-label", "aria-describedby", "aria-controls"];
@@ -20,7 +11,6 @@ function syncCommonA11yAttrs(source, target) {
 
 function hideLegacyField(field) {
   field.dataset.uiPrimitiveProxy = "true";
-  field.dataset.uiPrimitiveHidden = "true";
   field.setAttribute("aria-hidden", "true");
   field.tabIndex = -1;
   field.style.display = "none";
@@ -30,7 +20,6 @@ function rebindFieldLabels({ documentRef, legacyId, proxyId }) {
   if (!documentRef || !legacyId || !proxyId) return;
   const labels = documentRef.querySelectorAll(`label[for="${legacyId}"]`);
   labels.forEach(label => {
-    label.dataset.uiPrimitiveLegacyFor = legacyId;
     label.setAttribute("for", proxyId);
   });
 }
@@ -201,11 +190,10 @@ function attachSelectProxy({
 
 export function migrateSearchSavedViewFieldsToShoelace({
   documentRef = defaultDocument,
-  storageRef = globalThis?.localStorage,
   inputIds = ["search-keyword", "search-start", "search-end", "saved-view-name"],
   selectIds = ["search-participant", "saved-view-list", "compare-view-a", "compare-view-b"],
 } = {}) {
-  if (!documentRef || !shouldUseShoelaceByStorageKey(CONTROLS_LEGACY_MODE_STORAGE_KEY, storageRef)) return 0;
+  if (!documentRef) return 0;
   let migrated = 0;
 
   inputIds.forEach(id => {

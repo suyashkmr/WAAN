@@ -1,14 +1,4 @@
 const defaultDocument = typeof document !== "undefined" ? document : null;
-const RELAY_LEGACY_MODE_STORAGE_KEY = "waan-ui-relay-legacy";
-const CONTROLS_LEGACY_MODE_STORAGE_KEY = "waan-ui-controls-legacy";
-
-function shouldUseShoelaceByStorageKey(storageKey, storageRef = globalThis?.localStorage) {
-  try {
-    return storageRef?.getItem(storageKey) !== "true";
-  } catch {
-    return true;
-  }
-}
 
 function copyAttributes(fromEl, toEl, { skip = [] } = {}) {
   if (!fromEl || !toEl) return;
@@ -84,10 +74,8 @@ function getRelayButtonVariant(button) {
 function migrateButtonIdsToShoelaceProxy({
   documentRef = defaultDocument,
   ids = [],
-  storageKey = RELAY_LEGACY_MODE_STORAGE_KEY,
-  storageRef = globalThis?.localStorage,
 } = {}) {
-  if (!documentRef || !shouldUseShoelaceByStorageKey(storageKey, storageRef)) return 0;
+  if (!documentRef) return 0;
   let migrated = 0;
 
   ids.forEach(id => {
@@ -143,7 +131,6 @@ function migrateButtonIdsToShoelaceProxy({
     }
 
     button.dataset.uiPrimitiveProxy = "true";
-    button.dataset.uiPrimitiveHidden = "true";
     button.setAttribute("aria-hidden", "true");
     button.tabIndex = -1;
     button.style.display = "none";
@@ -157,7 +144,6 @@ function migrateButtonIdsToShoelaceProxy({
 
 export function migrateRelayControlsToShoelace({
   documentRef = defaultDocument,
-  storageRef = globalThis?.localStorage,
   ids = [
     "relay-reload-all",
     "relay-clear-storage",
@@ -171,14 +157,11 @@ export function migrateRelayControlsToShoelace({
   return migrateButtonIdsToShoelaceProxy({
     documentRef,
     ids,
-    storageKey: RELAY_LEGACY_MODE_STORAGE_KEY,
-    storageRef,
   });
 }
 
 export function migrateSearchFilterSavedExportControlsToShoelace({
   documentRef = defaultDocument,
-  storageRef = globalThis?.localStorage,
   ids = [
     "download-pdf",
     "download-markdown-report",
@@ -205,16 +188,13 @@ export function migrateSearchFilterSavedExportControlsToShoelace({
   return migrateButtonIdsToShoelaceProxy({
     documentRef,
     ids,
-    storageKey: CONTROLS_LEGACY_MODE_STORAGE_KEY,
-    storageRef,
   });
 }
 
 export function migrateRelayStatusBannerToShoelace({
   documentRef = defaultDocument,
-  storageRef = globalThis?.localStorage,
 } = {}) {
-  if (!documentRef || !shouldUseShoelaceByStorageKey(RELAY_LEGACY_MODE_STORAGE_KEY, storageRef)) return false;
+  if (!documentRef) return false;
   const banner = documentRef.getElementById("relay-status-banner");
   if (!banner) return false;
   if (banner.tagName.toLowerCase() === "sl-card") {

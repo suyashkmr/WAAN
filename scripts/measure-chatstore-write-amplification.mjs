@@ -57,13 +57,20 @@ async function measureScenario(name, { iterations, task, expectedBeforeWrites })
 async function runBenchmark() {
   const scenarios = [
     {
-      name: "upsertChatMeta (single-update path)",
+      name: "upsertChatMeta (blocking persist)",
       iterations: 1000,
       task: (store, index) => store.upsertChatMeta(`chat-${index}@c.us`, { name: `Chat ${index}` }),
       expectedBeforeWrites: iterations => iterations,
     },
     {
-      name: "appendMessage (incremental sync path)",
+      name: "upsertChatMeta (batched persist)",
+      iterations: 1000,
+      task: (store, index) =>
+        store.upsertChatMeta(`chat-${index}@c.us`, { name: `Chat ${index}` }, { waitForPersist: false }),
+      expectedBeforeWrites: iterations => iterations,
+    },
+    {
+      name: "appendMessage (default blocking path)",
       iterations: 400,
       task: (store, index) =>
         store.appendMessage(
@@ -75,6 +82,21 @@ async function runBenchmark() {
             message: `message ${index}`,
           },
           { name: "Bench Chat" },
+        ),
+      expectedBeforeWrites: iterations => iterations,
+    },
+    {
+      name: "upsertChatMeta single-chat (batched incremental path)",
+      iterations: 400,
+      task: (store, index) =>
+        store.upsertChatMeta(
+          "bench-chat@c.us",
+          {
+            lastMessageAt: new Date(1_700_000_000_000 + index * 1000).toISOString(),
+            messageCount: index + 1,
+            name: "Bench Chat",
+          },
+          { waitForPersist: false },
         ),
       expectedBeforeWrites: iterations => iterations,
     },

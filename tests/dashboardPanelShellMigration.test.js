@@ -3,6 +3,15 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const migratedPanelIds = [
+  "insight-highlights",
+  "participants",
+  "hourly-activity",
+  "daily-activity",
+  "weekly-trend",
+  "weekday-trend",
+  "timeofday-trend",
+  "sentiment-overview",
+  "message-types",
   "polls-card",
   "saved-views-card",
   "search-panel",

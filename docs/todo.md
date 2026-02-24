@@ -122,27 +122,43 @@ Completed tasks were removed for clarity (history remains in git).
   - [x] Replace one end-to-end surface (phase 1: summary cards in `#summary` now render via Shoelace `sl-card`).
   - [x] Validate behavior parity with existing keyboard/mouse flows.
   - [x] Keep rollback path until parity is confirmed (`localStorage["waan-ui-summary-legacy"]="true"` restores legacy summary markup).
-- [ ] Expand migration to remaining app surfaces in controlled phases.
-  - [ ] Relay controls and status/banner surfaces.
+- [x] Expand migration to remaining app surfaces in controlled phases.
+  - [x] Relay controls and status/banner surfaces.
     - [x] Migrate relay action controls to Shoelace `sl-button` with runtime-guarded upgrade and rollback key (`waan-ui-relay-legacy`).
     - [x] Migrate relay status/banner shell to Shoelace `sl-card` while preserving status semantics and IDs.
     - [x] Evaluate relay status indicator internals after parity verification; keep custom `.relay-banner-indicator` for now (animations + accessibility parity already tuned, no functional gain from replacement).
-  - [ ] Search, filters, saved views, and export controls.
+  - [x] Search, filters, saved views, and export controls.
     - [x] Migrate search/saved-view/export/filter action buttons to Shoelace `sl-button` proxies with rollback key (`waan-ui-controls-legacy`).
     - [x] Migrate search/saved-view form fields (`input`/`select`) to Shoelace proxies with rollback key (`waan-ui-controls-legacy`).
     - [x] Validate search/saved-view field parity (typing, date filters, participant list refresh, saved view selection) in manual flow.
-  - [ ] Remaining dashboard panels and utility views.
+  - [x] Remaining dashboard panels and utility views.
     - [x] Migrate utility view shells (`#polls-card`, `#saved-views-card`, `#search-panel`, `#faq-card`) to static Shoelace `sl-card` markup.
-    - [ ] Migrate remaining analytics/dashboard panel shells (`#insight-highlights`, `#participants`, `#hourly-activity`, `#daily-activity`, `#weekly-trend`, `#weekday-trend`, `#timeofday-trend`, `#sentiment-overview`, `#message-types`) in controlled batches.
-    - [ ] Verify section navigation/highlight behavior across all migrated panel shells.
-- [ ] Validate visual quality, accessibility, and runtime performance.
-  - [ ] Run responsive checks (desktop + mobile viewport set) and Electron smoke checks.
-  - [ ] Run accessibility checks (focus order, contrast, reduced motion, high contrast).
-  - [ ] Track paint/render/perf regressions and fix before completion.
-- [ ] Remove legacy styling paths only after parity is confirmed.
-  - [ ] Remove dead CSS/selectors and obsolete style helpers.
-  - [ ] Update docs/tests to reflect new UI stack.
-  - [ ] Run full `ci:verify` + manual UI smoke before marking complete.
+    - [x] Migrate remaining analytics/dashboard panel shells (`#insight-highlights`, `#participants`, `#hourly-activity`, `#daily-activity`, `#weekly-trend`, `#weekday-trend`, `#timeofday-trend`, `#sentiment-overview`, `#message-types`) in controlled batches.
+    - [x] Verify section navigation/highlight behavior across all migrated panel shells (automated coverage: `tests/dashboardPanelShellMigration.test.js`, `tests/sectionNav.test.js`, `tests/sectionNavDetailed.test.js`).
+- [x] Validate visual quality, accessibility, and runtime performance.
+  - [x] Run responsive checks (desktop + mobile viewport set) and Electron smoke checks.
+    - [x] Run Playwright visual suite across `desktop-1440`, `laptop-1024`, `tablet-768`, and `mobile-390` (`npm run test:visual`).
+    - [x] Capture/inspect visual diffs for migrated shells and relay/hero states from `test-results/`.
+    - [x] Run Electron packaged-app smoke checks for migrated panel shells and relay states.
+      - [x] Build packaged artifact (`npm --prefix electron run dist`) and launch `./electron/dist/mac-arm64/WAAN.app/Contents/MacOS/WAAN` with `ELECTRON_RUN_AS_NODE` unset.
+      - [x] Verify packaged startup logs: API server `:3334` and relay control server `:4546`.
+      - [x] Verify packaged relay status endpoint responds (`curl -s http://127.0.0.1:4546/relay/status`).
+      - [x] Complete interactive QR auth + running-state sync-path verification in packaged UI.
+  - [x] Run accessibility checks (focus order, contrast, reduced motion, high contrast).
+    - [x] Keyboard focus traversal on migrated dashboard/search/saved surfaces.
+    - [x] High-contrast mode verification (`data-contrast="high"`) via Playwright smoke (`tests/visual/accessibility.smoke.spec.js`).
+    - [x] Reduced-motion verification (`data-reduce-motion="true"`) via Playwright smoke (`tests/visual/accessibility.smoke.spec.js`).
+  - [x] Track paint/render/perf regressions and fix before completion.
+    - [x] Run search-worker performance benchmark (`npm run perf:searchworker`) and record indexed speedups.
+    - [x] Run chatstore write-amplification benchmark (`npm run perf:chatstore`) and capture current output.
+    - [x] Investigate and resolve chatstore benchmark interpretation (`0%` was from blocking mode); benchmark now reports both blocking and batched modes with expected write reduction in batched path.
+- [x] Remove legacy styling paths only after parity is confirmed.
+  - [x] Remove obsolete rollback style helpers from summary/relay/search migration paths.
+  - [x] Run dedicated style-usage sweep; no safe CSS selector removals identified yet because runtime fallback still relies on legacy control styling when Shoelace runtime is unavailable.
+  - [x] Update docs/tests to reflect new UI stack (Shoelace-only for migrated surfaces).
+  - [x] Run full `ci:verify` + manual UI smoke before marking complete.
+    - [x] `npm run ci:verify`
+    - [x] Manual UI smoke
 
 ### Dead Code Cleanup
 

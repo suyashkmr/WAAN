@@ -32,7 +32,6 @@ function seedFields() {
 describe("search/saved-view field shoelace migration", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    localStorage.removeItem("waan-ui-controls-legacy");
   });
 
   it("migrates configured input/select fields to shoelace proxies", () => {

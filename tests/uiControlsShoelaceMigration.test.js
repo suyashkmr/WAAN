@@ -14,7 +14,6 @@ function seedControls() {
 describe("search/filter/saved/export control shoelace migration", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    localStorage.removeItem("waan-ui-controls-legacy");
   });
 
   it("migrates configured control buttons to sl-button proxies", () => {
@@ -26,14 +25,6 @@ describe("search/filter/saved/export control shoelace migration", () => {
     expect(document.getElementById("run-search-sl")?.tagName.toLowerCase()).toBe("sl-button");
     expect(document.getElementById("save-view-sl")?.tagName.toLowerCase()).toBe("sl-button");
     expect(document.getElementById("download-pdf")?.dataset.uiPrimitiveProxy).toBe("true");
-  });
-
-  it("keeps legacy buttons when controls rollback key is enabled", () => {
-    seedControls();
-    localStorage.setItem("waan-ui-controls-legacy", "true");
-    const migrated = migrateSearchFilterSavedExportControlsToShoelace();
-    expect(migrated).toBe(0);
-    expect(document.querySelectorAll("sl-button")).toHaveLength(0);
   });
 
   it("forwards proxy clicks to existing legacy handlers", () => {

@@ -20,7 +20,6 @@ function buildAnalytics() {
 describe("renderSummaryCards", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    localStorage.removeItem("waan-ui-summary-legacy");
   });
 
   it("renders summary cards with Shoelace by default", () => {
@@ -35,20 +34,5 @@ describe("renderSummaryCards", () => {
 
     expect(summaryEl.querySelectorAll("sl-card.summary-card--shoelace")).toHaveLength(4);
     expect(summaryEl.querySelectorAll("div.summary-card")).toHaveLength(0);
-  });
-
-  it("supports rollback to legacy summary markup", () => {
-    localStorage.setItem("waan-ui-summary-legacy", "true");
-    const summaryEl = document.createElement("section");
-    document.body.appendChild(summaryEl);
-
-    renderSummaryCards({
-      analytics: buildAnalytics(),
-      label: "Test Chat",
-      summaryEl,
-    });
-
-    expect(summaryEl.querySelectorAll("div.summary-card")).toHaveLength(4);
-    expect(summaryEl.querySelectorAll("sl-card.summary-card--shoelace")).toHaveLength(0);
   });
 });
