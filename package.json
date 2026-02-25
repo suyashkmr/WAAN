@@ -14,6 +14,7 @@
     "check:tailwind-size": "node scripts/check-tailwind-size.mjs",
     "lint": "eslint js apps/server/src",
     "check:unused-exports": "eslint js apps/server/src tests",
+    "check:dead-code": "node scripts/check-dead-code.mjs",
     "check:circular": "npx --yes madge --extensions js --circular js apps/server/src",
     "check:artifacts": "bash scripts/check-artifacts.sh",
     "check:module-size": "node scripts/check-module-size.mjs",
@@ -26,7 +27,7 @@
     "perf:searchworker": "node scripts/measure-search-worker-index.mjs",
     "release:cut": "node scripts/cut-release.cjs",
     "verify": "npm run lint && npm test",
-    "ci:verify": "npm run check:artifacts && npm run check:module-size && npm run check:unused-exports && npm run tailwind:build && npm run check:tailwind-size && npm run verify && npm run check:circular",
+    "ci:verify": "npm run check:artifacts && npm run check:module-size && npm run check:unused-exports && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },
