@@ -1,7 +1,7 @@
 import { formatNumber, formatFloat } from "./utils.js";
 import { BRAND_NAME } from "./config.js";
 import { collectExportSummary, escapeHtml } from "./exportSummary.js";
-import { buildExportDeckCss, buildExportDeckMarkup } from "./exportDeck.js";
+import { buildExportDeckCss, buildExportDeckMarkup, resolveExportThemeColorScheme } from "./exportDeck.js";
 
 export function buildMarkdownReport({
   analytics,
@@ -141,6 +141,7 @@ export function buildPdfDocumentHtml({
   const exportBrand = brandName || BRAND_NAME;
   const title = escapeHtml(`${datasetLabel || "ChatScope conversation"} – PDF`);
   const styles = buildExportDeckCss(theme, { mode: "print" });
+  const scheme = resolveExportThemeColorScheme(theme);
   const deckMarkup = buildExportDeckMarkup({
     analytics,
     theme,
@@ -150,9 +151,10 @@ export function buildPdfDocumentHtml({
     mode: "print",
   });
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-export-mode="print" data-export-theme="${scheme}">
 <head>
   <meta charset="utf-8" />
+  <meta name="color-scheme" content="${scheme}" />
   <title>${title}</title>
   <style>${styles}</style>
 </head>

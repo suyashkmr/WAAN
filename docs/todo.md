@@ -16,7 +16,7 @@ Completed work is archived in git history and was removed from this file for cla
 ## Current State
 
 - [x] All previously tracked implementation tasks are complete.
-- [ ] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
+- [x] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
 
 ## Next Wave: Community Catalyst UI Overhaul
 
@@ -27,7 +27,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added runtime decoration for actions toolbar pulse styling (`js/ui/appShellPrimitives.js`).
     - [x] Verified automated checks with full `npm run ci:verify`.
   - [x] Verify light/dark + reduced-motion parity on shell/nav surfaces.
-- [ ] Phase 2: Hero + Relay Story Lane
+- [x] Phase 2: Hero + Relay Story Lane
   - [x] Implement story-lane structure and pulse bar wiring in `index.html` + runtime normalization.
     - [x] Added explicit story-lane/action-lane structural classes in hero + relay markup (`index.html`).
     - [x] Added runtime normalization hooks for new phase-2 classes (`js/ui/appShellPrimitives.js`).
@@ -79,10 +79,21 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Aligned sticky-header layering/blur treatment for analytics table + heatmap header surfaces (`styles.components.css`, `styles/components/analytics-charts.css`).
     - [x] Added focus-visible parity for interactive calendar/heatmap cells to match hover behavior (`styles/components/analytics-charts.css`).
     - [x] Verified automated checks with full `npm run ci:verify`.
-- [ ] Phase 5: Export + Final Validation
-  - [ ] Ensure PDF export theme parity and readability for light/dark.
-  - [ ] Capture updated screenshots for hero/nav/summary/relay/search-saved/analytics (desktop + mobile, light + dark).
-  - [ ] Run full `npm run ci:verify` and targeted visual checks before closure.
+- [x] Phase 5: Export + Final Validation
+  - [x] Ensure PDF export theme parity and readability for light/dark.
+    - [x] Hardened PDF theme scheme resolution to respect export theme identity (`theme.id`) in addition to legacy dark flag (`js/exportDeck/css.js`, `js/exportShared.js`).
+    - [x] Added PDF HTML metadata for explicit print theme context (`data-export-theme`, `meta[name=\"color-scheme\"]`) to reduce renderer ambiguity (`js/exportShared.js`).
+    - [x] Added regression coverage for dark/light PDF theme stamping and print color-scheme behavior (`tests/exportShared.test.js`, `tests/exportDeckCss.test.js`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+    - [x] Manual verification complete: exported PDF from both light and dark UI themes and confirmed parity/readability in print preview + saved PDF.
+  - [x] Capture updated screenshots for hero/nav/summary/relay/search-saved/analytics (desktop + mobile, light + dark).
+    - [x] Added repeatable capture script for Phase 5 matrix (`scripts/capture-ui-phase5-overhaul.mjs`).
+    - [x] Captured 28 screenshots across light/dark at 1280 + 390 for hero/nav/summary/relay/saved-views/search/analytics.
+    - [x] Stored artifacts in `docs/ui-overhaul-captures/phase5/`.
+  - [x] Run full `npm run ci:verify` and targeted visual checks before closure.
+    - [x] Full `npm run ci:verify` passes.
+    - [x] Ran targeted visual suite via `npm run test:visual`.
+    - [x] Resolved visual baseline mismatches by updating snapshots and re-running visual suite (`npm run test:visual:update`, `npm run test:visual`).
 
 ## Process Guardrail
 

@@ -38,4 +38,35 @@ describe("export deck css", () => {
     expect(css).toContain("--deck-text: #0f172a;");
     expect(css).toContain("html, body {");
   });
+
+  it("resolves dark color-scheme from theme id when dark flag is absent", () => {
+    const css = buildExportDeckCss(
+      {
+        id: "dark",
+        canvas: "#020617",
+        text: "#e2e8f0",
+      },
+      { mode: "print" },
+    );
+
+    expect(css).toContain("color-scheme: dark;");
+  });
+
+  it("resolves dark color-scheme for case-insensitive and night-style ids", () => {
+    const darkCss = buildExportDeckCss(
+      {
+        id: "Dark",
+      },
+      { mode: "print" },
+    );
+    const midnightCss = buildExportDeckCss(
+      {
+        id: "midnight",
+      },
+      { mode: "print" },
+    );
+
+    expect(darkCss).toContain("color-scheme: dark;");
+    expect(midnightCss).toContain("color-scheme: dark;");
+  });
 });

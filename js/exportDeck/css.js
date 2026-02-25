@@ -1,4 +1,13 @@
+export function resolveExportThemeColorScheme(theme) {
+  const themeId = typeof theme?.id === "string" ? theme.id.toLowerCase() : "";
+  const resolvedDark =
+    theme?.dark === true || themeId === "dark" || (theme?.dark !== false && themeId.includes("night"));
+  return resolvedDark ? "dark" : "light";
+}
+
 export function buildExportDeckCss(theme, { mode = "screen" } = {}) {
+  const colorScheme = resolveExportThemeColorScheme(theme);
+  const resolvedDark = colorScheme === "dark";
   const accent = theme?.accent || "#4c6ef5";
   const accentSoft = theme?.accentSoft || "rgba(76, 110, 245, 0.2)";
   const surface = theme?.surface || "#ffffff";
@@ -16,7 +25,6 @@ export function buildExportDeckCss(theme, { mode = "screen" } = {}) {
   const slidePadding = mode === "print" ? "1.75rem 2rem" : "2.75rem 3rem";
   const deckGap = mode === "print" ? "1.3rem" : "3rem";
   const fontSize = mode === "print" ? "14px" : "16px";
-  const colorScheme = theme?.dark ? "dark" : "light";
   return `
     :root {
       color-scheme: ${colorScheme};
@@ -125,7 +133,7 @@ export function buildExportDeckCss(theme, { mode = "screen" } = {}) {
     .stat-card {
       padding: 1rem 1.2rem;
       border-radius: 16px;
-      background: rgba(255, 255, 255, ${theme?.dark ? "0.08" : "0.15"});
+      background: rgba(255, 255, 255, ${resolvedDark ? "0.08" : "0.15"});
       border: 1px solid rgba(255, 255, 255, 0.35);
       backdrop-filter: blur(4px);
     }
