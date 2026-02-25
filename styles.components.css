@@ -1894,7 +1894,8 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 .weekday-filter-note {
     font-size: 0.8rem;
-    color: var(--muted);
+    line-height: 1.35;
+    color: color-mix(in srgb, var(--muted) 84%, var(--text));
     margin-bottom: 0.4rem;
 }
 
@@ -2783,7 +2784,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     position: sticky;
     top: 0;
     background: color-mix(in srgb, var(--card-bg) 94%, transparent);
-    z-index: 2;
+    z-index: 3;
     backdrop-filter: blur(8px);
     box-shadow: 0 1px 0 var(--border), 0 8px 14px rgba(4, 8, 18, 0.18);
 }
@@ -3113,6 +3114,22 @@ footer {
     }
 }
 
+@media (max-width: 1024px) {
+    .table-container.scrollable {
+        height: clamp(250px, 42vh, 380px);
+        min-height: 250px;
+        max-height: 380px;
+    }
+
+    .participants-controls {
+        gap: 0.6rem;
+    }
+
+    .participants-controls .control-group {
+        gap: 0.4rem;
+    }
+}
+
 @media (max-width: 1120px) {
     .hero-brand {
         flex-direction: column;
@@ -3345,6 +3362,8 @@ footer {
         max-height: none;
         overflow: visible;
         border: none;
+        height: auto;
+        min-height: 0;
     }
 
 

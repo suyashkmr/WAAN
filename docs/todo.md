@@ -42,7 +42,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Verified automated checks with full `npm run ci:verify`.
   - [x] Ensure relay state transitions remain functionally accurate and visually distinct.
   - [x] Manually verify relay states (`offline -> starting -> waiting -> running`) on desktop + mobile.
-- [ ] Phase 3: Search + Saved Views Command Surface
+- [x] Phase 3: Search + Saved Views Command Surface
   - [x] Refine command-style controls and playbook-card patterns in `styles/components/search-saved.css`.
     - [x] Normalized saved-view and search panels to a shared command-surface control geometry (input/select/button height + radius).
     - [x] Reworked desktop action grids for saved-view save/manage and compare controls to keep consistent alignment.
@@ -58,15 +58,27 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Fixed highlight info tooltip rendering for dynamic cards and added DOM assertion coverage (`js/appShell/dashboardRender/highlightsStats.js`, `tests/dashboardRenderModules.test.js`).
     - [x] Verified automated checks with full `npm run ci:verify`.
     - [x] Manual keyboard walkthrough complete: tab order, Enter/Space activation, focus-visible treatment, and tooltip visibility in Search + Saved Views flows.
-  - [ ] End-of-phase cross-section consistency sweep (shared with Search + Saved Views):
-    - [ ] Normalize residual control-system drift (native vs Shoelace-proxy focus/disabled/height states).
-    - [ ] Standardize section header composition rhythm (`title + subtitle + info + actions`) where still divergent.
-    - [ ] Harmonize empty-state/callout spacing + type hierarchy across command panels.
-    - [ ] Tune accent/gradient intensity parity between neighboring cards.
-- [ ] Phase 4: Analytics Deep Dive Readability
-  - [ ] Finalize hierarchy language in analytics cards/charts/tables.
-  - [ ] Ensure dense data views remain readable at 1024/768/390 breakpoints.
-  - [ ] Confirm truncation/sticky headers/hover-focus behavior remain consistent.
+  - [x] End-of-phase cross-section consistency sweep (shared with Search + Saved Views):
+    - [x] Normalize residual control-system drift (native vs Shoelace-proxy focus/disabled/height states).
+    - [x] Standardize section header composition rhythm (`title + subtitle + info + actions`) where still divergent.
+    - [x] Harmonize empty-state/callout spacing + type hierarchy across command panels.
+    - [x] Tune accent/gradient intensity parity between neighboring cards.
+    - [x] Verified automated checks with full `npm run ci:verify`.
+- [x] Phase 4: Analytics Deep Dive Readability
+  - [x] Finalize hierarchy language in analytics cards/charts/tables.
+    - [x] Standardized analytics summary label/value hierarchy for hourly/daily/weekly cards.
+    - [x] Tightened participants/message-types table heading/body hierarchy for readability.
+    - [x] Harmonized analytics helper-note hierarchy (`brush-summary`, `hourly-filter-note`, `weekday-filter-note`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+  - [x] Ensure dense data views remain readable at 1024/768/390 breakpoints.
+    - [x] Tuned analytics chart/table responsive behavior for 1024/768/390 widths (`styles/components/analytics.css`, `styles/components/analytics-charts.css`, `styles.components.css`).
+    - [x] Adjusted scroll heights and card/table density for mid-width readability while keeping mobile stack behavior intact.
+    - [x] Verified automated checks with full `npm run ci:verify`.
+  - [x] Confirm truncation/sticky headers/hover-focus behavior remain consistent.
+    - [x] Added consistent truncation safeguards for dense analytics table headings/cells (`styles.components.css`).
+    - [x] Aligned sticky-header layering/blur treatment for analytics table + heatmap header surfaces (`styles.components.css`, `styles/components/analytics-charts.css`).
+    - [x] Added focus-visible parity for interactive calendar/heatmap cells to match hover behavior (`styles/components/analytics-charts.css`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
 - [ ] Phase 5: Export + Final Validation
   - [ ] Ensure PDF export theme parity and readability for light/dark.
   - [ ] Capture updated screenshots for hero/nav/summary/relay/search-saved/analytics (desktop + mobile, light + dark).
