@@ -97,10 +97,17 @@
     justify-content: space-between;
     width: 100%;
     gap: var(--card-stack-gap);
+    flex-wrap: wrap;
 }
 
 :is(.card-title-group, .app-section-intro) > :first-child {
+    flex: 1 1 300px;
     min-width: 0;
+}
+
+:is(.card-title-group, .app-section-intro) > :first-child:not(.card-heading):not(h2) {
+    display: grid;
+    gap: var(--section-header-intro-gap);
 }
 
 :is(.card-header-actions, .app-panel-actions) {
@@ -109,8 +116,17 @@
     align-self: flex-start;
     justify-content: flex-end;
     flex-wrap: wrap;
-    gap: var(--space-1);
+    gap: var(--section-header-actions-gap);
     margin-left: auto;
+}
+
+:is(.card-title-group, .app-section-intro) > .card-toggle {
+    margin-left: auto;
+    align-self: flex-start;
+}
+
+:is(.card-header-actions, .app-panel-actions) > .card-toggle {
+    flex: 0 0 auto;
 }
 
 :is(.card-header, .app-panel-header) h2 {

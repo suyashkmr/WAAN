@@ -531,8 +531,8 @@
 }
 
 .actions-toolbar {
-    --toolbar-control-height: 2.56rem;
-    --toolbar-control-radius: var(--shape-full);
+    --toolbar-control-height: var(--control-height-md);
+    --toolbar-control-radius: var(--control-radius-pill);
     margin-bottom: 0.5rem;
     padding: 0.75rem 1.2rem;
     border-radius: calc(var(--shape-medium) + 6px);
@@ -567,7 +567,7 @@
 .actions-toolbar .ghost-button {
     min-height: var(--toolbar-control-height);
     border-radius: var(--toolbar-control-radius);
-    padding: 0 1.08rem;
+    padding: 0 var(--control-padding-x);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -576,9 +576,9 @@
 }
 
 .actions-toolbar .ghost-button.small {
-    min-height: calc(var(--toolbar-control-height) - 0.06rem);
+    min-height: var(--control-height-sm);
     font-size: 0.81rem;
-    padding: 0 0.94rem;
+    padding: 0 var(--control-padding-x-sm);
 }
 
 .a11y-controls {
@@ -601,8 +601,8 @@
     align-items: center;
     gap: 0.25rem;
     min-height: var(--toolbar-control-height);
-    padding: 0.13rem 0.2rem 0.13rem 0.45rem;
-    border-radius: var(--shape-full);
+    padding: 0.12rem 0.2rem 0.12rem 0.45rem;
+    border-radius: var(--control-radius-pill);
     background: color-mix(in srgb, var(--card-bg) 95%, transparent);
     border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
 }
@@ -626,7 +626,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(var(--toolbar-control-height) - 0.5rem);
+    min-height: var(--control-height-sm);
     padding: 0 0.82rem;
     border-radius: var(--shape-full);
     border: 1px solid transparent;
@@ -653,7 +653,7 @@
 }
 
 .theme-toggle input:focus-visible + label {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+    box-shadow: var(--control-focus-ring);
 }
 
 :root[data-color-scheme="dark"] .ghost-button {
@@ -1177,9 +1177,9 @@ body[data-reduce-motion="true"] .section-nav a {
     background: color-mix(in srgb, var(--muted) 18%, transparent);
     color: var(--text);
     font-size: 1.1rem;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 999px;
+    width: var(--control-height-sm);
+    height: var(--control-height-sm);
+    border-radius: var(--control-radius-pill);
     cursor: pointer;
     transition:
         transform var(--motion-duration-fast) var(--motion-ease-out),
@@ -1254,16 +1254,17 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 .ghost-button {
     appearance: none;
     border: 1px solid color-mix(in srgb, var(--edge-strong) 72%, transparent);
-    border-radius: 0.68rem;
+    border-radius: var(--control-radius-md);
     background: color-mix(in srgb, var(--bg-room) 92%, transparent);
     color: color-mix(in srgb, var(--text) 90%, var(--muted));
     font-size: 0.85rem;
     font-weight: 600;
-    padding: 0.55rem 1.1rem;
+    min-height: var(--control-height-md);
+    padding: 0 var(--control-padding-x);
     cursor: pointer;
     position: relative;
     isolation: isolate;
-    box-shadow: 0 6px 14px rgba(8, 9, 16, 0.28);
+    box-shadow: var(--control-shadow-rest);
     transition:
         background var(--motion-duration-fast) var(--motion-ease-out),
         color var(--motion-duration-fast) var(--motion-ease-out),
@@ -1289,17 +1290,25 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     background: color-mix(in srgb, var(--accent) 12%, var(--bg-room));
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 18%, rgba(6, 8, 18, 0.36));
+    box-shadow: var(--control-shadow-hover);
 }
 
 .ghost-button:active {
     transform: translateY(1px) scale(0.995);
-    box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 18%, rgba(5, 6, 16, 0.36));
+    box-shadow: var(--control-shadow-active);
 }
 
 .ghost-button:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--accent) 20%, transparent);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--control-focus-ring), var(--control-shadow-hover);
+}
+
+@media (forced-colors: active) {
+    .ghost-button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
 }
 
 .ghost-button:disabled {
@@ -1336,12 +1345,14 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .ghost-button.small {
-    padding: 0.35rem 0.85rem;
+    min-height: var(--control-height-sm);
+    padding: 0 var(--control-padding-x-sm);
     font-size: 0.75rem;
 }
 
 .ghost-button.tiny {
-    padding: 0.25rem 0.6rem;
+    min-height: calc(var(--control-height-sm) - 0.2rem);
+    padding: 0 0.62rem;
     font-size: 0.7rem;
 }
 
@@ -1359,9 +1370,9 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border: none;
     background: color-mix(in srgb, var(--glass-bg) 70%, transparent);
     color: color-mix(in srgb, var(--text) 75%, var(--muted));
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
+    width: var(--control-height-sm);
+    height: var(--control-height-sm);
+    border-radius: var(--control-radius-pill);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1423,8 +1434,9 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 .card-heading {
     display: inline-flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--section-header-meta-gap);
+    min-height: var(--control-height-sm);
 }
 
 :is(.card-title-group, .app-section-intro) .card-heading {

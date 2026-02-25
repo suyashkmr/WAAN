@@ -3,24 +3,14 @@
     flex-direction: column;
     gap: 1.25rem;
     --card-accent: #a855f7;
-    --command-control-height: 2.45rem;
-    --command-control-radius: 0.72rem;
-}
-
-.saved-views .card-title-group,
-.search-panel .card-title-group {
-    align-items: flex-start;
+    --command-control-height: var(--control-height-md);
+    --command-control-radius: var(--control-radius-md);
 }
 
 .saved-views .card-subtitle,
 .search-panel .card-subtitle {
     margin: 0.32rem 0 0;
     max-width: 64ch;
-}
-
-.saved-views .card-header-actions,
-.search-panel .card-header-actions {
-    gap: 0.48rem;
 }
 
 .saved-views .card-content,
@@ -431,8 +421,8 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    --command-control-height: 2.45rem;
-    --command-control-radius: 0.72rem;
+    --command-control-height: var(--control-height-md);
+    --command-control-radius: var(--control-radius-md);
 }
 
 .search-controls {
@@ -474,8 +464,8 @@
 sl-input.ui-field-proxy::part(base),
 sl-select.ui-field-proxy::part(combobox),
 sl-select.ui-field-proxy::part(display-input) {
-    min-height: 2.45rem;
-    border-radius: 0.72rem;
+    min-height: var(--command-control-height, var(--control-height-md));
+    border-radius: var(--command-control-radius, var(--control-radius-md));
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
     transition:
@@ -518,8 +508,8 @@ sl-select.ui-field-proxy[disabled]::part(display-input) {
 }
 
 sl-button.ui-button-proxy::part(base) {
-    min-height: 2.45rem;
-    border-radius: 0.72rem;
+    min-height: var(--command-control-height, var(--control-height-md));
+    border-radius: var(--command-control-radius, var(--control-radius-md));
     border-color: color-mix(in srgb, var(--border) 80%, transparent);
     background: color-mix(in srgb, var(--card-bg) 90%, transparent);
     color: color-mix(in srgb, var(--text) 94%, transparent);
@@ -533,7 +523,7 @@ sl-button.ui-button-proxy::part(base) {
 }
 
 sl-button.ui-button-proxy.ui-button-proxy-small::part(base) {
-    min-height: 2.1rem;
+    min-height: var(--control-height-sm);
 }
 
 sl-button.ui-button-proxy:hover:not([disabled]):not([loading])::part(base) {

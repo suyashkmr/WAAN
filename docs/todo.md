@@ -36,6 +36,45 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Validate readability and contrast against all major panel surfaces.
     - [x] Manual scan complete for hero, relay, saved views, search, and analytics sections.
 
+## Next Wave: UI Consistency Polish
+
+- [x] Phase 8: Control System Normalization
+  - [x] Normalize shared control tokens (height, radius, horizontal padding, focus ring, shadow depth).
+    - [x] Unify geometry for primary/secondary/ghost buttons, select controls, icon buttons, chips/pills, and collapse toggles.
+    - [x] Remove one-off per-panel overrides that diverge from the shared control recipe.
+  - [x] Verify parity across desktop/tablet/mobile breakpoints.
+    - [x] Manual scan for Search, Saved Views, analytics headers, toolbar, and hero actions.
+    - [x] Run `npm run ci:verify`.
+- [ ] Phase 9: Section Header Unification
+  - [x] Standardize section header composition (`icon + title + info + actions + divider`) and spacing rhythm.
+    - [x] Align title baseline, action cluster alignment, and collapse button placement across all panels.
+    - [x] Normalize subtitle/help text spacing where present.
+    - [x] Run `npm run ci:verify`.
+  - [ ] Validate interactive parity and accessibility.
+    - [ ] Verify info tooltip triggers remain visible and readable.
+    - [ ] Verify keyboard focus order for header actions.
+- [ ] Phase 10: Accent Palette Rationalization
+  - [ ] Reduce emphasis fragmentation by enforcing a constrained accent system.
+    - [ ] Keep two primary accents + one success + one warning/error semantic track.
+    - [ ] Re-map panel/metric accents that currently compete for primary emphasis.
+  - [ ] Validate contrast and hierarchy clarity.
+    - [ ] Manual scan of adjacent cards to ensure emphasis priority is obvious.
+    - [ ] Re-check dark/light readability on highlighted metrics.
+- [ ] Phase 11: Card Chrome Depth Parity
+  - [ ] Standardize card shell recipe (border, inner highlight, ambient glow, hover depth) across analytics surfaces.
+    - [ ] Align depth treatment for flat vs elevated cards so neighboring sections feel cohesive.
+    - [ ] Keep reduced-motion and high-contrast behavior consistent with existing safeguards.
+  - [ ] Validate visual coherence.
+    - [ ] Manual comparison of relay/search/saved/analytics cards in one continuous scroll session.
+    - [ ] Run `npm run test:visual` (and update snapshots only for intentional changes).
+- [ ] Phase 12: Toolbar Layout Determinism
+  - [ ] Rebuild toolbar grouping/wrapping rules for deterministic behavior at all supported widths.
+    - [ ] Ensure export actions, theme controls, and utility actions share a consistent grouping contract.
+    - [ ] Prevent clipping/overflow for long labels while preserving hierarchy and touch targets.
+  - [ ] Verify responsive behavior end-to-end.
+    - [ ] Manual checks at representative widths (desktop wide, laptop, tablet, mobile).
+    - [ ] Run `npm run ci:verify`.
+
 ## Next Wave: Community Catalyst UI Overhaul
 
 - [x] Phase 1: Foundation (tokens, typography, shell baseline)
