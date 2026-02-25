@@ -224,10 +224,16 @@
     --shadow-card-strong: 0 20px 40px rgba(6, 10, 20, 0.28);
     --shadow-card-deep: 0 24px 46px rgba(6, 10, 20, 0.34);
     --shadow-chip: 0 10px 18px rgba(15, 23, 42, 0.12);
+    --shadow-shell: 0 18px 44px rgba(3, 6, 15, 0.54), 0 2px 0 rgba(255, 255, 255, 0.03) inset;
+    --shadow-shell-hover: 0 24px 56px rgba(2, 5, 14, 0.64), 0 2px 0 rgba(255, 255, 255, 0.05) inset;
+    --edge-specular: color-mix(in srgb, #e6f3ff 22%, transparent);
     --bg-depth-spot-1: color-mix(in srgb, var(--accent) 14%, transparent);
     --bg-depth-spot-2: color-mix(in srgb, var(--md-secondary) 14%, transparent);
+    --bg-depth-spot-3: color-mix(in srgb, var(--md-tertiary) 15%, transparent);
+    --bg-depth-ridge: color-mix(in srgb, #6ea8cc 6%, transparent);
     --bg-depth-base-start: color-mix(in srgb, var(--bg) 98%, #02050b);
     --bg-depth-base-end: color-mix(in srgb, var(--bg) 86%, #0d1320);
+    --ambient-opacity: 0.74;
 
     --calendar-level-0: rgba(145, 156, 189, 0.12);
     --calendar-level-1: rgba(214, 179, 110, 0.2);
@@ -452,10 +458,16 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
         --shadow-card: 0 12px 26px rgba(30, 41, 59, 0.1);
         --shadow-card-strong: 0 15px 30px rgba(30, 41, 59, 0.13);
         --shadow-card-deep: 0 18px 36px rgba(30, 41, 59, 0.16);
+        --shadow-shell: 0 12px 30px rgba(30, 41, 59, 0.11), 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+        --shadow-shell-hover: 0 16px 34px rgba(30, 41, 59, 0.16), 0 1px 0 rgba(255, 255, 255, 0.78) inset;
+        --edge-specular: color-mix(in srgb, #ffffff 78%, transparent);
         --bg-depth-spot-1: color-mix(in srgb, var(--accent) 11%, transparent);
         --bg-depth-spot-2: color-mix(in srgb, var(--md-secondary) 9%, transparent);
+        --bg-depth-spot-3: color-mix(in srgb, var(--md-tertiary) 8%, transparent);
+        --bg-depth-ridge: color-mix(in srgb, #ffffff 16%, transparent);
         --bg-depth-base-start: color-mix(in srgb, #ffffff 90%, var(--bg));
         --bg-depth-base-end: color-mix(in srgb, #f3f5fa 78%, var(--bg));
+        --ambient-opacity: 0.62;
     }
 }
 
@@ -523,10 +535,16 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --shadow-card: 0 18px 40px rgba(7, 10, 20, 0.24);
     --shadow-card-strong: 0 22px 46px rgba(6, 10, 20, 0.31);
     --shadow-card-deep: 0 26px 54px rgba(6, 10, 20, 0.38);
+    --shadow-shell: 0 18px 44px rgba(3, 6, 15, 0.54), 0 2px 0 rgba(255, 255, 255, 0.03) inset;
+    --shadow-shell-hover: 0 24px 56px rgba(2, 5, 14, 0.64), 0 2px 0 rgba(255, 255, 255, 0.05) inset;
+    --edge-specular: color-mix(in srgb, #e6f3ff 22%, transparent);
     --bg-depth-spot-1: color-mix(in srgb, var(--accent) 15%, transparent);
     --bg-depth-spot-2: color-mix(in srgb, var(--md-secondary) 16%, transparent);
-    --bg-depth-base-start: color-mix(in srgb, var(--bg) 99%, #02050b);
-    --bg-depth-base-end: color-mix(in srgb, var(--bg) 84%, #0d1320);
+    --bg-depth-spot-3: color-mix(in srgb, var(--md-tertiary) 15%, transparent);
+    --bg-depth-ridge: color-mix(in srgb, #6ea8cc 6%, transparent);
+    --bg-depth-base-start: color-mix(in srgb, var(--bg) 99%, #01040a);
+    --bg-depth-base-end: color-mix(in srgb, var(--bg) 80%, #0b1220);
+    --ambient-opacity: 0.74;
 }
 
 :root[data-color-scheme="light"] {
@@ -593,10 +611,16 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --shadow-card: 0 12px 26px rgba(30, 41, 59, 0.1);
     --shadow-card-strong: 0 15px 30px rgba(30, 41, 59, 0.13);
     --shadow-card-deep: 0 18px 36px rgba(30, 41, 59, 0.16);
+    --shadow-shell: 0 12px 30px rgba(30, 41, 59, 0.11), 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+    --shadow-shell-hover: 0 16px 34px rgba(30, 41, 59, 0.16), 0 1px 0 rgba(255, 255, 255, 0.78) inset;
+    --edge-specular: color-mix(in srgb, #ffffff 78%, transparent);
     --bg-depth-spot-1: color-mix(in srgb, var(--accent) 11%, transparent);
     --bg-depth-spot-2: color-mix(in srgb, var(--md-secondary) 9%, transparent);
+    --bg-depth-spot-3: color-mix(in srgb, var(--md-tertiary) 8%, transparent);
+    --bg-depth-ridge: color-mix(in srgb, #ffffff 16%, transparent);
     --bg-depth-base-start: color-mix(in srgb, #ffffff 90%, var(--bg));
     --bg-depth-base-end: color-mix(in srgb, #f3f5fa 78%, var(--bg));
+    --ambient-opacity: 0.62;
 }
 
 
@@ -616,8 +640,10 @@ body {
     letter-spacing: -0.005em;
     font-weight: var(--font-weight-regular);
     background:
+        linear-gradient(105deg, var(--bg-depth-ridge) 0%, transparent 28%, transparent 74%, color-mix(in srgb, var(--bg-depth-ridge) 55%, transparent) 100%),
         radial-gradient(140% 120% at 5% 0%, var(--bg-depth-spot-1) 0%, transparent 55%),
         radial-gradient(120% 110% at 95% 0%, var(--bg-depth-spot-2) 0%, transparent 58%),
+        radial-gradient(96% 82% at 50% 100%, var(--bg-depth-spot-3) 0%, transparent 72%),
         linear-gradient(162deg, var(--bg-depth-base-start), var(--bg-depth-base-end));
     color: var(--text);
     text-rendering: optimizeLegibility;
@@ -662,9 +688,10 @@ textarea {
     background:
         radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent) 28%, transparent) 0%, transparent 48%),
         radial-gradient(circle at 82% 10%, color-mix(in srgb, var(--md-secondary) 26%, transparent) 0%, transparent 52%),
-        radial-gradient(circle at 56% 84%, color-mix(in srgb, var(--md-tertiary) 22%, transparent) 0%, transparent 46%);
+        radial-gradient(circle at 56% 84%, color-mix(in srgb, var(--md-tertiary) 22%, transparent) 0%, transparent 46%),
+        conic-gradient(from 220deg at 50% 50%, transparent 0deg, color-mix(in srgb, var(--edge-specular) 26%, transparent) 46deg, transparent 118deg, color-mix(in srgb, var(--edge-specular) 18%, transparent) 172deg, transparent 360deg);
     filter: blur(52px);
-    opacity: 0.62;
+    opacity: var(--ambient-opacity);
     animation: ambientPulse 16s ease-in-out infinite alternate;
 }
 

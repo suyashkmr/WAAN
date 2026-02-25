@@ -25,9 +25,10 @@
     border: 1px solid color-mix(in srgb, var(--glass-border) 84%, transparent);
     background:
         linear-gradient(165deg, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 44%),
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 22%, transparent) 0%, transparent 42%),
         color-mix(in srgb, var(--glass-bg) 92%, transparent);
     backdrop-filter: blur(var(--glass-blur));
-    box-shadow: var(--shadow-card-deep);
+    box-shadow: var(--shadow-shell);
     display: flex;
     flex-direction: column;
     gap: var(--hero-blurb-gap);
@@ -655,6 +656,110 @@
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
+:root[data-color-scheme="dark"] .ghost-button {
+    border-color: color-mix(in srgb, var(--edge-strong) 82%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 20%, transparent) 0%, transparent 48%),
+        color-mix(in srgb, var(--bg-room) 96%, transparent);
+    color: color-mix(in srgb, var(--text) 92%, var(--muted));
+    box-shadow:
+        0 10px 22px rgba(2, 6, 16, 0.52),
+        0 1px 0 color-mix(in srgb, var(--edge-specular) 32%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .ghost-button:hover {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 26%, transparent) 0%, transparent 52%),
+        color-mix(in srgb, var(--accent) 14%, var(--bg-room));
+    border-color: color-mix(in srgb, var(--accent) 56%, transparent);
+    box-shadow:
+        0 14px 28px color-mix(in srgb, var(--accent) 18%, rgba(2, 6, 16, 0.62)),
+        0 1px 0 color-mix(in srgb, var(--edge-specular) 38%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .ghost-button:active {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 56%),
+        color-mix(in srgb, var(--accent) 18%, var(--bg-room));
+    box-shadow:
+        0 7px 14px color-mix(in srgb, var(--accent) 16%, rgba(2, 6, 16, 0.55)),
+        0 1px 0 color-mix(in srgb, var(--edge-specular) 22%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .ghost-button[aria-pressed="true"] {
+    border-color: color-mix(in srgb, var(--accent) 62%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 24%, transparent) 0%, transparent 56%),
+        color-mix(in srgb, var(--accent) 26%, transparent);
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent) 38%, transparent),
+        0 12px 26px color-mix(in srgb, var(--accent) 16%, rgba(2, 6, 16, 0.58));
+}
+
+:root[data-color-scheme="dark"] .ghost-button.primary {
+    border-color: color-mix(in srgb, var(--accent) 72%, transparent);
+    background:
+        linear-gradient(170deg, color-mix(in srgb, #ffffff 12%, var(--accent)) 0%, color-mix(in srgb, var(--accent) 82%, #16304a) 54%, color-mix(in srgb, var(--accent) 68%, #0a1424) 100%);
+    box-shadow:
+        0 14px 28px color-mix(in srgb, var(--accent) 28%, rgba(2, 6, 16, 0.64)),
+        0 1px 0 color-mix(in srgb, #ffffff 26%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .ghost-button.primary:hover {
+    background:
+        linear-gradient(170deg, color-mix(in srgb, #ffffff 15%, var(--accent)) 0%, color-mix(in srgb, var(--accent) 88%, #1a3654) 56%, color-mix(in srgb, var(--accent) 72%, #0a1424) 100%);
+}
+
+:root[data-color-scheme="dark"] .ghost-button.danger {
+    border-color: color-mix(in srgb, var(--negative) 56%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 16%, transparent) 0%, transparent 52%),
+        color-mix(in srgb, var(--negative) 10%, var(--bg-room));
+}
+
+:root[data-color-scheme="dark"] .ghost-button.danger:hover {
+    border-color: color-mix(in srgb, var(--negative) 76%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 18%, transparent) 0%, transparent 52%),
+        color-mix(in srgb, var(--negative) 18%, var(--bg-room));
+}
+
+:root[data-color-scheme="dark"] .actions-toolbar {
+    border-color: color-mix(in srgb, var(--edge-strong) 82%, transparent);
+    box-shadow: var(--shadow-shell);
+}
+
+:root[data-color-scheme="dark"] .actions-toolbar .ghost-button {
+    box-shadow:
+        0 8px 18px rgba(2, 6, 16, 0.5),
+        0 1px 0 color-mix(in srgb, var(--edge-specular) 30%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .theme-toggle {
+    border-color: color-mix(in srgb, var(--edge-strong) 78%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 16%, transparent) 0%, transparent 54%),
+        color-mix(in srgb, var(--card-bg) 96%, transparent);
+    box-shadow:
+        0 8px 18px rgba(2, 6, 16, 0.45),
+        0 1px 0 color-mix(in srgb, var(--edge-specular) 26%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .theme-toggle input:checked + label {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 22%, transparent) 0%, transparent 54%),
+        color-mix(in srgb, var(--accent) 28%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 62%, transparent);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 18%, rgba(2, 6, 16, 0.52));
+}
+
+:root[data-color-scheme="dark"] .card-toggle {
+    border-color: color-mix(in srgb, var(--edge-strong) 70%, transparent);
+    box-shadow:
+        0 6px 12px rgba(2, 6, 16, 0.42),
+        0 1px 0 color-mix(in srgb, var(--edge-specular) 24%, transparent) inset;
+}
+
 #log-drawer-toggle[data-has-unread="true"]::after {
     content: "";
     width: 0.45rem;
@@ -793,8 +898,10 @@ main > :is(.card, .app-panel-shell).half-span {
     padding: var(--card-padding);
     margin-bottom: var(--layout-main-gap);
     border: 1px solid color-mix(in srgb, var(--edge-subtle) 88%, transparent);
-    box-shadow: var(--shadow-card), inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 82%, transparent);
-    background-image: linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
+    box-shadow: var(--shadow-shell);
+    background-image:
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 20%, transparent) 0%, transparent 46%),
+        linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
     background-blend-mode: lighten;
     transition:
         transform var(--motion-duration-medium) var(--motion-ease-out),
@@ -928,8 +1035,27 @@ main > :is(.card, .app-panel-shell).half-span {
 
 .card:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-card-strong), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 30%, transparent);
+    box-shadow: var(--shadow-shell-hover), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 30%, transparent);
     border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 36%, var(--border));
+}
+
+:root[data-color-scheme="dark"] :is(.card, .app-panel-shell) {
+    background: color-mix(in srgb, var(--surface-elevated-strong) 88%, transparent);
+    border-color: color-mix(in srgb, var(--edge-strong) 76%, transparent);
+}
+
+:root[data-color-scheme="dark"] :is(.card, .app-panel-shell)[data-accent] {
+    box-shadow:
+        0 20px 48px color-mix(in srgb, var(--section-accent, var(--accent)) 20%, rgba(3, 6, 15, 0.64)),
+        0 2px 0 color-mix(in srgb, var(--edge-specular) 28%, transparent) inset;
+}
+
+:root[data-color-scheme="dark"] .hero-blurb {
+    border-color: color-mix(in srgb, var(--edge-strong) 78%, transparent);
+    background:
+        linear-gradient(168deg, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 46%),
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 26%, transparent) 0%, transparent 42%),
+        color-mix(in srgb, var(--glass-bg) 96%, transparent);
 }
 
 :is(.card, .app-panel-shell):hover::after {

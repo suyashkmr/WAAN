@@ -18,6 +18,24 @@ Completed work is archived in git history and was removed from this file for cla
 - [x] All previously tracked implementation tasks are complete.
 - [x] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
 
+## Next Wave: Dark Depth + Background Elegance
+
+- [x] Phase 6: Dark Mode Depth Pass
+  - [x] Increase dark-mode surface separation and elevation hierarchy.
+    - [x] Tuned dark tokens for shell/card contrast and edge highlights (`styles.base.css`).
+    - [x] Strengthened dark-only card/hero shadow stack and specular treatment (`styles.components.css`, `styles.base.css`).
+  - [x] Improve tactile depth on interactive controls in dark mode.
+    - [x] Tuned dark hover/pressed/focus layering for action buttons, segmented toggles, toolbar controls, and collapse toggles (`styles.components.css`).
+  - [x] Verify parity at desktop + mobile widths in dark mode.
+    - [x] Run `npm run ci:verify`.
+    - [x] Ran `npm run test:visual:update` and `npm run test:visual` after intentional baseline shifts.
+- [x] Phase 7: Background Elegance Pass
+  - [x] Replace flat-feeling shell backdrop with a more elegant multi-layer atmospheric background.
+    - [x] Added subtle directional depth layers (ridge + atmospheric pools + tertiary floor glow) (`styles.base.css`).
+    - [x] Kept motion minimal and reduced-motion safe (ambient motion unchanged and reduced-motion guard retained).
+  - [x] Validate readability and contrast against all major panel surfaces.
+    - [x] Manual scan complete for hero, relay, saved views, search, and analytics sections.
+
 ## Next Wave: Community Catalyst UI Overhaul
 
 - [x] Phase 1: Foundation (tokens, typography, shell baseline)
