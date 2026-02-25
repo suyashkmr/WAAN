@@ -106,7 +106,7 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps }) {
         } else if (state === "error") {
           detail.textContent = "Relay failed to launch. Retry.";
         } else {
-          detail.textContent = "Open the ChatScope Relay app and press Start.";
+          detail.textContent = "Open the WAAN Relay app and press Start.";
         }
       }
     } else if (id === "qr") {
@@ -133,7 +133,7 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps }) {
             ? "Chats synced."
             : value === "active"
               ? "Syncing chats…"
-              : "Sync chats into ChatScope.";
+              : "Sync chats into WAAN.";
       }
     }
     step.dataset.state = value;

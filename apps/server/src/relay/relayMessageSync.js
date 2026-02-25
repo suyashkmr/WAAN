@@ -10,7 +10,7 @@ async function syncSingleChatMessages({
   const messageLimit = Number(options.limit) || manager.relayConfig.DEFAULT_MESSAGE_LIMIT;
   const chat = await client.getChatById(targetId);
   if (!chat) {
-    throw new Error(`Chat ${targetId} not found on ChatScope`);
+    throw new Error(`Chat ${targetId} not found on WAAN`);
   }
   await manager.persistChatMeta(chat);
   manager.log(`Fetching ${messageLimit} messages for ${chat.name || targetId}…`);

@@ -55,6 +55,8 @@ describe("search/filter/saved/export control shoelace migration", () => {
     ]);
 
     const legacyRunSearch = document.getElementById("run-search");
+    expect(Object.prototype.hasOwnProperty.call(legacyRunSearch, "setAttribute")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(legacyRunSearch, "removeAttribute")).toBe(false);
     legacyRunSearch?.setAttribute("aria-pressed", "true");
     legacyRunSearch?.setAttribute("title", "Run current filters");
     legacyRunSearch?.setAttribute("aria-label", "Run search");

@@ -13,7 +13,7 @@ Use this quick runbook before shipping a packaged WAAN build.
 1. Build completed and app launches from:
    - `./WAAN.app/Contents/MacOS/WAAN`
 2. Phone is available for QR link.
-3. Network access is available for ChatScope Web login.
+3. Network access is available for WhatsApp Web login.
 
 ## Smoke Steps
 
@@ -24,8 +24,8 @@ Use this quick runbook before shipping a packaged WAAN build.
    - `curl -s http://127.0.0.1:4546/relay/status`
    - Expect JSON with `status`, `chatCount`, and `syncPath`.
 3. Complete QR auth and wait for ready logs:
-   - `Authenticated with ChatScope Web.`
-   - `ChatScope relay is ready.`
+   - `Authenticated with WhatsApp Web.`
+   - `WAAN relay is ready.`
 4. Trigger chat sync (auto/manual), then verify:
    - `Synced <N> chats via primary in <T>ms (meta persist <P>ms).` or
    - `Synced <N> chats via fallback in <T>ms (meta persist <P>ms).`
@@ -42,6 +42,40 @@ Use this quick runbook before shipping a packaged WAAN build.
 4. `syncPath` is present in status/UI metadata.
 5. No unrecovered relay error loops.
 
+## Excellence Gates
+
+Run these gates in addition to relay smoke.
+
+1. Performance budgets (per release)
+   - `npm run perf:searchworker`
+   - `npm run perf:chatstore`
+   - Compare results against latest recorded table in `docs/performance-at-scale.md`.
+   - Flag release if any core path regresses materially (index build, indexed search latency, metadata write amplification).
+2. Accessibility smoke (per release)
+   - `npx playwright test tests/visual/accessibility.smoke.spec.js`
+   - Must pass across desktop/laptop/tablet/mobile projects.
+3. Visual regression status (per release)
+   - `npm run test:visual`
+   - If expected intentional diffs exist, run `npm run test:visual:update`, review, and re-run `npm run test:visual`.
+4. Naming and copy consistency (per release)
+   - `rg -n "ChatScope" index.html README.md docs --glob '!docs/release-smoke-checklist.md'`
+   - Expected result: no user-facing brand-name drift unless explicitly documented in release notes.
+
+## Gate Ownership
+
+1. Performance budgets
+   - Owner: Engineering
+   - Frequency: Per release
+2. Accessibility smoke
+   - Owner: Engineering
+   - Frequency: Per release
+3. Visual regression status
+   - Owner: Engineering + Design review
+   - Frequency: Per release
+4. Naming and copy consistency
+   - Owner: Product + Engineering
+   - Frequency: Per release
+
 ## Failure Capture
 
 If any step fails, capture:
@@ -55,6 +89,6 @@ Then follow `docs/relay-troubleshooting.md`.
 
 ## Latest Sign-off
 
-- Date: 2026-02-17
+- Date: 2026-02-25
 - Status: PASS
-- Verified by: user-confirmed relay running + sync-path/status payload check
+- Verified by: automated release gates pass (`test:visual`, accessibility smoke, perf benchmarks, naming scan); packaged-app manual relay smoke pending final artifact run

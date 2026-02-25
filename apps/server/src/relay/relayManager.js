@@ -118,7 +118,7 @@ class RelayManager extends EventEmitter {
       try {
         await this.client.destroy();
       } catch (error) {
-        this.logger.warn("Failed to destroy ChatScope client: %s", error.message);
+        this.logger.warn("Failed to destroy WAAN client: %s", error.message);
       }
       this.client = null;
     }
@@ -137,7 +137,7 @@ class RelayManager extends EventEmitter {
     if (this.client && typeof this.client.logout === "function") {
       try {
         await this.client.logout();
-        this.log("ChatScope session logged out.");
+        this.log("WAAN session logged out.");
       } catch (error) {
         this.logger.warn("Failed to logout session: %s", error.message);
       }
@@ -159,7 +159,7 @@ class RelayManager extends EventEmitter {
     this.emit("status", this.getStatus());
     const syncStartedAt = Date.now();
     try {
-      this.log("Synchronising chat list from ChatScope…");
+      this.log("Synchronising chat list from WAAN…");
       const syncResult = await fetchChatsWithStrategy({
         client,
         mode: effectiveMode,
@@ -246,7 +246,7 @@ class RelayManager extends EventEmitter {
       lastQr: null,
       account: extractAccountInfo(this.client),
     });
-    this.log("ChatScope relay is ready.");
+    this.log("WAAN relay is ready.");
     await this.refreshContacts();
     const syncStatus = await this.syncChats();
     scheduleStartupPrimaryResync(this, syncStatus);

@@ -205,7 +205,7 @@ describe("controllerWiring contracts", () => {
         toISODate: () => "2026-01-01",
       },
       constants: {
-        brandName: "ChatScope",
+        brandName: "WAAN",
         searchResultLimit: 25,
       },
       callbacks: {

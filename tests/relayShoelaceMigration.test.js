@@ -61,7 +61,7 @@ describe("relay shoelace migration", () => {
     legacyStart?.setAttribute("title", "Disconnect now");
     legacyStart?.setAttribute("aria-pressed", "true");
     legacyStart?.removeAttribute("aria-label");
-    await Promise.resolve();
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(proxy?.getAttribute("title")).toBe("Disconnect now");
     expect(proxy?.getAttribute("aria-pressed")).toBe("true");

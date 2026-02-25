@@ -13,7 +13,10 @@ class ChatStore extends EventEmitter {
     this.entriesCache = new Map();
     this.metadataDirty = false;
     this.metadataPersistTimer = null;
-    this.metadataPersistDelayMs = 75;
+    this.metadataPersistDelayMs = 200;
+    this.metadataPersistRetryDelayMs = 1_000;
+    this.metadataPersistRetryMaxDelayMs = 30_000;
+    this.metadataPersistNextRetryDelayMs = this.metadataPersistRetryDelayMs;
     fs.ensureDirSync(this.chatsDir);
   }
 
@@ -46,7 +49,7 @@ class ChatStore extends EventEmitter {
     await fs.outputJson(this.metadataPath, payload, { spaces: 2 });
   }
 
-  async scheduleMetadataPersist({ immediate = false } = {}) {
+  async scheduleMetadataPersist({ immediate = false, delayMs = this.metadataPersistDelayMs } = {}) {
     this.metadataDirty = true;
     if (immediate) {
       return this.flushMetadata();
@@ -58,8 +61,19 @@ class ChatStore extends EventEmitter {
       this.metadataPersistTimer = null;
       this.flushMetadata().catch(error => {
         this.logger.warn("Failed to persist chat metadata: %s", error.message);
+        this.emit("metadata:persist:error", error);
+        if (this.metadataDirty) {
+          const retryDelayMs = this.metadataPersistNextRetryDelayMs;
+          this.metadataPersistNextRetryDelayMs = Math.min(
+            this.metadataPersistNextRetryDelayMs * 2,
+            this.metadataPersistRetryMaxDelayMs,
+          );
+          this.scheduleMetadataPersist({ delayMs: retryDelayMs }).catch(retryError => {
+            this.logger.warn("Failed to schedule metadata retry: %s", retryError.message);
+          });
+        }
       });
-    }, this.metadataPersistDelayMs);
+    }, delayMs);
   }
 
   async flushMetadata() {
@@ -74,6 +88,7 @@ class ChatStore extends EventEmitter {
       this.metadataDirty = false;
       try {
         await this.persistMetadata();
+        this.metadataPersistNextRetryDelayMs = this.metadataPersistRetryDelayMs;
       } catch (error) {
         this.metadataDirty = true;
         throw error;
@@ -214,7 +229,8 @@ class ChatStore extends EventEmitter {
     return applied;
   }
 
-  async appendMessage(chatId, entry, meta = {}) {
+  async appendMessage(chatId, entry, meta = {}, options = {}) {
+    const { waitForPersist = false } = options;
     const entries = await this.loadEntries(chatId);
     entries.push(entry);
     this.entriesCache.set(chatId, entries);
@@ -225,7 +241,7 @@ class ChatStore extends EventEmitter {
     if (meta.name) patch.name = meta.name;
     if (typeof meta.isGroup === "boolean") patch.isGroup = meta.isGroup;
     if (typeof meta.unreadCount === "number") patch.unreadCount = meta.unreadCount;
-    await this.upsertChatMeta(chatId, patch);
+    await this.upsertChatMeta(chatId, patch, { waitForPersist });
     await this.saveEntries(chatId);
     this.emit("chat:message", { chatId, entry });
     return entry;

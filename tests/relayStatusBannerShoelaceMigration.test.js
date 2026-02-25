@@ -47,7 +47,7 @@ describe("relay status banner shoelace migration", () => {
     expect(migrateRelayStatusBannerToShoelace()).toBe(true);
 
     legacyRef.dataset.status = "running";
-    await Promise.resolve();
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     const visibleBanner = document.getElementById("relay-status-banner");
     expect(visibleBanner?.tagName.toLowerCase()).toBe("sl-card");

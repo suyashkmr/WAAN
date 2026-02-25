@@ -1,6 +1,6 @@
-# ChatScope Live Chat Integration
+# WAAN Live Chat Integration
 
-WAAN reads chats directly from ChatScope using
+WAAN reads chats directly from WAAN using
 [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). Chat data
 is mirrored through the relay and rendered directly in WAAN's active dataset.
 
@@ -18,20 +18,20 @@ By default the server binds to:
 
 Override the host/ports with `WAAN_API_PORT`, `WAAN_RELAY_PORT`, or CLI flags (`--api-port`, `--relay-port`, `--host`, `--allow-origin`).
 
-The first run downloads a headless Chromium build for ChatScope Web and stores the session under `~/Library/Application Support/WAAN/relay-session`.
+The first run downloads a headless Chromium build for WhatsApp Web and stores the session under `~/Library/Application Support/WAAN/relay-session`.
 
-## 2. Link ChatScope
+## 2. Link WAAN
 
 1. Open WAAN (either the browser dashboard or `WAAN.app`).
-2. Use the **Connect to ChatScope** card:
+2. Use the **Connect to WAAN** card:
    - Click **Connect**. The relay generates a QR code.
-   - On your phone open ChatScope → *Linked devices* → *Link a device* and scan the QR.
+   - On your phone open WAAN → *Linked devices* → *Link a device* and scan the QR.
 3. Once connected, WAAN shows your account name and lists mirrored chats in the
-   chat selector (grouped under *ChatScope account*).
+   chat selector (grouped under *WAAN account*).
 
 ## 3. Load a chat
 
-Select any chat from the *ChatScope account* group. WAAN fetches recent
+Select any chat from the *WAAN account* group. WAAN fetches recent
 messages (default limit: `5000`) and renders analytics for that conversation.
 
 - Click **Refresh chats** after new conversations arrive.
@@ -51,7 +51,7 @@ messages (default limit: `5000`) and renders analytics for that conversation.
 ## Migration Notes (2026-02-24)
 
 - The legacy in-memory local chat library and `Your chats` selector group were removed.
-- Chat selection is now remote-only via the relay-backed *ChatScope account* list.
+- Chat selection is now remote-only via the relay-backed *WAAN account* list.
 
 ## Configuring the UI endpoints
 

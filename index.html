@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatScope Conversation Overview</title>
+    <title>WAAN Conversation Overview</title>
     <link rel="icon" type="image/png" href="tpg.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="styles.tailwind.css">
@@ -13,26 +13,26 @@
     <link rel="stylesheet" href="styles.shoelace.css">
 </head>
 
-<body>
+<body class="bg-canvas text-text-base font-base antialiased">
     <div class="ambient-field" aria-hidden="true"></div>
-    <nav class="section-nav" aria-label="Section shortcuts">
+    <nav class="section-nav bg-surface-glass border border-border-glass shadow-float rounded-lg" aria-label="Section shortcuts">
         <p class="section-nav-kicker section-kicker">Jump to</p>
         <div class="section-nav-inner"></div>
     </nav>
 
-    <header class="hero-shell" id="hero-panel" data-nav-target="hero">
+    <header class="hero-shell bg-surface-base border border-border-subtle shadow-card rounded-lg" id="hero-panel" data-nav-target="hero">
         <div class="hero-layout">
             <div class="hero-blurb app-story-lane" data-story-lane="intro">
                 <div class="hero-brand">
                     <div class="hero-logo">
-                        <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="eager" fetchpriority="high"
+                        <img src="tpg.png" alt="WAAN logo" class="brand-mark" loading="eager" fetchpriority="high"
                             decoding="async">
                     </div>
                     <div class="hero-brand-copy">
-                        <p class="eyebrow section-kicker">ChatScope Relay</p>
-                        <h1>ChatScope Conversation Analytics</h1>
+                        <p class="eyebrow section-kicker">WAAN Relay</p>
+                        <h1 class="font-display text-display-hero leading-tight tracking-tight">WAAN Conversation Analytics</h1>
                         <p class="subtitle">Link once, view everything. Start the desktop relay, pick any chat, and let
-                            ChatScope keep the highlights ready.</p>
+                            WAAN keep the highlights ready.</p>
                     </div>
                 </div>
                 <div class="hero-status app-signal-stack">
@@ -52,7 +52,7 @@
                     </div>
                 </div>
             </div>
-            <section id="relay-live-card" class="card hero-live-card app-story-panel" data-accent="relay" data-story-lane="actions">
+            <section id="relay-live-card" class="card hero-live-card app-story-panel bg-surface-raised border border-border-subtle shadow-card-strong rounded-lg" data-accent="relay" data-story-lane="actions">
                 <div class="card-header">
                     <div class="card-title-group">
                         <h2><span class="section-icon" aria-hidden="true">
@@ -60,7 +60,7 @@
                                     <path
                                         d="M8 3v2h8V3h2v2h1a2 2 0 0 1 2 2v4h-2V8H5v3H3V7a2 2 0 0 1 2-2h1V3h2zm-4 8h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8zm4 2v6h2v-4h4v4h2v-6H8z" />
                                 </svg>
-                            </span>Connect ChatScope Relay</h2>
+                            </span>Connect WAAN Relay</h2>
                         <p class="card-subtitle">The desktop relay mirrors chat app Web. Keep it running to capture new
                             messages.</p>
                     </div>
@@ -77,7 +77,7 @@
                             <span class="relay-step-index">1</span>
                             <div>
                                 <p class="relay-step-title">Start Relay</p>
-                                <p class="relay-step-detail">Open the ChatScope Relay desktop app, then press Start.</p>
+                                <p class="relay-step-detail">Open the WAAN Relay desktop app, then press Start.</p>
                             </div>
                         </div>
                         <div class="relay-step" data-step-id="qr" role="listitem">
@@ -151,13 +151,13 @@
         <div class="relay-banner-text">
             <p class="relay-banner-status" id="relay-status-message">Relay status unknown.</p>
             <p class="relay-banner-meta" id="relay-status-meta">Launch the desktop relay and press Connect to mirror
-                chats into ChatScope.</p>
+                chats into WAAN.</p>
         </div>
     </section>
 
     <main>
 
-        <section class="actions-toolbar full-span" aria-label="Dataset actions" id="actions-toolbar"
+        <section class="actions-toolbar full-span bg-surface-glass border border-border-glass shadow-soft rounded-lg" aria-label="Dataset actions" id="actions-toolbar"
             data-nav-target="actions">
             <div class="toolbar-group primary">
                 <button type="button" class="ghost-button" id="download-pdf">Save as PDF</button>
@@ -237,7 +237,7 @@
                     <ol class="first-run-steps">
                         <li class="first-run-step" data-setup-step="connect" data-state="active">
                             <span class="first-run-step-index">1</span>
-                            <span class="first-run-step-copy">Start and connect ChatScope Relay.</span>
+                            <span class="first-run-step-copy">Start and connect WAAN Relay.</span>
                         </li>
                         <li class="first-run-step" data-setup-step="link" data-state="pending">
                             <span class="first-run-step-index">2</span>
@@ -1125,7 +1125,7 @@
 
     <div class="onboarding-overlay" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="onboarding-panel">
-            <h2>Welcome to ChatScope</h2>
+            <h2>Welcome to WAAN</h2>
             <p class="onboarding-step-label" id="onboarding-step-label"></p>
             <p id="onboarding-copy">Link the relay to start mirroring chats.</p>
             <div class="onboarding-actions">
@@ -1137,9 +1137,9 @@
 
     <footer>
         <div class="footer-brand">
-            <img src="tpg.png" alt="ChatScope logo" class="brand-mark brand-mark--small" loading="lazy">
+            <img src="tpg.png" alt="WAAN logo" class="brand-mark brand-mark--small" loading="lazy">
             <div>
-                <p>ChatScope Relay</p>
+                <p>WAAN Relay</p>
                 <small>Conversation intelligence for your chat app chats.</small>
             </div>
         </div>

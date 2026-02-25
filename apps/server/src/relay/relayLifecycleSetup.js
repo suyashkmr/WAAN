@@ -10,13 +10,13 @@ function setupRelayClient(manager) {
 
   wireRelayClientEvents(manager.client, {
     onQr: qr => manager.handleQr(qr),
-    onAuthenticated: () => manager.log("Authenticated with ChatScope Web."),
+    onAuthenticated: () => manager.log("Authenticated with WhatsApp Web."),
     onAuthFailure: message => manager.handleAuthFailure(message),
     onReady: () => manager.handleReady(),
     onChangeState: state => manager.log(`Client state changed: ${state}`),
     onDisconnected: reason => manager.handleDisconnect(reason),
     onLoadingScreen: (percent, message) => {
-      manager.log(`Loading ChatScope… ${percent || 0}% ${message || ""}`.trim());
+      manager.log(`Loading WAAN… ${percent || 0}% ${message || ""}`.trim());
     },
     onMessage: message => {
       manager.handleIncomingMessage(message).catch(error => {

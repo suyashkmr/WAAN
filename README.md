@@ -9,6 +9,12 @@ WAAN is available as:
 - A web dashboard served from this repo
 - A macOS Electron desktop app (distributed as `.dmg`)
 
+## Naming Convention
+
+- Canonical user-facing product name: `WAAN`
+- Canonical relay service name: `WAAN Relay`
+- Do not introduce alternate user-facing brand names in UI/docs unless explicitly noted in release notes.
+
 ## Important Account Risk Notice
 
 WAAN is not affiliated with, endorsed by, or supported by WhatsApp/Meta.

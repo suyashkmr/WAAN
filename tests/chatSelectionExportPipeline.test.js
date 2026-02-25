@@ -8,7 +8,7 @@ function createChatSelection(options = {}) {
 
   const controller = createChatSelectionController({
     chatSelector,
-    brandName: "ChatScope",
+    brandName: "WAAN",
     formatNumber: value => String(value),
     formatDisplayDate: value => String(value),
     getActiveChatId: () => activeChatId,
@@ -169,7 +169,7 @@ describe("export pipeline", () => {
     const pipeline = createExportPipeline({
       getDatasetLabel: () => "Demo chat",
       getExportFilterSummary: () => ["range: custom"],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
 
     const request = pipeline.generateMarkdownReportAsync({ total_messages: 1 }, { name: "clean" });
@@ -181,7 +181,7 @@ describe("export pipeline", () => {
         payload: expect.objectContaining({
           datasetLabel: "Demo chat",
           filterDetails: ["range: custom"],
-          brandName: "ChatScope",
+          brandName: "WAAN",
         }),
       }),
     );
@@ -196,7 +196,7 @@ describe("export pipeline", () => {
     const pipeline = createExportPipeline({
       getDatasetLabel: () => "Demo chat",
       getExportFilterSummary: () => [],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
 
     const slides = pipeline.generateSlidesHtmlAsync({}, {});
@@ -223,7 +223,7 @@ describe("export pipeline", () => {
     const pipeline = createExportPipeline({
       getDatasetLabel: () => "Demo chat",
       getExportFilterSummary: () => [],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
 
     const first = pipeline.generateSlidesHtmlAsync({}, {});

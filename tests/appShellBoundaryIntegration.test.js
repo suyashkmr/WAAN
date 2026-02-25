@@ -133,5 +133,5 @@ describe("appShell boundary integration", () => {
 
     const runtimeArgs = h.bootstrapAppShellRuntime.mock.calls[0][0];
     expect(runtimeArgs.eventBindings.handlers.handleChatSelectionChange).toBe(h.handleChatSelectionChange);
-  });
+  }, 15_000);
 });

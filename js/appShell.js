@@ -28,6 +28,12 @@ import { createAppDomRefGroups } from "./appShell/domRefGroups.js";
 import { createRuntimeBootstrapConfig } from "./appShell/runtimeBootstrapConfig.js";
 import { buildControllerWiringArgs, buildCompositionAssemblyArgs } from "./appShell/entryConfig.js";
 import {
+  createCompositionAssemblyWiring,
+  createRuntimeHandlers,
+  createRuntimeDeps,
+  createDatasetEmptyButtons,
+} from "./appShell/assemblyWiring.js";
+import {
   createControllerWiringConfig,
   createCompositionAssemblyConfig,
 } from "./appShell/compositionConfig.js";
@@ -61,61 +67,10 @@ const datasetEmptyStateManager = createDatasetEmptyStateManager({
   calloutEl: runtimeRefs.datasetEmptyCallout,
   headingEl: runtimeRefs.datasetEmptyHeading,
   copyEl: runtimeRefs.datasetEmptyCopy,
-  buttons: [
-    exportRefs.downloadPdfButton,
-    exportRefs.downloadMarkdownButton,
-    exportRefs.downloadSlidesButton,
-    exportRefs.downloadChatJsonButton,
-    exportRefs.downloadParticipantsButton,
-    exportRefs.downloadHourlyButton,
-    exportRefs.downloadDailyButton,
-    exportRefs.downloadWeeklyButton,
-    exportRefs.downloadWeekdayButton,
-    exportRefs.downloadTimeOfDayButton,
-    exportRefs.downloadMessageTypesButton,
-    exportRefs.downloadSentimentButton,
-    exportRefs.downloadSearchButton,
-  ],
+  buttons: createDatasetEmptyButtons(exportRefs),
 });
 const setDatasetEmptyMessage = datasetEmptyStateManager.setMessage;
-const {
-  encodeChatSelectorValue,
-  setRemoteChatList,
-  getRemoteChatList,
-  getRemoteChatsLastFetchedAt,
-  refreshChatSelector,
-  handleChatSelectionChangeCore,
-  analyticsRequestTracker,
-  computeAnalyticsWithWorker,
-  normalizeRangeValue,
-  filterEntriesByRange,
-  describeRange,
-  updateCustomRangeBounds,
-  handleRangeChange,
-  applyCustomRange,
-  searchController,
-  savedViewsController,
-  setDashboardLoadingState,
-  setDataAvailabilityState,
-  updateHeroRelayStatus,
-  getDataAvailable,
-  handleParticipantsTopChange,
-  handleParticipantsSortChange,
-  handleParticipantsTimeframeChange,
-  handleParticipantPresetClick,
-  handleParticipantRowToggle,
-  getExportFilterSummary,
-  getParticipantView,
-  renderDashboard,
-  ensureWeekdayDayFilters,
-  ensureWeekdayHourFilters,
-  rerenderHourlyFromState,
-  rerenderWeekdayFromState,
-  ensureDayFilters,
-  syncHourlyControlsWithState,
-  initThemeControls,
-  getExportThemeConfig,
-} = createAppControllerWiring(
+const controllerWiring = createAppControllerWiring(
   buildControllerWiringArgs({
     ...createControllerWiringConfig({
       filterRefs,
@@ -131,53 +86,10 @@ const {
     }),
   }),
 );
-const compositionAssemblyWiring = {
-  getExportFilterSummary,
-  getExportThemeConfig,
-  getParticipantView,
-  describeRange,
-  filterEntriesByRange,
-  normalizeRangeValue,
-  analyticsRequestTracker,
-  computeAnalyticsWithWorker,
-  renderDashboard,
-  updateCustomRangeBounds,
-  encodeChatSelectorValue,
-  setRemoteChatList,
-  getRemoteChatList,
-  getRemoteChatsLastFetchedAt,
-  refreshChatSelector,
-  savedViewsController,
-  searchController,
-  setDashboardLoadingState,
-  setDataAvailabilityState,
-  updateHeroRelayStatus,
-  handleChatSelectionChangeCore,
-};
-const {
-  exportParticipants,
-  exportHourly,
-  exportDaily,
-  exportWeekly,
-  exportWeekday,
-  exportTimeOfDay,
-  exportMessageTypes,
-  exportChatJson,
-  exportSentiment,
-  exportSearchResults,
-  handleDownloadMarkdownReport,
-  handleDownloadSlidesReport,
-  exportMessageSubtype,
-  handleDownloadPdfReport,
-  startRelaySession,
-  stopRelaySession,
-  syncRelayChats,
-  isLogDrawerOpen,
-  openLogDrawer,
-  closeLogDrawer,
-  initRelayControls,
-  handleChatSelectionChange,
-} = createAppCompositionAssembly(
+
+const compositionAssemblyWiring = createCompositionAssemblyWiring(controllerWiring);
+
+const compositionAssembly = createAppCompositionAssembly(
   buildCompositionAssemblyArgs({
     ...createCompositionAssemblyConfig({
       filterRefs,
@@ -194,6 +106,16 @@ const {
   }),
 );
 
+const runtimeHandlers = createRuntimeHandlers({
+  controllerWiring,
+  compositionAssembly,
+  stateStore: appState,
+});
+const runtimeDeps = createRuntimeDeps({
+  controllerWiring,
+  stateStore: appState,
+});
+
 bootstrapAppShellRuntime(
   createRuntimeBootstrapConfig({
     filterRefs,
@@ -201,52 +123,8 @@ bootstrapAppShellRuntime(
     dashboardRefs,
     relayRefs,
     runtimeRefs,
-    handlers: {
-      handleChatSelectionChange,
-      handleRangeChange,
-      exportParticipants,
-      exportHourly,
-      exportDaily,
-      exportWeekly,
-      exportWeekday,
-      exportTimeOfDay,
-      exportMessageTypes,
-      exportChatJson,
-      exportSentiment,
-      exportMessageSubtype,
-      handleDownloadMarkdownReport,
-      handleDownloadSlidesReport,
-      exportSearchResults,
-      handleDownloadPdfReport,
-      handleParticipantsTopChange,
-      handleParticipantsSortChange,
-      handleParticipantsTimeframeChange,
-      handleParticipantPresetClick,
-      handleParticipantRowToggle,
-      initRelayControls,
-      initThemeControls,
-      setDataAvailabilityState,
-      startRelaySession,
-      stopRelaySession,
-      searchController,
-      savedViewsController,
-      getDataAvailable,
-      refreshChatSelector,
-      updateStatus: appState.updateStatus,
-    },
-    deps: {
-      updateStatus: appState.updateStatus,
-      applyCustomRange,
-      updateWeekdayState: appState.updateWeekdayState,
-      ensureWeekdayDayFilters,
-      rerenderWeekdayFromState,
-      ensureWeekdayHourFilters,
-      updateHourlyState: appState.updateHourlyState,
-      getHourlyState: appState.getHourlyState,
-      ensureDayFilters,
-      syncHourlyControlsWithState,
-      rerenderHourlyFromState,
-    },
+    handlers: runtimeHandlers,
+    deps: runtimeDeps,
     relayServiceName: RELAY_SERVICE_NAME,
     statusConfig: {
       setStatusCallback: appState.setStatusCallback,
@@ -280,10 +158,10 @@ bootstrapAppShellRuntime(
       steps: ONBOARDING_STEPS,
     },
     keyboardDeps: {
-      syncRelayChats,
-      isLogDrawerOpen,
-      closeLogDrawer,
-      openLogDrawer,
+      syncRelayChats: compositionAssembly.syncRelayChats,
+      isLogDrawerOpen: compositionAssembly.isLogDrawerOpen,
+      closeLogDrawer: compositionAssembly.closeLogDrawer,
+      openLogDrawer: compositionAssembly.openLogDrawer,
     },
   }),
 );

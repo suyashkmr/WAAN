@@ -1,6 +1,6 @@
 # Relay Troubleshooting
 
-This runbook covers common WAAN relay issues for the ChatScope live sync flow.
+This runbook covers common WAAN relay issues for the WAAN live sync flow.
 
 Before release tagging, run: `docs/release-smoke-checklist.md`.
 For relay module boundaries, see: `docs/relay-architecture.md`.
@@ -75,8 +75,8 @@ Synced 0 chats via primary in 182ms (meta persist 0ms).
 ```
 
 Action:
-1. Verify account actually has visible chats in linked ChatScope Web.
-2. Confirm auth succeeded (`ChatScope relay is ready.` and account shown in UI).
+1. Verify account actually has visible chats in linked WhatsApp Web.
+2. Confirm auth succeeded (`WAAN relay is ready.` and account shown in UI).
 3. Trigger a manual resync.
 4. If persistent, capture logs and escalate.
 

@@ -123,7 +123,7 @@ describe("compositionAssembly contracts", () => {
         formatHourLabel: vi.fn(hour => String(hour)),
       },
       constants: {
-        brandName: "ChatScope",
+        brandName: "WAAN",
         apiBase: "http://127.0.0.1:3334",
       },
       wiring: {

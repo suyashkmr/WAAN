@@ -26,44 +26,6 @@ function syncProxyAttributesFromLegacy(legacyButton, proxyButton) {
   });
 }
 
-function attachImmediateProxySyncHooks(legacyButton, syncFromLegacy) {
-  if (!legacyButton || typeof syncFromLegacy !== "function") return;
-  const nativeSetAttribute = legacyButton.setAttribute.bind(legacyButton);
-  const nativeRemoveAttribute = legacyButton.removeAttribute.bind(legacyButton);
-  const mirrored = new Set([
-    "disabled",
-    "title",
-    "aria-label",
-    "aria-pressed",
-    "aria-expanded",
-    "aria-describedby",
-    "aria-controls",
-  ]);
-
-  legacyButton.setAttribute = (name, value) => {
-    nativeSetAttribute(name, value);
-    if (mirrored.has(String(name))) syncFromLegacy();
-  };
-  legacyButton.removeAttribute = name => {
-    nativeRemoveAttribute(name);
-    if (mirrored.has(String(name))) syncFromLegacy();
-  };
-}
-
-function attachImmediateBannerStatusSyncHooks(legacyBanner, syncStatusToProxy) {
-  if (!legacyBanner || typeof syncStatusToProxy !== "function") return;
-  const nativeSetAttribute = legacyBanner.setAttribute.bind(legacyBanner);
-  const nativeRemoveAttribute = legacyBanner.removeAttribute.bind(legacyBanner);
-  legacyBanner.setAttribute = (name, value) => {
-    nativeSetAttribute(name, value);
-    if (String(name) === "data-status") syncStatusToProxy();
-  };
-  legacyBanner.removeAttribute = name => {
-    nativeRemoveAttribute(name);
-    if (String(name) === "data-status") syncStatusToProxy();
-  };
-}
-
 function getRelayButtonVariant(button) {
   if (!button) return "default";
   if (button.classList.contains("danger")) return "danger";
@@ -110,7 +72,6 @@ function migrateButtonIdsToShoelaceProxy({
       }
       syncProxyAttributesFromLegacy(button, slButton);
     };
-    attachImmediateProxySyncHooks(button, syncFromLegacy);
     syncFromLegacy();
 
     if (typeof MutationObserver !== "undefined") {
@@ -215,7 +176,6 @@ export function migrateRelayStatusBannerToShoelace({
     else slCard.setAttribute("data-status", status);
   };
   syncStatusToProxy();
-  attachImmediateBannerStatusSyncHooks(banner, syncStatusToProxy);
   if (typeof MutationObserver !== "undefined") {
     const observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {

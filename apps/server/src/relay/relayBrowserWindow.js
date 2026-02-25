@@ -20,7 +20,7 @@ async function openRelayBrowserWindow({ client, headless }) {
     throw new Error("Relay is running in headless mode. Set WAAN_RELAY_HEADLESS=false to enable the browser UI.");
   }
   if (!client || !client.pupBrowser || typeof client.pupBrowser.process !== "function") {
-    throw new Error("ChatScope browser not available yet.");
+    throw new Error("WAAN browser not available yet.");
   }
   const browserProcess = client.pupBrowser.process();
   if (!browserProcess) {
@@ -30,7 +30,7 @@ async function openRelayBrowserWindow({ client, headless }) {
     browserProcess.spawnfile ||
     (Array.isArray(browserProcess.spawnargs) ? browserProcess.spawnargs[0] : null);
   if (!executable) {
-    throw new Error("Unable to resolve ChatScope browser executable.");
+    throw new Error("Unable to resolve WAAN browser executable.");
   }
 
   if (process.platform === "darwin") {
@@ -55,7 +55,7 @@ async function openRelayBrowserWindow({ client, headless }) {
     return;
   }
 
-  throw new Error("Showing the ChatScope browser is not supported on this platform.");
+  throw new Error("Showing the WAAN browser is not supported on this platform.");
 }
 
 module.exports = {

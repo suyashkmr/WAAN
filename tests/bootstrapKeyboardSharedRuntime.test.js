@@ -33,7 +33,7 @@ function makeBootstrapDeps(overrides = {}) {
     getDataAvailable: vi.fn(() => true),
     refreshChatSelector: vi.fn(),
     updateStatus: vi.fn(),
-    relayServiceName: "ChatScope Relay",
+    relayServiceName: "WAAN Relay",
     prefersReducedMotion: vi.fn(() => true),
     ...overrides,
   };
@@ -105,7 +105,7 @@ describe("bootstrap controller", () => {
     expect(deps.savedViewsController.setDataAvailability).toHaveBeenCalledWith(true);
     expect(deps.refreshChatSelector).toHaveBeenCalledTimes(1);
     expect(deps.updateStatus).toHaveBeenCalledWith(
-      "Start ChatScope Relay to mirror chat app chats here.",
+      "Start WAAN Relay to mirror chat app chats here.",
       "info",
     );
 

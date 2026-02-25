@@ -60,7 +60,7 @@ async function refreshContactCache({ client, contactCache, logger, log }) {
       }
     });
     if (mapped && typeof log === "function") {
-      log(`Loaded ${mapped} contacts from ChatScope Web.`);
+      log(`Loaded ${mapped} contacts from WhatsApp Web.`);
     }
   } catch (error) {
     logger.warn("Failed to load contacts: %s", error.message);

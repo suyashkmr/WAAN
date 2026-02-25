@@ -13,7 +13,7 @@ describe("export shared pdf html", () => {
       },
       datasetLabel: "Team chat",
       filterDetails: [],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
 
     expect(html).toContain('data-export-mode="print"');
@@ -30,7 +30,7 @@ describe("export shared pdf html", () => {
       },
       datasetLabel: "Team chat",
       filterDetails: [],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
     const midnightHtml = buildPdfDocumentHtml({
       analytics: {},
@@ -39,7 +39,7 @@ describe("export shared pdf html", () => {
       },
       datasetLabel: "Team chat",
       filterDetails: [],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
 
     expect(darkCaseHtml).toContain('data-export-theme="dark"');
@@ -60,7 +60,7 @@ describe("export shared pdf html", () => {
       },
       datasetLabel: "Team chat",
       filterDetails: [],
-      brandName: "ChatScope",
+      brandName: "WAAN",
     });
 
     expect(html).toContain('data-export-theme="light"');

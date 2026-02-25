@@ -17,20 +17,20 @@ function handleAuthFailure(manager, message) {
 }
 
 function handleDisconnect(manager, reason) {
-  manager.log(`ChatScope disconnected: ${reason}`);
+  manager.log(`WAAN disconnected: ${reason}`);
   manager.stop().catch(err => {
     manager.logger.error("Failed to stop relay after disconnect: %s", err.message);
   });
 }
 
 function handleFatalError(manager, error) {
-  manager.logger.error("ChatScope relay error: %s", error.message);
+  manager.logger.error("WAAN relay error: %s", error.message);
   manager.state.lastError = error.message;
   manager.emit("status", manager.getStatus());
 }
 
 async function handleQr(manager, qrCodeLib, qr) {
-  manager.log("ChatScope requests a QR code scan.");
+  manager.log("WAAN requests a QR code scan.");
   try {
     const dataUrl = await renderQrDataUrl(qrCodeLib, qr);
     updateRelayState(manager, {

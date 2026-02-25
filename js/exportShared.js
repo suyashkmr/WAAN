@@ -117,7 +117,7 @@ export function buildSlidesHtml({
     brandName: exportBrand,
     mode: "screen",
   });
-  const title = escapeHtml(`${datasetLabel || "ChatScope conversation report"}`);
+  const title = escapeHtml(`${datasetLabel || "WAAN conversation report"}`);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,7 +139,7 @@ export function buildPdfDocumentHtml({
   brandName,
 }) {
   const exportBrand = brandName || BRAND_NAME;
-  const title = escapeHtml(`${datasetLabel || "ChatScope conversation"} – PDF`);
+  const title = escapeHtml(`${datasetLabel || "WAAN conversation"} – PDF`);
   const styles = buildExportDeckCss(theme, { mode: "print" });
   const scheme = resolveExportThemeColorScheme(theme);
   const deckMarkup = buildExportDeckMarkup({

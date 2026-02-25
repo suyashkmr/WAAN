@@ -140,7 +140,7 @@ describe("relayControls", () => {
       { method: "POST" },
     );
     expect(helpers.fetchJson).toHaveBeenCalledWith("http://127.0.0.1:4546/relay/status");
-    expect(helpers.updateStatus).toHaveBeenCalledWith("Starting ChatScope Relay…", "info");
+    expect(helpers.updateStatus).toHaveBeenCalledWith("Starting WAAN Relay…", "info");
     expect(electronAPI.setRelayAutostart).toHaveBeenCalledWith(true);
   });
 
@@ -156,7 +156,7 @@ describe("relayControls", () => {
 
     expect(result).toBeNull();
     expect(helpers.updateStatus).toHaveBeenCalledWith(
-      "ChatScope Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
+      "WAAN Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
       "warning",
     );
     expect(helpers.setRemoteChatList).toHaveBeenCalledWith([]);
@@ -353,7 +353,7 @@ describe("relayControls", () => {
     expect(helpers.setDashboardLoadingState).toHaveBeenCalledWith(true);
     expect(helpers.setDataAvailabilityState).toHaveBeenCalledWith(false);
     expect(helpers.updateStatus).toHaveBeenCalledWith(
-      "ChatScope Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
+      "WAAN Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
       "warning",
     );
     errorSpy.mockRestore();

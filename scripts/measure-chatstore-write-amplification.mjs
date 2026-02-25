@@ -70,7 +70,7 @@ async function runBenchmark() {
       expectedBeforeWrites: iterations => iterations,
     },
     {
-      name: "appendMessage (default blocking path)",
+      name: "appendMessage (default batched metadata path)",
       iterations: 400,
       task: (store, index) =>
         store.appendMessage(
@@ -82,6 +82,23 @@ async function runBenchmark() {
             message: `message ${index}`,
           },
           { name: "Bench Chat" },
+        ),
+      expectedBeforeWrites: iterations => iterations,
+    },
+    {
+      name: "appendMessage (forced immediate metadata persist)",
+      iterations: 400,
+      task: (store, index) =>
+        store.appendMessage(
+          "bench-chat@c.us",
+          {
+            id: `m-immediate-${index}`,
+            timestamp: new Date(1_700_500_000_000 + index * 1000).toISOString(),
+            sender: "Bench",
+            message: `message immediate ${index}`,
+          },
+          { name: "Bench Chat" },
+          { waitForPersist: true },
         ),
       expectedBeforeWrites: iterations => iterations,
     },

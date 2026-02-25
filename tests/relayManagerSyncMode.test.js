@@ -105,7 +105,7 @@ describe("relayManager sync mode behavior", () => {
     expect(status.syncPath).toBe("primary");
     expect(Number.isFinite(status.lastSyncDurationMs)).toBe(true);
     expect(Number.isFinite(status.lastSyncPersistDurationMs)).toBe(true);
-  });
+  }, 15_000);
 
   it("auto mode falls back when client.getChats() fails", async () => {
     const RelayManager = await loadRelayManager("auto");

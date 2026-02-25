@@ -17,6 +17,7 @@ function createLogger() {
 describe("chatStore metadata persistence", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("coalesces rapid metadata updates into a single chats.json write", async () => {
@@ -33,6 +34,57 @@ describe("chatStore metadata persistence", () => {
 
     expect(persistSpy).toHaveBeenCalledTimes(1);
     expect(store.listChats()).toHaveLength(3);
+    await fs.remove(storageDir);
+  });
+
+  it("batches appendMessage metadata persistence by default", async () => {
+    const storageDir = await fs.mkdtemp(path.join(os.tmpdir(), "waan-chat-store-"));
+    const store = new ChatStore(storageDir, createLogger());
+    store.metadataPersistDelayMs = 60_000;
+    const persistSpy = vi.spyOn(store, "persistMetadata");
+
+    await store.appendMessage("chat-a@c.us", {
+      id: "m-1",
+      timestamp: new Date(1_700_000_000_000).toISOString(),
+      sender: "A",
+      message: "hello",
+    });
+    await store.appendMessage("chat-a@c.us", {
+      id: "m-2",
+      timestamp: new Date(1_700_000_001_000).toISOString(),
+      sender: "B",
+      message: "world",
+    });
+
+    expect(persistSpy).toHaveBeenCalledTimes(0);
+    expect(store.metadataDirty).toBe(true);
+
+    await store.flushMetadata();
+    expect(persistSpy).toHaveBeenCalledTimes(1);
+    expect(store.metadataDirty).toBe(false);
+    await fs.remove(storageDir);
+  });
+
+  it("supports immediate metadata persistence for appendMessage when requested", async () => {
+    const storageDir = await fs.mkdtemp(path.join(os.tmpdir(), "waan-chat-store-"));
+    const store = new ChatStore(storageDir, createLogger());
+    store.metadataPersistDelayMs = 60_000;
+    const persistSpy = vi.spyOn(store, "persistMetadata");
+
+    await store.appendMessage(
+      "chat-a@c.us",
+      {
+        id: "m-1",
+        timestamp: new Date(1_700_000_000_000).toISOString(),
+        sender: "A",
+        message: "hello",
+      },
+      {},
+      { waitForPersist: true },
+    );
+
+    expect(persistSpy).toHaveBeenCalledTimes(1);
+    expect(store.metadataDirty).toBe(false);
     await fs.remove(storageDir);
   });
 
@@ -60,6 +112,36 @@ describe("chatStore metadata persistence", () => {
 
     await expect(store.upsertChatMeta("chat-a@c.us", { name: "Chat A" })).rejects.toThrow("disk full");
     expect(persistSpy).toHaveBeenCalledTimes(1);
+    await fs.remove(storageDir);
+  });
+
+  it("retries deferred metadata flush failures without requiring new updates", async () => {
+    vi.useFakeTimers();
+    const storageDir = await fs.mkdtemp(path.join(os.tmpdir(), "waan-chat-store-"));
+    const store = new ChatStore(storageDir, createLogger());
+    store.metadataPersistDelayMs = 10;
+    store.metadataPersistRetryDelayMs = 20;
+    store.metadataPersistRetryMaxDelayMs = 20;
+    store.metadataPersistNextRetryDelayMs = 20;
+
+    const persistSpy = vi
+      .spyOn(store, "persistMetadata")
+      .mockRejectedValueOnce(new Error("transient fs error"))
+      .mockResolvedValue(undefined);
+    const errorListener = vi.fn();
+    store.on("metadata:persist:error", errorListener);
+
+    await store.upsertChatMeta("chat-a@c.us", { name: "Chat A" }, { waitForPersist: false });
+    expect(persistSpy).toHaveBeenCalledTimes(0);
+
+    await vi.advanceTimersByTimeAsync(10);
+    expect(persistSpy).toHaveBeenCalledTimes(1);
+    expect(errorListener).toHaveBeenCalledTimes(1);
+    expect(store.metadataDirty).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(20);
+    expect(persistSpy).toHaveBeenCalledTimes(2);
+    expect(store.metadataDirty).toBe(false);
     await fs.remove(storageDir);
   });
 

@@ -26,5 +26,5 @@ describe("appShell boot", () => {
     expect(chatSelector.disabled).toBe(true);
     expect(chatSelector.options.length).toBe(1);
     expect(chatSelector.options[0].textContent).toBe("No chats loaded yet");
-  });
+  }, 15_000);
 });

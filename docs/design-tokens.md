@@ -1,6 +1,6 @@
-# ChatScope Design Tokens
+# WAAN Design Tokens
 
-The ChatScope desktop dashboard now relies on a lightweight token system so UI layers stay cohesive across phases and themes. These tokens live in `styles.base.css` under the `:root` block, with light and dark overrides via `data-color-scheme`.
+The WAAN desktop dashboard now relies on a lightweight token system so UI layers stay cohesive across phases and themes. These tokens live in `styles.base.css` under the `:root` block, with light and dark overrides via `data-color-scheme`.
 
 ## Color & Surface Tokens
 
@@ -47,6 +47,8 @@ The app respects both system `prefers-reduced-motion` and the in-app toggle. Ena
 ## Tailwind Token Bridge
 
 Tailwind is configured as a thin bridge over CSS variables in `tailwind.config.cjs` so theme switching, high-contrast mode, and reduced-motion mode remain automatic.
+
+Adoption decision (2026-02-25): WAAN keeps Tailwind as a first-class styling layer. Core shell surfaces must retain active token utility usage in `index.html`, enforced by `npm run check:tailwind-adoption` in CI.
 
 ### Semantic Color Utilities
 

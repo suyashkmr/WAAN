@@ -157,3 +157,52 @@ Completed work is archived in git history and was removed from this file for cla
 ## Process Guardrail
 
 - [ ] If a trigger occurs, open a focused refactor task per `docs/engineering-guardrails.md`.
+
+## Next Wave: Excellence Across Core Quality
+
+- [x] Tailwind dead-code decision and cleanup
+  - [x] Decide one direction and document it in `docs/design-tokens.md`:
+    - [x] Remove Tailwind pipeline/linking entirely, or (superseded by adoption decision)
+    - [x] Keep Tailwind and enforce real utility usage in UI modules.
+  - [x] If removing Tailwind: skipped (superseded; adoption path selected).
+  - [x] If keeping Tailwind:
+    - [x] Ensure `styles.tailwind.css` is non-empty and contains actively used classes.
+    - [x] Add a CI check that fails when token utilities are unused.
+  - [x] Run `npm run ci:verify`.
+
+- [x] Relay write-path performance hardening
+  - [x] Refactor metadata persistence in `apps/server/src/store/chatStore.js` so high-frequency append paths batch writes by default.
+  - [x] Validate no regression in relay ingestion behavior from `apps/server/src/relay/relayManager.js`.
+  - [x] Add/expand tests for batched persistence semantics and flush behavior.
+  - [x] Re-run `npm run perf:chatstore` and record before/after numbers in `docs/performance-at-scale.md`.
+  - [x] Run `npm run ci:verify`.
+
+- [x] Shoelace migration reliability pass
+  - [x] Remove in-place DOM method monkey-patching from `js/ui/primitivesMigrations.js` and replace with observer/event-based sync.
+  - [x] Preserve parity for disabled/title/aria/text updates on proxy controls.
+  - [x] Add/extend regression coverage in:
+    - [x] `tests/uiControlsShoelaceMigration.test.js`
+    - [x] `tests/uiFieldsShoelaceMigration.test.js`
+  - [x] Run `npm run ci:verify`.
+
+- [x] App-shell orchestration modularity pass
+  - [x] Reduce wiring density in `js/appShell.js` by extracting handler-map/composition assembly wiring into focused modules under `js/appShell/`.
+  - [x] Keep `js/appShell.js` orchestration-only and avoid introducing controller internals there.
+  - [x] Add/update boundary contract tests for extracted assembly layers.
+  - [x] Run `npm run check:module-size`, `npm run check:circular`, and `npm run ci:verify`.
+
+- [x] Product naming and copy consistency
+  - [x] Choose a single canonical user-facing name (`WAAN`) and document the rule.
+  - [x] Normalize naming across:
+    - [x] `index.html`
+    - [x] `README.md`
+    - [x] Release and support docs (`docs/release-smoke-checklist.md`, relevant `docs/release-notes/*`).
+  - [x] Perform a final copy sweep for UI labels, onboarding, FAQ, and footer.
+
+- [x] Add excellence gates to release process
+  - [x] Extend `docs/release-smoke-checklist.md` with explicit checks for:
+    - [x] Performance budgets (search worker and chatstore benchmarks).
+    - [x] Accessibility smoke (`tests/visual/accessibility.smoke.spec.js`).
+    - [x] Visual regression status (`npm run test:visual`).
+    - [x] Naming/copy consistency verification.
+  - [x] Add owner + frequency for each gate (per-release vs milestone).

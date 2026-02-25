@@ -54,16 +54,20 @@ npm run perf:searchworker
 
 ## ChatStore Metadata Write Amplification (Measured)
 
-Run captured on February 24, 2026 (`generatedAt=2026-02-24T03:44:23.950Z`):
+Run captured on February 25, 2026 (`generatedAt=2026-02-25T14:27:39.954Z`):
 
 | Scenario | Iterations | Before writes | After writes | Reduction | Duration (ms) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `upsertChatMeta` single-update path | 1000 | 1000 | 1 | 99.9% | 13 |
-| `appendMessage` incremental sync path | 400 | 400 | 11 | 97.25% | 101 |
+| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 3329 |
+| `upsertChatMeta` (batched persist) | 1000 | 1000 | 1 | 99.9% | 34 |
+| `appendMessage` (default batched metadata path) | 400 | 400 | 14 | 96.5% | 523 |
+| `appendMessage` (forced immediate metadata persist) | 400 | 400 | 400 | 0% | 746 |
+| `upsertChatMeta` single-chat (batched incremental path) | 400 | 400 | 1 | 99.75% | 2 |
 
 Interpretation:
-- Metadata writes are now coalesced instead of one-write-per-update.
-- Incremental message append path still emits occasional flushes during long bursts (timer-window boundary), but remains substantially lower than pre-batching behavior.
+- Blocking metadata persistence is the primary write amplification path and should be avoided in high-frequency loops.
+- Default `appendMessage` now batches metadata writes and reduces metadata persistence events by ~96.5% versus immediate-per-message persistence.
+- Entry-file writes (`saveEntries`) still dominate append-loop wall time, so metadata batching mainly protects write amplification and fs churn rather than total append latency.
 
 ## Search Worker Indexed Query Benchmark (Measured)
 

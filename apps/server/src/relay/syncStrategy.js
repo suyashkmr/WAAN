@@ -48,7 +48,7 @@ async function fetchChatsWithStrategy({
       }
     }
   } catch {
-    const details = formatErrorDetails(primaryError, "ChatScope getChats failed");
+    const details = formatErrorDetails(primaryError, "WAAN getChats failed");
     if (!nextLoggedGetChatsFallback) {
       logger.info("client.getChats() unavailable; using Store.Chat fallback sync.");
       nextLoggedGetChatsFallback = true;

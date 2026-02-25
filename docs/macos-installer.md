@@ -76,7 +76,7 @@ You can override local host/ports when launching:
 ## Troubleshooting
 
 - **App opens but relay is disconnected**: use **Connect** in the app and scan
-  the QR code from ChatScope linked devices.
+  the QR code from WAAN linked devices.
 - **No QR shown**: remove `~/Library/Application Support/WAAN/relay-session`
   and relaunch WAAN.
 - **Port already in use**: set custom `WAAN_CLIENT_PORT`, `WAAN_API_PORT`, and

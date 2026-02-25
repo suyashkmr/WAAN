@@ -49,7 +49,7 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
   async function handleClearStorageClick() {
     if (typeof window !== "undefined" && window.confirm) {
       const confirmed = window.confirm(
-        "Clear all cached ChatScope chats on this machine? You'll need to refresh to download them again.",
+        "Clear all cached WAAN chats on this machine? You'll need to refresh to download them again.",
       );
       if (!confirmed) return;
     }
