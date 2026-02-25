@@ -1,5 +1,5 @@
 .app-panel-shell {
-    border-radius: var(--shape-large);
+    border-radius: calc(var(--shape-medium) + 6px);
 }
 
 .app-panel-header {
@@ -17,28 +17,57 @@
     flex-wrap: wrap;
 }
 
+.app-story-lane {
+    position: relative;
+}
+
+.app-story-panel {
+    position: relative;
+}
+
+.app-story-panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.app-signal-stack {
+    gap: 0.45rem;
+}
+
+.app-status-copy-stack {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.app-signal-strip {
+    margin-top: 0.3rem;
+    padding-top: 0.2rem;
+    border-top: 1px solid color-mix(in srgb, var(--edge-subtle) 70%, transparent);
+}
+
+.app-action-dock {
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.app-step-lane {
+    margin-top: 0.15rem;
+}
+
 .app-pulse-bar {
     margin-bottom: 0.5rem;
-    border-radius: var(--shape-large);
-    border: 1px solid color-mix(in srgb, var(--border-strong) 78%, var(--glass-border));
+    border-radius: calc(var(--shape-medium) + 6px);
+    border: 1px solid color-mix(in srgb, var(--border-strong) 88%, var(--glass-border));
     background:
-        linear-gradient(148deg, color-mix(in srgb, var(--bg-raised) 84%, transparent) 0%, color-mix(in srgb, var(--bg-glass) 86%, transparent) 100%);
-    box-shadow: var(--shadow-soft);
+        radial-gradient(120% 140% at 12% -18%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 58%),
+        linear-gradient(148deg, color-mix(in srgb, var(--bg-raised) 88%, transparent) 0%, color-mix(in srgb, var(--bg-glass) 88%, transparent) 100%);
+    box-shadow: var(--shadow-card), inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 72%, transparent);
     backdrop-filter: blur(var(--glass-blur));
 }
 
 .app-pulse-bar .toolbar-group.primary {
     position: relative;
-}
-
-.app-pulse-bar .toolbar-group.primary::after {
-    content: "";
-    position: absolute;
-    right: -0.5rem;
-    top: 0.2rem;
-    bottom: 0.2rem;
-    width: 1px;
-    background: color-mix(in srgb, var(--border-subtle) 90%, transparent);
 }
 
 .app-pulse-bar .toolbar-group.secondary {
@@ -92,10 +121,4 @@
     align-items: center;
     gap: var(--section-header-title-gap);
     text-wrap: balance;
-}
-
-@media (max-width: 860px) {
-    .app-pulse-bar .toolbar-group.primary::after {
-        display: none;
-    }
 }

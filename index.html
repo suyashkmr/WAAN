@@ -22,7 +22,7 @@
 
     <header class="hero-shell" id="hero-panel" data-nav-target="hero">
         <div class="hero-layout">
-            <div class="hero-blurb">
+            <div class="hero-blurb app-story-lane" data-story-lane="intro">
                 <div class="hero-brand">
                     <div class="hero-logo">
                         <img src="tpg.png" alt="ChatScope logo" class="brand-mark" loading="eager" fetchpriority="high"
@@ -35,22 +35,24 @@
                             ChatScope keep the highlights ready.</p>
                     </div>
                 </div>
-                <div class="hero-status">
+                <div class="hero-status app-signal-stack">
                     <span class="hero-status-badge" id="hero-status-badge">Not connected</span>
-                    <p class="hero-status-copy" id="hero-status-copy">Open Relay Controls, then press Connect to
-                        begin.</p>
-                    <p class="hero-status-meta" id="hero-status-meta">
-                        <span class="hero-sync-dot" id="hero-sync-dot" data-state="idle" aria-hidden="true"></span>
-                        <span id="hero-status-meta-copy">Awaiting relay.</span>
-                    </p>
-                    <div class="hero-milestones" id="hero-milestones" aria-label="Setup progress milestones">
+                    <div class="app-status-copy-stack">
+                        <p class="hero-status-copy" id="hero-status-copy">Open Relay Controls, then press Connect to
+                            begin.</p>
+                        <p class="hero-status-meta" id="hero-status-meta">
+                            <span class="hero-sync-dot" id="hero-sync-dot" data-state="idle" aria-hidden="true"></span>
+                            <span id="hero-status-meta-copy">Awaiting relay.</span>
+                        </p>
+                    </div>
+                    <div class="hero-milestones app-signal-strip" id="hero-milestones" aria-label="Setup progress milestones">
                         <span class="hero-milestone" data-step="connect" data-state="active">Connect</span>
                         <span class="hero-milestone" data-step="sync" data-state="pending">Sync</span>
                         <span class="hero-milestone" data-step="ready" data-state="pending">Ready</span>
                     </div>
                 </div>
             </div>
-            <section id="relay-live-card" class="card hero-live-card" data-accent="relay">
+            <section id="relay-live-card" class="card hero-live-card app-story-panel" data-accent="relay" data-story-lane="actions">
                 <div class="card-header">
                     <div class="card-title-group">
                         <h2><span class="section-icon" aria-hidden="true">
@@ -69,8 +71,8 @@
                             Cached Chats</button>
                     </div>
                 </div>
-                <div class="card-content">
-                    <div class="relay-onboarding" role="list">
+                <div class="card-content app-story-panel-content">
+                    <div class="relay-onboarding app-step-lane" role="list">
                         <div class="relay-step" data-step-id="start" role="listitem">
                             <span class="relay-step-index">1</span>
                             <div>
@@ -96,7 +98,7 @@
                         </div>
                     </div>
                     <p id="relay-connection-status" class="live-status"></p>
-                    <div class="live-actions">
+                    <div class="live-actions app-action-dock">
                         <button type="button" class="ghost-button" id="relay-start">Connect Relay</button>
                         <div class="live-button-group">
                             <button type="button" class="ghost-button" id="relay-stop" disabled>Pause Relay</button>

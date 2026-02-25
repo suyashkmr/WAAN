@@ -28,9 +28,19 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Verified automated checks with full `npm run ci:verify`.
   - [x] Verify light/dark + reduced-motion parity on shell/nav surfaces.
 - [ ] Phase 2: Hero + Relay Story Lane
-  - [ ] Implement story-lane structure and pulse bar wiring in `index.html` + runtime normalization.
-  - [ ] Apply new relay status/action visual language in `styles/components/relay.css`.
-  - [ ] Ensure relay state transitions remain functionally accurate and visually distinct.
+  - [x] Implement story-lane structure and pulse bar wiring in `index.html` + runtime normalization.
+    - [x] Added explicit story-lane/action-lane structural classes in hero + relay markup (`index.html`).
+    - [x] Added runtime normalization hooks for new phase-2 classes (`js/ui/appShellPrimitives.js`).
+    - [x] Applied shared phase-2 shell helpers (`styles/components/app-shell.css`) and story-lane visual affordances (`styles.components.css`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+  - [x] Apply new relay status/action visual language in `styles/components/relay.css`.
+    - [x] Added consistency pass for shared shell/button/control chrome across hero/toolbar/control surfaces (`styles.components.css`, `styles/components/app-shell.css`).
+    - [x] Restyled relay story modules (status banner, onboarding steps, step states) to match unified visual system (`styles/components/relay.css`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+    - [x] Added explicit visual state treatment for `starting`/`offline`/`unknown` relay banner states with reduced-motion parity (`styles/components/relay.css`).
+    - [x] Added transition mapping tests for relay banner + onboarding status lifecycle (`tests/relayStatusView.test.js`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+  - [x] Ensure relay state transitions remain functionally accurate and visually distinct.
   - [ ] Manually verify relay states (`offline -> starting -> waiting -> running`) on desktop + mobile.
 - [ ] Phase 3: Search + Saved Views Command Surface
   - [ ] Refine command-style controls and playbook-card patterns in `styles/components/search-saved.css`.

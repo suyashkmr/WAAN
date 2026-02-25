@@ -34,10 +34,23 @@
     animation: hero-panel-in var(--motion-duration-slow) var(--motion-ease-out) both;
 }
 
+.hero-blurb.app-story-lane::after {
+    content: "";
+    position: absolute;
+    left: var(--hero-blurb-pad);
+    right: var(--hero-blurb-pad);
+    bottom: var(--hero-blurb-pad);
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 55%, transparent), color-mix(in srgb, var(--md-secondary) 55%, transparent), transparent);
+    opacity: 0.62;
+    pointer-events: none;
+}
+
 .hero-brand {
     display: flex;
     gap: clamp(var(--space-2), 1.4vw, var(--space-3));
-    align-items: center;
+    align-items: flex-start;
 }
 
 .hero-logo {
@@ -85,13 +98,14 @@
 }
 
 .hero-brand-copy h1 {
-    font-size: clamp(1.64rem, 2.4vw, 2.28rem);
-    line-height: var(--leading-tight);
+    font-size: clamp(1.52rem, 2.15vw, 2.06rem);
+    line-height: 1.06;
     letter-spacing: var(--tracking-display);
-    max-inline-size: 100%;
-    overflow-wrap: anywhere;
-    word-break: normal;
-    text-wrap: balance;
+    max-inline-size: 15ch;
+    overflow-wrap: normal;
+    word-break: keep-all;
+    hyphens: none;
+    text-wrap: pretty;
 }
 
 .eyebrow {
@@ -126,7 +140,7 @@
 .hero-status {
     display: flex;
     flex-direction: column;
-    gap: var(--hero-status-gap);
+    gap: calc(var(--hero-status-gap) + 0.18rem);
     align-items: flex-start;
     text-align: left;
 }
@@ -139,8 +153,9 @@
     border-radius: var(--shape-full);
     border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
     background: color-mix(in srgb, var(--accent) 12%, var(--card-bg));
-    font-size: var(--font-size-sm);
-    letter-spacing: 0.08em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.065em;
     text-transform: uppercase;
     box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 24%, rgba(4, 8, 20, 0.5));
     transition:
@@ -195,8 +210,8 @@
 .hero-status-copy {
     margin: 0;
     color: var(--muted);
-    font-size: var(--type-body-sm);
-    line-height: var(--leading-relaxed);
+    font-size: 0.78rem;
+    line-height: 1.4;
 }
 
 .hero-status-meta {
@@ -204,10 +219,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--hero-status-meta-gap);
-    font-size: var(--type-label-xs);
-    letter-spacing: 0.04em;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--muted) 92%, var(--text));
+    line-height: 1.2;
 }
 
 .hero-sync-dot {
@@ -230,7 +246,7 @@
 }
 
 .hero-milestones {
-    margin-top: var(--space-1);
+    margin-top: calc(var(--space-1) + 0.16rem);
     display: flex;
     flex-wrap: wrap;
     gap: var(--hero-milestones-gap);
@@ -245,7 +261,8 @@
     border: 1px solid color-mix(in srgb, var(--muted) 34%, transparent);
     background: color-mix(in srgb, var(--muted) 10%, transparent);
     color: color-mix(in srgb, var(--muted) 86%, var(--text));
-    font-size: var(--type-label-xs);
+    font-size: 0.72rem;
+    font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     line-height: 1;
@@ -356,6 +373,19 @@
     justify-content: space-between;
     animation: hero-panel-in var(--motion-duration-slow) var(--motion-ease-out) both;
     animation-delay: var(--motion-delay-hero);
+}
+
+.hero-live-card.app-story-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 72%, transparent), color-mix(in srgb, var(--md-secondary) 68%, transparent));
+    opacity: 0.75;
+    pointer-events: none;
 }
 
 .hero-live-card .card-content {
@@ -500,35 +530,54 @@
 }
 
 .actions-toolbar {
+    --toolbar-control-height: 2.56rem;
+    --toolbar-control-radius: var(--shape-full);
     margin-bottom: 0.5rem;
     padding: 0.75rem 1.2rem;
-    border-radius: var(--shape-large);
-    background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
-    border: 1px solid var(--edge-subtle);
-    box-shadow: var(--shadow-soft);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    border-radius: calc(var(--shape-medium) + 6px);
+    background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+    border: 1px solid color-mix(in srgb, var(--edge-subtle) 90%, transparent);
+    box-shadow: var(--shadow-card);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.95rem;
+    row-gap: 0.7rem;
     align-items: center;
 }
 
 .actions-toolbar .toolbar-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.55rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .actions-toolbar .toolbar-group.secondary {
-    margin-left: auto;
-    display: flex;
+    margin-left: 0;
+    justify-content: flex-end;
+    gap: 0.62rem;
+}
+
+.actions-toolbar .ghost-button {
+    min-height: var(--toolbar-control-height);
+    border-radius: var(--toolbar-control-radius);
+    padding: 0 1.08rem;
+    display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: center;
+    line-height: 1;
+}
+
+.actions-toolbar .ghost-button.small {
+    min-height: calc(var(--toolbar-control-height) - 0.06rem);
+    font-size: 0.81rem;
+    padding: 0 0.94rem;
 }
 
 .a11y-controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
+    gap: 0.42rem;
     align-items: center;
 }
 
@@ -544,25 +593,38 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.15rem;
+    min-height: var(--toolbar-control-height);
+    padding: 0.13rem 0.2rem 0.13rem 0.45rem;
     border-radius: var(--shape-full);
     background: color-mix(in srgb, var(--card-bg) 95%, transparent);
     border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
 }
 
+.theme-toggle > span {
+    margin-right: 0.08rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted) 92%, transparent);
+}
+
 .theme-toggle .segmented-option {
     position: relative;
+    display: inline-flex;
+    align-items: center;
 }
 
 .theme-toggle label {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.3rem 0.8rem;
+    min-height: calc(var(--toolbar-control-height) - 0.5rem);
+    padding: 0 0.82rem;
     border-radius: var(--shape-full);
     border: 1px solid transparent;
     cursor: pointer;
-    font-size: 0.78rem;
+    font-size: 0.81rem;
     font-weight: 600;
     color: color-mix(in srgb, var(--muted) 85%, transparent);
     background: transparent;
@@ -595,6 +657,16 @@
     border-radius: 999px;
     display: inline-block;
     margin-left: 0.35rem;
+}
+
+@media (max-width: 1220px) {
+    .actions-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .actions-toolbar .toolbar-group.secondary {
+        justify-content: flex-start;
+    }
 }
 
 .skeleton,
@@ -705,12 +777,12 @@ main > :is(.card, .app-panel-shell).half-span {
 :is(.card, .app-panel-shell) {
     position: relative;
     overflow: hidden;
-    background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
-    border-radius: var(--shape-large);
+    background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+    border-radius: calc(var(--shape-medium) + 6px);
     padding: var(--card-padding);
     margin-bottom: var(--layout-main-gap);
-    border: 1px solid var(--edge-subtle);
-    box-shadow: var(--shadow-card), inset 0 1px 0 var(--edge-highlight);
+    border: 1px solid color-mix(in srgb, var(--edge-subtle) 88%, transparent);
+    box-shadow: var(--shadow-card), inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 82%, transparent);
     background-image: linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
     background-blend-mode: lighten;
     transition:
@@ -955,7 +1027,7 @@ body[data-reduce-motion="true"] .section-nav a {
 
 .card-subtitle {
     margin: var(--space-1) 0 0;
-    color: color-mix(in srgb, var(--muted) 86%, var(--text));
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
     font-size: var(--type-body-sm);
     line-height: var(--leading-relaxed);
     max-width: 62ch;
@@ -1044,17 +1116,17 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 .ghost-button {
     appearance: none;
-    border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
-    border-radius: var(--shape-small);
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    color: color-mix(in srgb, var(--accent) 88%, var(--text));
+    border: 1px solid color-mix(in srgb, var(--edge-strong) 72%, transparent);
+    border-radius: 0.68rem;
+    background: color-mix(in srgb, var(--bg-room) 92%, transparent);
+    color: color-mix(in srgb, var(--text) 90%, var(--muted));
     font-size: 0.85rem;
     font-weight: 600;
     padding: 0.55rem 1.1rem;
     cursor: pointer;
     position: relative;
     isolation: isolate;
-    box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 14%, rgba(8, 9, 16, 0.44));
+    box-shadow: 0 6px 14px rgba(8, 9, 16, 0.28);
     transition:
         background var(--motion-duration-fast) var(--motion-ease-out),
         color var(--motion-duration-fast) var(--motion-ease-out),
@@ -1068,7 +1140,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 84%, white) 0%, var(--accent) 62%, color-mix(in srgb, var(--accent) 86%, #1d1d2e) 100%);
     color: var(--md-on-primary);
     border-color: color-mix(in srgb, var(--accent) 70%, transparent);
-    box-shadow: 0 16px 32px color-mix(in srgb, var(--accent) 22%, rgba(8, 12, 24, 0.5));
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 22%, rgba(8, 12, 24, 0.4));
 }
 
 .ghost-button.primary:hover {
@@ -1077,10 +1149,10 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .ghost-button:hover {
-    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--bg-room));
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     transform: translateY(-1px);
-    box-shadow: 0 14px 28px color-mix(in srgb, var(--accent) 20%, rgba(6, 8, 18, 0.45));
+    box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 18%, rgba(6, 8, 18, 0.36));
 }
 
 .ghost-button:active {
@@ -1237,18 +1309,19 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 .live-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.65rem;
     margin-bottom: 0.75rem;
 }
 
 .live-button-group {
     display: flex;
-    gap: 0.35rem;
+    gap: 0.5rem;
 }
 
 .live-account {
     margin: 0 0 0.5rem;
     font-weight: 600;
+    color: color-mix(in srgb, var(--text) 88%, var(--muted));
 }
 
 .live-help {
@@ -2052,11 +2125,11 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     display: grid;
     gap: 0.75rem;
     padding: 1rem 1.2rem;
-    background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+    background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
     backdrop-filter: blur(18px);
     border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
-    border-radius: var(--shape-large);
-    box-shadow: 0 18px 40px rgba(10, 12, 28, 0.22);
+    border-radius: calc(var(--shape-medium) + 6px);
+    box-shadow: var(--shadow-card);
 }
 
 
@@ -2185,19 +2258,19 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     letter-spacing: 0.08em;
     font-size: 0.78rem;
     font-weight: 600;
-    color: color-mix(in srgb, var(--muted) 80%, transparent);
+    color: color-mix(in srgb, var(--muted) 88%, transparent);
 }
 
 .page-controls select {
     appearance: none;
     border: 1px solid var(--border);
-    border-radius: 0.65rem;
+    border-radius: 0.68rem;
     background: var(--card-bg);
     color: var(--text);
     padding: 0.42rem 2rem 0.42rem 0.8rem;
     font-size: 0.9rem;
     line-height: 1.2;
-    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.14);
     background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
         linear-gradient(135deg, var(--muted) 50%, transparent 50%);
     background-position: calc(100% - 1.1rem) calc(50% - 0.35rem),
@@ -3029,9 +3102,21 @@ footer {
     }
 }
 
+@media (max-width: 1120px) {
+    .hero-brand {
+        flex-direction: column;
+        gap: 0.82rem;
+    }
+
+    .hero-brand-copy h1 {
+        max-inline-size: 18ch;
+    }
+}
+
 @media (max-width: 720px) {
     .hero-brand-copy h1 {
-        font-size: clamp(1.42rem, 5.2vw, 1.86rem);
+        font-size: clamp(1.34rem, 5.1vw, 1.72rem);
+        max-inline-size: 100%;
     }
 
     .subtitle {

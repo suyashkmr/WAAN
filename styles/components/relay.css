@@ -89,10 +89,12 @@
     grid-template-columns: auto 1fr auto;
     gap: var(--relay-banner-gap);
     align-items: center;
-    background: color-mix(in srgb, var(--surface-elevated) 74%, var(--glass-bg));
-    border: 1px solid color-mix(in srgb, var(--edge-strong) 64%, var(--glass-border));
-    border-radius: var(--shape-medium);
-    box-shadow: var(--shadow-card-strong);
+    background:
+        radial-gradient(120% 140% at 12% -18%, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 58%),
+        color-mix(in srgb, var(--surface-elevated) 88%, var(--glass-bg));
+    border: 1px solid color-mix(in srgb, var(--edge-strong) 76%, var(--glass-border));
+    border-radius: calc(var(--shape-medium) + 6px);
+    box-shadow: var(--shadow-card-strong), inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 72%, transparent);
     backdrop-filter: blur(var(--glass-blur));
     position: relative;
     z-index: 1;
@@ -128,9 +130,19 @@
     animation: relayIndicatorPulse 2.6s var(--motion-ease-emphasis) infinite;
 }
 
+.relay-status-banner[data-status="starting"] .relay-banner-indicator {
+    background: color-mix(in srgb, var(--accent-strong) 84%, #fff);
+    animation: relayIndicatorPulse 1.9s var(--motion-ease-emphasis) infinite;
+}
+
 .relay-status-banner[data-status="running"] .relay-banner-indicator::after {
     border-color: color-mix(in srgb, var(--success) 40%, transparent);
     animation: relayIndicatorWave 2.6s var(--motion-ease-emphasis) infinite;
+}
+
+.relay-status-banner[data-status="starting"] .relay-banner-indicator::after {
+    border-color: color-mix(in srgb, var(--accent-strong) 38%, transparent);
+    animation: relayIndicatorWave 1.9s var(--motion-ease-emphasis) infinite;
 }
 
 .relay-status-banner[data-status="waiting_qr"] .relay-banner-indicator {
@@ -141,9 +153,20 @@
     background: var(--danger);
 }
 
+.relay-status-banner[data-status="offline"] .relay-banner-indicator,
+.relay-status-banner[data-status="stopped"] .relay-banner-indicator,
+.relay-status-banner[data-status="unknown"] .relay-banner-indicator {
+    background: color-mix(in srgb, var(--muted) 82%, transparent);
+}
+
 .relay-status-banner[data-status="running"] {
     border-color: color-mix(in srgb, var(--success) 35%, var(--glass-border));
     box-shadow: 0 30px 55px color-mix(in srgb, var(--success) 22%, rgba(5, 7, 16, 0.35));
+}
+
+.relay-status-banner[data-status="starting"] {
+    border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-border));
+    box-shadow: 0 28px 52px color-mix(in srgb, var(--accent) 20%, rgba(5, 7, 16, 0.32));
 }
 
 .relay-status-banner[data-status="waiting_qr"] {
@@ -183,6 +206,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .relay-status-banner[data-status="starting"] .relay-banner-indicator,
+    .relay-status-banner[data-status="starting"] .relay-banner-indicator::after,
     .relay-status-banner[data-status="running"] .relay-banner-indicator,
     .relay-status-banner[data-status="running"] .relay-banner-indicator::after {
         animation: none;
@@ -210,42 +235,62 @@
 .relay-onboarding {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.85rem;
+    gap: 0.95rem;
     margin-bottom: 1rem;
     padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: var(--shape-medium);
-    background: color-mix(in srgb, var(--card-bg) 86%, transparent);
+    border: 1px solid color-mix(in srgb, var(--edge-subtle) 90%, transparent);
+    border-radius: calc(var(--shape-medium) + 2px);
+    background: color-mix(in srgb, var(--surface-elevated) 90%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 72%, transparent);
 }
 
 .relay-step {
     display: flex;
-    gap: 0.65rem;
+    gap: 0.72rem;
     align-items: flex-start;
-    padding: 0.65rem 0.4rem;
-    border-radius: var(--shape-small);
-    border: 1px dashed transparent;
+    min-height: 122px;
+    padding: 0.88rem 0.86rem;
+    border-radius: 0.88rem;
+    border: 1px solid color-mix(in srgb, var(--edge-subtle) 84%, transparent);
+    background: color-mix(in srgb, var(--surface-elevated) 96%, var(--bg-room));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 70%, transparent);
 }
 
 .relay-step[data-state="active"] {
-    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 62%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--surface-elevated));
+    box-shadow: 0 10px 18px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .relay-step[data-state="complete"] {
-    border-color: transparent;
-    opacity: 0.75;
+    border-color: color-mix(in srgb, var(--success) 40%, transparent);
+    background: color-mix(in srgb, var(--success) 10%, var(--surface-elevated));
+    opacity: 0.92;
 }
 
 .relay-step-index {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.06rem;
+    line-height: 1;
     font-weight: 600;
-    background: color-mix(in srgb, var(--accent) 35%, transparent);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    background: color-mix(in srgb, var(--accent) 38%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
+}
+
+.relay-step > div {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: 0.34rem;
 }
 
 .relay-step[data-state="complete"] .relay-step-index {
@@ -256,13 +301,23 @@
 .relay-step-title {
     margin: 0;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
 }
 
 .relay-step-detail {
-    margin: 0.1rem 0 0;
+    margin: 0;
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.84rem;
+    line-height: 1.38;
+}
+
+@media (max-width: 900px) {
+    .relay-step {
+        min-height: 0;
+    }
 }
 
 .relay-log-drawer {
