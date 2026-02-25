@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    --card-accent: #a855f7;
+    --card-accent: var(--accent-secondary);
     --command-control-height: var(--control-height-md);
     --command-control-radius: var(--control-radius-md);
 }
@@ -417,7 +417,7 @@
 }
 
 .search-panel {
-    --card-accent: #0ea5e9;
+    --card-accent: var(--accent-primary);
     display: flex;
     flex-direction: column;
     gap: 1rem;

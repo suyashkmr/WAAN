@@ -3,6 +3,12 @@
     flex-direction: column;
     gap: 1rem;
     --card-accent: var(--accent);
+    --analytics-shell-radius: 1rem;
+    --analytics-shell-border: color-mix(in srgb, var(--border) 88%, transparent);
+    --analytics-shell-bg: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    --analytics-shell-specular: color-mix(in srgb, var(--edge-specular, rgba(255, 255, 255, 0.12)) 24%, transparent);
+    --analytics-shell-shadow: var(--shadow-card);
+    --analytics-shell-shadow-hover: var(--shadow-card-strong);
 }
 
 .highlight-grid {
@@ -17,13 +23,20 @@
 }
 
 .guided-card {
-    border-radius: var(--shape-medium);
-    border: 1px solid var(--border);
+    border-radius: var(--analytics-shell-radius);
+    border: 1px solid var(--analytics-shell-border);
     padding: 0.9rem 1rem;
-    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    background:
+        linear-gradient(180deg, var(--analytics-shell-specular) 0%, transparent 48%),
+        var(--analytics-shell-bg);
+    box-shadow: var(--analytics-shell-shadow);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    transition:
+        transform var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+        border-color var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 .guided-card .cta-link {
@@ -46,7 +59,7 @@
 
 .highlight-card {
     position: relative;
-    border-radius: 1rem;
+    border-radius: var(--analytics-shell-radius);
     padding: 1.25rem 1.2rem 1.15rem;
     display: flex;
     flex-direction: column;
@@ -57,20 +70,36 @@
         color-mix(in srgb, var(--highlight-accent, var(--accent)) 30%, transparent) 0%,
         rgba(15, 23, 42, 0.72) 65%);
     border: 1px solid color-mix(in srgb, var(--highlight-accent, var(--accent)) 28%, var(--border));
-    box-shadow: var(--shadow-card-deep);
+    box-shadow: var(--analytics-shell-shadow);
     overflow: hidden;
+    transition:
+        transform var(--motion-duration-fast) var(--motion-ease-out),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-out),
+        border-color var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+:is(.guided-card, .highlight-card):hover {
+    transform: translateY(-2px);
+    box-shadow: var(--analytics-shell-shadow-hover);
+    border-color: color-mix(in srgb, var(--highlight-accent, var(--card-accent, var(--accent))) 42%, var(--border));
+}
+
+:is(.guided-card, .highlight-card):focus-within {
+    box-shadow:
+        var(--control-focus-ring, 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)),
+        var(--analytics-shell-shadow-hover);
 }
 
 .highlight-card[data-accent="growth"] {
-    --highlight-accent: #7d8aff;
+    --highlight-accent: var(--accent-secondary);
 }
 
 .highlight-card[data-accent="engagement"] {
-    --highlight-accent: #58d4c3;
+    --highlight-accent: var(--accent-success);
 }
 
 .highlight-card[data-accent="risk"] {
-    --highlight-accent: #f6c343;
+    --highlight-accent: var(--accent-warning);
 }
 
 .highlight-card .highlight-label {
@@ -141,7 +170,7 @@
 }
 
 .highlight-card.links {
-    --highlight-accent: var(--accent);
+    --highlight-accent: var(--accent-primary);
 }
 
 .highlight-card.activity {
@@ -149,23 +178,23 @@
 }
 
 .highlight-card.contributors {
-    --highlight-accent: #60a5fa;
+    --highlight-accent: var(--accent-primary);
 }
 
 .highlight-card.weekday {
-    --highlight-accent: var(--neutral-tone);
+    --highlight-accent: var(--accent-secondary);
 }
 
 .highlight-card.engagement {
-    --highlight-accent: #f59e0b;
+    --highlight-accent: var(--accent-warning);
 }
 
 .highlight-card.weekday-forecast {
-    --highlight-accent: #f59e0b;
+    --highlight-accent: var(--accent-warning);
 }
 
 .highlight-card.activity-streak {
-    --highlight-accent: #38bdf8;
+    --highlight-accent: var(--accent-primary);
 }
 
 .highlight-card[hidden] {
@@ -238,15 +267,15 @@
 }
 
 #daily-activity {
-    --card-accent: #38bdf8;
+    --card-accent: var(--accent-primary);
 }
 
 #hourly-activity {
-    --card-accent: #60a5fa;
+    --card-accent: var(--accent-primary);
 }
 
 #timeofday-trend {
-    --card-accent: #22d3ee;
+    --card-accent: var(--accent-primary);
 }
 
 #sentiment-overview,
@@ -261,19 +290,29 @@
 }
 
 #weekly-trend {
-    --card-accent: #fbbf24;
+    --card-accent: var(--accent-warning);
 }
 
 #weekday-trend {
-    --card-accent: #f97316;
+    --card-accent: var(--accent-warning);
 }
 
 .message-types {
-    --card-accent: #6366f1;
+    --card-accent: var(--accent-secondary);
 }
 
 .participants {
-    --card-accent: #c084fc;
+    --card-accent: var(--accent-success);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(.guided-card, .highlight-card) {
+        transition: none;
+    }
+
+    :is(.guided-card, .highlight-card):hover {
+        transform: none;
+    }
 }
 
 #hourly-activity .summary-label,

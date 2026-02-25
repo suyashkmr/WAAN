@@ -120,6 +120,11 @@
     margin-left: auto;
 }
 
+:is(.card-header-actions, .app-panel-actions) .ghost-button {
+    min-height: var(--control-height-sm);
+    box-shadow: var(--shadow-soft);
+}
+
 :is(.card-title-group, .app-section-intro) > .card-toggle {
     margin-left: auto;
     align-self: flex-start;

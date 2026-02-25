@@ -201,6 +201,11 @@
     --signal-danger: var(--negative);
     --signal-quiet: var(--neutral-tone);
     --signal-hot: color-mix(in srgb, var(--md-tertiary) 88%, #ffffff);
+    --accent-primary: var(--accent);
+    --accent-secondary: color-mix(in srgb, var(--md-secondary) 66%, var(--accent));
+    --accent-success: var(--positive);
+    --accent-warning: var(--warning);
+    --accent-danger: var(--negative);
 
     --positive: #38d99d;
     --positive-soft: rgba(58, 214, 154, 0.2);

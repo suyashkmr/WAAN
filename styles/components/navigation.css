@@ -9,10 +9,10 @@
     margin: var(--section-nav-shell-margin-top) auto var(--section-nav-shell-margin-bottom);
     padding: var(--section-nav-shell-pad-y) var(--section-nav-shell-pad-x);
     background:
-        linear-gradient(144deg, color-mix(in srgb, var(--bg-raised) 74%, var(--bg-glass)) 0%, color-mix(in srgb, var(--bg-glass) 88%, transparent) 100%);
+        linear-gradient(144deg, color-mix(in srgb, var(--bg-raised) 62%, var(--bg-glass)) 0%, color-mix(in srgb, var(--bg-glass) 82%, transparent) 100%);
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--edge-strong) 58%, var(--glass-border));
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-soft);
     backdrop-filter: blur(var(--glass-blur));
     transition:
         background var(--motion-duration-medium) var(--motion-ease-out),
@@ -37,17 +37,17 @@
     text-transform: uppercase;
     color: var(--text-secondary);
     border-radius: var(--shape-full);
-    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-    background: color-mix(in srgb, var(--bg-room) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
+    background: color-mix(in srgb, var(--bg-room) 66%, transparent);
     white-space: nowrap;
 }
 
 .section-nav a {
     text-decoration: none;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.035em;
     color: var(--text-secondary);
     padding: var(--section-nav-item-pad-y) var(--section-nav-item-pad-x);
     border-radius: 999px;
@@ -63,7 +63,7 @@
 .section-nav a[aria-current="page"] {
     color: color-mix(in srgb, var(--accent) 72%, var(--text-primary));
     background: var(--accent-soft);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 10px 20px color-mix(in srgb, var(--accent) 16%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent), 0 8px 16px color-mix(in srgb, var(--accent) 13%, transparent);
     transform: translateY(-1px);
 }
 
@@ -74,7 +74,7 @@
     outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
     outline-offset: 2px;
     transform: translateY(-1px);
-    box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 18%, transparent);
+    box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .section-nav a:active {

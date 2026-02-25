@@ -102,7 +102,7 @@
     font-size: clamp(1.52rem, 2.15vw, 2.06rem);
     line-height: 1.06;
     letter-spacing: var(--tracking-display);
-    max-inline-size: 15ch;
+    max-inline-size: 18ch;
     overflow-wrap: normal;
     word-break: keep-all;
     hyphens: none;
@@ -540,10 +540,10 @@
     border: 1px solid color-mix(in srgb, var(--edge-subtle) 90%, transparent);
     box-shadow: var(--shadow-card);
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 0.95rem;
+    grid-template-columns: 1fr;
+    column-gap: 0;
     row-gap: 0.7rem;
-    align-items: center;
+    align-items: start;
 }
 
 .actions-toolbar .toolbar-group {
@@ -554,14 +554,19 @@
 }
 
 .actions-toolbar .toolbar-group.primary {
-    flex-wrap: nowrap;
-    white-space: nowrap;
+    flex-wrap: wrap;
+    white-space: normal;
+    justify-content: flex-start;
+    align-content: start;
+    width: 100%;
 }
 
 .actions-toolbar .toolbar-group.secondary {
     margin-left: 0;
     justify-content: flex-end;
     gap: 0.62rem;
+    width: 100%;
+    align-items: center;
 }
 
 .actions-toolbar .ghost-button {
@@ -771,17 +776,38 @@
 }
 
 @media (max-width: 1220px) {
-    .actions-toolbar {
-        grid-template-columns: 1fr;
-    }
-
     .actions-toolbar .toolbar-group.primary {
-        flex-wrap: wrap;
-        white-space: normal;
+        order: 1;
     }
 
     .actions-toolbar .toolbar-group.secondary {
+        order: 2;
         justify-content: flex-start;
+        align-items: start;
+    }
+}
+
+@media (max-width: 860px) {
+    .actions-toolbar .toolbar-group.primary .ghost-button,
+    .actions-toolbar .toolbar-group.secondary .ghost-button,
+    .actions-toolbar .toolbar-group.secondary .theme-toggle,
+    .actions-toolbar .toolbar-group.secondary .a11y-controls {
+        width: 100%;
+    }
+
+    .actions-toolbar .toolbar-group.secondary .theme-toggle {
+        justify-content: space-between;
+        flex-wrap: wrap;
+        row-gap: 0.28rem;
+    }
+
+    .actions-toolbar .toolbar-group.secondary .theme-toggle > span {
+        flex: 1 1 100%;
+        margin-right: 0;
+    }
+
+    .actions-toolbar .toolbar-group.secondary .a11y-controls .ghost-button {
+        flex: 1 1 0;
     }
 }
 
@@ -1018,20 +1044,20 @@ main > :is(.card, .app-panel-shell).half-span {
     outline-offset: 2px;
 }
 
-.card[data-accent="relay"] { --section-accent: #5baecc; }
-.card[data-accent="highlights"] { --section-accent: #e1b56d; }
-.card[data-accent="participants"] { --section-accent: #58b797; }
-.card[data-accent="hourly"] { --section-accent: #6f98cf; }
-.card[data-accent="daily"] { --section-accent: #d88aa9; }
-.card[data-accent="weekly"] { --section-accent: #9b86c7; }
-.card[data-accent="weekday"] { --section-accent: #4aaab7; }
-.card[data-accent="timeofday"] { --section-accent: #d69a64; }
-.card[data-accent="sentiment"] { --section-accent: #d67f7f; }
-.card[data-accent="message-types"] { --section-accent: #5baecc; }
-.card[data-accent="polls"] { --section-accent: #a183c9; }
-.card[data-accent="saved-views"] { --section-accent: #c784a7; }
-.card[data-accent="search"] { --section-accent: #8796a8; }
-.card[data-accent="faq"] { --section-accent: #d3bd72; }
+.card[data-accent="relay"] { --section-accent: var(--accent-primary); }
+.card[data-accent="highlights"] { --section-accent: var(--accent-secondary); }
+.card[data-accent="participants"] { --section-accent: var(--accent-success); }
+.card[data-accent="hourly"] { --section-accent: var(--accent-primary); }
+.card[data-accent="daily"] { --section-accent: var(--accent-secondary); }
+.card[data-accent="weekly"] { --section-accent: var(--accent-warning); }
+.card[data-accent="weekday"] { --section-accent: var(--accent-primary); }
+.card[data-accent="timeofday"] { --section-accent: var(--accent-warning); }
+.card[data-accent="sentiment"] { --section-accent: var(--accent-danger); }
+.card[data-accent="message-types"] { --section-accent: var(--accent-primary); }
+.card[data-accent="polls"] { --section-accent: var(--accent-secondary); }
+.card[data-accent="saved-views"] { --section-accent: var(--accent-secondary); }
+.card[data-accent="search"] { --section-accent: var(--accent-primary); }
+.card[data-accent="faq"] { --section-accent: var(--accent-warning); }
 
 .card:hover {
     transform: translateY(-3px);
@@ -1370,8 +1396,8 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border: none;
     background: color-mix(in srgb, var(--glass-bg) 70%, transparent);
     color: color-mix(in srgb, var(--text) 75%, var(--muted));
-    width: var(--control-height-sm);
-    height: var(--control-height-sm);
+    width: 2rem;
+    height: 2rem;
     border-radius: var(--control-radius-pill);
     display: inline-flex;
     align-items: center;
@@ -1379,7 +1405,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     cursor: help;
     position: relative;
     padding: 0;
-    margin-right: 0.25rem;
+    margin-right: 0;
     transition:
         color var(--motion-duration-fast) var(--motion-ease-out),
         background var(--motion-duration-fast) var(--motion-ease-out);
@@ -1948,6 +1974,13 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     gap: 1rem;
 }
 
+#message-types .stat {
+    --stat-accent-soft: color-mix(in srgb, var(--stat-accent-color) 11%, color-mix(in srgb, var(--muted) 10%, transparent));
+    background: linear-gradient(154deg, var(--stat-accent-soft) 0%, color-mix(in srgb, var(--muted) 6%, transparent) 86%);
+    border-color: color-mix(in srgb, var(--stat-accent-color) 26%, var(--border));
+    box-shadow: 0 8px 16px rgba(9, 14, 26, 0.11);
+}
+
 #summary {
     scroll-margin-top: 7rem;
 }
@@ -2292,7 +2325,11 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .page-controls .primary-controls {
-    gap: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.9rem 1rem;
+    width: 100%;
 }
 
 .page-controls .page-actions {
@@ -2312,11 +2349,15 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.35rem;
+    flex: 1 1 320px;
+    min-width: 260px;
+    max-width: 560px;
 }
 
 .page-controls .control.dataset-control select {
-    min-width: 220px;
-    max-width: 320px;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
 }
 
 .polls-summary {
@@ -2455,17 +2496,41 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 .page-controls .control.custom-range {
     align-items: flex-start;
+    flex: 999 1 560px;
+    min-width: 0;
 }
 
 .page-controls .custom-range-inputs {
-    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: nowrap;
+    gap: 0.45rem;
+    width: 100%;
 }
 
 .page-controls .custom-range-inputs input[type="date"] {
+    flex: 1 1 170px;
     min-width: 150px;
+}
+
+.page-controls .custom-range-inputs .ghost-button.small {
+    flex: 0 0 auto;
+    min-width: 112px;
+    justify-content: center;
+}
+
+.page-controls .control.period-control {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    flex: 0 1 360px;
+    min-width: 240px;
+    max-width: 420px;
+}
+
+.page-controls .control.period-control select {
+    width: 100%;
+    min-width: 0;
 }
 
 .dataset-empty {
@@ -3252,6 +3317,13 @@ footer {
     }
 }
 
+@media (max-width: 1220px) {
+    .page-controls .control.period-control {
+        flex-basis: 100%;
+        max-width: 320px;
+    }
+}
+
 @media (max-width: 1024px) {
     .table-container.scrollable {
         height: clamp(250px, 42vh, 380px);
@@ -3305,6 +3377,15 @@ footer {
         justify-content: space-between;
     }
 
+    .page-controls .primary-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-controls .control.period-control {
+        max-width: none;
+    }
+
     .hourly-summary {
         flex-direction: column;
     }
@@ -3342,18 +3423,17 @@ footer {
         width: 100%;
     }
 
-    .custom-range-inputs {
-        flex-direction: column;
-        align-items: stretch;
+    .page-controls .custom-range-inputs {
+        grid-template-columns: 1fr;
         gap: 0.35rem;
     }
 
-    .custom-range-inputs .range-separator {
+    .page-controls .custom-range-inputs .range-separator {
         display: none;
     }
 
-    .custom-range-inputs input[type="date"],
-    .custom-range-inputs .ghost-button.small {
+    .page-controls .custom-range-inputs input[type="date"],
+    .page-controls .custom-range-inputs .ghost-button.small {
         width: 100%;
     }
 
