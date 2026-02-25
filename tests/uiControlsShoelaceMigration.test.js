@@ -39,4 +39,37 @@ describe("search/filter/saved/export control shoelace migration", () => {
     document.getElementById("run-search-sl")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(clicks).toBe(1);
   });
+
+  it("preserves DOM action order and mirrors legacy aria/title state", async () => {
+    seedControls();
+    migrateSearchFilterSavedExportControlsToShoelace();
+
+    const orderedProxies = Array.from(document.querySelectorAll("sl-button.ui-button-proxy"))
+      .map(node => node.id);
+    expect(orderedProxies).toEqual([
+      "download-pdf-sl",
+      "run-search-sl",
+      "reset-search-sl",
+      "save-view-sl",
+      "compare-views-sl",
+    ]);
+
+    const legacyRunSearch = document.getElementById("run-search");
+    legacyRunSearch?.setAttribute("aria-pressed", "true");
+    legacyRunSearch?.setAttribute("title", "Run current filters");
+    legacyRunSearch?.setAttribute("aria-label", "Run search");
+    legacyRunSearch?.setAttribute("aria-describedby", "search-note");
+    legacyRunSearch?.setAttribute("disabled", "");
+    legacyRunSearch.textContent = "Search now";
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const proxyRunSearch = document.getElementById("run-search-sl");
+    expect(proxyRunSearch?.getAttribute("aria-pressed")).toBe("true");
+    expect(proxyRunSearch?.getAttribute("title")).toBe("Run current filters");
+    expect(proxyRunSearch?.getAttribute("aria-label")).toBe("Run search");
+    expect(proxyRunSearch?.getAttribute("aria-describedby")).toBe("search-note");
+    expect(proxyRunSearch?.disabled).toBe(true);
+    expect(proxyRunSearch?.textContent).toBe("Search now");
+  });
 });

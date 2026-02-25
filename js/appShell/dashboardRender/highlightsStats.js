@@ -23,7 +23,7 @@ export function createHighlightsStatsController({ elements, deps }) {
       return;
     }
 
-    highlights.forEach(highlight => {
+    highlights.forEach((highlight, index) => {
       const card = document.createElement("div");
       card.className = `highlight-card ${sanitizeText(highlight.type || "")}`;
 
@@ -37,10 +37,28 @@ export function createHighlightsStatsController({ elements, deps }) {
         const tooltipButton = document.createElement("button");
         tooltipButton.type = "button";
         tooltipButton.className = "info-note-button info-note-inline";
+        const tooltipId = `highlight-note-${index}`;
         tooltipButton.setAttribute("aria-label", highlight.tooltip);
+        tooltipButton.setAttribute("aria-describedby", tooltipId);
         tooltipButton.setAttribute("title", highlight.tooltip);
-        tooltipButton.innerHTML =
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>';
+
+        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        icon.setAttribute("viewBox", "0 0 24 24");
+        icon.setAttribute("aria-hidden", "true");
+        const iconPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        iconPath.setAttribute(
+          "d",
+          "M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z",
+        );
+        icon.appendChild(iconPath);
+        tooltipButton.appendChild(icon);
+
+        const tooltipText = document.createElement("span");
+        tooltipText.className = "info-tooltip";
+        tooltipText.id = tooltipId;
+        tooltipText.setAttribute("role", "tooltip");
+        tooltipText.textContent = highlight.tooltip;
+        tooltipButton.appendChild(tooltipText);
         labelRow.appendChild(tooltipButton);
       }
       card.appendChild(labelRow);

@@ -82,9 +82,20 @@
 
 .highlight-label-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 0.35rem;
+    gap: 0.5rem;
+    min-height: 3.4rem;
+}
+
+.highlight-label-row .highlight-label {
+    max-width: min(20ch, 100%);
+    text-wrap: pretty;
+}
+
+.highlight-label-row .info-note-inline {
+    margin-top: 0.06rem;
+    flex: 0 0 auto;
 }
 
 .highlight-headline {
@@ -146,6 +157,10 @@
 }
 
 .highlight-card.engagement {
+    --highlight-accent: #f59e0b;
+}
+
+.highlight-card.weekday-forecast {
     --highlight-accent: #f59e0b;
 }
 

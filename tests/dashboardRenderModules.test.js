@@ -50,6 +50,8 @@ describe("dashboardRender modules", () => {
     expect(cards[0].textContent).toContain("120/day");
     expect(cards[0].textContent).toContain("Morning");
     expect(cards[0].textContent).toContain("Dataset ending Jan 8");
+    const tooltip = cards[0].querySelector(".info-note-inline .info-tooltip");
+    expect(tooltip?.textContent).toContain("How fast messages are coming in");
   });
 
   it("highlightsStats formats sentiment and statistics", () => {

@@ -539,7 +539,7 @@
     border: 1px solid color-mix(in srgb, var(--edge-subtle) 90%, transparent);
     box-shadow: var(--shadow-card);
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     column-gap: 0.95rem;
     row-gap: 0.7rem;
     align-items: center;
@@ -550,6 +550,11 @@
     gap: 0.55rem;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.actions-toolbar .toolbar-group.primary {
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .actions-toolbar .toolbar-group.secondary {
@@ -566,6 +571,7 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
+    white-space: nowrap;
 }
 
 .actions-toolbar .ghost-button.small {
@@ -662,6 +668,11 @@
 @media (max-width: 1220px) {
     .actions-toolbar {
         grid-template-columns: 1fr;
+    }
+
+    .actions-toolbar .toolbar-group.primary {
+        flex-wrap: wrap;
+        white-space: normal;
     }
 
     .actions-toolbar .toolbar-group.secondary {
@@ -1071,7 +1082,7 @@ body[data-reduce-motion="true"] .section-nav a {
     margin-bottom: 0;
 }
 
-.card.collapsed .card-content {
+.card.collapsed .card-content:not(.collapsible) {
     display: none;
 }
 

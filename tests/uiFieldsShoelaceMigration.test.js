@@ -130,4 +130,49 @@ describe("search/saved-view field shoelace migration", () => {
     expect(endProxy?.min).toBe("2026-02-11");
     expect(endProxy?.max).toBe("2026-02-21");
   });
+
+  it("mirrors programmatic disabled/title/aria updates to proxies", async () => {
+    seedFields();
+    migrateSearchSavedViewFieldsToShoelace();
+
+    const legacyKeyword = document.getElementById("search-keyword");
+    legacyKeyword.disabled = true;
+    legacyKeyword.setAttribute("title", "Search by phrase");
+    legacyKeyword.setAttribute("aria-label", "Keyword query");
+
+    const legacyParticipant = document.getElementById("search-participant");
+    legacyParticipant.disabled = true;
+    legacyParticipant.setAttribute("title", "Choose a participant");
+    legacyParticipant.setAttribute("aria-label", "Participant filter");
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const keywordProxy = document.getElementById("search-keyword-sl");
+    const participantProxy = document.getElementById("search-participant-sl");
+    expect(keywordProxy?.disabled).toBe(true);
+    expect(keywordProxy?.getAttribute("title")).toBe("Search by phrase");
+    expect(keywordProxy?.getAttribute("aria-label")).toBe("Keyword query");
+    expect(participantProxy?.disabled).toBe(true);
+    expect(participantProxy?.getAttribute("title")).toBe("Choose a participant");
+    expect(participantProxy?.getAttribute("aria-label")).toBe("Participant filter");
+  });
+
+  it("mirrors selectedIndex-based programmatic updates to select proxies", async () => {
+    seedFields();
+    migrateSearchSavedViewFieldsToShoelace();
+
+    const compareA = document.getElementById("compare-view-a");
+    const a2 = document.createElement("option");
+    a2.value = "v2";
+    a2.textContent = "View 2";
+    compareA.appendChild(a2);
+
+    compareA.selectedIndex = 1;
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const compareAProxy = document.getElementById("compare-view-a-sl");
+    expect(compareA?.value).toBe("v2");
+    expect(compareAProxy?.value).toBe("v2");
+  });
 });

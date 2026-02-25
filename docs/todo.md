@@ -41,11 +41,28 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added transition mapping tests for relay banner + onboarding status lifecycle (`tests/relayStatusView.test.js`).
     - [x] Verified automated checks with full `npm run ci:verify`.
   - [x] Ensure relay state transitions remain functionally accurate and visually distinct.
-  - [ ] Manually verify relay states (`offline -> starting -> waiting -> running`) on desktop + mobile.
+  - [x] Manually verify relay states (`offline -> starting -> waiting -> running`) on desktop + mobile.
 - [ ] Phase 3: Search + Saved Views Command Surface
-  - [ ] Refine command-style controls and playbook-card patterns in `styles/components/search-saved.css`.
-  - [ ] Validate Shoelace proxy parity for programmatic value/state updates.
-  - [ ] Verify search/saved-view keyboard flow, focus order, and tooltip/label parity.
+  - [x] Refine command-style controls and playbook-card patterns in `styles/components/search-saved.css`.
+    - [x] Normalized saved-view and search panels to a shared command-surface control geometry (input/select/button height + radius).
+    - [x] Reworked desktop action grids for saved-view save/manage and compare controls to keep consistent alignment.
+    - [x] Reworked search control grid/action row rhythm for cleaner cross-panel spacing and hierarchy.
+    - [x] Verified automated checks with full `npm run ci:verify`.
+  - [x] Validate Shoelace proxy parity for programmatic value/state updates.
+    - [x] Confirmed proxy sync for programmatic input/select value updates and option list updates.
+    - [x] Added parity coverage for programmatic `disabled/title/aria` updates and `selectedIndex`-driven changes (`tests/uiFieldsShoelaceMigration.test.js`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+  - [x] Verify search/saved-view keyboard flow, focus order, and tooltip/label parity.
+    - [x] Added regression coverage for Shoelace control proxy action order and ARIA/title/disabled mirroring (`tests/uiControlsShoelaceMigration.test.js`).
+    - [x] Added regression coverage for Shoelace field proxy parity on programmatic updates (`tests/uiFieldsShoelaceMigration.test.js`).
+    - [x] Fixed highlight info tooltip rendering for dynamic cards and added DOM assertion coverage (`js/appShell/dashboardRender/highlightsStats.js`, `tests/dashboardRenderModules.test.js`).
+    - [x] Verified automated checks with full `npm run ci:verify`.
+    - [x] Manual keyboard walkthrough complete: tab order, Enter/Space activation, focus-visible treatment, and tooltip visibility in Search + Saved Views flows.
+  - [ ] End-of-phase cross-section consistency sweep (shared with Search + Saved Views):
+    - [ ] Normalize residual control-system drift (native vs Shoelace-proxy focus/disabled/height states).
+    - [ ] Standardize section header composition rhythm (`title + subtitle + info + actions`) where still divergent.
+    - [ ] Harmonize empty-state/callout spacing + type hierarchy across command panels.
+    - [ ] Tune accent/gradient intensity parity between neighboring cards.
 - [ ] Phase 4: Analytics Deep Dive Readability
   - [ ] Finalize hierarchy language in analytics cards/charts/tables.
   - [ ] Ensure dense data views remain readable at 1024/768/390 breakpoints.
