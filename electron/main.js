@@ -183,6 +183,40 @@ function createWindow() {
   const clientUrl =
     process.env.WAAN_CLIENT_URL || `http://${DEFAULT_CLIENT_HOST}:${DEFAULT_CLIENT_PORT}`;
   mainWindow.loadURL(clientUrl);
+  mainWindow.webContents.on("context-menu", (_event, params) => {
+    const template = [];
+    const hasSelection = Boolean(params.selectionText && params.selectionText.trim());
+
+    if (params.isEditable) {
+      template.push(
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectAll" }
+      );
+    } else if (hasSelection) {
+      template.push({ role: "copy" }, { role: "selectAll" });
+    } else {
+      template.push({ role: "selectAll" });
+    }
+
+    if (!app.isPackaged) {
+      template.push(
+        { type: "separator" },
+        {
+          label: "Inspect Element",
+          click: () => {
+            mainWindow?.webContents.inspectElement(params.x, params.y);
+          },
+        }
+      );
+    }
+
+    Menu.buildFromTemplate(template).popup({ window: mainWindow });
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
