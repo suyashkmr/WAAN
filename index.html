@@ -1035,8 +1035,9 @@
                         <p>Open <code>WAAN.app</code> from Finder, then go to System Settings → Privacy &amp;
                             Security and allow the app under Security by clicking <em>Open Anyway</em>.</p>
                         <p>If blocked again, Control-click the app in Finder and choose <em>Open</em> once.</p>
-                        <p>Last resort (Terminal):
-                            <code>xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code>
+                        <p>If macOS asks to move the app to Bin/Trash and no <em>Open Anyway</em> option appears:
+                            confirm you are launching from <code>/Applications/WAAN.app</code>, then run
+                            <code>xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code> and reopen from Finder.
                         </p>
                     </li>
                     <li id="faq-account-safety">

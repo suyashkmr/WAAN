@@ -85,12 +85,6 @@ If macOS immediately prompts to move the app to Bin/Trash and no
    ```
 3. Launch the app again from Finder.
 
-Last resort (Terminal):
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/WAAN.app"
-```
-
 ## Run Electron Locally (Developer)
 
 ```bash
