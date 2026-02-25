@@ -75,6 +75,16 @@ If macOS says `WAAN.app` is damaged or from an unidentified developer:
 3. Under Security, click **Open Anyway**.
 4. If needed, Control-click `WAAN.app` in Finder and choose **Open** once.
 
+If macOS immediately prompts to move the app to Bin/Trash and no
+**Open Anyway** entry appears in Privacy & Security:
+
+1. Confirm you launched from `/Applications/WAAN.app` (not Downloads/Desktop).
+2. Remove quarantine attributes:
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/WAAN.app"
+   ```
+3. Launch the app again from Finder.
+
 Last resort (Terminal):
 
 ```bash
@@ -123,6 +133,11 @@ Release flow:
    `npm run release:cut -- <version|patch|minor|major>`
 2. The script bumps root + Electron versions, commits, tags, and pushes.
 3. GitHub Actions builds signed/notarized `.dmg` + `.zip` and attaches them to the release.
+
+Important:
+
+- Use strict semver tags only (`vX.Y.Z`, for example `v2.1.0`).
+- Avoid short tags like `v2.1`; workflow checks require exact version/tag parity.
 
 ## Optional: Run Live Relay Sync
 
