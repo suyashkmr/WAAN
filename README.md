@@ -78,7 +78,7 @@ If macOS says the app is damaged or from an unidentified developer:
 If macOS asks to move the app to Bin/Trash and you do not see **Open Anyway**:
 
 1. Make sure you launched from `/Applications/WAAN.app`
-2. Run:
+2. Open the "Terminal" app and Run:
    ```bash
    xattr -dr com.apple.quarantine "/Applications/WAAN.app"
    ```
