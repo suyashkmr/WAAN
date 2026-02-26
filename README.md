@@ -37,40 +37,39 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 
 ## Quick Start (Web Dashboard)
 
-### 1. Install dependencies
+### 1. Install stuff once
 
 ```bash
 npm install
 ```
 
-### 2. Start the local dashboard server
+### 2. Start WAAN
 
 ```bash
 npm start
 ```
 
-This serves the app from the repo root at:
+WAAN opens from this address:
 
 - `http://127.0.0.1:4173` (or your machine IP on port `4173`)
 
 ### 3. Open the app
 
-Open the URL in your browser and load chat data from the UI.
+Open that URL in your browser.
 
 ## macOS Desktop App (DMG)
 
-If you installed WAAN from a released `.dmg`:
+If you downloaded `WAAN.dmg`:
 
-Prerequisite:
+Before you start:
 
-- Install Google Chrome or Chromium on the Mac before starting relay sync.
+- Install Google Chrome or Chromium.
 
 1. Open the `.dmg` and drag `WAAN.app` to `Applications`.
 2. Launch `WAAN.app`.
-3. On first launch, use the app menu and in-app controls to connect relay sync
-   (optional) and load chats.
+3. Use the app buttons to connect relay sync and load chats.
 
-The desktop app starts the local dashboard and relay services automatically.
+The desktop app starts the dashboard and relay for you.
 
 ### macOS Gatekeeper Note
 
@@ -100,8 +99,7 @@ npm install
 npm start
 ```
 
-This starts the Electron shell, local static dashboard server, and relay
-backend together.
+This runs desktop WAAN locally (UI + dashboard server + relay).
 
 ## Build macOS Desktop Artifact
 
@@ -110,9 +108,8 @@ cd electron
 npm run dist
 ```
 
-This uses `electron-builder --mac` to create macOS distributables.
-If Apple signing/notary credentials are not set, the build still runs locally
-but skips notarization.
+This builds macOS app files with `electron-builder --mac`.
+If signing/notary secrets are missing, local build still works but is not notarized.
 
 ## Signed + Notarized macOS Releases (GitHub Actions)
 
@@ -141,7 +138,7 @@ Important:
 
 ## Optional: Run Live Relay Sync
 
-If you want live chat sync support, run the relay workspace in a second terminal:
+If you want live sync, open a second terminal and run:
 
 ```bash
 npm start --workspace apps/server
@@ -157,7 +154,7 @@ Relay troubleshooting: `docs/relay-troubleshooting.md`
 
 ## How To Use WAAN
 
-On first run, WAAN shows a guided setup flow in the empty state:
+On first run, just do these 3 steps:
 
 1. Connect relay
 2. Scan QR code
@@ -165,40 +162,42 @@ On first run, WAAN shows a guided setup flow in the empty state:
 
 ### 1. Connect your WhatsApp account
 
-1. For first-time setup, use a secondary WhatsApp account first.
-2. In WAAN, click **Connect** in the relay card.
-3. Scan the QR code from WhatsApp on your phone:
+1. Click **Connect** in WAAN.
+2. On your phone, open WhatsApp:
    *Linked devices* -> *Link a device*.
-4. Wait until the status shows connected.
+3. Scan the QR code.
+4. Wait until WAAN says connected.
+5. Safer first test: use a secondary WhatsApp account first.
 
 ### 2. Sync and select a chat
 
-1. Click **Resync chats** (or **Reload All Chats**) to mirror your latest chat list.
-2. Open **Loaded chats** and choose a chat under *WAAN account*.
-3. WAAN fetches messages and renders analytics automatically.
+1. Click **Resync chats** or **Reload All Chats**.
+2. Open **Loaded chats**.
+3. Pick a chat in *WAAN account*.
+4. WAAN loads messages and shows charts automatically.
 
 ### 3. Explore analytics
 
-- Use range filters to focus on specific periods.
-- Open search to filter messages by keyword, participant, and date.
-- Use participant views and activity panels to inspect behavior by person/time.
+- Change **Time range** to focus on a period.
+- Use **Search** to find words, people, and dates.
+- Open participant/activity panels to see who talks most and when.
 
 ### 4. Save and export results
 
-- Save useful filter/search combinations as saved views.
-- Export outputs from the export controls (CSV/JSON/report formats).
+- Save useful filter combos as **Saved views**.
+- Export with the toolbar buttons (CSV/JSON/reports).
 
 ### 5. Manage relay session
 
-- **Pause Relay** pauses relay activity.
-- **Log Out & Unlink** logs out from the linked account.
-- **Clear Cached Chats** removes locally mirrored relay chat data.
+- **Pause Relay**: stop relay activity.
+- **Log Out & Unlink**: disconnect the linked account.
+- **Clear Cached Chats**: remove mirrored relay chats from this machine.
 
 ### 6. Export diagnostics / report issues
 
-- Open **View Relay Logs** from the toolbar.
-- Click **Export Diagnostics** to download a local JSON diagnostics bundle.
-- Click **Report Issue** to open a prefilled GitHub issue draft with runtime diagnostics and recent relay logs.
+- Open **View Relay Logs** in the toolbar.
+- Click **Export Diagnostics** to download a JSON debug bundle.
+- Click **Report Issue** to open a prefilled GitHub issue with logs.
 
 ## Data Points Explained
 
