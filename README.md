@@ -35,6 +35,18 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 - Supports search, saved views, and multiple export formats.
 - Syncs from a live linked account through `apps/server`.
 
+## Dependencies (Required)
+
+Before running WAAN from Terminal, make sure you have:
+
+- `Node.js` 18 or newer
+- `npm` (comes with Node.js)
+
+For live relay sync, also install one of:
+
+- Google Chrome
+- Chromium
+
 ## Quick Start (Web Dashboard)
 
 Open the **Terminal** app and go to the project root directory:
