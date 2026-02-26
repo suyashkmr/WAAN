@@ -30,7 +30,7 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 ## What It Does
 
 - Loads mirrored chats from a connected WhatsApp account via the relay.
-- Persists loaded chats in the local in-app library for quick switching.
+- Lists mirrored chats from the connected relay account in **Loaded chats**.
 - Computes analytics across time, participants, and message categories.
 - Supports search, saved views, and multiple export formats.
 - Syncs from a live linked account through `apps/server`.
@@ -174,7 +174,7 @@ On first run, WAAN shows a guided setup flow in the empty state:
 ### 2. Sync and select a chat
 
 1. Click **Resync chats** (or **Reload All Chats**) to mirror your latest chat list.
-2. Open **Loaded chats** and choose a chat under *WhatsApp account*.
+2. Open **Loaded chats** and choose a chat under *WAAN account*.
 3. WAAN fetches messages and renders analytics automatically.
 
 ### 3. Explore analytics

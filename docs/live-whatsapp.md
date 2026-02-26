@@ -1,6 +1,6 @@
 # WAAN Live Chat Integration
 
-WAAN reads chats directly from WAAN using
+WAAN reads chats from WhatsApp Web using
 [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). Chat data
 is mirrored through the relay and rendered directly in WAAN's active dataset.
 
@@ -23,9 +23,9 @@ The first run downloads a headless Chromium build for WhatsApp Web and stores th
 ## 2. Link WAAN
 
 1. Open WAAN (either the browser dashboard or `WAAN.app`).
-2. Use the **Connect to WAAN** card:
+2. Use the **Connect WAAN Relay** card:
    - Click **Connect**. The relay generates a QR code.
-   - On your phone open WAAN → *Linked devices* → *Link a device* and scan the QR.
+   - On your phone open WhatsApp → *Linked devices* → *Link a device* and scan the QR.
 3. Once connected, WAAN shows your account name and lists mirrored chats in the
    chat selector (grouped under *WAAN account*).
 
@@ -34,9 +34,9 @@ The first run downloads a headless Chromium build for WhatsApp Web and stores th
 Select any chat from the *WAAN account* group. WAAN fetches recent
 messages (default limit: `5000`) and renders analytics for that conversation.
 
-- Click **Refresh chats** after new conversations arrive.
-- Use **Disconnect** to log out.
-- Use **Clear storage** to remove mirrored chats from local relay storage.
+- Click **Reload All Chats** (or **Resync chats**) after new conversations arrive.
+- Use **Log Out & Unlink** to log out.
+- Use **Clear Cached Chats** to remove mirrored chats from local relay storage.
 
 ### Troubleshooting
 
