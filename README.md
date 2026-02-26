@@ -41,6 +41,7 @@ Before running WAAN from Terminal, make sure you have:
 
 - `Node.js` 18 or newer
 - `npm` (comes with Node.js)
+- Node.js downloads: `https://nodejs.org/en/download`
 
 For live relay sync, also install one of:
 
