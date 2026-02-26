@@ -37,6 +37,12 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 
 ## Quick Start (Web Dashboard)
 
+Open the **Terminal** app and go to the project root directory:
+
+```bash
+cd /path/to/WAAN
+```
+
 ### 1. Install dependencies
 
 ```bash
@@ -85,13 +91,15 @@ If macOS immediately prompts to move the app to Bin/Trash and no
 **Open Anyway** entry appears in Privacy & Security:
 
 1. Confirm you launched from `/Applications/WAAN.app` (not Downloads/Desktop).
-2. Remove quarantine attributes:
+2. Open the **Terminal** app and run:
    ```bash
    xattr -dr com.apple.quarantine "/Applications/WAAN.app"
    ```
 3. Launch the app again from Finder.
 
 ## Run Electron Locally (Developer)
+
+Open the **Terminal** app and run these from the project root (`WAAN/`):
 
 ```bash
 npm install
@@ -104,6 +112,8 @@ This starts the Electron shell, local static dashboard server, and relay
 backend together.
 
 ## Build macOS Desktop Artifact
+
+Open the **Terminal** app, go to the project root, then run:
 
 ```bash
 cd electron
@@ -141,7 +151,8 @@ Important:
 
 ## Optional: Run Live Relay Sync
 
-If you want live chat sync support, run the relay workspace in a second terminal:
+If you want live chat sync support, open a second **Terminal** window in the
+project root (`WAAN/`) and run:
 
 ```bash
 npm start --workspace apps/server
@@ -331,6 +342,8 @@ Use **View Relay Logs** -> **Report Issue** to open a prefilled GitHub issue.
 For deeper triage, attach the JSON created by **Export Diagnostics**.
 
 ## Scripts
+
+Run these from the project root (`WAAN/`) in the **Terminal** app.
 
 - `npm run lint` - lint dashboard + server code
 - `npm run check:module-size` - enforce module-size guardrail limits
