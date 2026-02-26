@@ -1,90 +1,97 @@
 # WAAN
 
-WAAN is a WhatsApp analytics app.
-It mirrors chats through a relay, then shows charts and summaries.
+WAAN is a WhatsApp analytics dashboard. It analyzes mirrored chat
+history and renders insights such as activity trends, participant behavior,
+highlights, message types, sentiment, and system events.
 
-You can use WAAN as:
+WAAN is available as:
 
-- A web app from this repo
-- A macOS desktop app (`.dmg`)
+- A web dashboard served from this repo
+- A macOS Electron desktop app (distributed as `.dmg`)
 
-## Naming Rules
+## Naming Convention
 
-- Product name in UI/docs: `WAAN`
-- Relay service name in UI/docs: `WAAN Relay`
+- Canonical user-facing product name: `WAAN`
+- Canonical relay service name: `WAAN Relay`
+- Do not introduce alternate user-facing brand names in UI/docs unless explicitly noted in release notes.
 
-## Important Risk Notice
+## Important Account Risk Notice
 
-WAAN is not made by WhatsApp or Meta.
-WAAN uses automation around WhatsApp Web.
-That can violate WhatsApp rules and can cause account limits or bans.
+WAAN is not affiliated with, endorsed by, or supported by WhatsApp/Meta.
+WAAN uses automation around WhatsApp Web. Any automation or non-official client
+usage can violate WhatsApp terms and may lead to temporary or permanent account
+restrictions.
 
-Use WAAN at your own risk.
-For first testing, connect a secondary WhatsApp account first.
+Use WAAN at your own risk. For first-time setup/testing, use a secondary
+WhatsApp account before linking a primary account.
 
-Release files are on GitHub Releases (`.dmg` + `.zip` for Apple Silicon).
+Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 
-## What WAAN Does
+## What It Does
 
-- Connects to a WhatsApp account through WAAN Relay
-- Mirrors chats and shows them in **Loaded chats**
-- Builds analytics for time, people, message types, and mood
-- Supports search, saved views, and exports
+- Loads mirrored chats from a connected WhatsApp account via the relay.
+- Lists mirrored chats from the connected relay account in **Loaded chats**.
+- Computes analytics across time, participants, and message categories.
+- Supports search, saved views, and multiple export formats.
+- Syncs from a live linked account through `apps/server`.
 
-## Quick Start (Web)
+## Quick Start (Web Dashboard)
 
-### 1. Install once
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Start WAAN
+### 2. Start the local dashboard server
 
 ```bash
 npm start
 ```
 
-### 3. Open WAAN
+This serves the app from the repo root at:
 
-Open:
+- `http://127.0.0.1:4173` (or your machine IP on port `4173`)
 
-- `http://127.0.0.1:4173`
+### 3. Open the app
 
-## macOS App (DMG)
+Open the URL in your browser and load chat data from the UI.
 
-Before you start:
+## macOS Desktop App (DMG)
 
-- Install Google Chrome or Chromium
+If you installed WAAN from a released `.dmg`:
 
-Install steps:
+Prerequisite:
 
-1. Open the `.dmg`
-2. Drag `WAAN.app` into `Applications`
-3. Open `WAAN.app`
-4. Use in-app buttons to connect relay and load chats
+- Install Google Chrome or Chromium on the Mac before starting relay sync.
 
-The desktop app starts the dashboard server and relay for you.
+1. Open the `.dmg` and drag `WAAN.app` to `Applications`.
+2. Launch `WAAN.app`.
+3. On first launch, use the app menu and in-app controls to connect relay sync
+   (optional) and load chats.
 
-### macOS Gatekeeper Help
+The desktop app starts the local dashboard and relay services automatically.
 
-If macOS says the app is damaged or from an unidentified developer:
+### macOS Gatekeeper Note
 
-1. Open `WAAN.app` from Finder
-2. Go to **System Settings -> Privacy & Security**
-3. Click **Open Anyway**
-4. If needed, Control-click `WAAN.app` and choose **Open**
+If macOS says `WAAN.app` is damaged or from an unidentified developer:
 
-If macOS asks to move the app to Bin/Trash and you do not see **Open Anyway**:
+1. Open `WAAN.app` from Finder.
+2. Go to **System Settings -> Privacy & Security**.
+3. Under Security, click **Open Anyway**.
+4. If needed, Control-click `WAAN.app` in Finder and choose **Open** once.
 
-1. Make sure you launched from `/Applications/WAAN.app`
-2. Open the "Terminal" app and Run:
+If macOS immediately prompts to move the app to Bin/Trash and no
+**Open Anyway** entry appears in Privacy & Security:
+
+1. Confirm you launched from `/Applications/WAAN.app` (not Downloads/Desktop).
+2. Remove quarantine attributes:
    ```bash
    xattr -dr com.apple.quarantine "/Applications/WAAN.app"
    ```
-3. Open the app again
+3. Launch the app again from Finder.
 
-## Run Electron Locally (Dev)
+## Run Electron Locally (Developer)
 
 ```bash
 npm install
@@ -93,268 +100,272 @@ npm install
 npm start
 ```
 
-This runs desktop WAAN locally (Electron shell + dashboard + relay).
+This starts the Electron shell, local static dashboard server, and relay
+backend together.
 
-## Build macOS App Files
+## Build macOS Desktop Artifact
 
 ```bash
 cd electron
 npm run dist
 ```
 
-This runs `electron-builder --mac`.
-If signing/notary secrets are missing, it still builds locally but skips notarization.
+This uses `electron-builder --mac` to create macOS distributables.
+If Apple signing/notary credentials are not set, the build still runs locally
+but skips notarization.
 
-## Signed + Notarized Releases (GitHub Actions)
+## Signed + Notarized macOS Releases (GitHub Actions)
 
-Workflow:
+Tag-based release builds are automated via `.github/workflows/macos-release.yml`.
 
-- `.github/workflows/macos-release.yml`
+Required GitHub repository secrets:
 
-Required repo secrets:
+- `CSC_LINK` - base64 `.p12` signing certificate (or file URL supported by electron-builder)
+- `CSC_KEY_PASSWORD` - password for the signing certificate
+- `APPLE_ID` - Apple developer account email
+- `APPLE_APP_SPECIFIC_PASSWORD` - app-specific password for notarization
+- `APPLE_TEAM_ID` - Apple Developer Team ID
 
-- `CSC_LINK` - base64 `.p12` cert (or supported file URL)
-- `CSC_KEY_PASSWORD` - cert password
-- `APPLE_ID` - Apple account email
-- `APPLE_APP_SPECIFIC_PASSWORD` - app-specific password
-- `APPLE_TEAM_ID` - Apple team ID
+Release flow:
 
-Release steps:
-
-1. Add notes file: `docs/release-notes/vX.Y.Z.md`
-2. Run:
+0. Add curated notes file for the tag at `docs/release-notes/vX.Y.Z.md`.
+1. Cut a release in one command:
    `npm run release:cut -- <version|patch|minor|major>`
-3. Script bumps versions, commits, tags, and pushes
-4. GitHub Actions builds and attaches signed/notarized `.dmg` + `.zip`
+2. The script bumps root + Electron versions, commits, tags, and pushes.
+3. GitHub Actions builds signed/notarized `.dmg` + `.zip` and attaches them to the release.
 
 Important:
 
-- Use exact semver tags like `v2.1.0`
-- Do not use short tags like `v2.1`
+- Use strict semver tags only (`vX.Y.Z`, for example `v2.1.0`).
+- Avoid short tags like `v2.1`; workflow checks require exact version/tag parity.
 
-## Optional: Run Live Relay In Another Terminal
+## Optional: Run Live Relay Sync
+
+If you want live chat sync support, run the relay workspace in a second terminal:
 
 ```bash
 npm start --workspace apps/server
 ```
 
-Default endpoints:
+Default relay endpoints:
 
 - API: `http://127.0.0.1:3334`
-- Relay control/status: `http://127.0.0.1:4546`
+- Relay status/control: `http://127.0.0.1:4546`
 
-More relay docs:
-
-- Setup: `docs/live-whatsapp.md`
-- Troubleshooting: `docs/relay-troubleshooting.md`
+Relay setup details: `docs/live-whatsapp.md`  
+Relay troubleshooting: `docs/relay-troubleshooting.md`
 
 ## How To Use WAAN
 
-First run flow:
+On first run, WAAN shows a guided setup flow in the empty state:
 
 1. Connect relay
 2. Scan QR code
 3. Choose a chat from **Loaded chats**
 
-### 1. Connect WhatsApp
+### 1. Connect your WhatsApp account
 
-1. Click **Connect** in WAAN
-2. On phone: WhatsApp -> *Linked devices* -> *Link a device*
-3. Scan WAAN QR code
-4. Wait for connected status
-5. Safer first test: use a secondary account
+1. For first-time setup, use a secondary WhatsApp account first.
+2. In WAAN, click **Connect** in the relay card.
+3. Scan the QR code from WhatsApp on your phone:
+   *Linked devices* -> *Link a device*.
+4. Wait until the status shows connected.
 
-### 2. Sync and pick a chat
+### 2. Sync and select a chat
 
-1. Click **Resync chats** or **Reload All Chats**
-2. Open **Loaded chats**
-3. Pick a chat in *WAAN account*
-4. WAAN loads data and charts
+1. Click **Resync chats** (or **Reload All Chats**) to mirror your latest chat list.
+2. Open **Loaded chats** and choose a chat under *WAAN account*.
+3. WAAN fetches messages and renders analytics automatically.
 
-### 3. Explore
+### 3. Explore analytics
 
-- Change **Time range**
-- Use **Search** for words, people, and dates
-- Open participant and activity panels
+- Use range filters to focus on specific periods.
+- Open search to filter messages by keyword, participant, and date.
+- Use participant views and activity panels to inspect behavior by person/time.
 
-### 4. Save and export
+### 4. Save and export results
 
-- Save filter/search combos as **Saved views**
-- Use export buttons for CSV/JSON/reports
+- Save useful filter/search combinations as saved views.
+- Export outputs from the export controls (CSV/JSON/report formats).
 
-### 5. Relay controls
+### 5. Manage relay session
 
-- **Pause Relay**: pause relay work
-- **Log Out & Unlink**: disconnect account
-- **Clear Cached Chats**: remove mirrored chats from this machine
+- **Pause Relay** pauses relay activity.
+- **Log Out & Unlink** logs out from the linked account.
+- **Clear Cached Chats** removes locally mirrored relay chat data.
 
-### 6. Logs and issue reports
+### 6. Export diagnostics / report issues
 
-- Open **View Relay Logs**
-- Click **Export Diagnostics** to download JSON diagnostics
-- Click **Report Issue** to open a prefilled GitHub issue
+- Open **View Relay Logs** from the toolbar.
+- Click **Export Diagnostics** to download a local JSON diagnostics bundle.
+- Click **Report Issue** to open a prefilled GitHub issue draft with runtime diagnostics and recent relay logs.
 
-## Data Points (Plain Meaning)
+## Data Points Explained
 
-### Core cards
+### Core summary cards
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Total Messages` | Total user messages in the selected chat/range |
-| `Active Participants` | Number of unique senders |
-| `System Events Logged` | Number of system lines (joins/leaves/changes) |
-| `Date Range` | First and last timestamp in selected data |
+| `Total Messages` | Count of chat messages (`type = message`) in the selected chat/range. |
+| `Active Participants` | Unique senders who posted messages in the selected data. |
+| `System Events Logged` | Count of system lines (`type = system`) such as joins/leaves/changes. |
+| `Date Range` | First and last detected timestamps in the selected data window. |
 
 ### Highlights
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Recent top senders` | Most active senders in recent weeks |
-| `Busiest day` | Day with highest message count |
-| `Busiest weekday` | Weekday with highest message share |
-| `Today/Tomorrow activity outlook` | Simple forecast from recent patterns |
-| `Next Busy Day` | Next likely above-baseline weekday |
+| `Recent top senders` | Most active senders in the most recent weeks of data. |
+| `Busiest day` | Single day with the highest message count. |
+| `Busiest weekday` | Day-of-week with the highest message volume share. |
+| `Today/Tomorrow activity outlook` | Forecast based on recent daily/weekday patterns. |
+| `Next Busy Day` | Predicted next weekday likely to see above-baseline volume. |
 
 ### Participants
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Messages` | Messages sent by that person |
-| `Share` | That person's percent of total messages |
-| `Avg Words` | Average words per message |
-| `Active range` | First seen and last seen dates |
-| `Average length` | Average words/chars per message |
-| `Sentiment` | Average sentiment + pos/neg mix |
-| `Peak hour` | Hour they post most |
-| `Peak weekday` | Weekday they post most |
+| `Messages` | Number of messages sent by that participant. |
+| `Share` | Participant message count as a percentage of total messages. |
+| `Avg Words` | Average words per message for that participant. |
+| `Active range` | First and last seen message date for that participant. |
+| `Average length` | Average words and characters per message. |
+| `Sentiment` | Average sentiment score plus positive/negative mix for that participant. |
+| `Peak hour` | Hour where that participant posted most. |
+| `Peak weekday` | Weekday where that participant posted most. |
 
 ### Activity panels
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Top Hour` | Busiest weekday-hour cell |
-| `Avg per day` | Total messages divided by days |
-| `Avg per week` | Total messages divided by weeks |
-| `Avg of last 3 weeks` | Rolling 3-week average at latest week |
-| `Busiest Weekdays` bars | Count/share by weekday with filters |
-| `Time of Day peak` | Busiest hour in selected time-of-day view |
-| `Focus window share` | Percent inside selected hour window |
+| `Top Hour` | Busiest weekday+hour cell in the hourly heatmap. |
+| `Avg per day` | Total messages divided by number of days in range. |
+| `Avg per week` | Total messages divided by number of calendar weeks in range. |
+| `Avg of last 3 weeks` | Rolling 3-week average ending at the latest week. |
+| `Busiest Weekdays` bars | Message count/share by weekday (with day/hour filters applied). |
+| `Time of Day peak` | Hour with highest volume in the selected time-of-day view. |
+| `Focus window share` | Percent of total messages falling inside selected hour range. |
 
 ### Mood & sentiment
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Positive / Neutral / Negative` | Count in each sentiment bucket |
-| `Average` | Mean sentiment score (`-1` to `+1`) |
-| `Daily trend/calendar` | Day-by-day sentiment with volume context |
-| `Top positive/negative members` | Ranked by average sentiment (min activity required) |
+| `Positive / Neutral / Negative` | Message counts grouped by sentiment class. |
+| `Average` | Mean sentiment score over scored messages (`-1` to `+1`). |
+| `Daily trend/calendar` | Day-level sentiment average and message volume context. |
+| `Top positive/negative members` | Participants ranked by average sentiment score (with minimum activity threshold). |
 
 ### Message mix and system metrics
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Messages with media` | Messages with media |
-| `Messages with links` | Messages containing URLs |
-| `Polls` | Number of poll messages |
-| `Join events` | Member join events |
-| `Members added` | Add/invite events |
-| `Members left` | Leave events |
-| `Members removed` | Removal events |
-| `Settings changes` | System lines for settings changes |
-| `Other system messages` | System lines not in tracked categories |
-| `Join requests` | Join-request style events |
-| `Average characters per message` | Mean chars per message |
-| `Average words per message` | Mean words per message |
+| `Messages with media` | Messages classified as media-bearing. |
+| `Messages with links` | Messages containing URLs. |
+| `Polls` | Poll message count detected in chat history. |
+| `Join events` | Members joining the chat (including multi-member join events). |
+| `Members added` | Add/invite events counted from system messages. |
+| `Members left` | Leave events from system messages. |
+| `Members removed` | Removal events from system messages. |
+| `Settings changes` | System events indicating chat setting changes. |
+| `Other system messages` | System lines not matched to tracked categories. |
+| `Join requests` | Join-request style system events. |
+| `Average characters per message` | Mean message length in characters. |
+| `Average words per message` | Mean message length in words. |
 
 ### Poll highlights
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Total polls` | Total polls found |
-| `Unique poll creators` | Number of unique poll creators |
-| `Poll list` | Recent polls with creator/time/options (when available) |
+| `Total polls` | Total poll messages detected. |
+| `Unique poll creators` | Number of distinct participants who created polls. |
+| `Poll list` | Recent detected polls with creator, timestamp, and options (when available). |
 
 ### Search
 
-| Data point | Plain meaning |
+| Data point | Meaning |
 | --- | --- |
-| `Search results` | Messages matching your filters |
-| `Search summary` | Count + scope of current results |
+| `Search results` | Messages matching keyword, participant, and optional date filters. |
+| `Search summary` | Count and scope of currently matched results. |
 
 ### Counting notes
 
-- `chat lines` = user messages + system lines
-- Most percentages use `Total Messages` as base
-- Sentiment is lightweight and directional (not clinical)
+- `chat lines` includes both user messages and system entries.
+- Most percentages are relative to `Total Messages` (not total chat lines).
+- Sentiment is a lightweight lexicon-based score and should be treated as directional, not clinically precise.
 
 ## FAQ
 
-### Do I need Chrome/Chromium for relay sync?
+### Does WAAN require Chrome or Chromium for relay sync?
 
-Yes.
-WAAN Relay needs local Google Chrome or Chromium on macOS.
+Yes. WAAN relay needs a local browser engine and currently supports installed
+Google Chrome or Chromium on macOS.
 
-If relay fails on a fresh machine, install Chrome/Chromium and relaunch `WAAN.app`.
+If relay fails to start on a fresh machine, install Chrome/Chromium first, then
+relaunch `WAAN.app`.
 
-### Can WAAN get my WhatsApp account restricted?
+### Can WAAN usage get my WhatsApp account restricted?
 
-Yes, it can.
-WAAN uses WhatsApp Web automation and is not an official WhatsApp client.
-WhatsApp/Meta decides enforcement.
+Yes, it can. WAAN uses WhatsApp Web automation and is not an official WhatsApp
+client. Account enforcement decisions are controlled by WhatsApp/Meta and may
+include temporary or permanent restrictions.
 
-Official policies:
+Review official policies:
 
-- WhatsApp Terms: `https://www.whatsapp.com/legal/terms-of-service`
-- WhatsApp Business Terms: `https://www.whatsapp.com/legal/business-terms`
+- WhatsApp Terms of Service: `https://www.whatsapp.com/legal/terms-of-service`
+- WhatsApp Business Terms (if applicable): `https://www.whatsapp.com/legal/business-terms`
 
-Best practice: test with a secondary account first.
+Recommended: test with a secondary account before connecting your primary account.
 
-### What is the privacy model?
+### What is WAAN's privacy model?
 
-WAAN processes chat data locally on your device.
-By default, WAAN does not upload chat content to WAAN-operated servers.
+WAAN processes chat data locally on your device. By default, WAAN does not
+upload your chat content to WAAN-operated servers.
 
-Data leaves your device only if you choose to export/share files or logs.
+Data may leave your device only when you explicitly export/share files or logs.
 
-See full details in `PRIVACY.md`.
+See full privacy details in `PRIVACY.md`.
 
-### How do I report issues fast?
+### How do I report issues quickly with useful diagnostics?
 
-Use **View Relay Logs** -> **Report Issue**.
-For deeper debugging, attach the file from **Export Diagnostics**.
+Use **View Relay Logs** -> **Report Issue** to open a prefilled GitHub issue.
+For deeper triage, attach the JSON created by **Export Diagnostics**.
 
-## Useful Scripts
+## Scripts
 
 - `npm run lint` - lint dashboard + server code
-- `npm run check:module-size` - enforce module size guardrails
-- `npm test` - run tests
+- `npm run check:module-size` - enforce module-size guardrail limits
+- `npm test` - run test suite
 - `npm run verify` - lint + tests
 - `npm run ci:verify` - full local quality gate
-- `npm run perf:stress` - synthetic large-chat stress run
-- `npm run release:cut -- <version|patch|minor|major>` - bump versions, commit, tag, push
+- `npm run perf:stress` - synthetic large-chat stress benchmark
+- `npm run release:cut -- <version|patch|minor|major>` - bump versions, commit, tag, and push release trigger
 
 ## Project Docs
 
 - `docs/feature-map.md` - module ownership and responsibilities
-- `docs/app-shell-architecture.md` - dashboard architecture
-- `docs/release-smoke-checklist.md` - packaged smoke + relay checks
-- `docs/performance-at-scale.md` - large-chat benchmark runbook
-- `docs/engineering-guardrails.md` - PR guardrails for modularity
-- `PRIVACY.md` - privacy notice and data handling
+- `docs/app-shell-architecture.md` - dashboard architecture notes
+- `docs/release-smoke-checklist.md` - packaged smoke checklist / relay checks
+- `docs/performance-at-scale.md` - large-chat benchmark runbook and bottlenecks
+- `docs/engineering-guardrails.md` - PR guardrail triggers for modularity refactors
+- `PRIVACY.md` - privacy notice and data handling model
 
 ## Acknowledgments
 
-WAAN relay features use
-[`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js),
-created and maintained by
+WAAN’s live relay capabilities are built on top of
+[`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js), an
+excellent open-source project created and maintained by
 [PedroSLopez](https://github.com/pedroslopez).
+
+Huge thanks for the thoughtful engineering and sustained open-source work that
+make projects like this possible.
 
 ## Trademark Notice
 
-WhatsApp is a Meta Platforms, Inc. trademark.
-WAAN is independent and not affiliated with or endorsed by Meta/WhatsApp.
+WhatsApp is a trademark of Meta Platforms, Inc. WAAN is an independent project
+and is not affiliated with, endorsed by, sponsored by, or associated with Meta
+or WhatsApp.
 
 ## License
 
-- Code: MIT (`LICENSE`)
-- Extra terms + dependency notices: `NOTICE`
+- Code is licensed under MIT: `LICENSE`
+- Additional terms and dependency notices: `NOTICE`
