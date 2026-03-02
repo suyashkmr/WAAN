@@ -156,7 +156,7 @@ export function initAppShellPrimitives({ documentRef } = {}) {
   const doc = resolveDocument(documentRef);
   if (!doc) return;
 
-  doc.querySelectorAll(".card, sl-card").forEach(shell => {
+  doc.querySelectorAll(".card").forEach(shell => {
     applyClasses(shell, ["app-panel-shell"]);
   });
 

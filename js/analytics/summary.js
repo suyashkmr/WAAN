@@ -145,11 +145,10 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
 
   summaryEl.innerHTML = "";
   cards.forEach(({ title, value, hint }) => {
-    const card = document.createElement("sl-card");
-    card.className = "summary-card summary-card--shoelace";
+    const card = document.createElement("section");
+    card.className = "summary-card summary-card--semantic";
 
     const header = document.createElement("h3");
-    header.setAttribute("slot", "header");
     header.textContent = title;
     card.appendChild(header);
 

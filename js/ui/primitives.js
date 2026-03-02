@@ -7,7 +7,7 @@ function setBooleanAttr(el, key, value) {
   else el.removeAttribute(key);
 }
 
-export function applyShoelaceRuntimeState({
+export function applyUiRuntimeState({
   root = typeof document !== "undefined" ? document.documentElement : null,
   body = typeof document !== "undefined" ? document.body : null,
 } = {}) {
@@ -19,15 +19,15 @@ export function applyShoelaceRuntimeState({
   root.dataset.slMotion = body?.dataset?.reduceMotion === "true" ? "reduced" : "standard";
 }
 
-export function initShoelacePrimitives({
+export function initUiPrimitives({
   root = typeof document !== "undefined" ? document.documentElement : null,
   body = typeof document !== "undefined" ? document.body : null,
   MutationObserverImpl = defaultMutationObserver,
 } = {}) {
-  applyShoelaceRuntimeState({ root, body });
+  applyUiRuntimeState({ root, body });
   if (!root || !MutationObserverImpl) return () => {};
 
-  const observer = new MutationObserverImpl(() => applyShoelaceRuntimeState({ root, body }));
+  const observer = new MutationObserverImpl(() => applyUiRuntimeState({ root, body }));
   observer.observe(root, { attributes: true, attributeFilter: ["data-color-scheme"] });
   if (body) observer.observe(body, { attributes: true, attributeFilter: ["data-contrast", "data-reduce-motion"] });
   return () => observer.disconnect();
@@ -46,11 +46,13 @@ export function createUiButton(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef) return null;
-  const el = documentRef.createElement("sl-button");
+  const el = documentRef.createElement("button");
+  el.type = "button";
+  el.classList.add("ui-button");
   el.textContent = text;
   if (id) el.id = id;
-  if (variant && variant !== "default") el.setAttribute("variant", variant);
-  if (size && size !== "medium") el.setAttribute("size", size);
+  if (variant && variant !== "default") el.dataset.variant = variant;
+  if (size && size !== "medium") el.dataset.size = size;
   setBooleanAttr(el, "pill", pill);
   setBooleanAttr(el, "disabled", disabled);
   setBooleanAttr(el, "outline", outline);
@@ -68,12 +70,15 @@ export function createUiInput(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef) return null;
-  const el = documentRef.createElement("sl-input");
+  const el = documentRef.createElement("input");
+  el.classList.add("ui-input");
   if (id) el.id = id;
   el.type = type;
   if (placeholder) el.placeholder = placeholder;
   if (typeof value === "string") el.value = value;
-  setBooleanAttr(el, "clearable", clearable);
+  if (clearable) {
+    el.dataset.clearable = "true";
+  }
   return el;
 }
 
@@ -87,17 +92,25 @@ export function createUiSelect(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef) return null;
-  const select = documentRef.createElement("sl-select");
+  const select = documentRef.createElement("select");
+  select.classList.add("ui-select");
   if (id) select.id = id;
-  if (placeholder) select.placeholder = placeholder;
-  if (value) select.value = value;
+  if (placeholder) {
+    const placeholderOption = documentRef.createElement("option");
+    placeholderOption.value = "";
+    placeholderOption.textContent = placeholder;
+    placeholderOption.disabled = true;
+    placeholderOption.hidden = true;
+    select.appendChild(placeholderOption);
+  }
 
   options.forEach(option => {
-    const item = documentRef.createElement("sl-option");
+    const item = documentRef.createElement("option");
     item.value = String(option?.value ?? "");
     item.textContent = String(option?.label ?? option?.value ?? "");
     select.appendChild(item);
   });
+  if (value) select.value = value;
   return select;
 }
 
@@ -110,9 +123,12 @@ export function createUiDialog(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef) return null;
-  const dialog = documentRef.createElement("sl-dialog");
+  const dialog = documentRef.createElement("div");
+  dialog.classList.add("ui-dialog");
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
   if (id) dialog.id = id;
-  if (label) dialog.label = label;
+  if (label) dialog.setAttribute("aria-label", label);
   if (body) dialog.textContent = body;
   return dialog;
 }
@@ -125,8 +141,10 @@ export function createUiTooltip(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef || !target) return null;
-  const tooltip = documentRef.createElement("sl-tooltip");
-  tooltip.content = content;
+  const tooltip = documentRef.createElement("span");
+  tooltip.classList.add("ui-tooltip");
+  tooltip.setAttribute("role", "tooltip");
+  if (content) tooltip.setAttribute("data-content", content);
   tooltip.appendChild(target);
   return tooltip;
 }
@@ -139,22 +157,31 @@ export function createUiTabs(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef) return null;
-  const group = documentRef.createElement("sl-tab-group");
+  const group = documentRef.createElement("div");
+  group.classList.add("ui-tabs");
   if (id) group.id = id;
+  const tabNav = documentRef.createElement("div");
+  tabNav.classList.add("ui-tabs-nav");
+  const panels = documentRef.createElement("div");
+  panels.classList.add("ui-tabs-panels");
   tabs.forEach((tab, index) => {
     const key = String(tab?.id ?? `tab-${index + 1}`);
-    const nav = documentRef.createElement("sl-tab");
-    nav.slot = "nav";
-    nav.panel = key;
+    const nav = documentRef.createElement("button");
+    nav.type = "button";
+    nav.classList.add("ui-tab");
+    nav.dataset.panel = key;
     nav.textContent = String(tab?.label ?? key);
-    if (index === 0) nav.setAttribute("active", "");
-    group.appendChild(nav);
+    if (index === 0) nav.setAttribute("aria-selected", "true");
+    tabNav.appendChild(nav);
 
-    const panel = documentRef.createElement("sl-tab-panel");
-    panel.name = key;
+    const panel = documentRef.createElement("section");
+    panel.classList.add("ui-tab-panel");
+    panel.dataset.name = key;
     panel.textContent = String(tab?.content ?? "");
-    group.appendChild(panel);
+    panels.appendChild(panel);
   });
+  group.appendChild(tabNav);
+  group.appendChild(panels);
   return group;
 }
 
@@ -168,22 +195,24 @@ export function createUiCard(
   { documentRef = defaultDocument } = {},
 ) {
   if (!documentRef) return null;
-  const card = documentRef.createElement("sl-card");
+  const card = documentRef.createElement("section");
+  card.classList.add("ui-card");
   if (id) card.id = id;
   if (header) {
-    const headerEl = documentRef.createElement("div");
-    headerEl.slot = "header";
+    const headerEl = documentRef.createElement("header");
+    headerEl.classList.add("ui-card-header");
     headerEl.textContent = header;
     card.appendChild(headerEl);
   }
   if (body) {
     const bodyEl = documentRef.createElement("div");
+    bodyEl.classList.add("ui-card-body");
     bodyEl.textContent = body;
     card.appendChild(bodyEl);
   }
   if (footer) {
-    const footerEl = documentRef.createElement("div");
-    footerEl.slot = "footer";
+    const footerEl = documentRef.createElement("footer");
+    footerEl.classList.add("ui-card-footer");
     footerEl.textContent = footer;
     card.appendChild(footerEl);
   }

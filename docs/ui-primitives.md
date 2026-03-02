@@ -1,16 +1,16 @@
-# UI Primitives (Shoelace)
+# UI Primitives (Vue + PrimeVue)
 
-WAAN uses Shoelace as the framework-agnostic primitive layer for the Tailwind migration.
+WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell surfaces.
 
 ## Foundation Files
 
 - Runtime loader: `js/ui/primitivesRuntime.js`
 - Primitive API: `js/ui/primitives.js`
-- Theme token bridge: `styles.shoelace.css`
-- Vendored Shoelace runtime/theme:
-  - `vendor/shoelace/shoelace-autoloader.js`
-  - `vendor/shoelace/themes/light.css`
-  - `vendor/shoelace/themes/dark.css`
+- Vue shell bridge: `js/vue/shellPrimitivesIsland.js`
+- Vue summary bridge: `js/vue/summaryIsland.js`
+- Vendored runtime assets:
+  - `vendor/vue/vue.global.prod.js`
+  - `vendor/primevue/primevue.min.js`
 
 ## Available Primitives
 
@@ -31,12 +31,11 @@ WAAN uses Shoelace as the framework-agnostic primitive layer for the Tailwind mi
 - Respect accessibility state attributes:
   - motion: `body[data-reduce-motion="true"]`
   - contrast: `body[data-contrast="high"]`
-- For dialogs/tooltips/tabs, prefer Shoelace primitives over custom JS behavior unless there is a proven gap.
+- Prefer Vue shell bridges/components for dialogs/tooltips/tabs and keep native fallback primitives behaviorally aligned.
 
 ## Notes
 
-- This is a compatibility replacement for `shadcn/ui` in a vanilla JS + Electron app.
-- `initShoelacePrimitives()` syncs Shoelace theme classes with `data-color-scheme` at runtime.
-- Relay status banner shell now migrates to Shoelace `sl-card` before app bootstrap (same `id` + child IDs are preserved).
+- This remains a compatibility primitive layer for a vanilla JS + Electron app while Vue islands incrementally expand.
+- `initUiPrimitives()` syncs runtime theme/motion/contrast state markers from `data-color-scheme`, `data-reduce-motion`, and `data-contrast`.
 - Relay status indicator internals intentionally remain custom (`#relay-status-dot.relay-banner-indicator`) to preserve existing pulse/reduced-motion/high-contrast behavior without extra runtime dependencies.
-- Summary cards, relay controls, and search/saved-view controls now run Shoelace-only in production; legacy rollback keys were removed after parity validation.
+- Summary cards, relay controls, and search/saved-view controls now run without Shoelace custom-element proxies.

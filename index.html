@@ -8,9 +8,6 @@
     <link rel="icon" type="image/png" href="tpg.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="styles.tailwind.css">
-    <link rel="stylesheet" href="vendor/shoelace/themes/light.css">
-    <link rel="stylesheet" href="vendor/shoelace/themes/dark.css">
-    <link rel="stylesheet" href="styles.shoelace.css">
     <script src="vendor/vue/vue.global.prod.js"></script>
     <script src="vendor/primevue/primevue.min.js"></script>
 </head>
@@ -274,7 +271,7 @@
 
         <section id="summary" class="card-grid summary full-span" data-nav-target="overview"></section>
 
-        <sl-card class="card full-span highlights" id="insight-highlights" data-nav-target="highlights"
+        <section class="card full-span highlights" id="insight-highlights" data-nav-target="highlights"
             data-accent="highlights">
             <div class="card-header">
                 <div class="card-title-group">
@@ -302,9 +299,9 @@
             <div class="card-content" id="insight-highlights-content">
                 <div class="highlight-grid" id="highlight-list"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span participants" id="participants" data-nav-target="participants"
+        <section class="card full-span participants" id="participants" data-nav-target="participants"
             data-accent="participants">
             <div class="card-header">
                 <div class="card-title-group">
@@ -412,9 +409,9 @@
                     </table>
                 </div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly">
+        <section class="card full-span" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -476,9 +473,9 @@
                 <div id="hourly-chart" class="hourly-heatmap"></div>
                 <div class="hourly-anomalies" id="hourly-anomalies"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span" id="daily-activity" data-nav-target="daily-activity" data-accent="daily">
+        <section class="card full-span" id="daily-activity" data-nav-target="daily-activity" data-accent="daily">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -518,9 +515,9 @@
                 </div>
                 <div id="daily-chart" class="calendar-chart"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly">
+        <section class="card full-span" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -563,9 +560,9 @@
                 </div>
                 <div id="weekly-chart" class="weekly-chart"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday">
+        <section class="card full-span" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -631,9 +628,9 @@
                 <div class="weekday-filter-note" id="weekday-filter-note"></div>
                 <div id="weekday-chart" class="weekday-chart"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday">
+        <section class="card full-span" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -690,9 +687,9 @@
                     <div class="timeofday-callouts" id="timeofday-callouts"></div>
                 </div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span sentiment" id="sentiment-overview" data-nav-target="sentiment-overview"
+        <section class="card full-span sentiment" id="sentiment-overview" data-nav-target="sentiment-overview"
             data-accent="sentiment">
             <div class="card-header">
                 <div class="card-title-group">
@@ -744,8 +741,8 @@
                     </div>
                 </div>
             </div>
-        </sl-card>
-        <sl-card class="card full-span message-types" id="message-types" data-nav-target="message-types"
+        </section>
+        <section class="card full-span message-types" id="message-types" data-nav-target="message-types"
             data-accent="message-types">
             <div class="card-header">
                 <div class="card-title-group">
@@ -847,8 +844,8 @@
                     </div>
                 </div>
             </div>
-        </sl-card>
-        <sl-card class="card full-span" id="polls-card" data-nav-target="polls" data-accent="polls">
+        </section>
+        <section class="card full-span" id="polls-card" data-nav-target="polls" data-accent="polls">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -884,9 +881,9 @@
                 </div>
                 <ol class="polls-list" id="polls-list"></ol>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views"
+        <section class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views"
             data-accent="saved-views">
             <div class="card-header">
                 <div class="card-title-group">
@@ -933,9 +930,9 @@
                 </div>
                 <div class="compare-summary" id="compare-summary"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span search-panel" id="search-panel" data-nav-target="search" data-accent="search">
+        <section class="card full-span search-panel" id="search-panel" data-nav-target="search" data-accent="search">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -998,9 +995,9 @@
                 <div class="search-insights hidden" id="search-insights" aria-live="polite"></div>
                 <div class="search-results-list" id="search-results-list"></div>
             </div>
-        </sl-card>
+        </section>
 
-        <sl-card class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq">
+        <section class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq">
             <div class="card-header">
                 <div class="card-title-group">
                     <div>
@@ -1108,7 +1105,7 @@
                     </li>
                 </ul>
             </div>
-        </sl-card>
+        </section>
     </main>
 
     <aside class="relay-log-drawer" id="relay-log-drawer" aria-hidden="true" aria-label="Relay logs">

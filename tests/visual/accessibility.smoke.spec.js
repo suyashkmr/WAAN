@@ -24,7 +24,7 @@ test.describe("WAAN Accessibility Smoke", () => {
     await page.waitForFunction(() => document.documentElement?.dataset.slContrast === "high");
   });
 
-  test("keeps migrated Shoelace controls keyboard focusable", async ({ page }) => {
+  test("keeps migrated command controls keyboard focusable", async ({ page }) => {
     const focusTargetGroups = [
       ["#search-keyword-sl", "#search-keyword"],
       ["#search-participant-sl", "#search-participant"],

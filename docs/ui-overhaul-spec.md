@@ -49,7 +49,7 @@ Define/normalize semantic roles (light + dark + high-contrast):
 
 ## Component Inventory
 
-Shoelace remains behavior primitive; app provides visual wrappers.
+Vue 3 + PrimeVue-backed islands provide behavior primitives; app provides visual wrappers.
 
 - `RoomCard`
 - `SignalChip`
@@ -58,10 +58,10 @@ Shoelace remains behavior primitive; app provides visual wrappers.
 - `TimelineRow`
 - `PanelShell` / `PanelHeader` (existing primitives extended)
 
-## Tailwind + Shoelace Contract
+## Tailwind + Vue/PrimeVue Contract
 
 - Tailwind: layout, spacing, responsive utilities, tokenized classes.
-- Shoelace: base interactive controls (`sl-button`, `sl-input`, `sl-select`, dialogs/tooltips/tabs).
+- Vue/PrimeVue: interactive controls and app-shell component composition.
 - App CSS modules: brand visuals, gradients, shell chrome, motion signatures.
 
 ## File-Level Implementation Plan
@@ -83,7 +83,7 @@ Shoelace remains behavior primitive; app provides visual wrappers.
 ### Phase 3: Search + Saved Views as Command Surface
 
 - `styles/components/search-saved.css`: command-bar behavior, playbook cards.
-- `js/ui/primitivesFieldMigrations.js`: verify proxy parity for new control patterns.
+- `js/ui/primitives.js`: verify semantic primitive parity for new control patterns.
 - `js/search/resultsUi.js`: narrative grouping and state consistency.
 
 ### Phase 4: Analytics Deep Dive

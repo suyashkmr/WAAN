@@ -1158,10 +1158,9 @@ body[data-reduce-motion="true"] .section-nav a[aria-current="page"] {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
-body[data-reduce-motion="true"] sl-button.ui-button-proxy::part(base),
-body[data-reduce-motion="true"] sl-input.ui-field-proxy::part(base),
-body[data-reduce-motion="true"] sl-select.ui-field-proxy::part(combobox),
-body[data-reduce-motion="true"] sl-select.ui-field-proxy::part(display-input),
+body[data-reduce-motion="true"] #search-panel .search-control :is(input, select),
+body[data-reduce-motion="true"] #saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select, .ghost-button),
+body[data-reduce-motion="true"] #search-panel .search-actions .ghost-button,
 body[data-reduce-motion="true"] .section-nav a {
     transition: none;
 }

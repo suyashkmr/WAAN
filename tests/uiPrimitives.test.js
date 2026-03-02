@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  applyShoelaceRuntimeState,
+  applyUiRuntimeState,
   createUiButton,
   createUiInput,
   createUiSelect,
@@ -11,12 +11,12 @@ import {
 } from "../js/ui/primitives.js";
 
 describe("ui primitives", () => {
-  it("syncs shoelace theme/motion/contrast state", () => {
+  it("syncs runtime theme/motion/contrast state", () => {
     document.documentElement.dataset.colorScheme = "light";
     document.body.dataset.reduceMotion = "true";
     document.body.dataset.contrast = "high";
 
-    applyShoelaceRuntimeState();
+    applyUiRuntimeState();
 
     expect(document.documentElement.classList.contains("sl-theme-light")).toBe(true);
     expect(document.documentElement.classList.contains("sl-theme-dark")).toBe(false);
@@ -24,7 +24,7 @@ describe("ui primitives", () => {
     expect(document.documentElement.dataset.slContrast).toBe("high");
   });
 
-  it("creates core shoelace primitives", () => {
+  it("creates core semantic primitives", () => {
     const button = createUiButton({ text: "Save", variant: "primary" });
     const input = createUiInput({ placeholder: "Search" });
     const select = createUiSelect({
@@ -45,15 +45,15 @@ describe("ui primitives", () => {
     });
     const card = createUiCard({ header: "Header", body: "Body", footer: "Footer" });
 
-    expect(button.tagName.toLowerCase()).toBe("sl-button");
-    expect(input.tagName.toLowerCase()).toBe("sl-input");
-    expect(select.tagName.toLowerCase()).toBe("sl-select");
-    expect(dialog.tagName.toLowerCase()).toBe("sl-dialog");
-    expect(tooltip.tagName.toLowerCase()).toBe("sl-tooltip");
-    expect(tabs.tagName.toLowerCase()).toBe("sl-tab-group");
-    expect(card.tagName.toLowerCase()).toBe("sl-card");
-    expect(select.querySelectorAll("sl-option")).toHaveLength(2);
-    expect(tabs.querySelectorAll("sl-tab")).toHaveLength(2);
-    expect(tabs.querySelectorAll("sl-tab-panel")).toHaveLength(2);
+    expect(button.tagName.toLowerCase()).toBe("button");
+    expect(input.tagName.toLowerCase()).toBe("input");
+    expect(select.tagName.toLowerCase()).toBe("select");
+    expect(dialog.tagName.toLowerCase()).toBe("div");
+    expect(tooltip.tagName.toLowerCase()).toBe("span");
+    expect(tabs.tagName.toLowerCase()).toBe("div");
+    expect(card.tagName.toLowerCase()).toBe("section");
+    expect(select.querySelectorAll("option")).toHaveLength(2);
+    expect(tabs.querySelectorAll(".ui-tab")).toHaveLength(2);
+    expect(tabs.querySelectorAll(".ui-tab-panel")).toHaveLength(2);
   });
 });

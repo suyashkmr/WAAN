@@ -23,7 +23,7 @@ describe("renderSummaryCards", () => {
     delete globalThis.__WAAN_VUE_SUMMARY_BRIDGE__;
   });
 
-  it("renders summary cards with Shoelace by default", () => {
+  it("renders semantic summary card sections by default", () => {
     const summaryEl = document.createElement("section");
     document.body.appendChild(summaryEl);
 
@@ -33,8 +33,7 @@ describe("renderSummaryCards", () => {
       summaryEl,
     });
 
-    expect(summaryEl.querySelectorAll("sl-card.summary-card--shoelace")).toHaveLength(4);
-    expect(summaryEl.querySelectorAll("div.summary-card")).toHaveLength(0);
+    expect(summaryEl.querySelectorAll("section.summary-card.summary-card--semantic")).toHaveLength(4);
   });
 
   it("delegates summary card rendering to the Vue bridge when available", () => {
@@ -56,7 +55,7 @@ describe("renderSummaryCards", () => {
 
     expect(captured).toHaveLength(1);
     expect(captured[0]).toHaveLength(4);
-    expect(summaryEl.querySelectorAll("sl-card.summary-card--shoelace")).toHaveLength(0);
+    expect(summaryEl.querySelectorAll("section.summary-card.summary-card--semantic")).toHaveLength(0);
   });
 });
 

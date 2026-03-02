@@ -75,7 +75,7 @@ Adoption decision (2026-02-25): WAAN keeps Tailwind as a first-class styling lay
 ## Token Usage Rules
 
 - Use semantic tokens, not raw color names, for app UI (`surface`, `text`, `border`, `state`).
-- Keep Shoelace for behavior-heavy primitives (`sl-button`, `sl-input`, `sl-select`, dialogs, tooltips); style them via tokens only.
+- Keep primitives framework-neutral (native or Vue/PrimeVue wrappers) and style them via tokens only.
 - Use shared component classes for repeated shells (panel headers, section intros, status badges). Use direct utilities only for one-off layout composition.
 - Avoid hard-coded pixel/rgb values on migrated surfaces unless there is a documented exception in the same PR.
 - Any new state style must support both `data-contrast="high"` and `data-reduce-motion="true"` automatically through tokens.

@@ -16,10 +16,22 @@ export function createStatusUiController({
   exitDurationMs = 300,
   maxToasts = 4,
 }) {
-  const vueBridge =
-    typeof globalThis !== "undefined" && globalThis.__WAAN_VUE_SHELL_BRIDGE__
-      ? globalThis.__WAAN_VUE_SHELL_BRIDGE__
-      : null;
+  /**
+   * @typedef {{
+   *   dismissToast?: (toast: HTMLElement) => void,
+   *   showToast?: (message: string, tone: string, options: { duration: number, maxToasts: number }) => void,
+   *   finalizeStatusExit?: () => void,
+   *   beginStatusExit?: (exitDurationMs: number) => void,
+   *   showStatusMessage?: (
+   *     message: string,
+   *     tone: string | null | undefined,
+   *     options: { autoHideDelayMs: number, exitDurationMs: number }
+   *   ) => void,
+   * }} WaanVueShellBridge
+   */
+  /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: WaanVueShellBridge }} */
+  const globalScope = globalThis;
+  const vueBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
 
   /** @type {HTMLElement[]} */
   const toasts = [];

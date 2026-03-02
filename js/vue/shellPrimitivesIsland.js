@@ -36,6 +36,165 @@ function mountRelayBannerPrimitive() {
   bannerEl.dataset.vuePrimitiveMounted = "true";
 }
 
+function mountActionsToolbarPrimitive() {
+  const VueRuntime = globalThis.Vue;
+  const toolbarEl = globalThis.document?.getElementById?.("actions-toolbar");
+  if (!VueRuntime || !toolbarEl) return;
+  if (toolbarEl.dataset.vuePrimitiveMounted === "true") return;
+  const { createApp, h } = VueRuntime;
+  toolbarEl.dataset.vueManaged = "true";
+
+  const ActionsToolbarRoot = {
+    name: "ActionsToolbarPrimitive",
+    render() {
+      return [
+        h("div", { class: "toolbar-group primary" }, [
+          h("button", { type: "button", class: "ghost-button", id: "download-pdf" }, "Save as PDF"),
+          h("button", { type: "button", class: "ghost-button", id: "download-markdown-report" }, "Save text report"),
+          h("button", { type: "button", class: "ghost-button", id: "download-slides-report" }, "Save slides (HTML)"),
+        ]),
+        h("div", { class: "toolbar-group secondary" }, [
+          h(
+            "button",
+            {
+              type: "button",
+              class: "ghost-button",
+              id: "compact-toggle",
+              "aria-pressed": "false",
+              title: "Switch between compact and comfort layouts",
+            },
+            "Compact mode",
+          ),
+          h("div", { class: "theme-toggle" }, [
+            h("span", "Theme"),
+            h("div", { class: "segmented-option" }, [
+              h("input", {
+                type: "radio",
+                name: "theme-option",
+                id: "theme-system",
+                value: "system",
+                checked: true,
+              }),
+              h("label", { for: "theme-system" }, "Auto"),
+            ]),
+            h("div", { class: "segmented-option" }, [
+              h("input", {
+                type: "radio",
+                name: "theme-option",
+                id: "theme-light",
+                value: "light",
+              }),
+              h("label", { for: "theme-light" }, "Light"),
+            ]),
+            h("div", { class: "segmented-option" }, [
+              h("input", {
+                type: "radio",
+                name: "theme-option",
+                id: "theme-dark",
+                value: "dark",
+              }),
+              h("label", { for: "theme-dark" }, "Dark"),
+            ]),
+          ]),
+          h("div", { class: "a11y-controls", "aria-label": "Accessibility options" }, [
+            h(
+              "button",
+              {
+                type: "button",
+                class: "ghost-button small",
+                id: "reduce-motion-toggle",
+                "aria-pressed": "mixed",
+              },
+              "Motion: Standard",
+            ),
+            h(
+              "button",
+              {
+                type: "button",
+                class: "ghost-button small",
+                id: "high-contrast-toggle",
+                "aria-pressed": "false",
+              },
+              "Contrast: Standard",
+            ),
+          ]),
+          h("button", { type: "button", class: "ghost-button", id: "log-drawer-toggle" }, "View Relay Logs"),
+        ]),
+      ];
+    },
+  };
+
+  const app = createApp(ActionsToolbarRoot);
+  app.mount(toolbarEl);
+  toolbarEl.dataset.vuePrimitiveMounted = "true";
+}
+
+function mountOnboardingDialogPrimitive() {
+  const VueRuntime = globalThis.Vue;
+  const onboardingEl = globalThis.document?.getElementById?.("onboarding-overlay");
+  if (!VueRuntime || !onboardingEl) return;
+  if (onboardingEl.dataset.vuePrimitiveMounted === "true") return;
+  const { createApp, h } = VueRuntime;
+  onboardingEl.dataset.vueManaged = "true";
+
+  const OnboardingDialogRoot = {
+    name: "OnboardingDialogPrimitive",
+    render() {
+      return h("div", { class: "onboarding-panel" }, [
+        h("h2", "Welcome to WAAN"),
+        h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
+        h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
+        h("div", { class: "onboarding-actions" }, [
+          h("button", { type: "button", class: "ghost-button", id: "onboarding-skip" }, "Skip"),
+          h("button", { type: "button", class: "ghost-button primary", id: "onboarding-next" }, "Next"),
+        ]),
+      ]);
+    },
+  };
+
+  const app = createApp(OnboardingDialogRoot);
+  app.mount(onboardingEl);
+  onboardingEl.dataset.vuePrimitiveMounted = "true";
+}
+
+function mountDashboardCardShellPrimitives() {
+  const VueRuntime = globalThis.Vue;
+  if (!VueRuntime || typeof globalThis.document === "undefined") return;
+  const { createApp } = VueRuntime;
+  const cardIds = [
+    "insight-highlights",
+    "participants",
+    "hourly-activity",
+    "daily-activity",
+    "weekly-trend",
+    "weekday-trend",
+    "timeofday-trend",
+    "sentiment-overview",
+    "message-types",
+    "polls-card",
+    "saved-views-card",
+    "search-panel",
+    "faq-card",
+  ];
+
+  cardIds.forEach(id => {
+    const existing = globalThis.document.getElementById(id);
+    if (!existing) return;
+    if (existing.dataset.vuePrimitiveMounted === "true") return;
+    const tagName = existing.tagName.toLowerCase();
+    if (tagName !== "sl-card" && tagName !== "section") return;
+
+    const template = existing.innerHTML;
+    existing.dataset.vueManaged = "true";
+    existing.dataset.vuePrimitiveMounted = "true";
+
+    createApp({
+      name: `CardShellPrimitive-${id}`,
+      template,
+    }).mount(existing);
+  });
+}
+
 function mountFeedbackPrimitiveBridge() {
   const VueRuntime = globalThis.Vue;
   const statusEl = globalThis.document?.getElementById?.("data-status");
@@ -159,6 +318,9 @@ function mountFeedbackPrimitiveBridge() {
 try {
   if (typeof globalThis.document !== "undefined") {
     mountRelayBannerPrimitive();
+    mountActionsToolbarPrimitive();
+    mountOnboardingDialogPrimitive();
+    mountDashboardCardShellPrimitives();
     mountFeedbackPrimitiveBridge();
   }
 } catch (error) {

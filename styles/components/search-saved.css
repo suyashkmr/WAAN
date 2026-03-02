@@ -461,53 +461,60 @@
     color: color-mix(in srgb, var(--negative) 85%, var(--text));
 }
 
-sl-input.ui-field-proxy::part(base),
-sl-select.ui-field-proxy::part(combobox),
-sl-select.ui-field-proxy::part(display-input) {
+#search-panel .search-control input,
+#search-panel .search-control select,
+#saved-views-card .saved-view-actions input,
+#saved-views-card .saved-view-actions select,
+#saved-views-card .saved-view-compare select {
     min-height: var(--command-control-height, var(--control-height-md));
     border-radius: var(--command-control-radius, var(--control-radius-md));
+    border-width: 1px;
+    border-style: solid;
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    color: color-mix(in srgb, var(--text) 94%, transparent);
+    padding-inline: 0.7rem;
     transition:
         border-color var(--motion-duration-fast) var(--motion-ease-out),
         box-shadow var(--motion-duration-fast) var(--motion-ease-out),
         background var(--motion-duration-fast) var(--motion-ease-out);
 }
 
-sl-input.ui-field-proxy::part(form-control-label),
-sl-select.ui-field-proxy::part(form-control-label) {
+#search-panel .search-control label,
+#saved-views-card .saved-view-actions label,
+#saved-views-card .saved-view-compare label {
     font-size: var(--type-label-sm);
     letter-spacing: var(--tracking-label);
 }
 
-sl-input.ui-field-proxy[aria-invalid="true"]::part(base),
-sl-select.ui-field-proxy[aria-invalid="true"]::part(combobox) {
+#search-panel .search-control :is(input, select)[aria-invalid="true"],
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select)[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--negative) 76%, transparent);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--negative) 38%, transparent);
 }
 
-sl-input.ui-field-proxy:hover::part(base),
-sl-select.ui-field-proxy:hover::part(combobox) {
+#search-panel .search-control :is(input, select):hover,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select):hover {
     border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
 }
 
-sl-input.ui-field-proxy:focus-within::part(base),
-sl-select.ui-field-proxy:focus-within::part(combobox),
-sl-select.ui-field-proxy:focus-within::part(display-input) {
+#search-panel .search-control :is(input, select):focus-visible,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select):focus-visible {
     border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
     background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+    outline: none;
 }
 
-sl-input.ui-field-proxy[disabled]::part(base),
-sl-select.ui-field-proxy[disabled]::part(combobox),
-sl-select.ui-field-proxy[disabled]::part(display-input) {
+#search-panel .search-control :is(input, select)[disabled],
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select)[disabled] {
     opacity: 0.58;
     border-color: color-mix(in srgb, var(--border) 72%, transparent);
     background: color-mix(in srgb, var(--card-bg) 80%, transparent);
 }
 
-sl-button.ui-button-proxy::part(base) {
+#search-panel .search-actions .ghost-button,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button {
     min-height: var(--command-control-height, var(--control-height-md));
     border-radius: var(--command-control-radius, var(--control-radius-md));
     border-color: color-mix(in srgb, var(--border) 80%, transparent);
@@ -520,39 +527,46 @@ sl-button.ui-button-proxy::part(base) {
         color var(--motion-duration-fast) var(--motion-ease-out),
         transform var(--motion-duration-fast) var(--motion-ease-emphasis),
         box-shadow var(--motion-duration-fast) var(--motion-ease-emphasis);
+    border-width: 1px;
+    border-style: solid;
 }
 
-sl-button.ui-button-proxy.ui-button-proxy-small::part(base) {
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button.small {
     min-height: var(--control-height-sm);
 }
 
-sl-button.ui-button-proxy:hover:not([disabled]):not([loading])::part(base) {
+#search-panel .search-actions .ghost-button:hover:not([disabled]),
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button:hover:not([disabled]) {
     border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
     background: color-mix(in srgb, var(--accent) 16%, var(--card-bg));
     transform: translateY(-1px);
     box-shadow: var(--shadow-card);
 }
 
-sl-button.ui-button-proxy:active:not([disabled]):not([loading])::part(base) {
+#search-panel .search-actions .ghost-button:active:not([disabled]),
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button:active:not([disabled]) {
     transform: translateY(1px) scale(0.995);
     box-shadow: var(--shadow-soft);
 }
 
-sl-button.ui-button-proxy:focus-visible::part(base) {
+#search-panel .search-actions .ghost-button:focus-visible,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button:focus-visible {
     border-color: color-mix(in srgb, var(--accent) 52%, var(--border));
     box-shadow:
         0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent),
         var(--shadow-card);
 }
 
-sl-button.ui-button-proxy[disabled]::part(base) {
+#search-panel .search-actions .ghost-button:disabled,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button:disabled {
     opacity: 0.52;
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
 }
 
-sl-button.ui-button-proxy[loading]::part(base) {
+#search-panel .search-actions .ghost-button[aria-busy="true"],
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button[aria-busy="true"] {
     cursor: progress;
     border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
     background: color-mix(in srgb, var(--accent) 14%, var(--card-bg));

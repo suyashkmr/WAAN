@@ -396,7 +396,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [ ] Keep existing server/API contracts unchanged.
     - [ ] Introduce a frontend adapter layer that maps current app-shell state and relay endpoints to Vue stores/composables.
   - [ ] Build migration scaffold:
-    - [ ] Add Vue build/runtime integration and app bootstrap entry.
+    - [x] Add Vue build/runtime integration and app bootstrap entry.
     - [ ] Vendor Vue/PrimeVue runtime assets for packaged release hardening:
       - [x] Copy pinned runtime files into versioned local vendor paths (do not depend on `node_modules` at runtime).
       - [x] Update `index.html`/runtime bootstrap to load vendored assets only.
@@ -405,9 +405,14 @@ Completed work is archived in git history and was removed from this file for cla
     - [ ] Port shared shell primitives (toolbar, cards, dialogs, toasts, relay status strip) to Vue components.
       - [x] Port relay status strip shell to Vue-managed primitive while preserving existing DOM IDs and runtime bindings.
       - [x] Port status/toast surface to Vue-backed bridge (`__WAAN_VUE_SHELL_BRIDGE__`) with legacy `statusUi` fallback.
-      - [ ] Port toolbar and dialog primitives to Vue components.
-      - [ ] Port remaining card shell primitives to Vue components.
+      - [x] Port toolbar and dialog primitives to Vue components.
+      - [x] Port remaining card shell primitives to Vue components.
     - [ ] Replace Shoelace usage incrementally with Vue-native equivalents.
+      - [x] Replace static dashboard panel `sl-card` shells in `index.html` with semantic `section` shells (IDs/anchors preserved).
+      - [x] Remove live runtime dependency on Shoelace control/field proxy migrations (`sl-button`/`sl-input`/`sl-select` no longer auto-injected at bootstrap).
+      - [x] Remove legacy Shoelace proxy migration modules/tests for controls and fields from active code paths.
+      - [x] Replace remaining Shoelace form/control proxies (`sl-button`, `sl-input`, `sl-select`) with PrimeVue-native field/control components.
+      - [x] Remove residual Shoelace runtime migration paths once all control/field replacements are complete.
   - [ ] Migrate high-risk surfaces first:
     - [ ] Dashboard panel rendering (highlights, participants, weekday/hourly/time-of-day).
     - [ ] Relay controls and recovery actions.
@@ -420,7 +425,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [ ] Add Vue component/integration tests for migrated surfaces before removing legacy wiring.
   - [ ] File-by-file migration checklist (PrimeVue + Vue 3):
     - [ ] `index.html` (Owner: Frontend)
-      - [ ] Replace Shoelace stylesheet/runtime includes with Vue mount root + PrimeVue bootstrap wiring.
+      - [x] Replace Shoelace stylesheet/runtime includes with Vue mount root + PrimeVue bootstrap wiring.
       - [ ] Replace static `sl-card` panel shells with Vue component mount points while preserving IDs used by analytics/event bindings.
       - [ ] Estimate: 1.5-2.5 days.
       - [ ] Acceptance: app-shell renders in Vue, panel anchors/IDs still satisfy navigation + existing integration tests.
@@ -435,36 +440,36 @@ Completed work is archived in git history and was removed from this file for cla
       - [ ] Estimate: 2-3 days.
       - [ ] Acceptance: search/saved-view fields stay behaviorally equivalent without legacy hidden inputs/select proxies.
     - [ ] `styles/components/search-saved.css` (Owner: Frontend)
-      - [ ] Replace Shoelace `::part(...)` selectors with PrimeVue/Tailwind-compatible selectors and tokenized classes.
+      - [x] Replace Shoelace `::part(...)` selectors with PrimeVue/Tailwind-compatible selectors and tokenized classes.
       - [ ] Estimate: 1.5-2.5 days.
       - [ ] Acceptance: command-surface controls keep current spacing/interaction states across desktop/tablet/mobile snapshots.
     - [ ] `js/ui/primitives.js` (Owner: Frontend)
-      - [ ] Retire Shoelace element factories (`sl-button`, `sl-input`, `sl-select`, `sl-dialog`, `sl-tooltip`, `sl-tab-group`, `sl-card`).
+      - [x] Retire Shoelace element factories (`sl-button`, `sl-input`, `sl-select`, `sl-dialog`, `sl-tooltip`, `sl-tab-group`, `sl-card`).
       - [ ] Replace with Vue/PrimeVue wrapper components or composables.
       - [ ] Estimate: 1-1.5 days.
-      - [ ] Acceptance: no new Shoelace custom elements are created at runtime.
+      - [x] Acceptance: no new Shoelace custom elements are created at runtime.
     - [ ] `js/ui/primitivesRuntime.js` (Owner: Frontend)
-      - [ ] Remove Shoelace autoloader + `customElements.whenDefined("sl-*")` gating.
+      - [x] Remove Shoelace autoloader + `customElements.whenDefined("sl-*")` gating.
       - [ ] Add Vue/PrimeVue runtime bootstrap initialization path.
       - [ ] Estimate: 0.5-1 day.
-      - [ ] Acceptance: frontend startup succeeds with no Shoelace runtime dependency.
+      - [x] Acceptance: frontend startup succeeds with no Shoelace runtime dependency.
     - [ ] `styles.shoelace.css` (Owner: Frontend)
       - [ ] Remove `--sl-*` bridge + `sl-card::part(base)` styling once PrimeVue theme parity is established.
       - [ ] Move required theme tokens to shared CSS variable layer/PrimeVue preset overrides.
       - [ ] Estimate: 0.5-1 day.
       - [ ] Acceptance: no visual regressions on card/surface chrome in visual-gate snapshots.
     - [ ] `js/analytics/summary.js` and `js/ui/appShellPrimitives.js` (Owner: Frontend)
-      - [ ] Replace `document.createElement("sl-card")` with Vue-rendered summary card components.
-      - [ ] Remove `querySelectorAll(".card, sl-card")` assumptions and use framework-native hooks.
+      - [x] Replace `document.createElement("sl-card")` with semantic summary card sections.
+      - [x] Remove `querySelectorAll(".card, sl-card")` assumptions and use framework-native hooks.
       - [ ] Estimate: 0.75-1.5 days.
-      - [ ] Acceptance: summary cards and panel primitive decorations render correctly without Shoelace tags.
-    - [ ] Tests: `tests/uiPrimitives.test.js`, `tests/uiFieldsShoelaceMigration.test.js`, `tests/uiControlsShoelaceMigration.test.js`, `tests/relayStatusBannerShoelaceMigration.test.js`, `tests/relayShoelaceMigration.test.js`, `tests/dashboardPanelShellMigration.test.js`, `tests/summaryCards.test.js` (Owner: QA/Frontend)
-      - [ ] Replace Shoelace-tag assertions with Vue/PrimeVue behavior assertions.
+      - [x] Acceptance: summary cards and panel primitive decorations render correctly without Shoelace tags.
+    - [ ] Tests: `tests/uiPrimitives.test.js`, `tests/dashboardPanelShellMigration.test.js`, `tests/summaryCards.test.js`, `tests/statusUiDetailed.test.js`, `tests/uiModules.test.js` (Owner: QA/Frontend)
+      - [x] Replace Shoelace-tag assertions with Vue/PrimeVue behavior assertions.
       - [ ] Preserve relay/search/export behavior coverage while removing migration-proxy-specific expectations.
       - [ ] Estimate: 2-3.5 days.
       - [ ] Acceptance: full `npm run ci:verify` green with no Shoelace-specific tests remaining.
     - [ ] Docs: `docs/design-tokens.md`, `docs/ui-primitives.md`, `docs/ui-overhaul-spec.md` (Owner: Docs/Frontend)
-      - [ ] Replace Shoelace architecture references with Vue 3 + PrimeVue guidance.
+      - [x] Replace Shoelace architecture references with Vue 3 + PrimeVue guidance.
       - [ ] Document final Tailwind decision and resulting CI guardrail updates.
       - [ ] Estimate: 0.5 day.
       - [ ] Acceptance: docs reflect actual runtime stack and migration process.
