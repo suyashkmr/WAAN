@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   createExportOrchestrator,
   createDatasetRelayOrchestrator,
@@ -5,6 +7,21 @@ import {
 } from "./compositionAssembly/orchestrators.js";
 import { createCompositionAssemblyApi } from "./compositionAssembly/apiSurface.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   dom: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   analytics: AnyRecord,
+ *   constants: AnyRecord,
+ *   wiring: AnyRecord,
+ *   electronAPI?: AnyRecord,
+ * }} params
+ */
 export function createAppCompositionAssembly({
   dom,
   state,
@@ -12,7 +29,7 @@ export function createAppCompositionAssembly({
   analytics,
   constants,
   wiring,
-  electronAPI = window.electronAPI,
+  electronAPI = /** @type {any} */ (globalThis.window)?.electronAPI,
 }) {
   const exportRuntime = createExportOrchestrator({
     state,

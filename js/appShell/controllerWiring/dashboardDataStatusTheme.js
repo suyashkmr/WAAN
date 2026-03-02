@@ -1,3 +1,5 @@
+// @ts-check
+
 import { EXPORT_THEME_STYLES } from "../../theme.js";
 import {
   createDataStatusController,
@@ -9,6 +11,27 @@ import {
 } from "../index.js";
 import { createDashboardViewAdapter } from "./dashboardViewAdapter.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ * @typedef {{
+ *   applySummarySkeletonState: () => void,
+ *   getThemeMediaQuery: () => MediaQueryList | null,
+ * }} DashboardViewAdapter
+ */
+
+/**
+ * @param {{
+ *   dom: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   dataStatus: AnyRecord,
+ *   searchController: AnyRecord,
+ *   savedViewsController: AnyRecord,
+ *   rangeApi: AnyRecord,
+ *   dashboardControllerApi: AnyRecord,
+ *   viewAdapter?: DashboardViewAdapter,
+ * }} params
+ */
 export function createDashboardDataStatusThemeWiring({
   dom,
   state,
@@ -35,7 +58,7 @@ export function createDashboardDataStatusThemeWiring({
       savedViewsController,
       formatRelayAccount,
       formatNumber: utils.formatNumber,
-      notifyRelayReady: message => dataStatus.updateStatus?.(message, "success"),
+      notifyRelayReady: /** @param {string} message */ message => dataStatus.updateStatus?.(message, "success"),
     },
   });
   const {
@@ -153,7 +176,7 @@ export function createDashboardDataStatusThemeWiring({
 
   const themeUiController = createThemeUiController({
     themeToggleInputs: dom.themeToggleInputs,
-    mediaQuery: viewAdapter.getThemeMediaQuery(),
+    mediaQuery: /** @type {any} */ (viewAdapter.getThemeMediaQuery()),
     exportThemeStyles: EXPORT_THEME_STYLES,
   });
   const { initThemeControls, getExportThemeConfig } = themeUiController;

@@ -1,8 +1,18 @@
+// @ts-check
+
+/**
+ * @typedef {{ isHidden: () => boolean, addChangeListener: (handler: (() => void) | null | undefined) => (() => void) }} RelayVisibilityAdapter
+ */
+
+/**
+ * @param {{ documentRef?: Document | null }} [params]
+ * @returns {RelayVisibilityAdapter}
+ */
 export function createRelayVisibilityAdapter({ documentRef = globalThis.document ?? null } = {}) {
   const hasVisibilityApi =
     Boolean(documentRef)
-    && typeof documentRef.addEventListener === "function"
-    && typeof documentRef.removeEventListener === "function";
+    && typeof documentRef?.addEventListener === "function"
+    && typeof documentRef?.removeEventListener === "function";
 
   return {
     isHidden() {
@@ -10,9 +20,9 @@ export function createRelayVisibilityAdapter({ documentRef = globalThis.document
     },
     addChangeListener(handler) {
       if (!hasVisibilityApi || typeof handler !== "function") return () => {};
-      documentRef.addEventListener("visibilitychange", handler);
+      documentRef?.addEventListener("visibilitychange", handler);
       return () => {
-        documentRef.removeEventListener("visibilitychange", handler);
+        documentRef?.removeEventListener("visibilitychange", handler);
       };
     },
   };
@@ -24,7 +34,7 @@ export function createRelayPlatformAdapter({
   visibilityAdapter = null,
 } = {}) {
   return {
-    electronAPI: electronAPI ?? windowRef?.electronAPI ?? null,
+    electronAPI: electronAPI ?? /** @type {any} */ (windowRef)?.electronAPI ?? null,
     visibilityAdapter: visibilityAdapter ?? createRelayVisibilityAdapter(),
   };
 }

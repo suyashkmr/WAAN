@@ -1,3 +1,5 @@
+// @ts-check
+
 import { createSearchController } from "../../search.js";
 import { createSavedViewsController } from "../../savedViews.js";
 import {
@@ -7,6 +9,20 @@ import {
   createAnalyticsPipeline,
 } from "../index.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   dom: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   constants: AnyRecord,
+ *   callbacks: AnyRecord,
+ *   dashboardControllerApi: AnyRecord,
+ * }} params
+ */
 export function createRangeSearchSavedViewsWiring({
   dom,
   state,

@@ -1,13 +1,23 @@
+// @ts-check
+
 import { createDashboardRenderController } from "./dashboardRender.js";
 import { createDatasetLifecycleController } from "./datasetLifecycle.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createDashboardRuntime({ elements, deps }) {
+  /** @type {any[]} */
   let participantView = [];
   const controller = createDashboardRenderController({
     elements,
     deps: {
       ...deps,
-      setParticipantView: next => {
+      setParticipantView: /** @param {any[]} next */ next => {
         participantView = next;
       },
     },
@@ -19,6 +29,9 @@ export function createDashboardRuntime({ elements, deps }) {
   };
 }
 
+/**
+ * @param {{ rangeSelect: any, deps: AnyRecord }} params
+ */
 export function createDatasetLifecycleRuntime({ rangeSelect, deps }) {
   const controller = createDatasetLifecycleController({
     elements: { rangeSelect },

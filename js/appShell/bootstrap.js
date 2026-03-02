@@ -1,5 +1,14 @@
+// @ts-check
+
 import { initAppShellPrimitives } from "../ui/appShellPrimitives.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createBootstrapController({ elements, deps }) {
   const {
     onboardingSkipButton,
@@ -27,6 +36,10 @@ export function createBootstrapController({ elements, deps }) {
     prefersReducedMotion,
   } = deps;
 
+  /**
+   * @param {HTMLElement | null} content
+   * @param {boolean} expand
+   */
   function animateCardSection(content, expand) {
     if (!content) return;
     content.classList.add("collapsible");
@@ -71,10 +84,12 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function initCardToggles() {
-    Array.from(document.querySelectorAll(".card-toggle")).forEach(toggle => {
+    Array.from(document.querySelectorAll(".card-toggle")).forEach(
+      /** @param {Element} toggle */ toggle => {
+      const toggleEl = /** @type {HTMLElement} */ (toggle);
       toggle.addEventListener("click", () => {
         const expanded = toggle.getAttribute("aria-expanded") === "true";
-        const targetId = toggle.dataset.target;
+        const targetId = toggleEl.dataset.target;
         const content = targetId ? document.getElementById(targetId) : null;
         const card = toggle.closest(".card");
         const next = !expanded;
@@ -86,8 +101,9 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function initElectronRelayBridge() {
-    if (!window.electronAPI?.onRelayAction) return;
-    window.electronAPI.onRelayAction(action => {
+    const electronAPI = /** @type {any} */ (window).electronAPI;
+    if (!electronAPI?.onRelayAction) return;
+    electronAPI.onRelayAction(/** @param {string} action */ action => {
       if (action === "connect") {
         startRelaySession();
       } else if (action === "disconnect") {

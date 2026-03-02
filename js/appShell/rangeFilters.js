@@ -1,3 +1,12 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createRangeFiltersController({
   elements,
   deps,
@@ -33,6 +42,9 @@ export function createRangeFiltersController({
     isAnalyticsRequestCurrent,
   } = deps;
 
+  /**
+   * @param {any} range
+   */
   function normalizeRangeValue(range) {
     if (!range || range === "all") return "all";
     if (typeof range === "string") return range;
@@ -42,6 +54,10 @@ export function createRangeFiltersController({
     return range;
   }
 
+  /**
+   * @param {any[]} entries
+   * @param {any} range
+   */
   function filterEntriesByRange(entries, range) {
     if (!range || range === "all") return entries;
     if (range.type === "custom") {
@@ -59,9 +75,9 @@ export function createRangeFiltersController({
     if (!Number.isFinite(days) || days <= 0) return entries;
 
     const timestamps = entries
-      .map(entry => getTimestamp(entry))
+      .map(/** @param {any} entry */ entry => getTimestamp(entry))
       .filter(Boolean)
-      .sort((a, b) => a - b);
+      .sort((/** @type {any} */ a, /** @type {any} */ b) => Number(a) - Number(b));
     if (!timestamps.length) return entries;
 
     const end = new Date(timestamps[timestamps.length - 1]);
@@ -76,6 +92,9 @@ export function createRangeFiltersController({
     });
   }
 
+  /**
+   * @param {any} range
+   */
   function buildRangeKey(range) {
     if (!range || range === "all") return "all";
     if (typeof range === "string") return `days:${range}`;
@@ -87,6 +106,9 @@ export function createRangeFiltersController({
     return `range:${JSON.stringify(range)}`;
   }
 
+  /**
+   * @param {any} range
+   */
   function describeRange(range) {
     if (!range || range === "all") return "entire history";
     if (typeof range === "object" && range.type === "custom") {
@@ -96,6 +118,9 @@ export function createRangeFiltersController({
     return Number.isFinite(days) ? `last ${days} days` : String(range);
   }
 
+  /**
+   * @param {boolean} visible
+   */
   function showCustomControls(visible) {
     if (!customControls) return;
     if (visible) {
@@ -137,9 +162,9 @@ export function createRangeFiltersController({
     }
 
     const timestamps = entries
-      .map(entry => getTimestamp(entry))
+      .map(/** @param {any} entry */ entry => getTimestamp(entry))
       .filter(Boolean)
-      .sort((a, b) => a - b);
+      .sort((/** @type {any} */ a, /** @type {any} */ b) => Number(a) - Number(b));
     if (!timestamps.length) {
       customStartInput.disabled = true;
       customEndInput.disabled = true;
@@ -176,6 +201,9 @@ export function createRangeFiltersController({
     }
   }
 
+  /**
+   * @param {any} range
+   */
   async function applyRangeAndRender(range) {
     const entries = getDatasetEntries();
     if (!entries.length) {
@@ -244,6 +272,10 @@ export function createRangeFiltersController({
     onRangeApplied?.();
   }
 
+  /**
+   * @param {string} start
+   * @param {string} end
+   */
   async function applyCustomRange(start, end) {
     const startDate = new Date(start);
     const endDate = new Date(end);

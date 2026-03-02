@@ -1,6 +1,14 @@
+// @ts-check
+
+/**
+ * @typedef {{ resolve: (value: any) => void, reject: (reason?: any) => void }} WorkerRequestCallbacks
+ */
+
 export function createAnalyticsPipeline() {
+  /** @type {Worker | null} */
   let analyticsWorkerInstance = null;
   let analyticsWorkerRequestId = 0;
+  /** @type {Map<number, WorkerRequestCallbacks>} */
   const analyticsWorkerRequests = new Map();
 
   function ensureAnalyticsWorker() {
@@ -8,7 +16,7 @@ export function createAnalyticsPipeline() {
     analyticsWorkerInstance = new Worker(new URL("../analyticsWorker.js", import.meta.url), {
       type: "module",
     });
-    analyticsWorkerInstance.onmessage = event => {
+    analyticsWorkerInstance.onmessage = (/** @type {MessageEvent} */ event) => {
       const { id, analytics, error } = event.data || {};
       const callbacks = analyticsWorkerRequests.get(id);
       if (!callbacks) return;
@@ -29,6 +37,9 @@ export function createAnalyticsPipeline() {
     return analyticsWorkerInstance;
   }
 
+  /**
+   * @param {any[]} entries
+   */
   function computeAnalyticsWithWorker(entries) {
     const worker = ensureAnalyticsWorker();
     const id = ++analyticsWorkerRequestId;

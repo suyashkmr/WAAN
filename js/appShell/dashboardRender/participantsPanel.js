@@ -1,5 +1,14 @@
+// @ts-check
+
 import { renderParticipants as renderParticipantsSection } from "../../analytics/summary.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createParticipantsPanelController({ elements, deps }) {
   const {
     participantsBody,
@@ -13,19 +22,22 @@ export function createParticipantsPanelController({ elements, deps }) {
     setParticipantView,
   } = deps;
 
+  /**
+   * @param {AnyRecord} analytics
+   */
   function renderParticipants(analytics) {
     if (!participantsBody) return;
-    renderParticipantsSection({
+    renderParticipantsSection(/** @type {any} */ ({
       analytics,
       entries: getDatasetEntries(),
       participantFilters,
       participantsBody,
       participantsNote,
       participantPresetButtons,
-      setParticipantView: next => {
+      setParticipantView: /** @param {any[]} next */ next => {
         setParticipantView(Array.isArray(next) ? next : []);
       },
-    });
+    }));
   }
 
   return {
@@ -33,19 +45,36 @@ export function createParticipantsPanelController({ elements, deps }) {
   };
 }
 
+/**
+ * @param {AnyRecord} participantFilters
+ * @param {any} value
+ */
 export function applyParticipantTopChange(participantFilters, value) {
   const numeric = Number(value ?? 0);
   participantFilters.topCount = Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
 }
 
+/**
+ * @param {AnyRecord} participantFilters
+ * @param {any} value
+ */
 export function applyParticipantSortChange(participantFilters, value) {
   participantFilters.sortMode = value || "most";
 }
 
+/**
+ * @param {AnyRecord} participantFilters
+ * @param {any} value
+ */
 export function applyParticipantTimeframeChange(participantFilters, value) {
   participantFilters.timeframe = value || "all";
 }
 
+/**
+ * @param {AnyRecord} participantFilters
+ * @param {string} preset
+ * @param {{ participantsTopSelect: HTMLSelectElement | null | undefined, participantsSortSelect: HTMLSelectElement | null | undefined, participantsTimeframeSelect: HTMLSelectElement | null | undefined }} controls
+ */
 export function applyParticipantPreset(participantFilters, preset, controls) {
   const { participantsTopSelect, participantsSortSelect, participantsTimeframeSelect } = controls;
   if (!preset) return;
@@ -70,8 +99,13 @@ export function applyParticipantPreset(participantFilters, preset, controls) {
   }
 }
 
+/**
+ * @param {MouseEvent} event
+ * @param {HTMLElement | null | undefined} participantsBody
+ */
 export function toggleParticipantRow(event, participantsBody) {
-  const toggle = event.target.closest(".participant-toggle");
+  const target = /** @type {Element | null} */ (event.target instanceof Element ? event.target : null);
+  const toggle = target?.closest(".participant-toggle");
   if (!toggle) return;
   event.preventDefault();
   const row = toggle.closest("tr");

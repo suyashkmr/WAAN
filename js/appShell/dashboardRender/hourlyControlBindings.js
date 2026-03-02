@@ -1,3 +1,14 @@
+// @ts-check
+
+/**
+ * @param {{
+ *   getHourlyState: () => { filters: Record<string, boolean>, brush: { start: number, end: number } },
+ *   updateHourlyState: (next: Record<string, any>) => void,
+ *   ensureDayFilters: () => void,
+ *   ensureHourFilters: () => void,
+ *   documentRef?: Document | null,
+ * }} params
+ */
 export function initActivityHourlyControls({
   getHourlyState,
   updateHourlyState,
@@ -7,12 +18,12 @@ export function initActivityHourlyControls({
 }) {
   if (!documentRef) return;
 
-  const weekdayToggle = documentRef.getElementById("filter-weekdays");
-  const weekendToggle = documentRef.getElementById("filter-weekends");
-  const workingToggle = documentRef.getElementById("filter-working");
-  const offToggle = documentRef.getElementById("filter-offhours");
-  const brushStart = documentRef.getElementById("hourly-brush-start");
-  const brushEnd = documentRef.getElementById("hourly-brush-end");
+  const weekdayToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-weekdays"));
+  const weekendToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-weekends"));
+  const workingToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-working"));
+  const offToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-offhours"));
+  const brushStart = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("hourly-brush-start"));
+  const brushEnd = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("hourly-brush-end"));
 
   if (weekdayToggle) {
     weekdayToggle.addEventListener("change", () => {

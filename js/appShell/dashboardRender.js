@@ -1,3 +1,5 @@
+// @ts-check
+
 import { renderSummaryCards as renderSummarySection } from "../analytics/summary.js";
 import { renderTimeOfDayPanel } from "../analytics/activity.js";
 import { renderSentimentSection } from "../analytics/sentiment.js";
@@ -16,6 +18,13 @@ import {
 import { createHighlightsStatsController } from "./dashboardRender/highlightsStats.js";
 import { logPerfDuration, measurePerfSync } from "../perf.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createDashboardRenderController({ elements, deps }) {
   const {
     summaryEl,
@@ -97,29 +106,45 @@ export function createDashboardRenderController({ elements, deps }) {
     syncHourlyControlsWithState,
   } = activityPanelsController;
 
-  const highlightsStatsController = createHighlightsStatsController({
-    elements,
-    deps: {
-      sanitizeText,
-      formatNumber,
-      formatFloat,
-    },
-  });
+  const highlightsStatsController = createHighlightsStatsController(
+    /** @type {any} */ ({
+      elements,
+      deps: {
+        sanitizeText,
+        formatNumber,
+        formatFloat,
+      },
+    }),
+  );
   const { renderHighlights, renderStatistics, formatSentimentScore } = highlightsStatsController;
 
   let renderTaskToken = 0;
   const scheduleDeferredRender = createDeferredRenderScheduler({ getToken: () => renderTaskToken });
 
+  /**
+   * @param {string} label
+   * @param {() => void} task
+   * @param {AnyRecord | null} [details]
+   */
   function measureRenderStep(label, task, details = null) {
-    measurePerfSync(`dashboard.${label}`, task, details);
+    measurePerfSync(`dashboard.${label}`, task, /** @type {any} */ (details));
   }
 
+  /**
+   * @param {string} label
+   * @param {() => void} task
+   * @param {number} token
+   * @param {AnyRecord | null} [details]
+   */
   function scheduleMeasuredDeferred(label, task, token, details = null) {
     scheduleDeferredRender(() => {
       measureRenderStep(label, task, details);
     }, token);
   }
 
+  /**
+   * @param {AnyRecord} analytics
+   */
   function renderDashboard(analytics) {
     const label = getDatasetLabel();
     const currentToken = ++renderTaskToken;
@@ -173,13 +198,13 @@ export function createDashboardRenderController({ elements, deps }) {
     scheduleMeasuredDeferred(
       "message_types",
       () =>
-        renderMessageTypesSection({
+        renderMessageTypesSection(/** @type {any} */ ({
           data: analytics.message_types ?? null,
           elements: {
             summaryEl: messageTypeSummaryEl,
             noteEl: messageTypeNoteEl,
           },
-        }),
+        })),
       currentToken,
       { totalMessages },
     );
@@ -187,7 +212,7 @@ export function createDashboardRenderController({ elements, deps }) {
     scheduleMeasuredDeferred(
       "polls",
       () =>
-        renderPollsSection({
+        renderPollsSection(/** @type {any} */ ({
           data: analytics.polls ?? null,
           elements: {
             listEl: pollsListEl,
@@ -195,7 +220,7 @@ export function createDashboardRenderController({ elements, deps }) {
             creatorsEl: pollsCreatorsEl,
             noteEl: pollsNote,
           },
-        }),
+        })),
       currentToken,
       { totalMessages },
     );
@@ -209,7 +234,7 @@ export function createDashboardRenderController({ elements, deps }) {
     });
     setDataAvailabilityState(Boolean(analytics));
     const renderFinishedAt = globalThis.performance?.now?.() ?? Date.now();
-    logPerfDuration("dashboard.total_render", renderFinishedAt - renderStartedAt, { totalMessages });
+    logPerfDuration("dashboard.total_render", renderFinishedAt - renderStartedAt, /** @type {any} */ ({ totalMessages }));
   }
 
   return {

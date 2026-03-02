@@ -1,6 +1,18 @@
+// @ts-check
+
+/**
+ * @param {{
+ *   globalProgressEl: HTMLElement | null | undefined,
+ *   globalProgressLabel: HTMLElement | null | undefined,
+ * }} params
+ */
 export function createBusyRuntimeController({ globalProgressEl, globalProgressLabel }) {
   let globalBusyCount = 0;
 
+  /**
+   * @param {boolean} isBusy
+   * @param {string} [message]
+   */
   function setGlobalBusy(isBusy, message = "Working...") {
     if (!globalProgressEl || !globalProgressLabel) return;
     if (isBusy) {
@@ -15,6 +27,12 @@ export function createBusyRuntimeController({ globalProgressEl, globalProgressLa
     }
   }
 
+  /**
+   * @template T
+   * @param {() => Promise<T> | T} task
+   * @param {string} [message]
+   * @returns {Promise<T>}
+   */
   async function withGlobalBusy(task, message = "Working...") {
     setGlobalBusy(true, message);
     try {
@@ -29,6 +47,10 @@ export function createBusyRuntimeController({ globalProgressEl, globalProgressLa
   };
 }
 
+/**
+ * @param {string} url
+ * @param {RequestInit} [options]
+ */
 export async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -38,11 +60,17 @@ export async function fetchJson(url, options = {}) {
   return response.json();
 }
 
+/**
+ * @param {string | null | undefined} value
+ */
 export function stripRelaySuffix(value) {
   if (!value) return "";
   return value.replace(/@(?:c|g)\.us$/gi, "");
 }
 
+/**
+ * @param {{ pushName?: string, wid?: string } | null | undefined} account
+ */
 export function formatRelayAccount(account) {
   if (!account) return "";
   if (account.pushName) return account.pushName;

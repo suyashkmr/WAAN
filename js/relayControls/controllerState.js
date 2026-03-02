@@ -1,3 +1,21 @@
+// @ts-check
+
+/**
+ * @typedef {{
+ *   status: any,
+ *   controlsLocked: boolean,
+ *   pollTimer: ReturnType<typeof setTimeout> | null,
+ *   pollVisibilityCleanup: (() => void) | null,
+ *   lastStatusKind: string | null,
+ *   lastAppliedStateKind: string | null,
+ *   lastErrorNotice: string | null,
+ *   primaryAction: string,
+ * }} RelayUiState
+ */
+
+/**
+ * @returns {RelayUiState}
+ */
 export function createRelayUiState() {
   return {
     status: null,
@@ -11,6 +29,14 @@ export function createRelayUiState() {
   };
 }
 
+/**
+ * @param {{
+ *   relayUiState: RelayUiState,
+ *   disabled: boolean,
+ *   buttons: Array<HTMLButtonElement | null | undefined>,
+ *   applyRelayPrimaryAction?: ((status: any) => void) | null,
+ * }} params
+ */
 export function setRelayControlsDisabled({
   relayUiState,
   disabled,

@@ -1,3 +1,13 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {AnyRecord} status
+ * @param {{ relayServiceName: string, brandName: string, formatRelayAccount: (account: any) => string }} options
+ */
 export function describeRelayStatus(status, { relayServiceName, brandName, formatRelayAccount }) {
   const baseMessage = (() => {
     switch (status.status) {
@@ -16,18 +26,26 @@ export function describeRelayStatus(status, { relayServiceName, brandName, forma
   return { message: baseMessage };
 }
 
+/**
+ * @param {unknown} value
+ */
 function normalizeAccountId(value) {
   if (!value) return "";
   if (typeof value === "string") return value.replace(/@[\w.]+$/, "");
   if (typeof value === "object") {
-    if (typeof value._serialized === "string") return value._serialized.replace(/@[\w.]+$/, "");
-    if (typeof value.user === "string" && typeof value.server === "string") {
-      return `${value.user}`.replace(/@[\w.]+$/, "");
+    const objectValue = /** @type {any} */ (value);
+    if (typeof objectValue._serialized === "string") return objectValue._serialized.replace(/@[\w.]+$/, "");
+    if (typeof objectValue.user === "string" && typeof objectValue.server === "string") {
+      return `${objectValue.user}`.replace(/@[\w.]+$/, "");
     }
   }
   return "";
 }
 
+/**
+ * @param {AnyRecord | null | undefined} account
+ * @param {string} relayClientLabel
+ */
 export function formatRelayAccount(account, relayClientLabel) {
   if (!account) return "";
   const name =
@@ -42,6 +60,19 @@ export function formatRelayAccount(account, relayClientLabel) {
   return number || relayClientLabel;
 }
 
+/**
+ * @param {{
+ *   status: AnyRecord | null | undefined,
+ *   relayBannerEl: HTMLElement | null | undefined,
+ *   relayBannerMessage: HTMLElement | null | undefined,
+ *   relayBannerMeta: HTMLElement | null | undefined,
+ *   describeRelayStatusFn: (status: any) => { message: string },
+ *   formatRelayAccountFn: (account: any) => string,
+ *   formatRelativeTime: (value: any) => string,
+ *   formatDisplayDate: (value: any) => string,
+ *   formatNumber: (value: number) => string,
+ * }} params
+ */
 export function updateRelayBanner({
   status,
   relayBannerEl,
@@ -85,6 +116,9 @@ export function updateRelayBanner({
   relayBannerMeta.textContent = metaParts.join(" · ") || "Relay ready.";
 }
 
+/**
+ * @param {{ status: AnyRecord | null | undefined, relayOnboardingSteps: Array<HTMLElement> | null | undefined }} params
+ */
 export function updateRelayOnboarding({ status, relayOnboardingSteps }) {
   if (!relayOnboardingSteps?.length) return;
   const state = status?.status || "stopped";

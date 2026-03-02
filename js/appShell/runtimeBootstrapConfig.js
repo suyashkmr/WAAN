@@ -1,8 +1,32 @@
+// @ts-check
+
 import {
   createRuntimeEventBindings,
   createRuntimeBootstrapDeps,
 } from "./runtimeConfig.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   filterRefs: AnyRecord,
+ *   exportRefs: AnyRecord,
+ *   dashboardRefs: AnyRecord,
+ *   relayRefs: AnyRecord,
+ *   runtimeRefs: AnyRecord,
+ *   handlers: AnyRecord,
+ *   deps: AnyRecord,
+ *   relayServiceName: string,
+ *   statusConfig: AnyRecord,
+ *   sectionNavConfig: AnyRecord,
+ *   compactConfig: AnyRecord,
+ *   accessibilityConfig: AnyRecord,
+ *   onboardingConfig: AnyRecord,
+ *   keyboardDeps: AnyRecord,
+ * }} params
+ */
 export function createRuntimeBootstrapConfig({
   filterRefs,
   exportRefs,

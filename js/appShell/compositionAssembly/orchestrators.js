@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   createExportRuntime,
   createDatasetLifecycleRuntime,
@@ -7,6 +9,19 @@ import {
 import { createRelayCompositionAdapter } from "./relayAdapter.js";
 import { createDatasetLifecycleCompositionAdapter } from "./datasetAdapter.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   analytics: AnyRecord,
+ *   constants: AnyRecord,
+ *   wiring: AnyRecord,
+ * }} params
+ */
 export function createExportOrchestrator({ state, utils, analytics, constants, wiring }) {
   return createExportRuntime({
     brandName: constants.brandName,
@@ -31,6 +46,16 @@ export function createExportOrchestrator({ state, utils, analytics, constants, w
   });
 }
 
+/**
+ * @param {{
+ *   dom: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   constants: AnyRecord,
+ *   wiring: AnyRecord,
+ *   electronAPI: AnyRecord,
+ * }} params
+ */
 export function createDatasetRelayOrchestrator({
   dom,
   state,
@@ -78,7 +103,17 @@ export function createDatasetRelayOrchestrator({
   };
 }
 
+/**
+ * @param {{
+ *   wiring: AnyRecord,
+ *   loadRemoteChat: (...args: any[]) => Promise<void> | void,
+ *   updateStatus: (...args: any[]) => void,
+ * }} params
+ */
 export function createSelectionOrchestrator({ wiring, loadRemoteChat, updateStatus }) {
+  /**
+   * @param {any} event
+   */
   return async function handleChatSelectionChange(event) {
     return wiring.handleChatSelectionChangeCore(event, {
       loadRemoteChat,

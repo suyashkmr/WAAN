@@ -1,3 +1,12 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {unknown} value
+ */
 function sanitizeFilePart(value) {
   return String(value || "")
     .toLowerCase()
@@ -5,6 +14,9 @@ function sanitizeFilePart(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * @param {{ brandName?: string, now?: Date }} [params]
+ */
 export function buildDiagnosticsFilename({
   brandName = "waan",
   now = new Date(),
@@ -17,6 +29,18 @@ export function buildDiagnosticsFilename({
   return `${label}_diagnostics_${stamp}.json`;
 }
 
+/**
+ * @param {{
+ *   brandName?: string,
+ *   relayServiceName?: string,
+ *   relayStatus?: AnyRecord | null,
+ *   relayLogs?: string[],
+ *   relayConnectionLabel?: string,
+ *   datasetLabel?: string | null,
+ *   hasData?: boolean,
+ *   remoteChatCount?: number,
+ * }} params
+ */
 export function buildDiagnosticsSnapshot({
   brandName,
   relayServiceName,
@@ -27,8 +51,8 @@ export function buildDiagnosticsSnapshot({
   hasData,
   remoteChatCount,
 }) {
-  const nav = typeof navigator !== "undefined" ? navigator : {};
-  const win = typeof window !== "undefined" ? window : {};
+  const nav = /** @type {any} */ (typeof navigator !== "undefined" ? navigator : {});
+  const win = /** @type {any} */ (typeof window !== "undefined" ? window : {});
   const tz = Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || "unknown";
 
   return {
@@ -64,6 +88,10 @@ export function buildDiagnosticsSnapshot({
   };
 }
 
+/**
+ * @param {string[]} [lines]
+ * @param {number} [max]
+ */
 function takeTail(lines = [], max = 40) {
   if (!Array.isArray(lines)) return [];
   if (max <= 0) return [];
@@ -71,6 +99,9 @@ function takeTail(lines = [], max = 40) {
   return lines.slice(lines.length - max);
 }
 
+/**
+ * @param {{ snapshot?: AnyRecord, maxLogLines?: number }} [params]
+ */
 export function buildIssueReportBody({
   snapshot,
   maxLogLines = 40,
@@ -117,6 +148,9 @@ export function buildIssueReportBody({
   ].join("\n");
 }
 
+/**
+ * @param {{ issueBaseUrl?: string, title?: string, body?: string }} [params]
+ */
 export function buildIssueReportUrl({
   issueBaseUrl,
   title,

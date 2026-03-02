@@ -1,3 +1,5 @@
+// @ts-check
+
 import { createCompactModeManager, createAccessibilityController } from "../ui.js";
 import { createOnboardingController } from "./onboarding.js";
 import { createStatusUiController } from "./statusUi.js";
@@ -6,6 +8,23 @@ import { createKeyboardShortcutsController } from "./keyboardShortcuts.js";
 import { setupAppBootstrap } from "./bootstrapApp.js";
 import { initWindowToasts } from "./constants.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ * @typedef {{ elements: AnyRecord, handlers: AnyRecord, deps: AnyRecord }} RuntimeEventBindingsConfig
+ */
+
+/**
+ * @param {{
+ *   statusConfig: AnyRecord,
+ *   sectionNavConfig: AnyRecord,
+ *   compactConfig: AnyRecord,
+ *   accessibilityConfig: AnyRecord,
+ *   onboardingConfig: AnyRecord,
+ *   keyboardDeps: AnyRecord,
+ *   eventBindings: RuntimeEventBindingsConfig,
+ *   bootstrapDeps: AnyRecord,
+ * }} params
+ */
 export function bootstrapAppShellRuntime({
   statusConfig,
   sectionNavConfig,
@@ -31,21 +50,25 @@ export function bootstrapAppShellRuntime({
   });
   const { buildSectionNav, setupSectionNavTracking } = sectionNavController;
 
-  const { apply: applyCompactMode, init: initCompactMode } = createCompactModeManager({
-    toggle: compactConfig.toggle,
-    storageKey: compactConfig.storageKey,
-    showToast,
-  });
+  const { apply: applyCompactMode, init: initCompactMode } = createCompactModeManager(
+    /** @type {any} */ ({
+      toggle: compactConfig.toggle,
+      storageKey: compactConfig.storageKey,
+      showToast,
+    }),
+  );
 
-  const accessibilityController = createAccessibilityController({
-    reduceMotionToggle: accessibilityConfig.reduceMotionToggle,
-    highContrastToggle: accessibilityConfig.highContrastToggle,
-    motionPreferenceQuery: accessibilityConfig.motionPreferenceQuery,
-    initialReduceMotionPreferred: accessibilityConfig.initialReduceMotionPreferred,
-    showToast,
-    reduceMotionStorageKey: accessibilityConfig.reduceMotionStorageKey,
-    highContrastStorageKey: accessibilityConfig.highContrastStorageKey,
-  });
+  const accessibilityController = createAccessibilityController(
+    /** @type {any} */ ({
+      reduceMotionToggle: accessibilityConfig.reduceMotionToggle,
+      highContrastToggle: accessibilityConfig.highContrastToggle,
+      motionPreferenceQuery: accessibilityConfig.motionPreferenceQuery,
+      initialReduceMotionPreferred: accessibilityConfig.initialReduceMotionPreferred,
+      showToast,
+      reduceMotionStorageKey: accessibilityConfig.reduceMotionStorageKey,
+      highContrastStorageKey: accessibilityConfig.highContrastStorageKey,
+    }),
+  );
   const { initAccessibilityControls } = accessibilityController;
 
   const onboardingController = createOnboardingController({

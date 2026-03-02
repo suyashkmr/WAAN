@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   formatNumber,
   formatFloat,
@@ -9,6 +11,24 @@ import {
 import { getTimestamp } from "../analytics.js";
 import { formatHourLabel, computeTimeOfDayDataset } from "../analytics/activity.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   filterRefs: AnyRecord,
+ *   dashboardRefs: AnyRecord,
+ *   savedViewRefs: AnyRecord,
+ *   searchRefs: AnyRecord,
+ *   runtimeRefs: AnyRecord,
+ *   stateStore: AnyRecord,
+ *   brandName: string,
+ *   searchResultLimit: number,
+ *   datasetEmptyStateManager: AnyRecord,
+ *   setDatasetEmptyMessage: (...args: any[]) => void,
+ * }} params
+ */
 export function createControllerWiringConfig({
   filterRefs,
   dashboardRefs,
@@ -71,6 +91,20 @@ export function createControllerWiringConfig({
   };
 }
 
+/**
+ * @param {{
+ *   filterRefs: AnyRecord,
+ *   runtimeRefs: AnyRecord,
+ *   relayRefs: AnyRecord,
+ *   stateStore: AnyRecord,
+ *   setDatasetEmptyMessage: (...args: any[]) => void,
+ *   fetchJson: (...args: any[]) => Promise<any>,
+ *   brandName: string,
+ *   apiBase: string,
+ *   wiring: AnyRecord,
+ *   electronAPI: AnyRecord,
+ * }} params
+ */
 export function createCompositionAssemblyConfig({
   filterRefs,
   runtimeRefs,

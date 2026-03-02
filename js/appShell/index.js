@@ -1,3 +1,5 @@
+// @ts-check
+
 export { createOnboardingController } from "./onboarding.js";
 export { createStatusUiController } from "./statusUi.js";
 export { createThemeUiController } from "./themeUi.js";

@@ -1,3 +1,25 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   chatId: string,
+ *   options?: AnyRecord,
+ *   apiBase: string,
+ *   remoteMessageLimit: number,
+ *   brandName: string,
+ *   relayServiceName: string,
+ *   fetchJson: (url: string, options?: RequestInit) => Promise<any>,
+ *   updateStatus: (message: string, tone: string) => void,
+ *   withGlobalBusy: <T>(task: () => Promise<T> | T, message?: string) => Promise<T>,
+ *   applyEntriesToApp: (...args: any[]) => Promise<void>,
+ *   encodeChatSelectorValue: (source: string, chatId: string) => string,
+ *   formatNumber: (value: number) => string,
+ * }} params
+ */
 export async function loadRemoteChatFromRelay({
   chatId,
   options = {},

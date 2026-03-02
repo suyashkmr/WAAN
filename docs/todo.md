@@ -268,6 +268,72 @@ Completed work is archived in git history and was removed from this file for cla
         - [x] `js/appShell/controllerWiring.js`
         - [x] `js/appShell/eventBindings.js`
       - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for orchestration composition/bootstrap modules:
+        - [x] `js/appShell/compositionAssembly.js`
+        - [x] `js/appShell/compositionRuntime.js`
+        - [x] `js/appShell/compositionAssembly/orchestrators.js`
+        - [x] `js/appShell/compositionAssembly/apiSurface.js`
+        - [x] `js/appShell/runtimeBootstrap.js`
+        - [x] `js/appShell/runtimeBootstrapConfig.js`
+      - [x] Preserved explicit null passthrough semantics for dashboard view refs while tightening typed contracts (`js/appShell/controllerWiring.js`, `js/appShell/controllerWiring/dashboardViewAdapter.js`).
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for runtime and relay orchestration modules:
+        - [x] `js/appShell/bootstrap.js`
+        - [x] `js/appShell/bootstrapApp.js`
+        - [x] `js/appShell/compositionConfig.js`
+        - [x] `js/appShell/relayBootstrap.js`
+        - [x] `js/appShell/relayRuntime.js`
+        - [x] `js/appShell/sharedRuntime.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for dashboard/data/range orchestration modules:
+        - [x] `js/appShell/dashboardRender.js`
+        - [x] `js/appShell/dataStatus.js`
+        - [x] `js/appShell/rangeFilters.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for controller-wiring composition modules:
+        - [x] `js/appShell/controllerWiring/rangeSearchSavedViews.js`
+        - [x] `js/appShell/controllerWiring/dashboardDataStatusTheme.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for relay-control support modules:
+        - [x] `js/relayControls/controllerState.js`
+        - [x] `js/relayControls/platformAdapter.js`
+        - [x] `js/relayControls/syncProgress.js`
+        - [x] `js/relayControls/statusView.js`
+        - [x] `js/relayControls/loadRemoteChat.js`
+        - [x] `js/relayControls/diagnosticsBundle.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for app-shell foundational modules:
+        - [x] `js/appShell/adapters.js`
+        - [x] `js/appShell/analyticsPipeline.js`
+        - [x] `js/appShell/constants.js`
+        - [x] `js/appShell/index.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for dashboard control modules:
+        - [x] `js/appShell/dashboardRender/hourlyControlBindings.js`
+        - [x] `js/appShell/dashboardRender/participantsPanel.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [ ] Remaining typed-JS conversion backlog (tracked explicitly):
+        - [ ] `js/appShell/chatSelection.js`
+        - [ ] `js/appShell/compositionAssembly/datasetAdapter.js`
+        - [ ] `js/appShell/compositionAssembly/relayAdapter.js`
+        - [ ] `js/appShell/datasetLifecycle.js`
+        - [ ] `js/appShell/domRefGroups.js`
+        - [ ] `js/appShell/domRefs.js`
+        - [ ] `js/appShell/entryConfig.js`
+        - [ ] `js/appShell/exportPipeline.js`
+        - [ ] `js/appShell/exportRuntime.js`
+        - [ ] `js/appShell/keyboardShortcuts.js`
+        - [ ] `js/appShell/onboarding.js`
+        - [ ] `js/appShell/participantDirectory.js`
+        - [ ] `js/appShell/participantInteractions.js`
+        - [ ] `js/appShell/pdfPreview.js`
+        - [ ] `js/appShell/sectionNav.js`
+        - [ ] `js/appShell/statusUi.js`
+        - [ ] `js/appShell/themeUi.js`
+        - [ ] `js/relayControls/actions.js`
+        - [ ] `js/relayControls/controllerSupport.js`
+        - [ ] `js/relayControls/firstRunSetup.js`
+        - [ ] `js/relayControls/logStream.js`
   - [ ] Keep existing runtime behavior unchanged and verify with `npm run ci:verify`.
   - [ ] Exit criteria: core orchestration modules are type-checked and CI remains green without behavior regressions.
 - [ ] Phase 3 (parallel with late phase 2, 3-5 days): Expand reliability gates for core relay and export flows.

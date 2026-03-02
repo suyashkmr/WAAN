@@ -1,6 +1,25 @@
+// @ts-check
+
 import { createRelayController } from "../relayControls.js";
 import { createRelayBootstrapController } from "./relayBootstrap.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   relayElements: AnyRecord,
+ *   relayHelpers: AnyRecord,
+ *   electronAPI: AnyRecord,
+ *   bootstrapElements: AnyRecord,
+ *   fetchJson: (...args: any[]) => Promise<any>,
+ *   apiBase: string,
+ *   setRemoteChatList: (...args: any[]) => void,
+ *   refreshChatSelector: (...args: any[]) => Promise<any> | void,
+ *   updateStatus: (...args: any[]) => void,
+ * }} params
+ */
 export function createRelayRuntime({
   relayElements,
   relayHelpers,
@@ -15,7 +34,7 @@ export function createRelayRuntime({
   const relayController = createRelayController({
     elements: relayElements,
     helpers: relayHelpers,
-    electronAPI,
+    electronAPI: /** @type {any} */ (electronAPI),
   });
 
   const {

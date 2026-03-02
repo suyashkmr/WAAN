@@ -1,3 +1,16 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   exportRuntime: AnyRecord,
+ *   relayRuntime: AnyRecord,
+ *   handleChatSelectionChange: (...args: any[]) => Promise<void> | void,
+ * }} params
+ */
 export function createCompositionAssemblyApi({
   exportRuntime,
   relayRuntime,

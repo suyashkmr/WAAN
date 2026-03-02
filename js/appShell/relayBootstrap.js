@@ -1,3 +1,16 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   elements: AnyRecord,
+ *   handlers: AnyRecord,
+ *   deps: AnyRecord,
+ * }} params
+ */
 export function createRelayBootstrapController({ elements, handlers, deps }) {
   const {
     relayStartButton,

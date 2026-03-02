@@ -1,3 +1,12 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createDataStatusController({ elements, deps }) {
   const {
     dashboardRoot,
@@ -19,11 +28,15 @@ export function createDataStatusController({ elements, deps }) {
 
   let dataAvailable = false;
   let readyCelebrated = false;
+  /** @type {ReturnType<typeof setTimeout> | null} */
   let celebrationTimer = null;
 
+  /**
+   * @param {{ connect?: string, sync?: string, ready?: string }} [params]
+   */
   function applyHeroMilestones({ connect = "pending", sync = "pending", ready = "pending" } = {}) {
     if (!heroMilestoneSteps?.length) return;
-    heroMilestoneSteps.forEach(step => {
+    heroMilestoneSteps.forEach(/** @param {HTMLElement} step */ step => {
       const id = step.dataset.step;
       if (id === "connect") step.dataset.state = connect;
       if (id === "sync") step.dataset.state = sync;
@@ -31,6 +44,9 @@ export function createDataStatusController({ elements, deps }) {
     });
   }
 
+  /**
+   * @param {boolean} isLoading
+   */
   function setDashboardLoadingState(isLoading) {
     if (!dashboardRoot) return;
     dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
@@ -40,6 +56,9 @@ export function createDataStatusController({ elements, deps }) {
     return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
+  /**
+   * @param {{ state?: string, message?: string }} [params]
+   */
   function updateHeroSyncMeta({ state = "idle", message = "Awaiting relay." } = {}) {
     if (heroSyncDot) {
       heroSyncDot.dataset.state = state;
@@ -49,18 +68,24 @@ export function createDataStatusController({ elements, deps }) {
     }
   }
 
+  /**
+   * @param {boolean} isSyncing
+   */
   function setDashboardSyncState(isSyncing) {
     if (!dashboardRoot) return;
     dashboardRoot.classList.toggle("is-syncing", Boolean(isSyncing));
   }
 
+  /**
+   * @param {{ rearm?: boolean }} [params]
+   */
   function clearReadyCelebration({ rearm = true } = {}) {
     if (celebrationTimer) {
       clearTimeout(celebrationTimer);
       celebrationTimer = null;
     }
     heroStatusBadge?.classList.remove("hero-status-badge-ready");
-    heroMilestoneSteps?.forEach(step => {
+    heroMilestoneSteps?.forEach(/** @param {HTMLElement} step */ step => {
       if (step.dataset.step === "ready") {
         step.classList.remove("is-ready-celebration");
       }
@@ -72,7 +97,7 @@ export function createDataStatusController({ elements, deps }) {
 
   function triggerReadyCelebration() {
     heroStatusBadge?.classList.add("hero-status-badge-ready");
-    heroMilestoneSteps?.forEach(step => {
+    heroMilestoneSteps?.forEach(/** @param {HTMLElement} step */ step => {
       if (step.dataset.step === "ready") {
         step.classList.add("is-ready-celebration");
       }
@@ -82,6 +107,9 @@ export function createDataStatusController({ elements, deps }) {
     }, 1200);
   }
 
+  /**
+   * @param {boolean} hasData
+   */
   function setDataAvailabilityState(hasData) {
     dataAvailable = Boolean(hasData);
     datasetEmptyStateManager.setAvailability(dataAvailable);
@@ -95,8 +123,12 @@ export function createDataStatusController({ elements, deps }) {
     savedViewsController.refreshUI();
   }
 
+  /**
+   * @param {{ status?: string, account?: AnyRecord, chatCount?: number, syncingChats?: boolean, lastQr?: string } | null | undefined} status
+   */
   function updateHeroRelayStatus(status) {
     if (!heroStatusBadge || !heroStatusCopy) return;
+    /** @param {string} state */
     const setHeroBadgeState = state => {
       if (!heroStatusBadge) return;
       heroStatusBadge.dataset.state = state;

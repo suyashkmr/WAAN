@@ -1,6 +1,25 @@
+// @ts-check
+
 import { createEventBindingsController } from "./eventBindings.js";
 import { createBootstrapController } from "./bootstrap.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @typedef {{ elements: AnyRecord, handlers: AnyRecord, deps: AnyRecord }} RuntimeEventBindingsConfig
+ * @typedef {{ elements: AnyRecord, deps: AnyRecord }} RuntimeBootstrapConfig
+ */
+
+/**
+ * @param {{
+ *   status: AnyRecord,
+  *   keyboardShortcuts: AnyRecord,
+ *   eventBindings: RuntimeEventBindingsConfig,
+ *   bootstrap: RuntimeBootstrapConfig,
+ * }} params
+ */
 export function setupAppBootstrap({
   status,
   keyboardShortcuts,
@@ -14,7 +33,7 @@ export function setupAppBootstrap({
     showToast,
   } = status;
 
-  setStatusCallback((message, tone) => {
+  setStatusCallback((/** @type {string} */ message, /** @type {string} */ tone) => {
     if (!statusEl) return;
     showStatusMessage(message, tone);
     if (tone === "success" || tone === "warning" || tone === "error") {
