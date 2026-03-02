@@ -1,11 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   createVueFrontendAdapterLayer,
   installVueFrontendAdapterLayer,
   VUE_FRONTEND_ADAPTER_KEY,
 } from "../js/appShell/vueFrontendAdapterLayer.js";
+import { VUE_BRIDGE_NAMES } from "../js/vue/bridgeRegistry.js";
+import { VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
 describe("vue frontend adapter layer", () => {
+  afterEach(() => {
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
+  });
+
   it("maps app-shell state APIs and relay endpoints for Vue composables", () => {
     const snapshot = { selection: { activeChatId: "remote:1" } };
     const unsubscribe = vi.fn();
@@ -48,6 +54,10 @@ describe("vue frontend adapter layer", () => {
     expect(stateStore.setAppShellCustomRange).toHaveBeenCalled();
     expect(stateStore.setAppShellHourlyFiltersState).toHaveBeenCalled();
     expect(stateStore.setAppShellWeekdayFiltersState).toHaveBeenCalled();
+
+    const shellBridge = { updateRelayControlButtons: vi.fn() };
+    adapter.vueBridgeRegistry.register(VUE_BRIDGE_NAMES.shell, shellBridge);
+    expect(adapter.vueBridgeRegistry.resolve(VUE_BRIDGE_NAMES.shell)).toBe(shellBridge);
   });
 
   it("installs adapter on a target global scope", () => {

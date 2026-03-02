@@ -1,6 +1,7 @@
 // @ts-check
 
 import { setAppShellRelayStatus } from "../state.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @typedef {Object} RelayStatus
@@ -110,7 +111,7 @@ export function createRelayStatusApplyController({
     const exportDisabled = false;
     const exportTitle = "Download relay diagnostics JSON for support or bug reports.";
 
-    /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayRecoveryActions?: (payload: {
+    /** @type {{ updateRelayRecoveryActions?: (payload: {
      *   show: boolean,
      *   reconnectDisabled: boolean,
      *   reconnectTitle: string,
@@ -118,9 +119,8 @@ export function createRelayStatusApplyController({
      *   resyncTitle: string,
      *   exportDisabled: boolean,
      *   exportTitle: string,
-     * }) => void } }} */
-    const globalScope = globalThis;
-    const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+     * }) => void } | null} */
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     if (shellBridge?.updateRelayRecoveryActions) {
       shellBridge.updateRelayRecoveryActions({
         show,
@@ -233,9 +233,8 @@ export function createRelayStatusApplyController({
     const clearStorageDisabled = relayUiState.controlsLocked;
     const logoutDisabled = !canLogout;
     const reloadAllDisabled = !running;
-    /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayControlButtons?: (payload: any) => void } }} */
-    const globalScope = globalThis;
-    const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+    /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     if (shellBridge?.updateRelayControlButtons) {
       shellBridge.updateRelayControlButtons({
         stopDisabled,

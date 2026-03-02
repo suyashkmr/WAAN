@@ -1,6 +1,10 @@
 import { formatDisplayDate, formatNumber, formatTimestampDisplay } from "../utils.js";
-
-const SEARCH_SAVED_BRIDGE_KEY = "__WAAN_VUE_SEARCH_SAVED_BRIDGE__";
+import {
+  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
+  VUE_BRIDGE_NAMES,
+  registerVueBridge,
+  resolveVueBridge,
+} from "./bridgeRegistry.js";
 
 /**
  * @param {unknown} value
@@ -260,8 +264,8 @@ function renderSavedViewsComparisonWithVue({
 }
 
 function mountSearchSavedBridge() {
-  if (globalThis[SEARCH_SAVED_BRIDGE_KEY]) return;
-  globalThis[SEARCH_SAVED_BRIDGE_KEY] = {
+  if (resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved)) return;
+  registerVueBridge(VUE_BRIDGE_NAMES.searchSaved, {
     /**
      * @param {{ tone?: string, title?: string, message?: string, actions?: unknown[], onAction?: ((actionId: string) => void) | null }} payload
      */
@@ -322,7 +326,9 @@ function mountSearchSavedBridge() {
         container,
       });
     },
-  };
+  }, {
+    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.searchSaved],
+  });
 }
 
 try {

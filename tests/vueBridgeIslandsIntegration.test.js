@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
 function createVueRuntimeStub() {
   /** @type {any} */
@@ -59,6 +60,7 @@ describe("vue bridge islands integration", () => {
     delete window.PrimeVue;
     delete window.primevue;
     delete globalThis.Vue;
+    delete window[VUE_RUNTIME_REGISTRY_KEY];
   });
 
   it("mounts all Vue island bridges with callable contracts", async () => {
@@ -71,6 +73,10 @@ describe("vue bridge islands integration", () => {
     expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__).toBeTruthy();
     expect(window.__WAAN_VUE_SHELL_BRIDGE__).toBeTruthy();
     expect(window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__).toBeTruthy();
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.summary).toBe(window.__WAAN_VUE_SUMMARY_BRIDGE__);
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.dashboardPanels).toBe(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__);
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.shell).toBe(window.__WAAN_VUE_SHELL_BRIDGE__);
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.searchSaved).toBe(window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__);
 
     expect(window.__WAAN_VUE_SUMMARY_BRIDGE__.render([])).toBe(true);
     expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__.renderHighlights([])).toBe(true);

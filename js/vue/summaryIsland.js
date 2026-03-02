@@ -1,4 +1,8 @@
-const SUMMARY_BRIDGE_KEY = "__WAAN_VUE_SUMMARY_BRIDGE__";
+import {
+  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
+  VUE_BRIDGE_NAMES,
+  registerVueBridge,
+} from "./bridgeRegistry.js";
 
 function normalizeCards(cards) {
   if (!Array.isArray(cards)) return [];
@@ -58,12 +62,15 @@ function mountSummaryIsland() {
   app.mount(mountEl);
   mountEl.dataset.vueSummaryMounted = "true";
 
-  window[SUMMARY_BRIDGE_KEY] = {
+  registerVueBridge(VUE_BRIDGE_NAMES.summary, {
     render(cards) {
       state.cards = normalizeCards(cards);
       return true;
     },
-  };
+  }, {
+    globalScope: window,
+    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.summary],
+  });
 }
 
 try {

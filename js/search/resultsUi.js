@@ -1,4 +1,5 @@
 import { renderPanelState } from "../ui/panelState.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 export function createSearchResultsUiController({
   resultsSummaryEl,
@@ -21,7 +22,7 @@ export function createSearchResultsUiController({
    * @returns {{ renderSearchPanelState?: (payload: any) => boolean, renderSearchResults?: (payload: any) => boolean, renderSearchInsights?: (payload: any) => boolean } | null}
    */
   function getSearchSavedBridge() {
-    /** @type {(typeof globalThis) & { __WAAN_VUE_SEARCH_SAVED_BRIDGE__?: {
+    /** @type {{
      *   renderSearchPanelState?: (payload: {
      *     tone?: string,
      *     title?: string,
@@ -38,9 +39,8 @@ export function createSearchResultsUiController({
      *     summary?: unknown,
      *     resultLimit?: number,
      *   }) => boolean,
-     * } }} */
-    const globalScope = globalThis;
-    return globalScope.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ ?? null;
+     * } | null} */
+    return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
   }
 
   function cancelPendingRender() {

@@ -1,7 +1,11 @@
 import { renderTimeOfDayPanel } from "../analytics/activity/timeOfDay.js";
 import { renderHourlyHeatmapSection, renderWeekdaySection } from "../analytics/activity.js";
-
-const DASHBOARD_PANELS_BRIDGE_KEY = "__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__";
+import {
+  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
+  VUE_BRIDGE_NAMES,
+  registerVueBridge,
+  resolveVueBridge,
+} from "./bridgeRegistry.js";
 
 function normalizeHighlightEntry(entry) {
   if (!entry || typeof entry !== "object") return null;
@@ -26,7 +30,7 @@ function normalizeHighlightEntry(entry) {
 function mountDashboardPanelsIsland() {
   const VueRuntime = globalThis.Vue;
   if (!VueRuntime || typeof globalThis.document === "undefined") return;
-  if (globalThis[DASHBOARD_PANELS_BRIDGE_KEY]) return;
+  if (resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels)) return;
 
   const mountEl = globalThis.document.getElementById("highlights-list");
   const participantsMountEl = globalThis.document.querySelector("#top-senders tbody");
@@ -250,7 +254,7 @@ function mountDashboardPanelsIsland() {
     timeOfDayMountEl.dataset.vueTimeOfDayMounted = "true";
   }
 
-  globalThis[DASHBOARD_PANELS_BRIDGE_KEY] = {
+  registerVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, {
     /**
      * @param {unknown} highlights
      * @returns {boolean}
@@ -324,7 +328,9 @@ function mountDashboardPanelsIsland() {
       renderWeekdaySection(options);
       return true;
     },
-  };
+  }, {
+    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.dashboardPanels],
+  });
 }
 
 try {

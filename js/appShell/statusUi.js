@@ -1,4 +1,5 @@
 // @ts-check
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @param {{
@@ -29,9 +30,8 @@ export function createStatusUiController({
    *   ) => void,
    * }} WaanVueShellBridge
    */
-  /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: WaanVueShellBridge }} */
-  const globalScope = globalThis;
-  const vueBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+  /** @type {WaanVueShellBridge | null} */
+  const vueBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
 
   /** @type {HTMLElement[]} */
   const toasts = [];

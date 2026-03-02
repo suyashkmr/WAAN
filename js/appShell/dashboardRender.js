@@ -7,6 +7,7 @@ import { renderMessageTypesSection } from "../analytics/messageTypes.js";
 import { renderPollsSection } from "../analytics/polls.js";
 import { createDeferredRenderScheduler } from "../ui.js";
 import { createActivityPanelsController } from "./dashboardRender/activityPanels.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import {
   createParticipantsPanelController,
   applyParticipantTopChange,
@@ -146,9 +147,8 @@ export function createDashboardRenderController({ elements, deps }) {
    * @param {AnyRecord} analytics
    */
   function renderTimeOfDayPanelWithBridge(analytics) {
-    /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderTimeOfDay?: (analytics: unknown) => boolean } }} */
-    const globalScope = globalThis;
-    const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
+    /** @type {{ renderTimeOfDay?: (analytics: unknown) => boolean } | null} */
+    const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
     if (dashboardPanelsBridge?.renderTimeOfDay) {
       const handledByVue = dashboardPanelsBridge.renderTimeOfDay(analytics);
       if (handledByVue) return;

@@ -1,4 +1,5 @@
 // @ts-check
+import { resolveVueBridge, registerVueBridge } from "../vue/bridgeRegistry.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -64,6 +65,17 @@ export function createVueFrontendAdapterLayer({
       relaySync: `${relayBase}/relay/sync`,
       relayLogout: `${relayBase}/relay/logout`,
       relayLogs: `${relayBase}/relay/logs`,
+    },
+    vueBridgeRegistry: {
+      /**
+       * @param {string} bridgeName
+       */
+      resolve: bridgeName => resolveVueBridge(bridgeName),
+      /**
+       * @param {string} bridgeName
+       * @param {Record<string, any>} bridge
+       */
+      register: (bridgeName, bridge) => registerVueBridge(bridgeName, bridge),
     },
   };
 }

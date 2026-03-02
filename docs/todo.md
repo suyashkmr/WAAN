@@ -501,7 +501,9 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Verified on 2026-03-03: no active `sl-*` runtime usage in app code, Vue/PrimeVue vendored runtime checks pass, and `npm run ci:verify` + `npm run test:visual` are green on `rewrite`.
 
 - [ ] Phase 7 (1-2 weeks): Convert app-shell orchestration to Vue-first state and lifecycle.
-  - [ ] Replace bridge globals (`__WAAN_VUE_*_BRIDGE__`) with Vue-owned composition/state flow.
+  - [x] Replace bridge globals (`__WAAN_VUE_*_BRIDGE__`) with Vue-owned composition/state flow.
+    - [x] Added shared Vue bridge registry (`js/vue/bridgeRegistry.js`) and rewired shell/dashboard/search-saved/summary bridge consumers to resolve via registry with legacy-key compatibility.
+    - [x] Verified on 2026-03-03 with `npm run ci:verify` (green).
   - [ ] Move dashboard/search/saved/relay UI event orchestration from imperative DOM listeners into Vue component emits/actions.
   - [ ] Introduce a root Vue app shell entry that owns mount lifecycle and route-level section visibility.
   - [ ] Acceptance: no UI rendering path depends on bridge handoff from legacy renderers.

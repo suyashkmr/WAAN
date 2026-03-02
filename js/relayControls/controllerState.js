@@ -1,4 +1,5 @@
 // @ts-check
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @typedef {{
@@ -44,9 +45,8 @@ export function setRelayControlsDisabled({
   applyRelayPrimaryAction,
 }) {
   relayUiState.controlsLocked = disabled;
-  /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayControlButtons?: (payload: any) => void } }} */
-  const globalScope = globalThis;
-  const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+  /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
+  const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
   if (shellBridge?.updateRelayControlButtons) {
     shellBridge.updateRelayControlButtons({
       start: { disabled: Boolean(disabled) },

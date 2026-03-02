@@ -1,4 +1,5 @@
 // @ts-check
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
 
 /**
  * @typedef {Object} HighlightItem
@@ -83,9 +84,8 @@ export function createHighlightsStatsController({ elements, deps }) {
    */
   function renderHighlights(highlights) {
     if (!highlightList) return;
-    /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderHighlights?: (highlights: unknown) => boolean } }} */
-    const globalScope = globalThis;
-    const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
+    /** @type {{ renderHighlights?: (highlights: unknown) => boolean } | null} */
+    const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
     if (dashboardPanelsBridge?.renderHighlights) {
       const handledByVue = dashboardPanelsBridge.renderHighlights(highlights);
       if (handledByVue) return;

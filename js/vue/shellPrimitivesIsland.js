@@ -1,6 +1,10 @@
 import { createRelayControlsBridgeMethods } from "./shellRelayBridge.js";
-
-const SHELL_BRIDGE_KEY = "__WAAN_VUE_SHELL_BRIDGE__";
+import {
+  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
+  VUE_BRIDGE_NAMES,
+  registerVueBridge,
+  resolveVueBridge,
+} from "./bridgeRegistry.js";
 
 function mountRelayBannerPrimitive() {
   const VueRuntime = globalThis.Vue;
@@ -188,7 +192,7 @@ function mountFeedbackPrimitiveBridge() {
   const statusEl = globalThis.document?.getElementById?.("data-status");
   const toastContainerEl = globalThis.document?.getElementById?.("toast-container");
   if (!VueRuntime || !statusEl || !toastContainerEl) return;
-  if (globalThis[SHELL_BRIDGE_KEY]) return;
+  if (resolveVueBridge(VUE_BRIDGE_NAMES.shell)) return;
 
   const { createApp, h, reactive } = VueRuntime;
   const statusState = reactive({ message: "" });
@@ -298,7 +302,7 @@ function mountFeedbackPrimitiveBridge() {
   };
   createApp(ToastRoot).mount(toastContainerEl);
 
-  globalThis[SHELL_BRIDGE_KEY] = {
+  registerVueBridge(VUE_BRIDGE_NAMES.shell, {
     showToast,
     dismissToast,
     showStatusMessage,
@@ -306,7 +310,9 @@ function mountFeedbackPrimitiveBridge() {
     finalizeStatusExit,
     updateRelayRecoveryActions,
     updateRelayControlButtons,
-  };
+  }, {
+    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.shell],
+  });
 }
 
 try {

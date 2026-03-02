@@ -6,6 +6,7 @@ import {
   sanitizeText,
 } from "../utils.js";
 import { buildParticipantDetail } from "./participantDetail.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 function computeParticipantTimeframeStats(entries, timeframe, analytics) {
   if (timeframe !== "week") return null;
   if (!entries.length) {
@@ -136,7 +137,7 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
     },
   ];
 
-  const summaryBridge = globalThis.__WAAN_VUE_SUMMARY_BRIDGE__;
+  const summaryBridge = resolveVueBridge(VUE_BRIDGE_NAMES.summary);
   if (summaryBridge && typeof summaryBridge.render === "function") {
     const handledByVue = summaryBridge.render(cards);
     if (handledByVue) return;
@@ -176,9 +177,8 @@ export function renderParticipants({
   participantsVirtualizer,
 }) {
   if (!participantsBody || !analytics) return;
-  /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderParticipantsRows?: (rows: unknown) => boolean, renderParticipantsEmpty?: (message: unknown) => boolean } }} */
-  const globalScope = globalThis;
-  const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
+  /** @type {{ renderParticipantsRows?: (rows: unknown) => boolean, renderParticipantsEmpty?: (message: unknown) => boolean } | null} */
+  const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
   if (!participantsVirtualizer) {
     participantsBody.innerHTML = "";
   }
