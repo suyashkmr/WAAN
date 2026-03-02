@@ -6,6 +6,7 @@ WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell
 
 - Runtime loader: `js/ui/primitivesRuntime.js`
 - Primitive API: `js/ui/primitives.js`
+- Vue composables: `js/ui/primitivesVueComposables.js`
 - Vue shell bridge: `js/vue/shellPrimitivesIsland.js`
 - Vue summary bridge: `js/vue/summaryIsland.js`
 - Vendored runtime assets:
@@ -39,3 +40,4 @@ WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell
 - `initUiPrimitives()` syncs runtime theme/motion/contrast state markers from `data-color-scheme`, `data-reduce-motion`, and `data-contrast`.
 - Relay status indicator internals intentionally remain custom (`#relay-status-dot.relay-banner-indicator`) to preserve existing pulse/reduced-motion/high-contrast behavior without extra runtime dependencies.
 - Summary cards, relay controls, and search/saved-view controls now run without Shoelace custom-element proxies.
+- Runtime contract: do not introduce new `sl-*` custom elements in app-shell surfaces; use semantic HTML + Vue/PrimeVue wrappers/composables instead.

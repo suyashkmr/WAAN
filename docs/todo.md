@@ -489,11 +489,12 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Preserve relay/search/export behavior coverage while removing migration-proxy-specific expectations.
       - [ ] Estimate: 2-3.5 days.
       - [x] Acceptance: full `npm run ci:verify` green with no Shoelace-specific tests remaining.
-    - [ ] Docs: `docs/design-tokens.md`, `docs/ui-primitives.md`, `docs/ui-overhaul-spec.md` (Owner: Docs/Frontend)
+    - [x] Docs: `docs/design-tokens.md`, `docs/ui-primitives.md`, `docs/ui-overhaul-spec.md` (Owner: Docs/Frontend)
       - [x] Replace Shoelace architecture references with Vue 3 + PrimeVue guidance.
       - [x] Document final Tailwind decision and resulting CI guardrail updates.
       - [ ] Estimate: 0.5 day.
-      - [ ] Acceptance: docs reflect actual runtime stack and migration process.
+      - [x] Acceptance: docs reflect actual runtime stack and migration process.
+        - [x] Verified on 2026-03-03 by aligning runtime docs to current Vue/PrimeVue vendor contract, composables layer (`js/ui/primitivesVueComposables.js`), and no-Shoelace app-shell runtime guidance.
     - [ ] Planned effort envelope: 10-16 engineering days for Shoelace -> PrimeVue migration workstream.
   - [ ] Exit criteria: Vue 3 + chosen component library fully replaces Shoelace in app-shell surfaces with no backend contract changes and release gates remain green.
 

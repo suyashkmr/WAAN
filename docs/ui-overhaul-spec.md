@@ -15,8 +15,8 @@ Reframe WAAN from a utility dashboard into a conversation command center that fe
 
 ### Typography
 
-- Display/headline: `Sora` (fallback: `Space Grotesk`).
-- Body/UI: `Manrope` (fallback: `Public Sans`).
+- Display/headline: `Clash Display` (fallback: `Sora`, `Space Grotesk`).
+- Body/UI: `Plus Jakarta Sans` (fallback: `Manrope`, `Public Sans`).
 - Type ramp mapping:
   - Hero title: `clamp(2rem, 4vw, 3rem)`
   - Panel title: `1.125rem`
@@ -63,6 +63,8 @@ Vue 3 + PrimeVue-backed islands provide behavior primitives; app provides visual
 - Tailwind: layout, spacing, responsive utilities, tokenized classes.
 - Vue/PrimeVue: interactive controls and app-shell component composition.
 - App CSS modules: brand visuals, gradients, shell chrome, motion signatures.
+- Runtime assets: vendored Vue/PrimeVue bundles under `vendor/` are the production source of truth (no runtime dependency on `node_modules`).
+- Shoelace status: app-shell migration paths no longer rely on Shoelace proxy custom elements.
 - Final decision: Tailwind remains in Phase 6 and post-parity runtime to avoid churn in tokenized utility coverage.
 - CI guardrails that enforce this contract: `check:tailwind-adoption`, `tailwind:build`, and `check:tailwind-size` inside `npm run ci:verify`.
 
@@ -111,7 +113,7 @@ Vue 3 + PrimeVue-backed islands provide behavior primitives; app provides visual
 ## Validation Checklist
 
 - Desktop: 1440 and 1024 widths (light/dark).
-- Mobile: 768 and 390 widths (light/dark).
+- Tablet/mobile: 768 and 390 widths (light/dark).
 - Relay state transitions: offline -> starting -> waiting -> running.
 - Search and saved-view flows: apply/reset/selection parity.
 - Export checks: PDF preview in both themes.
