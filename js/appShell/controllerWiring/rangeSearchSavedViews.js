@@ -160,6 +160,7 @@ export function createRangeSearchSavedViewsWiring({
       updateStatus: state.updateStatus,
       filterEntriesByRange,
       normalizeRangeValue,
+      computeAnalyticsWithWorker,
     },
   });
 

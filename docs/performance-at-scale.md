@@ -54,15 +54,15 @@ npm run perf:searchworker
 
 ## ChatStore Metadata Write Amplification (Measured)
 
-Run captured on February 27, 2026 (`generatedAt=2026-02-27T08:55:58.200Z`):
+Run captured on March 2, 2026 (`generatedAt=2026-03-02T13:03:59.012Z`):
 
 | Scenario | Iterations | Before writes | After writes | Reduction | Duration (ms) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 837 |
+| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 760 |
 | `upsertChatMeta` (batched persist) | 1000 | 1000 | 1 | 99.9% | 12 |
-| `appendMessage` (default batched metadata path) | 400 | 400 | 1 | 99.75% | 102 |
+| `appendMessage` (default batched metadata path) | 400 | 400 | 1 | 99.75% | 93 |
 | `appendMessage` (forced immediate metadata persist) | 400 | 400 | 400 | 0% | 132 |
-| `upsertChatMeta` single-chat (batched incremental path) | 400 | 400 | 1 | 99.75% | 2 |
+| `upsertChatMeta` single-chat (batched incremental path) | 400 | 400 | 1 | 99.75% | 1 |
 
 Interpretation:
 - Blocking metadata persistence is the primary write amplification path and should be avoided in high-frequency loops.
@@ -71,21 +71,45 @@ Interpretation:
 
 ## Search Worker Indexed Query Benchmark (Measured)
 
-Run captured on February 27, 2026 (`generatedAt=2026-02-27T08:55:57.734Z`), dataset size `120000` messages:
+Run captured on March 2, 2026 (`generatedAt=2026-03-02T13:03:58.506Z`), dataset size `120000` messages:
 
 | Metric | Duration (ms) | Notes |
 | --- | ---: | --- |
-| Index build | 348.23 | Indexed messages: 120000 |
-| keyword (full scan) | 127.81 | matched=600 |
-| keyword (indexed) | 2.47 | matched=600, speedup=51.74x |
-| participant+keyword (full scan) | 8.37 | matched=3750 |
-| participant+keyword (indexed) | 2.79 | matched=3750, speedup=3x |
-| keyword+date-range (full scan) | 22.75 | matched=40001 |
-| keyword+date-range (indexed) | 4.49 | matched=40001, speedup=5.07x |
+| Index build | 337.44 | Indexed messages: 120000 |
+| keyword (full scan) | 31.34 | matched=600 |
+| keyword (indexed) | 2.45 | matched=600, speedup=12.79x |
+| participant+keyword (full scan) | 7.97 | matched=3750 |
+| participant+keyword (indexed) | 2.42 | matched=3750, speedup=3.29x |
+| keyword+date-range (full scan) | 22.1 | matched=40001 |
+| keyword+date-range (indexed) | 4.33 | matched=40001, speedup=5.1x |
 
 Interpretation:
 - Search now pays one index-build cost per dataset version, then queries run over indexed candidate sets instead of full message scans.
 - Repeated keyword/participant/date-filter queries show material latency reductions with the indexed path.
+
+## Release Perf Budgets (Enforced)
+
+Run this gate on release candidates:
+
+```bash
+npm run check:perf-budgets
+```
+
+Current enforced thresholds (`scripts/check-perf-budgets.mjs`):
+
+| Domain | Metric | Budget |
+| --- | --- | --- |
+| Search | Index build (120k dataset) | <= 700ms |
+| Search | `keyword (indexed)` | <= 8ms |
+| Search | `participant+keyword (indexed)` | <= 8ms |
+| Search | `keyword+date-range (indexed)` | <= 12ms |
+| Render proxy | `computeAnalytics` at 120k (`perf:stress`) | <= 1800ms |
+| Sync/write proxy | `upsertChatMeta (batched persist)` duration | <= 80ms |
+| Sync/write proxy | `appendMessage (default batched metadata path)` duration | <= 250ms |
+| Sync/write proxy | `appendMessage (forced immediate metadata persist)` duration | <= 300ms |
+| Sync/write proxy | Batched metadata write reduction | >= 99% |
+
+If any threshold is exceeded, the gate fails and prints the offending metric(s).
 
 ## Next Improvements
 
@@ -93,4 +117,4 @@ Interpretation:
 - Baseline update cadence: per release and after any meaningful data-path change affecting chatstore persistence, indexing, filtering, or analytics.
 - Add cached derived slices for frequently revisited ranges.
 - Expand long-list virtualization to any future panel exceeding a few hundred rows.
-- Add CI perf budget checks for regression detection on fixed-size synthetic datasets.
+- Keep tuning perf budgets and synthetic dataset sizes after each major data-path change.

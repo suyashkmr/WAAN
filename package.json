@@ -30,6 +30,7 @@
     "perf:stress": "node scripts/stress-large-chat.mjs",
     "perf:chatstore": "node scripts/measure-chatstore-write-amplification.mjs",
     "perf:searchworker": "node scripts/measure-search-worker-index.mjs",
+    "check:perf-budgets": "node scripts/check-perf-budgets.mjs",
     "release:cut": "node scripts/cut-release.cjs",
     "check:release-notes": "node scripts/validate-release-notes.mjs",
     "verify": "npm run lint && npm test",

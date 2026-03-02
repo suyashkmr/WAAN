@@ -50,10 +50,9 @@ Run these gates in addition to relay smoke.
    - `npm run check:release-reliability`
    - Must pass relay transition edge tests (`offline -> starting -> waiting -> running`, sync-path shift handling) and export integrity tests (CSV/JSON sanity + PDF metadata stamping).
 2. Performance budgets (per release)
-   - `npm run perf:searchworker`
-   - `npm run perf:chatstore`
-   - Compare results against latest recorded table in `docs/performance-at-scale.md`.
-   - Flag release if any core path regresses materially (index build, indexed search latency, metadata write amplification).
+   - `npm run check:perf-budgets`
+   - Gate runs fixed-size perf probes for render/search/sync proxies and fails on materially regressed latency/write-amplification metrics.
+   - If gate fails, compare output with latest baseline table in `docs/performance-at-scale.md` and either fix regression or explicitly revise budgets with rationale.
 3. Accessibility smoke (per release)
    - `npm run test:accessibility-smoke`
    - Must pass across desktop/laptop/tablet/mobile projects.

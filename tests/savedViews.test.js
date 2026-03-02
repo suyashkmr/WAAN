@@ -222,4 +222,73 @@ describe("savedViews controller", () => {
     expect(dirtyCard).toBeTruthy();
     expect(dirtyCard?.textContent).toContain("Unsaved changes");
   });
+
+  it("hydrates missing saved-view snapshots through analytics worker path", async () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    dependencies.getDatasetAnalytics = vi.fn(() => null);
+    dependencies.computeAnalyticsWithWorker = vi.fn(async () => ({
+      total_messages: 1,
+      unique_senders: 1,
+      system_summary: { count: 0 },
+      averages: { words: 2, characters: 10 },
+      weekly_summary: { averagePerWeek: 1 },
+      hourly_summary: { averagePerDay: 1, topHour: { dayIndex: 3, hour: 10, count: 1 } },
+      date_range: { start: "2025-01-01", end: "2025-01-01" },
+      top_senders: [{ sender: "Ana", count: 1, share: 1 }],
+    }));
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Worker snapshot";
+    elements.saveButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(dependencies.computeAnalyticsWithWorker).toHaveBeenCalledTimes(1);
+    expect(dependencies.updateSavedView).toHaveBeenCalledWith(
+      "view-1",
+      expect.objectContaining({
+        snapshot: expect.objectContaining({
+          totalMessages: 1,
+          uniqueSenders: 1,
+          topSender: expect.objectContaining({ sender: "Ana", count: 1 }),
+        }),
+      }),
+    );
+  });
+
+  it("falls back to sync snapshot hydration when analytics worker fails", async () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    dependencies.getDatasetAnalytics = vi.fn(() => null);
+    dependencies.computeAnalyticsWithWorker = vi.fn(async () => {
+      throw new Error("worker failed");
+    });
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Worker fallback snapshot";
+    elements.saveButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(dependencies.computeAnalyticsWithWorker).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalled();
+    expect(dependencies.updateSavedView).toHaveBeenCalledWith(
+      "view-1",
+      expect.objectContaining({
+        snapshot: expect.objectContaining({
+          totalMessages: 1,
+          uniqueSenders: 1,
+          topSender: expect.objectContaining({ sender: "Ana", count: 1 }),
+        }),
+      }),
+    );
+  });
 });

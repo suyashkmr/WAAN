@@ -358,11 +358,19 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Exit criteria: release candidate path fails fast on relay/export regressions and all mandatory gates are enforced.
     - [x] Added `check:release-reliability` npm script and wired it into `ci:verify` (`package.json`).
     - [x] Verified with `npm run check:release-reliability`, `npm run check:types`, and full `npm run ci:verify`.
-- [ ] Phase 4 (after phases 1-3, 1-2 weeks): Improve heavy-flow performance before any framework migration.
-  - [ ] Move analytics-heavy transforms that can block rendering into worker paths where feasible.
-  - [ ] Add/update perf baselines for long-chat datasets and keep them in `docs/performance-at-scale.md`.
-  - [ ] Add release guardrails for materially regressed render/search/sync latency.
-  - [ ] Exit criteria: long-chat workloads stay responsive and perf baselines/thresholds are documented and enforced.
+- [x] Phase 4 (after phases 1-3, 1-2 weeks): Improve heavy-flow performance before any framework migration.
+  - [x] Move analytics-heavy transforms that can block rendering into worker paths where feasible.
+    - [x] Routed missing saved-view snapshot hydration through `computeAnalyticsWithWorker` (with sync fallback) to avoid synchronous `computeAnalytics` during gallery/compare rendering (`js/savedViews.js`, `js/savedViewsSnapshot.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`).
+    - [x] Added regression coverage for async worker-driven snapshot hydration (`tests/savedViews.test.js`).
+    - [x] Verified with `npm run ci:verify`.
+  - [x] Add/update perf baselines for long-chat datasets and keep them in `docs/performance-at-scale.md`.
+    - [x] Refreshed search-worker and chatstore benchmark snapshots with March 2, 2026 measurements (`docs/performance-at-scale.md`).
+    - [x] Added explicit release perf-budget table for render/search/sync proxy metrics with enforced thresholds.
+  - [x] Add release guardrails for materially regressed render/search/sync latency.
+    - [x] Added automated `check:perf-budgets` gate that runs perf probes and fails on threshold breaches (`scripts/check-perf-budgets.mjs`, `package.json`).
+    - [x] Wired release perf-budget gate into tagged macOS release workflow (`.github/workflows/macos-release.yml`).
+    - [x] Updated release smoke checklist to enforce perf-budget gate and escalation path (`docs/release-smoke-checklist.md`).
+  - [x] Exit criteria: long-chat workloads stay responsive and perf baselines/thresholds are documented and enforced.
 - [ ] Phase 5 (after phase 4, 4-7 days): Improve operator UX for sync diagnostics and recovery.
   - [ ] Add clearer user-facing diagnostics for fallback reasons and sync slowdowns.
   - [ ] Provide explicit guided recovery actions (`Reconnect`, `Resync`, `Export diagnostics`) in failure states.

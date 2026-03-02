@@ -64,6 +64,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: npm run test:accessibility-smoke
 
+      - name: Run release performance budget gate
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npm run check:perf-budgets
+
       - name: Build macOS artifacts (signed when secrets are present)
         working-directory: electron
         run: |

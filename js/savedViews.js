@@ -1,7 +1,7 @@
 import { formatViewRange, getNormalizedRangeForView } from "./savedViewsRange.js";
 import {
   buildViewSnapshot,
-  computeSnapshotForView as computeSavedViewSnapshotForView,
+  createViewSnapshotResolver,
   ensureViewSnapshot as ensureSavedViewSnapshot,
 } from "./savedViewsSnapshot.js";
 import { createSavedViewsUiController } from "./savedViewsUi.js";
@@ -59,6 +59,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     updateStatus,
     filterEntriesByRange,
     normalizeRangeValue,
+    computeAnalyticsWithWorker,
   } = dependencies;
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
@@ -110,20 +111,19 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   const normalizeRangeForView = view => getNormalizedRangeForView(view, normalizeRangeValue);
-
-  const computeSnapshotForView = view =>
-    computeSavedViewSnapshotForView({
-      view,
-      getDatasetEntries,
-      filterEntriesByRange,
-      getNormalizedRangeForView: normalizeRangeForView,
-    });
+  const computeSnapshotForView = createViewSnapshotResolver({
+    getDatasetEntries,
+    filterEntriesByRange,
+    getNormalizedRangeForView: normalizeRangeForView,
+    computeAnalyticsWithWorker,
+  });
 
   const ensureViewSnapshot = view =>
     ensureSavedViewSnapshot({
       view,
       updateSavedView,
       computeSnapshotForView,
+      onSnapshotReady: () => refreshUI(),
     });
 
   const formatSavedViewRange = view => formatViewRange(view, describeRange);
