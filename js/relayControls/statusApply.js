@@ -10,10 +10,14 @@ import { setAppShellRelayStatus } from "../state.js";
  * @property {number} [chatCount]
  * @property {boolean} [syncingChats]
  * @property {string} [syncPath]
+ * @property {string} [lastSyncPathReason]
+ * @property {number} [lastSyncDurationMs]
+ * @property {string} [lastError]
  */
 
 /**
  * @typedef {Object} RelayUiState
+ * @property {RelayStatus | null} [status]
  * @property {string | null} [lastAppliedStateKind]
  * @property {string | null} [lastStatusKind]
  * @property {boolean} controlsLocked
@@ -40,6 +44,10 @@ export function createRelayStatusApplyController({
     relayBannerEl,
     relayBannerMessage,
     relayBannerMeta,
+    relayBannerActions,
+    relayRecoveryReconnectButton,
+    relayRecoveryResyncButton,
+    relayRecoveryExportButton,
     relayOnboardingSteps,
     relayStopButton,
     relayLogoutButton,
@@ -74,6 +82,45 @@ export function createRelayStatusApplyController({
     updateStatus,
     getDataAvailable,
   } = deps;
+  const SLOW_SYNC_THRESHOLD_MS = 12_000;
+
+  /**
+   * @param {RelayStatus | null | undefined} status
+   */
+  function shouldShowRecoveryActions(status) {
+    if (!status) return true;
+    if (status.status === "error" || status.status === "offline" || status.status === "stopped") {
+      return true;
+    }
+    if (status.status !== "running") return false;
+    if (status.syncPath === "fallback") return true;
+    return Number(status.lastSyncDurationMs) >= SLOW_SYNC_THRESHOLD_MS;
+  }
+
+  /**
+   * @param {RelayStatus | null | undefined} status
+   */
+  function updateRecoveryActions(status) {
+    if (!relayBannerActions) return;
+    const show = shouldShowRecoveryActions(status);
+    if (show) relayBannerActions.removeAttribute("hidden");
+    else relayBannerActions.setAttribute("hidden", "");
+
+    if (relayRecoveryReconnectButton) {
+      relayRecoveryReconnectButton.disabled = Boolean(relayUiState.controlsLocked) || status?.status === "starting";
+      relayRecoveryReconnectButton.title = "Restart relay connection and request a fresh status check.";
+    }
+    if (relayRecoveryResyncButton) {
+      const running = status?.status === "running";
+      relayRecoveryResyncButton.disabled =
+        Boolean(relayUiState.controlsLocked) || !running || Boolean(status?.syncingChats);
+      relayRecoveryResyncButton.title = "Run an immediate chat sync to refresh loaded conversations.";
+    }
+    if (relayRecoveryExportButton) {
+      relayRecoveryExportButton.disabled = false;
+      relayRecoveryExportButton.title = "Download relay diagnostics JSON for support or bug reports.";
+    }
+  }
 
   /**
    * @param {RelayStatus | null | undefined} status
@@ -126,6 +173,7 @@ export function createRelayStatusApplyController({
         setDataAvailabilityState(false);
       }
       relayUiState.lastAppliedStateKind = stateKind;
+      updateRecoveryActions(status);
       return;
     }
 
@@ -208,9 +256,13 @@ export function createRelayStatusApplyController({
 
     updateSyncProgressFromStatus(status);
     relayUiState.lastAppliedStateKind = stateKind;
+    updateRecoveryActions(status);
   }
 
   return {
     applyRelayStatus,
+    syncRecoveryActions() {
+      updateRecoveryActions(relayUiState.status);
+    },
   };
 }

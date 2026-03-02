@@ -24,6 +24,10 @@ export function createRelayCompositionAdapter({ dom, state, wiring, withGlobalBu
       relayBannerEl: dom.relayBannerEl,
       relayBannerMessage: dom.relayBannerMessage,
       relayBannerMeta: dom.relayBannerMeta,
+      relayBannerActions: dom.relayBannerActions,
+      relayRecoveryReconnectButton: dom.relayRecoveryReconnectButton,
+      relayRecoveryResyncButton: dom.relayRecoveryResyncButton,
+      relayRecoveryExportButton: dom.relayRecoveryExportButton,
       relayOnboardingSteps: dom.relayOnboardingSteps,
       logDrawerToggleButton: dom.logDrawerToggleButton,
       logDrawerEl: dom.logDrawerEl,
@@ -69,6 +73,9 @@ export function createRelayCompositionAdapter({ dom, state, wiring, withGlobalBu
       logDrawerClearButton: dom.logDrawerClearButton,
       firstRunOpenRelayButton: dom.firstRunOpenRelayButton,
       firstRunPrimaryActionButton: dom.firstRunPrimaryActionButton,
+      relayRecoveryReconnectButton: dom.relayRecoveryReconnectButton,
+      relayRecoveryResyncButton: dom.relayRecoveryResyncButton,
+      relayRecoveryExportButton: dom.relayRecoveryExportButton,
     },
   };
 }

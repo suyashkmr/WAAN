@@ -10,12 +10,17 @@ function resolveEffectiveSyncMode(options, fallbackMode) {
     : fallbackMode;
 }
 
-function applySyncSuccessState(manager, { chats, syncPath, persistDurationMs, syncStartedAt }) {
+function applySyncSuccessState(manager, { chats, syncPath, fallbackReason, persistDurationMs, syncStartedAt }) {
   const previousSyncPath = manager.state.syncPath;
   const syncDurationMs = Math.max(0, Date.now() - syncStartedAt);
   manager.state.chatCount = chats.length;
   manager.state.chatsSyncedAt = new Date().toISOString();
   manager.state.syncPath = syncPath;
+  manager.state.lastSyncPathReason = syncPath === "fallback"
+    ? (typeof fallbackReason === "string" && fallbackReason.trim()
+      ? fallbackReason.trim()
+      : "Primary sync path unavailable.")
+    : null;
   manager.state.lastSyncDurationMs = syncDurationMs;
   manager.state.lastSyncPersistDurationMs = persistDurationMs;
   if (previousSyncPath && previousSyncPath !== syncPath) {

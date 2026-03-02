@@ -225,10 +225,26 @@
     font-size: 0.9rem;
 }
 
+.relay-banner-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.relay-banner-actions[hidden] {
+    display: none;
+}
+
 @media (max-width: 720px) {
     .relay-status-banner {
         grid-template-columns: 1fr;
         text-align: left;
+    }
+
+    .relay-banner-actions {
+        justify-content: flex-start;
     }
 }
 

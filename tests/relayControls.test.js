@@ -22,6 +22,16 @@ function buildRelayElements() {
   const relayBannerEl = document.createElement("div");
   const relayBannerMessage = document.createElement("div");
   const relayBannerMeta = document.createElement("div");
+  const relayBannerActions = document.createElement("div");
+  relayBannerActions.setAttribute("hidden", "");
+  const relayRecoveryReconnectButton = document.createElement("button");
+  const relayRecoveryResyncButton = document.createElement("button");
+  const relayRecoveryExportButton = document.createElement("button");
+  relayBannerActions.append(
+    relayRecoveryReconnectButton,
+    relayRecoveryResyncButton,
+    relayRecoveryExportButton,
+  );
   const relayOnboardingSteps = document.querySelectorAll(".no-steps");
   const logDrawerToggleButton = document.createElement("button");
   const logDrawerEl = document.createElement("div");
@@ -60,6 +70,10 @@ function buildRelayElements() {
     relayBannerEl,
     relayBannerMessage,
     relayBannerMeta,
+    relayBannerActions,
+    relayRecoveryReconnectButton,
+    relayRecoveryResyncButton,
+    relayRecoveryExportButton,
     relayOnboardingSteps,
     logDrawerToggleButton,
     logDrawerEl,
@@ -167,6 +181,87 @@ describe("relayControls", () => {
     errorSpy.mockRestore();
   });
 
+  it("shows recovery actions when relay status is stopped", async () => {
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) return { status: "stopped" };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayBannerActions.hasAttribute("hidden")).toBe(false);
+  });
+
+  it("hides recovery actions for healthy running status even with stale lastError", async () => {
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) {
+            return {
+              status: "running",
+              account: { pushName: "Alice" },
+              chatCount: 7,
+              syncingChats: false,
+              syncPath: "primary",
+              lastSyncDurationMs: 820,
+              lastError: "stale transient error",
+            };
+          }
+          if (url.endsWith("/api/chats")) return { chats: [{ id: "chat-1", name: "General" }] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => [{ id: "chat-1", name: "General" }]),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayBannerActions.hasAttribute("hidden")).toBe(true);
+  });
+
   it("primary action switches to resync when running and triggers sync path", async () => {
     const runningStatus = {
       status: "running",
@@ -248,6 +343,141 @@ describe("relayControls", () => {
     expect(elements.firstRunSetupSteps[1].dataset.state).toBe("complete");
     expect(elements.firstRunSetupSteps[2].dataset.state).toBe("active");
     expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
+  });
+
+  it("shows guided recovery actions for degraded sync and runs recovery handlers", async () => {
+    const runningFallbackStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 2,
+      syncingChats: false,
+      syncPath: "fallback",
+      lastSyncPathReason: "Primary sync unavailable: session stale",
+      lastSyncDurationMs: 16123,
+    };
+    const originalCreateObjectUrl = URL.createObjectURL;
+    const originalRevokeObjectUrl = URL.revokeObjectURL;
+    const createObjectUrlSpy = vi.fn(() => "blob:test");
+    const revokeObjectUrlSpy = vi.fn();
+    URL.createObjectURL = /** @type {any} */ (createObjectUrlSpy);
+    URL.revokeObjectURL = /** @type {any} */ (revokeObjectUrlSpy);
+    const anchorClickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
+
+    const elements = buildRelayElements();
+    const fetchJson = vi.fn(async url => {
+      if (url.endsWith("/relay/status")) return runningFallbackStatus;
+      if (url.endsWith("/relay/start")) return { ok: true };
+      if (url.endsWith("/relay/stop")) return { ok: true };
+      if (url.endsWith("/relay/sync")) return { ok: true };
+      if (url.endsWith("/api/chats")) return { chats: [{ id: "chat-1", name: "General" }] };
+      return {};
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson,
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => [{ id: "chat-1", name: "General" }]),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        getDatasetLabel: vi.fn(() => "General"),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayBannerActions.hasAttribute("hidden")).toBe(false);
+    expect(elements.relayRecoveryReconnectButton.disabled).toBe(false);
+    expect(elements.relayRecoveryResyncButton.disabled).toBe(false);
+    expect(elements.relayRecoveryExportButton.disabled).toBe(false);
+
+    await controller.handleRecoveryReconnect();
+    await controller.handleRecoveryResync();
+    controller.handleRecoveryExportDiagnostics();
+
+    expect(fetchJson).toHaveBeenCalledWith("http://127.0.0.1:4546/relay/stop", { method: "POST" });
+    expect(fetchJson).toHaveBeenCalledWith("http://127.0.0.1:4546/relay/start", { method: "POST" });
+    expect(anchorClickSpy).toHaveBeenCalled();
+    URL.createObjectURL = originalCreateObjectUrl;
+    URL.revokeObjectURL = originalRevokeObjectUrl;
+    anchorClickSpy.mockRestore();
+  });
+
+  it("disables recovery buttons immediately when reconnect starts", async () => {
+    let resolveStop = () => {};
+    const stopGate = new Promise(resolve => {
+      resolveStop = resolve;
+    });
+    const elements = buildRelayElements();
+    const fetchJson = vi.fn(async url => {
+      if (url.endsWith("/relay/status")) {
+        return {
+          status: "running",
+          account: { pushName: "Alice" },
+          chatCount: 2,
+          syncingChats: false,
+          syncPath: "fallback",
+          lastSyncPathReason: "Primary sync unavailable: session stale",
+        };
+      }
+      if (url.endsWith("/relay/stop")) {
+        await stopGate;
+        return { ok: true };
+      }
+      if (url.endsWith("/relay/start")) return { ok: true };
+      if (url.endsWith("/api/chats")) return { chats: [{ id: "chat-1", name: "General" }] };
+      return {};
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson,
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => [{ id: "chat-1", name: "General" }]),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        getDatasetLabel: vi.fn(() => "General"),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    const reconnectPromise = controller.handleRecoveryReconnect();
+
+    expect(elements.relayRecoveryReconnectButton.disabled).toBe(true);
+    expect(elements.relayRecoveryResyncButton.disabled).toBe(true);
+
+    resolveStop();
+    await reconnectPromise;
   });
 
   it("keeps last known relay status during transient polling failures and shows retry timing", async () => {

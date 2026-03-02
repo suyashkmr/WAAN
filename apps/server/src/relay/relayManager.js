@@ -58,6 +58,7 @@ class RelayManager extends EventEmitter {
       chatsSyncedAt: null,
       chatCount: 0,
       syncPath: null,
+      lastSyncPathReason: null,
       lastSyncDurationMs: null,
       lastSyncPersistDurationMs: null,
     };
@@ -79,6 +80,7 @@ class RelayManager extends EventEmitter {
       chatsSyncedAt: this.state.chatsSyncedAt,
       chatCount: this.state.chatCount,
       syncPath: this.state.syncPath,
+      lastSyncPathReason: this.state.lastSyncPathReason,
       lastSyncDurationMs: this.state.lastSyncDurationMs,
       lastSyncPersistDurationMs: this.state.lastSyncPersistDurationMs,
       syncingChats: this.syncingChats,
@@ -172,6 +174,7 @@ class RelayManager extends EventEmitter {
       });
       const chats = Array.isArray(syncResult.chats) ? syncResult.chats : [];
       const syncPath = syncResult.syncPath;
+      const fallbackReason = syncResult.fallbackReason;
       this.loggedGetChatsFallback = syncResult.loggedGetChatsFallback;
       const persistDurationMs = await persistSyncedChatMeta({
         chats,
@@ -190,6 +193,7 @@ class RelayManager extends EventEmitter {
       applySyncSuccessState(this, {
         chats,
         syncPath,
+        fallbackReason,
         persistDurationMs,
         syncStartedAt,
       });

@@ -3,6 +3,18 @@
 /**
  * @typedef {Record<string, any>} AnyRecord
  */
+const SLOW_SYNC_THRESHOLD_MS = 12_000;
+
+/**
+ * @param {number} ms
+ */
+function formatSyncDurationLabel(ms) {
+  if (!Number.isFinite(ms) || ms < 0) return "";
+  if (ms >= 10_000) {
+    return `${Math.round(ms / 1000)}s`;
+  }
+  return `${Math.round(ms)}ms`;
+}
 
 /**
  * @param {AnyRecord} status
@@ -109,9 +121,16 @@ export function updateRelayBanner({
   }
   if (Number.isFinite(status.lastSyncDurationMs) && status.lastSyncDurationMs >= 0) {
     metaParts.push(`Last sync: ${formatNumber(status.lastSyncDurationMs)}ms`);
+    if (status.lastSyncDurationMs >= SLOW_SYNC_THRESHOLD_MS) {
+      metaParts.push(`Sync slowdown detected (${formatSyncDurationLabel(status.lastSyncDurationMs)})`);
+    }
   }
   if (status.syncPath === "primary" || status.syncPath === "fallback") {
     metaParts.push(`Sync path: ${status.syncPath}`);
+    if (status.syncPath === "fallback") {
+      const reason = typeof status.lastSyncPathReason === "string" ? status.lastSyncPathReason.trim() : "";
+      metaParts.push(`Fallback reason: ${reason || "Primary sync path unavailable."}`);
+    }
   }
   relayBannerMeta.textContent = metaParts.join(" · ") || "Relay ready.";
 }

@@ -33,6 +33,19 @@ Use this quick runbook before shipping a packaged WAAN build.
 5. Open relay log drawer in UI and confirm sync-path visibility:
    - steady path: repeated `via primary` or `via fallback`
    - transition case: `Sync path transition detected: primary -> fallback.` (or reverse)
+6. Validate guided recovery actions in relay banner:
+   - Offline recovery:
+     - Stop relay (`Pause Relay`) or terminate relay process, then wait for offline/error banner state.
+     - Confirm recovery actions appear: `Reconnect`, `Resync`, `Export diagnostics`.
+     - Click `Reconnect` and confirm relay returns to `starting` or `waiting_qr` flow.
+   - Fallback/sync degradation recovery:
+     - Relaunch app with fallback mode enabled:
+       - `WAAN_RELAY_SYNC_MODE=fallback ./WAAN.app/Contents/MacOS/WAAN`
+     - Trigger sync and confirm banner metadata includes `Sync path: fallback` and `Fallback reason: ...`.
+     - Click `Resync` and verify sync progress runs again and chat list refreshes.
+   - Diagnostics recovery:
+     - Click `Export diagnostics`.
+     - Confirm diagnostics JSON download succeeds and filename includes `diagnostics`.
 
 ## Pass Criteria
 
@@ -41,6 +54,7 @@ Use this quick runbook before shipping a packaged WAAN build.
 3. Chat sync completes and returns plausible non-zero count.
 4. `syncPath` is present in status/UI metadata.
 5. No unrecovered relay error loops.
+6. Recovery actions are visible in degraded states and each action performs its intended flow.
 
 ## Excellence Gates
 
@@ -94,6 +108,24 @@ Then follow `docs/relay-troubleshooting.md`.
 
 ## Latest Sign-off
 
-- Date: 2026-02-25
+- Date: 2026-03-02
 - Status: PASS
-- Verified by: automated release gates pass (`test:visual`, accessibility smoke, perf benchmarks, naming scan); packaged-app manual relay smoke pending final artifact run
+- Verified by: automated release gates pass (`test:visual`, accessibility smoke, perf benchmarks, naming scan) and packaged `WAAN.app` manual relay + recovery smoke
+- Recovery checks:
+  - Offline -> `Reconnect`: PASS
+  - Fallback -> `Resync`: PASS
+  - `Export diagnostics`: PASS
+- Notes: Recovery-action flows function as expected in degraded states; sync-path diagnostics remain visible and actionable.
+
+Use this template after running packaged-app recovery smoke:
+
+```md
+- Date: YYYY-MM-DD
+- Status: PASS | FAIL
+- Verified by: packaged WAAN.app manual relay + recovery smoke
+- Recovery checks:
+  - Offline -> `Reconnect`: PASS | FAIL (notes)
+  - Fallback -> `Resync`: PASS | FAIL (notes)
+  - `Export diagnostics`: PASS | FAIL (notes)
+- Notes: <fallback reason observed, sync-path behavior, any blockers>
+```

@@ -103,6 +103,7 @@ describe("relayManager sync mode behavior", () => {
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
     expect(status.syncPath).toBe("primary");
+    expect(status.lastSyncPathReason).toBeNull();
     expect(Number.isFinite(status.lastSyncDurationMs)).toBe(true);
     expect(Number.isFinite(status.lastSyncPersistDurationMs)).toBe(true);
   }, 15_000);
@@ -131,6 +132,7 @@ describe("relayManager sync mode behavior", () => {
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
     expect(status.syncPath).toBe("fallback");
+    expect(status.lastSyncPathReason).toContain("Primary sync unavailable:");
     expect(Number.isFinite(status.lastSyncDurationMs)).toBe(true);
     expect(Number.isFinite(status.lastSyncPersistDurationMs)).toBe(true);
   });
@@ -154,6 +156,7 @@ describe("relayManager sync mode behavior", () => {
     expect(store.upsertChatMeta).not.toHaveBeenCalled();
     expect(status.chatCount).toBe(0);
     expect(status.syncPath).toBeNull();
+    expect(status.lastSyncPathReason).toBeNull();
     expect(status.lastSyncDurationMs).toBeNull();
     expect(status.lastSyncPersistDurationMs).toBeNull();
     expect(status.lastError).toContain("Fallback chat sync unavailable");
@@ -240,6 +243,7 @@ describe("relayManager sync mode behavior", () => {
     expect(store.upsertChatMeta).not.toHaveBeenCalled();
     expect(status.lastError).toBeNull();
     expect(status.chatCount).toBe(1);
+    expect(status.lastSyncPathReason).toBeNull();
   });
 
   it("schedules deferred primary sync after startup fallback in auto mode", async () => {

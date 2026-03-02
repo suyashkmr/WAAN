@@ -42,6 +42,10 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     relayBannerEl,
     relayBannerMessage,
     relayBannerMeta,
+    relayBannerActions,
+    relayRecoveryReconnectButton,
+    relayRecoveryResyncButton,
+    relayRecoveryExportButton,
     relayOnboardingSteps,
     logDrawerToggleButton,
     logDrawerEl,
@@ -75,6 +79,7 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
   const relayPlatform = platform ?? createRelayPlatformAdapter({ electronAPI });
 
   const relayUiState = createRelayUiState();
+  let syncRecoveryActions = () => {};
 
   function setRelayControlsDisabled(disabled) {
     applyRelayControlsDisabled({
@@ -89,6 +94,7 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       ],
       applyRelayPrimaryAction,
     });
+    syncRecoveryActions();
   }
 
   function applyRelayPrimaryAction(status) {
@@ -214,6 +220,10 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       relayBannerEl,
       relayBannerMessage,
       relayBannerMeta,
+      relayBannerActions,
+      relayRecoveryReconnectButton,
+      relayRecoveryResyncButton,
+      relayRecoveryExportButton,
       relayOnboardingSteps,
       relayStopButton,
       relayLogoutButton,
@@ -249,6 +259,24 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     },
   });
   ({ applyRelayStatus } = relayStatusApplyController);
+  syncRecoveryActions = relayStatusApplyController.syncRecoveryActions;
+
+  async function handleRecoveryReconnect() {
+    if (relayUiState.status?.status === "running") {
+      await stopRelaySession();
+    }
+    await startRelaySession();
+  }
+
+  async function handleRecoveryResync() {
+    await syncRelayChats({ silent: false });
+  }
+
+  function handleRecoveryExportDiagnostics() {
+    openLogDrawer();
+    handleExportDiagnostics();
+  }
+
   return {
     startRelaySession,
     handlePrimaryActionClick,
@@ -272,5 +300,8 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     handleFirstRunOpenRelay,
     handleFirstRunPrimaryAction,
     updateFirstRunSetup,
+    handleRecoveryReconnect,
+    handleRecoveryResync,
+    handleRecoveryExportDiagnostics,
   };
 }

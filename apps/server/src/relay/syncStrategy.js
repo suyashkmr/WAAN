@@ -1,4 +1,4 @@
-const { formatErrorDetails } = require("../errorUtils");
+const { formatErrorDetails, formatErrorMessage } = require("../errorUtils");
 
 async function fetchChatsWithStrategy({
   client,
@@ -13,17 +13,19 @@ async function fetchChatsWithStrategy({
   const pause = typeof waitBeforeRetry === "function" ? waitBeforeRetry : async () => {};
   let chats = [];
   let syncPath = mode === "fallback" ? "fallback" : "primary";
+  let fallbackReason = null;
   let nextLoggedGetChatsFallback = Boolean(loggedGetChatsFallback);
 
   if (mode === "fallback") {
     logger.info("Relay sync mode=fallback; skipping client.getChats().");
     chats = await getChatsFromStoreFallback();
-    return { chats, syncPath, loggedGetChatsFallback: nextLoggedGetChatsFallback };
+    fallbackReason = "Fallback mode is forced by relay configuration.";
+    return { chats, syncPath, fallbackReason, loggedGetChatsFallback: nextLoggedGetChatsFallback };
   }
 
   if (mode === "primary") {
     chats = await client.getChats();
-    return { chats, syncPath, loggedGetChatsFallback: nextLoggedGetChatsFallback };
+    return { chats, syncPath, fallbackReason, loggedGetChatsFallback: nextLoggedGetChatsFallback };
   }
 
   let primaryError = null;
@@ -56,9 +58,10 @@ async function fetchChatsWithStrategy({
     logger.debug("client.getChats() fallback details: %s", details);
     chats = await getChatsFromStoreFallback();
     syncPath = "fallback";
+    fallbackReason = `Primary sync unavailable: ${formatErrorMessage(primaryError, "unknown error")}`;
   }
 
-  return { chats, syncPath, loggedGetChatsFallback: nextLoggedGetChatsFallback };
+  return { chats, syncPath, fallbackReason, loggedGetChatsFallback: nextLoggedGetChatsFallback };
 }
 
 module.exports = {

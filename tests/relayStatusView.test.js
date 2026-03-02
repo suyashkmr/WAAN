@@ -79,7 +79,9 @@ describe("relay status view mapping", () => {
         account: { pushName: "Suyash" },
         chatCount: 739,
         chatsSyncedAt: "2026-02-25T10:00:00.000Z",
-        syncPath: "primary",
+        syncPath: "fallback",
+        lastSyncPathReason: "Primary sync unavailable: browser session stale",
+        lastSyncDurationMs: 18234,
       },
       relayBannerEl,
       relayBannerMessage,
@@ -96,7 +98,11 @@ describe("relay status view mapping", () => {
     expect(relayBannerMeta.textContent).toContain("Account: Suyash (1234567890)");
     expect(relayBannerMeta.textContent).toContain("Synced just now");
     expect(relayBannerMeta.textContent).toContain("739 chats indexed");
-    expect(relayBannerMeta.textContent).toContain("Sync path: primary");
+    expect(relayBannerMeta.textContent).toContain("Sync path: fallback");
+    expect(relayBannerMeta.textContent).toContain(
+      "Fallback reason: Primary sync unavailable: browser session stale",
+    );
+    expect(relayBannerMeta.textContent).toContain("Sync slowdown detected (18s)");
   });
 
   it("maps onboarding step states across relay lifecycle", () => {

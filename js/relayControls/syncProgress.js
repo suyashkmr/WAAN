@@ -14,6 +14,7 @@ export function createRelaySyncProgressController({
   relaySyncMessagesMeta,
   formatNumber,
 }) {
+  const SLOW_SYNC_THRESHOLD_MS = 12_000;
   const relaySyncChatsStep = /** @type {HTMLElement | null} */ (
     relaySyncProgressEl?.querySelector('[data-step="chats"]')
   );
@@ -76,8 +77,16 @@ export function createRelaySyncProgressController({
     setSyncStepState(relaySyncMessagesStep, relaySyncMessagesMeta, "active", "Mirroring recent messages…");
   }
 
-  function completeSyncUi() {
-    setSyncStepState(relaySyncMessagesStep, relaySyncMessagesMeta, "complete", "Messages are up to date.");
+  /**
+   * @param {{ lastSyncDurationMs?: number } | null | undefined} [status]
+   */
+  function completeSyncUi(status) {
+    const slowSyncMs = Number(status?.lastSyncDurationMs);
+    const isSlow = Number.isFinite(slowSyncMs) && slowSyncMs >= SLOW_SYNC_THRESHOLD_MS;
+    const message = isSlow
+      ? `Messages are up to date. Last sync took ${Math.round(slowSyncMs / 1000)}s.`
+      : "Messages are up to date.";
+    setSyncStepState(relaySyncMessagesStep, relaySyncMessagesMeta, "complete", message);
     relaySyncUiState.hideTimer = setTimeout(() => {
       relaySyncUiState.manualActive = false;
       hideRelaySyncProgress();
@@ -85,7 +94,7 @@ export function createRelaySyncProgressController({
   }
 
   /**
-   * @param {{ syncingChats?: boolean, chatCount?: number } | null | undefined} status
+   * @param {{ syncingChats?: boolean, chatCount?: number, syncPath?: string, lastSyncDurationMs?: number } | null | undefined} status
    */
   function updateSyncProgressFromStatus(status) {
     if (!relaySyncProgressEl) return;
@@ -103,11 +112,13 @@ export function createRelaySyncProgressController({
         relaySyncMessagesStep,
         relaySyncMessagesMeta,
         "active",
-        "Mirroring messages… keep the relay open.",
+        status?.syncPath === "fallback"
+          ? "Mirroring messages via fallback path… keep the relay open."
+          : "Mirroring messages… keep the relay open.",
       );
     } else if (relaySyncUiState.wasSyncing || relaySyncUiState.manualActive) {
       relaySyncUiState.wasSyncing = false;
-      completeSyncUi();
+      completeSyncUi(status);
     } else {
       hideRelaySyncProgress();
     }

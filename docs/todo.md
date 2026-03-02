@@ -371,11 +371,23 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Wired release perf-budget gate into tagged macOS release workflow (`.github/workflows/macos-release.yml`).
     - [x] Updated release smoke checklist to enforce perf-budget gate and escalation path (`docs/release-smoke-checklist.md`).
   - [x] Exit criteria: long-chat workloads stay responsive and perf baselines/thresholds are documented and enforced.
-- [ ] Phase 5 (after phase 4, 4-7 days): Improve operator UX for sync diagnostics and recovery.
-  - [ ] Add clearer user-facing diagnostics for fallback reasons and sync slowdowns.
-  - [ ] Provide explicit guided recovery actions (`Reconnect`, `Resync`, `Export diagnostics`) in failure states.
-  - [ ] Validate recovery flows with manual smoke steps in `docs/release-smoke-checklist.md`.
-  - [ ] Exit criteria: failure states are actionable in-UI and recovery flows are validated in release smoke.
+- [x] Phase 5 (after phase 4, 4-7 days): Improve operator UX for sync diagnostics and recovery.
+  - [x] Add clearer user-facing diagnostics for fallback reasons and sync slowdowns.
+    - [x] Extended relay status payload with explicit `lastSyncPathReason` so UI can explain fallback causes (`apps/server/src/relay/syncStrategy.js`, `apps/server/src/relay/relayManagerSync.js`, `apps/server/src/relay/relayManager.js`).
+    - [x] Surfaced fallback reason + slow-sync hint in relay banner metadata (`js/relayControls/statusView.js`).
+    - [x] Surfaced fallback-path + prior slow-sync hints in relay sync progress copy (`js/relayControls/syncProgress.js`).
+    - [x] Added/updated regression coverage for server fallback-reason state and operator-facing banner diagnostics (`tests/relayManagerSyncMode.test.js`, `tests/relayStatusView.test.js`).
+    - [x] Verified with full `npm run ci:verify`.
+  - [x] Provide explicit guided recovery actions (`Reconnect`, `Resync`, `Export diagnostics`) in failure states.
+    - [x] Added relay-status banner recovery action strip with `Reconnect`, `Resync`, and `Export diagnostics` controls (`index.html`, `styles/components/relay.css`).
+    - [x] Wired recovery actions through relay runtime/bootstrap handlers so they reuse existing control flows (`js/relayControls.js`, `js/appShell/relayBootstrap.js`, `js/appShell/relayRuntime.js`).
+    - [x] Added status-driven visibility/disabled logic so recovery actions appear for offline/error/fallback/slow-sync states (`js/relayControls/statusApply.js`).
+    - [x] Added integration regression coverage for degraded-state recovery actions (`tests/relayControls.test.js`).
+    - [x] Verified with full `npm run ci:verify`.
+  - [x] Validate recovery flows with manual smoke steps in `docs/release-smoke-checklist.md`.
+    - [x] Added explicit manual recovery smoke steps for offline, fallback, and diagnostics flows in release checklist (`docs/release-smoke-checklist.md`).
+    - [x] Executed the recovery smoke steps against packaged `WAAN.app` and recorded PASS sign-off (`docs/release-smoke-checklist.md`, dated 2026-03-02).
+  - [x] Exit criteria: failure states are actionable in-UI and recovery flows are validated in release smoke.
 - [ ] Phase 6 (after phase 5, 1-2 weeks): Local-first group privacy policy enforcement.
   - [ ] Add per-group policy tiers with local persistence: `blocked`, `aggregate_only`, `detailed`.
   - [ ] Enforce detailed analytics gating behind local policy + role/allowlist checks (fail-safe downgrade when role metadata is unavailable).
