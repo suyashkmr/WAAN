@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
 const ROOT = process.cwd();
 const SERVER_WORKSPACE = path.join(ROOT, "apps/server");
+const BIN_DIR = path.join(ROOT, "node_modules", ".bin");
 
 const ALLOWLISTED_UNUSED = {
   root: {
     dependencies: [],
-    devDependencies: ["@vitest/coverage-v8"],
+    devDependencies: ["@vitest/coverage-v8", "depcheck", "madge"],
   },
   server: {
     dependencies: [],
@@ -42,12 +44,20 @@ function run(command, args, { cwd = ROOT, allowFailure = false } = {}) {
   };
 }
 
+function localBin(name) {
+  const candidate = path.join(BIN_DIR, process.platform === "win32" ? `${name}.cmd` : name);
+  if (!fs.existsSync(candidate)) {
+    throw new Error(
+      `[dead-code] Missing local binary '${name}' at ${candidate}. Run 'npm install' to install pinned devDependencies.`,
+    );
+  }
+  return candidate;
+}
+
 function runDepcheck(cwd) {
   const result = run(
-    "npx",
+    localBin("depcheck"),
     [
-      "--yes",
-      "depcheck",
       ".",
       "--json",
       "--skip-missing",
@@ -76,7 +86,7 @@ function filterUnused(entries = [], allowlisted = []) {
 }
 
 function runMadgeOrphans() {
-  const { stdout } = run("npx", ["--yes", "madge", "--extensions", "js", "--orphans", "js", "apps/server/src"]);
+  const { stdout } = run(localBin("madge"), ["--extensions", "js", "--orphans", "js", "apps/server/src"]);
   const jsPathPattern = /^(?:\.\/)?(?:js|apps\/server\/src)\/.+\.js$/;
   return stdout
     .split("\n")

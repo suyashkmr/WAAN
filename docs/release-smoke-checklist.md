@@ -52,7 +52,7 @@ Run these gates in addition to relay smoke.
    - Compare results against latest recorded table in `docs/performance-at-scale.md`.
    - Flag release if any core path regresses materially (index build, indexed search latency, metadata write amplification).
 2. Accessibility smoke (per release)
-   - `npx playwright test tests/visual/accessibility.smoke.spec.js`
+   - `npm run test:accessibility-smoke`
    - Must pass across desktop/laptop/tablet/mobile projects.
 3. Visual regression status (per release)
    - `npm run test:visual`

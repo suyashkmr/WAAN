@@ -54,34 +54,34 @@ npm run perf:searchworker
 
 ## ChatStore Metadata Write Amplification (Measured)
 
-Run captured on February 25, 2026 (`generatedAt=2026-02-25T14:27:39.954Z`):
+Run captured on February 27, 2026 (`generatedAt=2026-02-27T08:55:58.200Z`):
 
 | Scenario | Iterations | Before writes | After writes | Reduction | Duration (ms) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 3329 |
-| `upsertChatMeta` (batched persist) | 1000 | 1000 | 1 | 99.9% | 34 |
-| `appendMessage` (default batched metadata path) | 400 | 400 | 14 | 96.5% | 523 |
-| `appendMessage` (forced immediate metadata persist) | 400 | 400 | 400 | 0% | 746 |
+| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 837 |
+| `upsertChatMeta` (batched persist) | 1000 | 1000 | 1 | 99.9% | 12 |
+| `appendMessage` (default batched metadata path) | 400 | 400 | 1 | 99.75% | 102 |
+| `appendMessage` (forced immediate metadata persist) | 400 | 400 | 400 | 0% | 132 |
 | `upsertChatMeta` single-chat (batched incremental path) | 400 | 400 | 1 | 99.75% | 2 |
 
 Interpretation:
 - Blocking metadata persistence is the primary write amplification path and should be avoided in high-frequency loops.
-- Default `appendMessage` now batches metadata writes and reduces metadata persistence events by ~96.5% versus immediate-per-message persistence.
+- Default `appendMessage` now batches metadata writes and reduces metadata persistence events by ~99.75% versus immediate-per-message persistence.
 - Entry-file writes (`saveEntries`) still dominate append-loop wall time, so metadata batching mainly protects write amplification and fs churn rather than total append latency.
 
 ## Search Worker Indexed Query Benchmark (Measured)
 
-Run captured on February 24, 2026 (`generatedAt=2026-02-24T04:22:28.572Z`), dataset size `120000` messages:
+Run captured on February 27, 2026 (`generatedAt=2026-02-27T08:55:57.734Z`), dataset size `120000` messages:
 
 | Metric | Duration (ms) | Notes |
 | --- | ---: | --- |
-| Index build | 263.78 | Indexed messages: 120000 |
-| keyword (full scan) | 26.96 | matched=600 |
-| keyword (indexed) | 1.55 | matched=600, speedup=17.39x |
-| participant+keyword (full scan) | 8.00 | matched=3750 |
-| participant+keyword (indexed) | 2.36 | matched=3750, speedup=3.39x |
-| keyword+date-range (full scan) | 21.04 | matched=40001 |
-| keyword+date-range (indexed) | 3.57 | matched=40001, speedup=5.89x |
+| Index build | 348.23 | Indexed messages: 120000 |
+| keyword (full scan) | 127.81 | matched=600 |
+| keyword (indexed) | 2.47 | matched=600, speedup=51.74x |
+| participant+keyword (full scan) | 8.37 | matched=3750 |
+| participant+keyword (indexed) | 2.79 | matched=3750, speedup=3x |
+| keyword+date-range (full scan) | 22.75 | matched=40001 |
+| keyword+date-range (indexed) | 4.49 | matched=40001, speedup=5.07x |
 
 Interpretation:
 - Search now pays one index-build cost per dataset version, then queries run over indexed candidate sets instead of full message scans.
@@ -89,6 +89,8 @@ Interpretation:
 
 ## Next Improvements
 
+- Owner: Engineering
+- Baseline update cadence: per release and after any meaningful data-path change affecting chatstore persistence, indexing, filtering, or analytics.
 - Add cached derived slices for frequently revisited ranges.
 - Expand long-list virtualization to any future panel exceeding a few hundred rows.
 - Add CI perf budget checks for regression detection on fixed-size synthetic datasets.

@@ -158,6 +158,28 @@ Completed work is archived in git history and was removed from this file for cla
 
 - [ ] If a trigger occurs, open a focused refactor task per `docs/engineering-guardrails.md`.
 
+## Next Wave: Reliability and Quality Gates Hardening
+
+- [ ] Priority execution order (practical recommendations):
+  - [x] Stabilize dead-code/circular checks for offline and restricted environments first.
+  - [x] Keep performance baselines fresh after meaningful data-path changes.
+  - [x] Maintain orchestration contract tests as release-blocking quality gates.
+  - [ ] Continue strict visual regression and accessibility gates on every release.
+- [x] Make dead-code and circular checks resilient in restricted/offline environments.
+  - [x] Move `depcheck` and `madge` from transient `npx` fetch usage to pinned local dev dependencies.
+  - [x] Update `check:dead-code` / `check:circular` scripts to prefer locally installed binaries.
+  - [x] Validate in both normal networked CI and restricted-network environments.
+- [x] Refresh and maintain performance baselines after data-path changes.
+  - [x] Re-run `npm run perf:searchworker` and `npm run perf:chatstore`.
+  - [x] Record latest benchmark snapshots in `docs/performance-at-scale.md`.
+  - [x] Define an update cadence (per release or milestone) and document owner.
+- [x] Preserve app-shell modularity contracts as decomposition evolves.
+  - [x] Keep boundary/smoke suites (`appShell`/composition/controller contracts) in required CI paths.
+  - [x] Add targeted regression tests whenever orchestration assembly APIs change.
+- [ ] Keep visual and accessibility release gates strict for token/theme updates.
+  - [ ] Enforce `npm run test:visual` + accessibility smoke on each release candidate.
+  - [ ] Require snapshot review notes for intentional visual diffs.
+
 ## Next Wave: Excellence Across Core Quality
 
 - [x] Tailwind dead-code decision and cleanup

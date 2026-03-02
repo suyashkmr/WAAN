@@ -48,6 +48,22 @@ jobs:
           fi
           echo "RELEASE_NOTES_FILE=$NOTES_FILE" >> "$GITHUB_ENV"
 
+      - name: Validate curated release notes quality gates
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npm run check:release-notes -- "$RELEASE_NOTES_FILE"
+
+      - name: Install Playwright browser dependencies
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npx playwright install chromium
+
+      - name: Run release visual regression gate
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npm run test:visual
+
+      - name: Run release accessibility smoke gate
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npm run test:accessibility-smoke
+
       - name: Build macOS artifacts (signed when secrets are present)
         working-directory: electron
         run: |

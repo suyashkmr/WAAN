@@ -15,6 +15,12 @@
 
 - Any prerequisite or migration note.
 
+## Snapshot Review Notes
+
+- Intentional visual diffs: no
+- Notes: No snapshot updates were required for this release.
+- Reviewer: Engineering
+
 ## Included commits
 
 - `<sha>` Commit summary
