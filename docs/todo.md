@@ -500,6 +500,40 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Exit criteria: Vue 3 + chosen component library fully replaces Shoelace in app-shell surfaces with no backend contract changes and release gates remain green.
     - [x] Verified on 2026-03-03: no active `sl-*` runtime usage in app code, Vue/PrimeVue vendored runtime checks pass, and `npm run ci:verify` + `npm run test:visual` are green on `rewrite`.
 
+- [ ] Phase 7 (1-2 weeks): Convert app-shell orchestration to Vue-first state and lifecycle.
+  - [ ] Replace bridge globals (`__WAAN_VUE_*_BRIDGE__`) with Vue-owned composition/state flow.
+  - [ ] Move dashboard/search/saved/relay UI event orchestration from imperative DOM listeners into Vue component emits/actions.
+  - [ ] Introduce a root Vue app shell entry that owns mount lifecycle and route-level section visibility.
+  - [ ] Acceptance: no UI rendering path depends on bridge handoff from legacy renderers.
+
+- [ ] Phase 8 (1-2 weeks): Remove legacy DOM renderers and fallback paths.
+  - [ ] Remove legacy fallback render branches in:
+    - [ ] `js/analytics/summary.js`
+    - [ ] `js/appShell/dashboardRender/*`
+    - [ ] `js/search/resultsUi.js`
+    - [ ] `js/savedViewsUi.js`
+    - [ ] `js/appShell/statusUi.js`
+  - [ ] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
+  - [ ] Delete no-longer-needed bridge wiring/adapters once Vue paths are primary-only.
+  - [ ] Acceptance: migrated surfaces render only via Vue components with no legacy fallback branches.
+
+- [ ] Phase 9 (4-7 days): Consolidate frontend architecture and testing around Vue.
+  - [ ] Standardize composables/stores for shared state (filters, relay status, saved views, search worker progress).
+  - [ ] Remove obsolete app-shell adapter glue that existed only for incremental migration.
+  - [ ] Refactor tests to assert Vue component behavior/contracts rather than bridge side effects.
+  - [ ] Add targeted Vue integration coverage for full-shell boot and cross-surface interactions.
+  - [ ] Acceptance: frontend tests and runtime architecture are Vue-native without bridge-specific contracts.
+
+- [ ] Phase 10 (3-5 days): Final hardening and release cut for full Vue frontend.
+  - [ ] Run and record full release gates: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
+  - [ ] Update docs to reflect final architecture:
+    - [ ] `docs/ui-primitives.md`
+    - [ ] `docs/ui-overhaul-spec.md`
+    - [ ] `docs/design-tokens.md`
+    - [ ] `README.md` / `FAQ.md` (architecture + support notes)
+  - [ ] Add rollback notes for first release after full Vue cutover.
+  - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths.
+
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.
   - [ ] Run phase 3 in parallel with late phase 2.
