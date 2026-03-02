@@ -152,6 +152,8 @@ Required GitHub repository secrets:
 Release flow:
 
 0. Add curated notes file for the tag at `docs/release-notes/vX.Y.Z.md`.
+   The `## Snapshot Review Notes` section must include:
+   `- Intentional visual diffs: yes|no`, `- Notes: ...`, and `- Reviewer: ...`.
 1. Cut a release in one command:
    `npm run release:cut -- <version|patch|minor|major>`
 2. The script bumps root + Electron versions, commits, tags, and pushes.
@@ -217,6 +219,8 @@ On first run, WAAN shows a guided setup flow in the empty state:
 - **Pause Relay** pauses relay activity.
 - **Log Out & Unlink** logs out from the linked account.
 - **Clear Cached Chats** removes locally mirrored relay chat data.
+- If WAAN shows relay recovery actions, use **Reconnect** to restart the relay link,
+  **Resync** to force a chat refresh, or **Export diagnostics** before reporting an issue.
 
 ### 6. Export diagnostics / report issues
 
@@ -353,6 +357,12 @@ See full privacy details in `PRIVACY.md`.
 
 Use **View Relay Logs** -> **Report Issue** to open a prefilled GitHub issue.
 For deeper triage, attach the JSON created by **Export Diagnostics**.
+
+### What should I do if syncing seems stuck?
+
+Use the relay recovery strip first: click **Resync**.
+If sync still appears stalled, click **Reconnect** to restart the relay session.
+If the problem continues, export diagnostics from the recovery strip or relay logs and attach it to a report.
 
 ## Scripts
 
