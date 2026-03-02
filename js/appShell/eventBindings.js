@@ -62,20 +62,10 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   const {
     updateStatus,
     applyCustomRange,
-    enableDirectFilterRerenderFallback,
     updateWeekdayState,
-    ensureWeekdayDayFilters,
-    syncWeekdayControlsWithState,
-    rerenderWeekdayFromState,
-    ensureWeekdayHourFilters,
     updateHourlyState,
     getHourlyState,
-    ensureDayFilters,
-    syncHourlyControlsWithState,
-    rerenderHourlyFromState,
   } = deps;
-
-  const useDirectFilterRerenderFallback = enableDirectFilterRerenderFallback === true;
 
   function initEventHandlers() {
     if (chatSelector) {
@@ -177,37 +167,21 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     if (weekdayToggleWeekdays) {
       weekdayToggleWeekdays.addEventListener("change", () => {
         updateWeekdayState({ filters: { weekdays: weekdayToggleWeekdays.checked } });
-        if (useDirectFilterRerenderFallback) {
-          ensureWeekdayDayFilters();
-          rerenderWeekdayFromState();
-        }
       });
     }
     if (weekdayToggleWeekends) {
       weekdayToggleWeekends.addEventListener("change", () => {
         updateWeekdayState({ filters: { weekends: weekdayToggleWeekends.checked } });
-        if (useDirectFilterRerenderFallback) {
-          ensureWeekdayDayFilters();
-          rerenderWeekdayFromState();
-        }
       });
     }
     if (weekdayToggleWorking) {
       weekdayToggleWorking.addEventListener("change", () => {
         updateWeekdayState({ filters: { working: weekdayToggleWorking.checked } });
-        if (useDirectFilterRerenderFallback) {
-          ensureWeekdayHourFilters();
-          rerenderWeekdayFromState();
-        }
       });
     }
     if (weekdayToggleOffhours) {
       weekdayToggleOffhours.addEventListener("change", () => {
         updateWeekdayState({ filters: { offhours: weekdayToggleOffhours.checked } });
-        if (useDirectFilterRerenderFallback) {
-          ensureWeekdayHourFilters();
-          rerenderWeekdayFromState();
-        }
       });
     }
 
@@ -219,11 +193,6 @@ export function createEventBindingsController({ elements, handlers, deps }) {
             weekdays: timeOfDayWeekdayToggle.checked,
           },
         });
-        if (useDirectFilterRerenderFallback) {
-          ensureDayFilters();
-          syncHourlyControlsWithState();
-          rerenderHourlyFromState();
-        }
       });
     }
     if (timeOfDayWeekendToggle) {
@@ -234,11 +203,6 @@ export function createEventBindingsController({ elements, handlers, deps }) {
             weekends: timeOfDayWeekendToggle.checked,
           },
         });
-        if (useDirectFilterRerenderFallback) {
-          ensureDayFilters();
-          syncHourlyControlsWithState();
-          rerenderHourlyFromState();
-        }
       });
     }
     if (timeOfDayHourStartInput && timeOfDayHourEndInput) {
@@ -247,10 +211,6 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         let end = Number(timeOfDayHourEndInput.value);
         if (start > end) [start, end] = [end, start];
         updateHourlyState({ brush: { start, end } });
-        if (useDirectFilterRerenderFallback) {
-          syncHourlyControlsWithState();
-          rerenderHourlyFromState();
-        }
       };
       timeOfDayHourStartInput.addEventListener("input", updateTimeOfDayBrush);
       timeOfDayHourEndInput.addEventListener("input", updateTimeOfDayBrush);
@@ -262,15 +222,6 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         let end = Number(weekdayHourEndInput.value);
         if (start > end) [start, end] = [end, start];
         updateWeekdayState({ brush: { start, end } });
-        weekdayHourStartInput.value = String(start);
-        weekdayHourEndInput.value = String(end);
-        const startLabel = document.getElementById("weekday-hour-start-label");
-        const endLabel = document.getElementById("weekday-hour-end-label");
-        if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
-        if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-        if (useDirectFilterRerenderFallback) {
-          rerenderWeekdayFromState();
-        }
       };
       weekdayHourStartInput.addEventListener("input", updateBrush);
       weekdayHourEndInput.addEventListener("input", updateBrush);

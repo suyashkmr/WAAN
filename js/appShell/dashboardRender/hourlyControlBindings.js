@@ -3,8 +3,6 @@ export function initActivityHourlyControls({
   updateHourlyState,
   ensureDayFilters,
   ensureHourFilters,
-  rerenderHourlyFromState,
-  hasStateSubscription,
   documentRef = globalThis.document ?? null,
 }) {
   if (!documentRef) return;
@@ -25,9 +23,6 @@ export function initActivityHourlyControls({
         },
       });
       ensureDayFilters();
-      if (!hasStateSubscription) {
-        rerenderHourlyFromState();
-      }
     });
   }
 
@@ -40,9 +35,6 @@ export function initActivityHourlyControls({
         },
       });
       ensureDayFilters();
-      if (!hasStateSubscription) {
-        rerenderHourlyFromState();
-      }
     });
   }
 
@@ -55,9 +47,6 @@ export function initActivityHourlyControls({
         },
       });
       ensureHourFilters();
-      if (!hasStateSubscription) {
-        rerenderHourlyFromState();
-      }
     });
   }
 
@@ -70,9 +59,6 @@ export function initActivityHourlyControls({
         },
       });
       ensureHourFilters();
-      if (!hasStateSubscription) {
-        rerenderHourlyFromState();
-      }
     });
   }
 
@@ -90,9 +76,6 @@ export function initActivityHourlyControls({
       const endLabel = documentRef.getElementById("hourly-brush-end-label");
       if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
       if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-      if (!hasStateSubscription) {
-        rerenderHourlyFromState();
-      }
     };
     brushStart.addEventListener("input", updateBrush);
     brushEnd.addEventListener("input", updateBrush);

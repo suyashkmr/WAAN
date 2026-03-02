@@ -219,8 +219,6 @@ export function createActivityPanelsController({ elements, deps }) {
       updateHourlyState,
       ensureDayFilters,
       ensureHourFilters,
-      rerenderHourlyFromState,
-      hasStateSubscription,
     });
   }
 

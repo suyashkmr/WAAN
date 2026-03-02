@@ -134,6 +134,7 @@ describe("activityPanels detailed", () => {
       filters: { weekdays: true, weekends: true, working: true, offhours: true },
       brush: { start: 3, end: 21 },
     };
+    let onStateChange = null;
 
     const controller = createActivityPanelsController({
       elements,
@@ -144,6 +145,10 @@ describe("activityPanels detailed", () => {
         updateHourlyState: patch => {
           if (patch.filters) hourlyState.filters = { ...hourlyState.filters, ...patch.filters };
           if (patch.brush) hourlyState.brush = patch.brush;
+          onStateChange?.({ type: "filters.hourly" });
+        },
+        subscribeAppShellUiState: callback => {
+          onStateChange = callback;
         },
         getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
         updateWeekdayState: vi.fn(),
@@ -163,6 +168,12 @@ describe("activityPanels detailed", () => {
     filterWeekends.checked = false;
     filterWeekdays.dispatchEvent(new Event("change"));
     filterWeekends.dispatchEvent(new Event("change"));
+    hourlyState.filters = {
+      ...hourlyState.filters,
+      weekdays: false,
+      weekends: false,
+    };
+    controller.ensureDayFilters();
     expect(hourlyState.filters.weekdays).toBe(true);
     expect(hourlyState.filters.weekends).toBe(true);
 
@@ -170,6 +181,12 @@ describe("activityPanels detailed", () => {
     filterOffhours.checked = false;
     filterWorking.dispatchEvent(new Event("change"));
     filterOffhours.dispatchEvent(new Event("change"));
+    hourlyState.filters = {
+      ...hourlyState.filters,
+      working: false,
+      offhours: false,
+    };
+    controller.ensureHourFilters();
     expect(hourlyState.filters.working).toBe(true);
     expect(hourlyState.filters.offhours).toBe(true);
 

@@ -67,17 +67,9 @@ export function createRuntimeEventBindings({
     deps: {
       updateStatus: deps.updateStatus,
       applyCustomRange: deps.applyCustomRange,
-      enableDirectFilterRerenderFallback: deps.enableDirectFilterRerenderFallback,
       updateWeekdayState: deps.updateWeekdayState,
-      ensureWeekdayDayFilters: deps.ensureWeekdayDayFilters,
-      syncWeekdayControlsWithState: deps.syncWeekdayControlsWithState,
-      rerenderWeekdayFromState: deps.rerenderWeekdayFromState,
-      ensureWeekdayHourFilters: deps.ensureWeekdayHourFilters,
       updateHourlyState: deps.updateHourlyState,
       getHourlyState: deps.getHourlyState,
-      ensureDayFilters: deps.ensureDayFilters,
-      syncHourlyControlsWithState: deps.syncHourlyControlsWithState,
-      rerenderHourlyFromState: deps.rerenderHourlyFromState,
     },
   };
 }

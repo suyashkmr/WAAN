@@ -31,20 +31,12 @@ function createDeps(overrides = {}) {
   return {
     updateStatus: vi.fn(),
     applyCustomRange: vi.fn(async () => {}),
-    enableDirectFilterRerenderFallback: true,
     updateWeekdayState: vi.fn(),
-    ensureWeekdayDayFilters: vi.fn(),
-    syncWeekdayControlsWithState: vi.fn(),
-    rerenderWeekdayFromState: vi.fn(),
-    ensureWeekdayHourFilters: vi.fn(),
     updateHourlyState: vi.fn(),
     getHourlyState: vi.fn(() => ({
       filters: { weekdays: true, weekends: true, working: true, offhours: true },
       brush: { start: 0, end: 23 },
     })),
-    ensureDayFilters: vi.fn(),
-    syncHourlyControlsWithState: vi.fn(),
-    rerenderHourlyFromState: vi.fn(),
     ...overrides,
   };
 }
@@ -190,7 +182,7 @@ describe("event bindings detailed", () => {
     );
   });
 
-  it("updates weekday filters and brush labels", () => {
+  it("updates weekday filters and brush state", () => {
     const handlers = createHandlers();
     const deps = createDeps();
 
@@ -200,12 +192,6 @@ describe("event bindings detailed", () => {
     const weekdayToggleOffhours = document.createElement("input");
     const weekdayHourStartInput = document.createElement("input");
     const weekdayHourEndInput = document.createElement("input");
-
-    const startLabel = document.createElement("span");
-    startLabel.id = "weekday-hour-start-label";
-    const endLabel = document.createElement("span");
-    endLabel.id = "weekday-hour-end-label";
-    document.body.append(startLabel, endLabel);
 
     const { initEventHandlers } = createEventBindingsController({
       elements: {
@@ -240,13 +226,6 @@ describe("event bindings detailed", () => {
     expect(deps.updateWeekdayState).toHaveBeenCalledWith({ filters: { working: false } });
     expect(deps.updateWeekdayState).toHaveBeenCalledWith({ filters: { offhours: true } });
     expect(deps.updateWeekdayState).toHaveBeenCalledWith({ brush: { start: 6, end: 22 } });
-    expect(weekdayHourStartInput.value).toBe("6");
-    expect(weekdayHourEndInput.value).toBe("22");
-    expect(startLabel.textContent).toBe("06:00");
-    expect(endLabel.textContent).toBe("22:00");
-    expect(deps.ensureWeekdayDayFilters).toHaveBeenCalledTimes(2);
-    expect(deps.ensureWeekdayHourFilters).toHaveBeenCalledTimes(2);
-    expect(deps.rerenderWeekdayFromState).toHaveBeenCalled();
   });
 
   it("updates time-of-day filters, swaps brush values, and applies custom range", async () => {
@@ -305,17 +284,12 @@ describe("event bindings detailed", () => {
       },
     });
     expect(deps.updateHourlyState).toHaveBeenCalledWith({ brush: { start: 8, end: 20 } });
-    expect(deps.ensureDayFilters).toHaveBeenCalledTimes(2);
-    expect(deps.syncHourlyControlsWithState).toHaveBeenCalledTimes(3);
-    expect(deps.rerenderHourlyFromState).toHaveBeenCalledTimes(3);
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
   });
 
-  it("avoids direct filter rerenders when state subscriptions are available", () => {
+  it("avoids direct filter rerenders from event bindings", () => {
     const handlers = createHandlers();
-    const deps = createDeps({
-      enableDirectFilterRerenderFallback: false,
-    });
+    const deps = createDeps();
 
     const timeOfDayWeekdayToggle = document.createElement("input");
     const timeOfDayWeekendToggle = document.createElement("input");
@@ -336,9 +310,6 @@ describe("event bindings detailed", () => {
     timeOfDayWeekendToggle.checked = true;
     timeOfDayWeekendToggle.dispatchEvent(new Event("change"));
 
-    expect(deps.ensureDayFilters).not.toHaveBeenCalled();
-    expect(deps.syncHourlyControlsWithState).not.toHaveBeenCalled();
-    expect(deps.rerenderHourlyFromState).not.toHaveBeenCalled();
     expect(deps.updateHourlyState).toHaveBeenCalledTimes(2);
   });
 });

@@ -231,19 +231,21 @@ Completed work is archived in git history and was removed from this file for cla
 
 ## Next Wave: Non-React App Improvements
 
-- [ ] Phase 1 (highest priority, 4-6 days): Introduce a single app-shell state layer for UI consistency.
+- [x] Phase 1 (highest priority, 4-6 days): Introduce a single app-shell state layer for UI consistency.
   - [x] Define one canonical state store for relay status, sync progress, selected chat, and filter context.
     - [x] Added canonical app-shell UI state module with subscription support (`js/state/appShellUiState.js`).
     - [x] Wired chat/range/filter state setters to synchronize canonical state (`js/state/chatLibraryState.js`, `js/state/datasetState.js`, `js/state/activityFilterState.js`).
     - [x] Wired relay status application to synchronize canonical relay state (`js/relayControls/statusApply.js`).
-  - [ ] Replace ad-hoc cross-module DOM state mutations with event-driven state updates.
+  - [x] Replace ad-hoc cross-module DOM state mutations with event-driven state updates.
     - [x] Converted event-binding filter rerender flow to canonical state subscriptions (`js/appShell/eventBindings.js`, `js/appShell/assemblyWiring.js`, `js/appShell/runtimeConfig.js`).
     - [x] Converted dashboard activity filter rerender flow to canonical state subscriptions with non-subscriber fallback (`js/appShell/dashboardRender/activityPanels.js`, `js/appShell/dashboardRender.js`, `js/appShell/controllerWiring/dashboardDataStatusTheme.js`).
-    - [ ] Continue replacing remaining direct rerender/mutation call sites in dashboard/activity modules with subscription-driven updates.
+    - [x] Removed direct rerender fallback paths from app-shell event bindings so filter interactions are state-write only and render through dashboard subscriptions (`js/appShell/eventBindings.js`, `js/appShell/runtimeConfig.js`).
+    - [x] Continue replacing remaining direct rerender/mutation call sites in dashboard/activity modules with subscription-driven updates (`js/appShell/dashboardRender/hourlyControlBindings.js`, `js/appShell/dashboardRender/activityPanels.js`).
   - [x] Add focused contract tests for state transitions and cross-panel parity.
     - [x] Added canonical state transition coverage for chat/range/filter/relay status (`tests/appShellUiState.test.js`).
     - [x] Verified targeted suites: `npm run test -- tests/appShellUiState.test.js tests/state.test.js tests/relayControls.test.js`.
-  - [ ] Exit criteria: cross-panel state parity is deterministic and state-transition tests pass in CI.
+  - [x] Exit criteria: cross-panel state parity is deterministic and state-transition tests pass in CI.
+    - [x] Verified full gate suite with `npm run ci:verify` after subscription-flow refactors.
 - [ ] Phase 2 (high priority, 1-2 weeks): Incremental TypeScript adoption for high-risk orchestration paths.
   - [ ] Enable TS config/checking with JS interop (`allowJs`) and no runtime bundler rewrite.
   - [ ] Migrate `js/appShell/*` and `js/relayControls/*` module-by-module to `.ts` with strict null-safe boundaries.

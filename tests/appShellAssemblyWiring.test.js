@@ -136,7 +136,6 @@ describe("appShell assembly wiring", () => {
 
     expect(Object.keys(createRuntimeDeps({ controllerWiring, stateStore })).sort()).toEqual([
       "applyCustomRange",
-      "enableDirectFilterRerenderFallback",
       "ensureDayFilters",
       "ensureWeekdayDayFilters",
       "ensureWeekdayHourFilters",
@@ -247,7 +246,6 @@ describe("appShell assembly wiring", () => {
     expect(handlers.updateStatus).toBe(stateStore.updateStatus);
     expect(deps.applyCustomRange).toBe(controllerWiring.applyCustomRange);
     expect(deps.updateHourlyState).toBe(stateStore.updateHourlyState);
-    expect(deps.enableDirectFilterRerenderFallback).toBe(false);
   });
 
   it("returns dataset empty-state export button list in stable order", () => {
