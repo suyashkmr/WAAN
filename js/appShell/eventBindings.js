@@ -1,3 +1,16 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   elements: AnyRecord,
+ *   handlers: AnyRecord,
+ *   deps: AnyRecord,
+ * }} params
+ */
 export function createEventBindingsController({ elements, handlers, deps }) {
   const {
     chatSelector,
@@ -67,6 +80,8 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     getHourlyState,
   } = deps;
 
+  const documentRef = globalThis.document ?? null;
+
   function initEventHandlers() {
     if (chatSelector) {
       chatSelector.addEventListener("change", handleChatSelectionChange);
@@ -74,7 +89,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         if (!chatSelector.value) return;
         void handleChatSelectionChange({ target: chatSelector, force: true });
       });
-      chatSelector.addEventListener("keydown", event => {
+      chatSelector.addEventListener("keydown", /** @param {KeyboardEvent} event */ event => {
         if (event.key !== "Enter" || !chatSelector.value) return;
         event.preventDefault();
         void handleChatSelectionChange({ target: chatSelector, force: true });
@@ -124,14 +139,17 @@ export function createEventBindingsController({ elements, handlers, deps }) {
       downloadSentimentButton.addEventListener("click", exportSentiment);
     }
 
-    document.querySelectorAll(".stat-download").forEach(button => {
-      button.addEventListener("click", () => {
-        const type = button.dataset.export;
-        if (type) {
-          exportMessageSubtype(type);
-        }
+    if (documentRef) {
+      documentRef.querySelectorAll(".stat-download").forEach(
+        /** @param {Element} button */ function bindStatDownload(button) {
+        button.addEventListener("click", () => {
+          const type = /** @type {HTMLElement} */ (button).dataset.export;
+          if (type) {
+            exportMessageSubtype(type);
+          }
+        });
       });
-    });
+    }
 
     if (downloadMarkdownButton) {
       downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
@@ -156,7 +174,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
       participantsTimeframeSelect.addEventListener("change", handleParticipantsTimeframeChange);
     }
     if (participantPresetButtons?.length) {
-      participantPresetButtons.forEach(button => {
+      participantPresetButtons.forEach(/** @param {Element} button */ button => {
         button.addEventListener("click", handleParticipantPresetClick);
       });
     }

@@ -1,3 +1,12 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {AnyRecord} exportRefs
+ */
 export function createDatasetEmptyButtons(exportRefs) {
   return [
     exportRefs.downloadPdfButton,
@@ -16,6 +25,9 @@ export function createDatasetEmptyButtons(exportRefs) {
   ];
 }
 
+/**
+ * @param {AnyRecord} controllerWiring
+ */
 export function createCompositionAssemblyWiring(controllerWiring) {
   return {
     getExportFilterSummary: controllerWiring.getExportFilterSummary,
@@ -42,6 +54,13 @@ export function createCompositionAssemblyWiring(controllerWiring) {
   };
 }
 
+/**
+ * @param {{
+ *   controllerWiring: AnyRecord,
+ *   compositionAssembly: AnyRecord,
+ *   stateStore: AnyRecord,
+ * }} params
+ */
 export function createRuntimeHandlers({ controllerWiring, compositionAssembly, stateStore }) {
   return {
     handleChatSelectionChange: compositionAssembly.handleChatSelectionChange,
@@ -78,6 +97,9 @@ export function createRuntimeHandlers({ controllerWiring, compositionAssembly, s
   };
 }
 
+/**
+ * @param {{ controllerWiring: AnyRecord, stateStore: AnyRecord }} params
+ */
 export function createRuntimeDeps({ controllerWiring, stateStore }) {
   return {
     updateStatus: stateStore.updateStatus,

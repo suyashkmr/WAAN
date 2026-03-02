@@ -1,7 +1,41 @@
+// @ts-check
+
 import { createRangeSearchSavedViewsWiring } from "./controllerWiring/rangeSearchSavedViews.js";
 import { createDashboardDataStatusThemeWiring } from "./controllerWiring/dashboardDataStatusTheme.js";
 import { createDashboardViewAdapter } from "./controllerWiring/dashboardViewAdapter.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @typedef {{
+ *   setController(controller: AnyRecord): void,
+ *   renderDashboard(analytics: AnyRecord): void,
+ *   renderParticipants(analytics: AnyRecord): void,
+ *   ensureWeekdayDayFilters(): void,
+ *   ensureWeekdayHourFilters(): void,
+ *   syncWeekdayControlsWithState(): void,
+ *   rerenderHourlyFromState(): void,
+ *   rerenderWeekdayFromState(): void,
+ *   ensureDayFilters(): void,
+ *   ensureHourFilters(): void,
+ *   syncHourlyControlsWithState(): void,
+ * }} DashboardControllerApi
+ */
+
+/**
+ * @param {{
+ *   dom: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   constants: AnyRecord,
+ *   callbacks: AnyRecord,
+ *   dataStatus: AnyRecord,
+ *   documentRef?: Document | null,
+ *   windowRef?: Window | null,
+ * }} params
+ */
 export function createAppControllerWiring({
   dom,
   state,
@@ -12,7 +46,9 @@ export function createAppControllerWiring({
   documentRef = globalThis.document ?? null,
   windowRef = globalThis.window ?? null,
 }) {
+  /** @type {AnyRecord | null} */
   let dashboardRenderController = null;
+  /** @type {DashboardControllerApi} */
   const dashboardControllerApi = {
     setController(controller) {
       dashboardRenderController = controller;

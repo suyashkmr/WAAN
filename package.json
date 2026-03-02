@@ -19,6 +19,7 @@
     "check:circular": "madge --extensions js --circular js apps/server/src",
     "check:artifacts": "bash scripts/check-artifacts.sh",
     "check:module-size": "node scripts/check-module-size.mjs",
+    "check:types": "tsc --noEmit",
     "check:appshell-contracts": "vitest --run tests/appShellBoot.test.js tests/appShellBoundaryIntegration.test.js tests/controllerWiringContracts.test.js tests/compositionAssemblyContracts.test.js tests/appShellAssemblyWiring.test.js",
     "test:smoke": "npm run check:appshell-contracts",
     "test": "vitest --run",
@@ -31,7 +32,7 @@
     "release:cut": "node scripts/cut-release.cjs",
     "check:release-notes": "node scripts/validate-release-notes.mjs",
     "verify": "npm run lint && npm test",
-    "ci:verify": "npm run check:artifacts && npm run check:module-size && npm run check:unused-exports && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-adoption && npm run check:appshell-contracts && npm run verify && npm run check:circular",
+    "ci:verify": "npm run check:artifacts && npm run check:module-size && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-adoption && npm run check:appshell-contracts && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },
@@ -44,13 +45,14 @@
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.58.2",
     "@vitest/coverage-v8": "^4.0.14",
+    "depcheck": "1.4.7",
     "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.5.0",
-    "depcheck": "1.4.7",
     "happy-dom": "^20.0.11",
     "madge": "8.0.0",
     "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.14"
   }
 }

@@ -247,8 +247,27 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Exit criteria: cross-panel state parity is deterministic and state-transition tests pass in CI.
     - [x] Verified full gate suite with `npm run ci:verify` after subscription-flow refactors.
 - [ ] Phase 2 (high priority, 1-2 weeks): Incremental TypeScript adoption for high-risk orchestration paths.
-  - [ ] Enable TS config/checking with JS interop (`allowJs`) and no runtime bundler rewrite.
+  - [x] Enable TS config/checking with JS interop (`allowJs`) and no runtime bundler rewrite.
+    - [x] Added root TypeScript config with `allowJs` + no-emit checking (`tsconfig.json`).
+    - [x] Added `check:types` script and wired it into `ci:verify` (`package.json`).
+    - [x] Added pinned TypeScript dev dependency (`typescript`).
+    - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
   - [ ] Migrate `js/appShell/*` and `js/relayControls/*` module-by-module to `.ts` with strict null-safe boundaries.
+    - [x] Migrated first low-risk leaf slice to strict typed-JS contracts with `@ts-check` + JSDoc while preserving runtime import paths:
+      - [x] `js/appShell/dashboardRender/hourlySummary.js`
+      - [x] `js/appShell/dashboardRender/highlightsStats.js`
+      - [x] `js/relayControls/primaryAction.js`
+    - [x] Migrated next dashboard/relay control slice to strict typed-JS contracts with `@ts-check` + JSDoc:
+      - [x] `js/appShell/dashboardRender/activityPanels.js`
+      - [x] `js/relayControls/statusApply.js`
+      - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
+    - [ ] Continue module conversion for orchestration-heavy files and move converted modules from typed-JS to `.ts` once runtime-safe import strategy is finalized.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for orchestration wiring modules:
+        - [x] `js/appShell/assemblyWiring.js`
+        - [x] `js/appShell/runtimeConfig.js`
+        - [x] `js/appShell/controllerWiring.js`
+        - [x] `js/appShell/eventBindings.js`
+      - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
   - [ ] Keep existing runtime behavior unchanged and verify with `npm run ci:verify`.
   - [ ] Exit criteria: core orchestration modules are type-checked and CI remains green without behavior regressions.
 - [ ] Phase 3 (parallel with late phase 2, 3-5 days): Expand reliability gates for core relay and export flows.
@@ -266,8 +285,23 @@ Completed work is archived in git history and was removed from this file for cla
   - [ ] Provide explicit guided recovery actions (`Reconnect`, `Resync`, `Export diagnostics`) in failure states.
   - [ ] Validate recovery flows with manual smoke steps in `docs/release-smoke-checklist.md`.
   - [ ] Exit criteria: failure states are actionable in-UI and recovery flows are validated in release smoke.
+- [ ] Phase 6 (after phase 5, 1-2 weeks): Local-first group privacy policy enforcement.
+  - [ ] Add per-group policy tiers with local persistence: `blocked`, `aggregate_only`, `detailed`.
+  - [ ] Enforce detailed analytics gating behind local policy + role/allowlist checks (fail-safe downgrade when role metadata is unavailable).
+  - [ ] Enforce aggregate-only sanitization in analytics data path (no message text, no per-member attribution, coarse/thresholded aggregates).
+  - [ ] Enforce policy in export paths (block detailed exports unless policy allows).
+  - [ ] Add group policy UX surfaces:
+    - [ ] Group-level privacy badges in selection/status surfaces.
+    - [ ] Clear disable reasons/tooltips and policy guidance messaging.
+    - [ ] Per-group settings controls + purge action for locally stored analytics.
+  - [ ] Add regression and contract coverage for policy transitions and enforcement:
+    - [ ] Relay ingest/store enforcement tests.
+    - [ ] Dashboard render gating tests.
+    - [ ] Export guard tests.
+  - [ ] Exit criteria: policy tier is enforced consistently across ingest, analytics, UI, and export flows with local-only data handling.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.
   - [ ] Run phase 3 in parallel with late phase 2.
   - [ ] Run phase 4, then phase 5.
+  - [ ] Run phase 6 after phase 5.

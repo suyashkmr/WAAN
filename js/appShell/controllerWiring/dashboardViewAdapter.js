@@ -1,3 +1,11 @@
+// @ts-check
+
+/**
+ * @param {{
+ *   documentRef?: Document | null,
+ *   windowRef?: Window | null,
+ * }} [params]
+ */
 export function createDashboardViewAdapter({
   documentRef = globalThis.document ?? null,
   windowRef = globalThis.window ?? null,

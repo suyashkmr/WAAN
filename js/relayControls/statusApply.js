@@ -1,5 +1,31 @@
+// @ts-check
+
 import { setAppShellRelayStatus } from "../state.js";
 
+/**
+ * @typedef {Object} RelayStatus
+ * @property {string} [status]
+ * @property {string} [account]
+ * @property {string} [lastQr]
+ * @property {number} [chatCount]
+ * @property {boolean} [syncingChats]
+ * @property {string} [syncPath]
+ */
+
+/**
+ * @typedef {Object} RelayUiState
+ * @property {string | null} [lastAppliedStateKind]
+ * @property {string | null} [lastStatusKind]
+ * @property {boolean} controlsLocked
+ */
+
+/**
+ * @param {{
+ *  relayUiState: RelayUiState,
+ *  elements: Record<string, any>,
+ *  deps: Record<string, any>,
+ * }} params
+ */
 export function createRelayStatusApplyController({
   relayUiState,
   elements,
@@ -49,6 +75,9 @@ export function createRelayStatusApplyController({
     getDataAvailable,
   } = deps;
 
+  /**
+   * @param {RelayStatus | null | undefined} status
+   */
   function applyRelayStatus(status) {
     setAppShellRelayStatus(status);
     const stateKind = status?.status || "offline";

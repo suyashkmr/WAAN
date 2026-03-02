@@ -1,4 +1,26 @@
+// @ts-check
+
+/**
+ * @typedef {Object} RelayStatus
+ * @property {string} [status]
+ * @property {string | null} [lastError]
+ */
+
+/**
+ * @typedef {Object} RelayPrimaryAction
+ * @property {"connect" | "reconnect" | "resync" | "waiting" | "starting"} id
+ * @property {string} label
+ * @property {string} hint
+ * @property {boolean} disabled
+ */
+
+/**
+ * @param {RelayStatus | null | undefined} status
+ * @param {{ relayServiceName?: string }} [options]
+ * @returns {RelayPrimaryAction}
+ */
 function getRelayPrimaryAction(status, { relayServiceName } = {}) {
+  /** @type {RelayPrimaryAction} */
   const defaultAction = {
     id: "connect",
     label: "Connect relay",
@@ -42,6 +64,14 @@ function getRelayPrimaryAction(status, { relayServiceName } = {}) {
   return defaultAction;
 }
 
+/**
+ * @param {{
+ *   status: RelayStatus | null | undefined,
+ *   relayStartButton: HTMLButtonElement | null | undefined,
+ *   relayUiState: { controlsLocked: boolean, primaryAction?: string },
+ *   relayServiceName?: string,
+ * }} params
+ */
 export function applyRelayPrimaryAction({
   status,
   relayStartButton,

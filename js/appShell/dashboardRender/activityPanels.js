@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   renderTimeOfDayPanel,
   renderHourlyHeatmapSection,
@@ -8,6 +10,17 @@ import {
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
 
+/**
+ * @typedef {{ weekdays: boolean, weekends: boolean, working: boolean, offhours: boolean }} ActivityFilters
+ * @typedef {{ start: number, end: number }} ActivityBrush
+ * @typedef {{ filters: ActivityFilters, brush: ActivityBrush }} FilterState
+ * @typedef {{ type?: string, start?: string, end?: string } | null} CustomRange
+ * @typedef {{ type?: string }} UiStateEvent
+ */
+
+/**
+ * @param {{ elements: Record<string, any>, deps: Record<string, any> }} params
+ */
 export function createActivityPanelsController({ elements, deps }) {
   const {
     hourlyChartEl,
@@ -61,7 +74,8 @@ export function createActivityPanelsController({ elements, deps }) {
 
   function initStateSubscriptions() {
     if (!hasStateSubscription || stateSubscriptionsInitialised) return;
-    subscribeAppShellUiState(event => {
+    subscribeAppShellUiState(
+      /** @param {UiStateEvent | null | undefined} event */ event => {
       if (!event?.type) return;
       if (event.type === "filters.hourly") {
         ensureDayFilters();
@@ -75,18 +89,21 @@ export function createActivityPanelsController({ elements, deps }) {
         syncWeekdayControlsWithState();
         rerenderWeekdayFromState();
       }
-    });
+      },
+    );
     stateSubscriptionsInitialised = true;
   }
 
+  /** @param {any} summary */
   function renderHourlySummary(summary) {
     if (!hourlyTopHourEl) return;
-    hourlyTopHourEl.textContent = buildHourlyTopHourSummary(summary, {
+    hourlyTopHourEl.textContent = buildHourlyTopHourSummary(/** @type {import("./hourlySummary.js").HourlySummaryData | null | undefined} */ (summary), {
       formatNumber,
       formatFloat,
     });
   }
 
+  /** @param {Record<string, any>} analytics */
   function renderHourlyPanel(analytics) {
     renderHourlyHeatmapSection(
       {
@@ -111,6 +128,7 @@ export function createActivityPanelsController({ elements, deps }) {
     syncHourlyControlsWithState();
   }
 
+  /** @param {Record<string, any>} analytics */
   function renderDailyPanel(analytics) {
     renderDailySection(analytics.daily_counts, {
       container: dailyChartEl,
@@ -118,6 +136,7 @@ export function createActivityPanelsController({ elements, deps }) {
     });
   }
 
+  /** @param {Record<string, any>} analytics */
   function renderWeeklyPanel(analytics) {
     const customRange = getCustomRange();
     renderWeeklySection(analytics.weekly_counts, analytics.weekly_summary, {
@@ -129,6 +148,7 @@ export function createActivityPanelsController({ elements, deps }) {
         customRange && customRange.type === "custom"
           ? { start: customRange.start, end: customRange.end }
           : null,
+      /** @param {{ start?: string, end?: string }} range */
       onSelectRange: range => {
         if (!range?.start || !range?.end) return;
         applyCustomRange(range.start, range.end);
@@ -137,6 +157,7 @@ export function createActivityPanelsController({ elements, deps }) {
     });
   }
 
+  /** @param {Record<string, any>} analytics */
   function renderWeekdayPanel(analytics) {
     updateWeekdayState({
       distribution: analytics.weekday_distribution,
@@ -149,6 +170,7 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureWeekdayDayFilters() {
+    /** @type {FilterState} */
     const state = getWeekdayState();
     const filters = { ...state.filters };
     if (!filters.weekdays && !filters.weekends) {
@@ -161,6 +183,7 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureWeekdayHourFilters() {
+    /** @type {FilterState} */
     const state = getWeekdayState();
     const filters = { ...state.filters };
     if (!filters.working && !filters.offhours) {
@@ -173,6 +196,7 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function syncWeekdayControlsWithState() {
+    /** @type {FilterState} */
     const state = getWeekdayState();
     const { filters, brush } = state;
     if (weekdayToggleWeekdays) weekdayToggleWeekdays.checked = filters.weekdays;
@@ -181,8 +205,8 @@ export function createActivityPanelsController({ elements, deps }) {
     if (weekdayToggleOffhours) weekdayToggleOffhours.checked = filters.offhours;
     if (weekdayHourStartInput) weekdayHourStartInput.value = String(brush.start);
     if (weekdayHourEndInput) weekdayHourEndInput.value = String(brush.end);
-    const startLabel = document.getElementById("weekday-hour-start-label");
-    const endLabel = document.getElementById("weekday-hour-end-label");
+    const startLabel = /** @type {HTMLElement | null} */ (document.getElementById("weekday-hour-start-label"));
+    const endLabel = /** @type {HTMLElement | null} */ (document.getElementById("weekday-hour-end-label"));
     if (startLabel) startLabel.textContent = `${String(brush.start).padStart(2, "0")}:00`;
     if (endLabel) endLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
   }
@@ -223,6 +247,7 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureDayFilters() {
+    /** @type {FilterState} */
     const state = getHourlyState();
     const filters = state.filters;
     if (!filters.weekdays && !filters.weekends) {
@@ -231,8 +256,8 @@ export function createActivityPanelsController({ elements, deps }) {
         weekdays: true,
         weekends: true,
       };
-      const weekdayToggle = document.getElementById("filter-weekdays");
-      const weekendToggle = document.getElementById("filter-weekends");
+      const weekdayToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekdays"));
+      const weekendToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekends"));
       if (weekdayToggle) weekdayToggle.checked = true;
       if (weekendToggle) weekendToggle.checked = true;
       updateHourlyState({ filters: normalizedFilters });
@@ -241,6 +266,7 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureHourFilters() {
+    /** @type {FilterState} */
     const state = getHourlyState();
     const filters = state.filters;
     if (!filters.working && !filters.offhours) {
@@ -249,8 +275,8 @@ export function createActivityPanelsController({ elements, deps }) {
         working: true,
         offhours: true,
       };
-      const workingToggle = document.getElementById("filter-working");
-      const offToggle = document.getElementById("filter-offhours");
+      const workingToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-working"));
+      const offToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-offhours"));
       if (workingToggle) workingToggle.checked = true;
       if (offToggle) offToggle.checked = true;
       updateHourlyState({ filters: normalizedFilters });
@@ -259,15 +285,16 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function syncHourlyControlsWithState() {
+    /** @type {FilterState} */
     const state = getHourlyState();
-    const weekdayToggle = document.getElementById("filter-weekdays");
-    const weekendToggle = document.getElementById("filter-weekends");
-    const workingToggle = document.getElementById("filter-working");
-    const offToggle = document.getElementById("filter-offhours");
-    const brushStart = document.getElementById("hourly-brush-start");
-    const brushEnd = document.getElementById("hourly-brush-end");
-    const startLabel = document.getElementById("hourly-brush-start-label");
-    const endLabel = document.getElementById("hourly-brush-end-label");
+    const weekdayToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekdays"));
+    const weekendToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekends"));
+    const workingToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-working"));
+    const offToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-offhours"));
+    const brushStart = /** @type {HTMLInputElement | null} */ (document.getElementById("hourly-brush-start"));
+    const brushEnd = /** @type {HTMLInputElement | null} */ (document.getElementById("hourly-brush-end"));
+    const startLabel = /** @type {HTMLElement | null} */ (document.getElementById("hourly-brush-start-label"));
+    const endLabel = /** @type {HTMLElement | null} */ (document.getElementById("hourly-brush-end-label"));
 
     if (weekdayToggle) weekdayToggle.checked = state.filters.weekdays;
     if (weekendToggle) weekendToggle.checked = state.filters.weekends;

@@ -1,3 +1,18 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   filterRefs: AnyRecord,
+ *   exportRefs: AnyRecord,
+ *   dashboardRefs: AnyRecord,
+ *   handlers: AnyRecord,
+ *   deps: AnyRecord,
+ * }} params
+ */
 export function createRuntimeEventBindings({
   filterRefs,
   exportRefs,
@@ -74,6 +89,9 @@ export function createRuntimeEventBindings({
   };
 }
 
+/**
+ * @param {{ deps: AnyRecord, relayServiceName: string }} params
+ */
 export function createRuntimeBootstrapDeps({ deps, relayServiceName }) {
   return {
     initRelayControls: deps.initRelayControls,

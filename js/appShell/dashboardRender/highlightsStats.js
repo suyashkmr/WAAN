@@ -1,7 +1,74 @@
+// @ts-check
+
+/**
+ * @typedef {Object} HighlightItem
+ * @property {string} [label]
+ * @property {string} [value]
+ */
+
+/**
+ * @typedef {Object} HighlightCard
+ * @property {string} [type]
+ * @property {string} [theme]
+ * @property {string} [label]
+ * @property {string} [tooltip]
+ * @property {string} [headline]
+ * @property {string} [value]
+ * @property {string} [descriptor]
+ * @property {HighlightItem[]} [items]
+ * @property {string} [meta]
+ */
+
+/**
+ * @typedef {Object} HighlightsStatsElements
+ * @property {HTMLElement | null | undefined} highlightList
+ */
+
+/**
+ * @typedef {Object} HighlightsStatsDeps
+ * @property {(value: string) => string} sanitizeText
+ * @property {(value?: number | null) => string} formatNumber
+ * @property {(value?: number | null, digits?: number) => string} formatFloat
+ */
+
+/**
+ * @typedef {Object} SystemSummary
+ * @property {number} [join_requests]
+ */
+
+/**
+ * @typedef {Object} Averages
+ * @property {number} [characters]
+ * @property {number} [words]
+ */
+
+/**
+ * @typedef {Object} AnalyticsStats
+ * @property {number} [media_count]
+ * @property {number} [link_count]
+ * @property {number} [poll_count]
+ * @property {number} [join_events]
+ * @property {number} [added_events]
+ * @property {number} [left_events]
+ * @property {number} [removed_events]
+ * @property {number} [changed_events]
+ * @property {number} [other_system_events]
+ * @property {SystemSummary} [system_summary]
+ * @property {Averages} [averages]
+ */
+
+/**
+ * @param {{ elements: HighlightsStatsElements, deps: HighlightsStatsDeps }} params
+ */
 export function createHighlightsStatsController({ elements, deps }) {
   const { highlightList } = elements;
   const { sanitizeText, formatNumber, formatFloat } = deps;
 
+  /**
+   * @param {number} value
+   * @param {number} [digits]
+   * @returns {string}
+   */
   function formatSentimentScore(value, digits = 2) {
     if (!Number.isFinite(value)) return "-";
     const abs = Math.abs(value);
@@ -11,6 +78,9 @@ export function createHighlightsStatsController({ elements, deps }) {
     return formatFloat(0, digits);
   }
 
+  /**
+   * @param {HighlightCard[] | null | undefined} highlights
+   */
   function renderHighlights(highlights) {
     if (!highlightList) return;
     highlightList.innerHTML = "";
@@ -117,7 +187,14 @@ export function createHighlightsStatsController({ elements, deps }) {
     });
   }
 
+  /**
+   * @param {AnalyticsStats} analytics
+   */
   function renderStatistics(analytics) {
+    /**
+     * @param {string} id
+     * @param {string} value
+     */
     const setText = (id, value) => {
       const node = document.getElementById(id);
       if (node) node.textContent = value;
@@ -135,8 +212,8 @@ export function createHighlightsStatsController({ elements, deps }) {
     if (analytics.system_summary) {
       setText("join-requests", formatNumber(analytics.system_summary.join_requests));
     }
-    setText("avg-chars", formatFloat(analytics.averages.characters, 1));
-    setText("avg-words", formatFloat(analytics.averages.words, 1));
+    setText("avg-chars", formatFloat(analytics.averages?.characters, 1));
+    setText("avg-words", formatFloat(analytics.averages?.words, 1));
   }
 
   return {
