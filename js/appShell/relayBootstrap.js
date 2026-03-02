@@ -1,4 +1,5 @@
 // @ts-check
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -92,21 +93,38 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       return;
     }
 
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const supportsRelayActionDispatch =
+      typeof shellBridge?.setRelayActionHandlers === "function" &&
+      typeof shellBridge?.dispatchRelayAction === "function";
+    if (supportsRelayActionDispatch) {
+      shellBridge.setRelayActionHandlers({
+        "relay.logDrawerOpen": openLogDrawer,
+        "relay.recoveryReconnect": handleRecoveryReconnect,
+        "relay.recoveryResync": handleRecoveryResync,
+        "relay.recoveryExportDiagnostics": handleRecoveryExportDiagnostics,
+      });
+    }
+
     relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
     relayStopButton?.addEventListener("click", stopRelaySession);
     relayLogoutButton?.addEventListener("click", logoutRelaySession);
     relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
     relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
-    logDrawerToggleButton?.addEventListener("click", openLogDrawer);
+    if (!supportsRelayActionDispatch) {
+      logDrawerToggleButton?.addEventListener("click", openLogDrawer);
+    }
     logDrawerCloseButton?.addEventListener("click", closeLogDrawer);
     logDrawerExportButton?.addEventListener("click", handleExportDiagnostics);
     logDrawerReportButton?.addEventListener("click", handleReportIssue);
     logDrawerClearButton?.addEventListener("click", handleLogClear);
     firstRunOpenRelayButton?.addEventListener("click", handleFirstRunOpenRelay);
     firstRunPrimaryActionButton?.addEventListener("click", handleFirstRunPrimaryAction);
-    relayRecoveryReconnectButton?.addEventListener("click", handleRecoveryReconnect);
-    relayRecoveryResyncButton?.addEventListener("click", handleRecoveryResync);
-    relayRecoveryExportButton?.addEventListener("click", handleRecoveryExportDiagnostics);
+    if (!supportsRelayActionDispatch) {
+      relayRecoveryReconnectButton?.addEventListener("click", handleRecoveryReconnect);
+      relayRecoveryResyncButton?.addEventListener("click", handleRecoveryResync);
+      relayRecoveryExportButton?.addEventListener("click", handleRecoveryExportDiagnostics);
+    }
 
     document.addEventListener("click", handleLogDrawerDocumentClick);
     document.addEventListener("keydown", handleLogDrawerKeydown);

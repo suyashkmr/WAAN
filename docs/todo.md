@@ -505,6 +505,8 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added shared Vue bridge registry (`js/vue/bridgeRegistry.js`) and rewired shell/dashboard/search-saved/summary bridge consumers to resolve via registry with legacy-key compatibility.
     - [x] Verified on 2026-03-03 with `npm run ci:verify` (green).
   - [ ] Move dashboard/search/saved/relay UI event orchestration from imperative DOM listeners into Vue component emits/actions.
+    - [x] Relay slice: added Vue shell bridge relay action dispatcher (`setRelayActionHandlers` / `dispatchRelayAction`) and moved Vue-owned log drawer/recovery controls to dispatcher-driven actions (`js/vue/shellPrimitivesIsland.js`, `js/appShell/relayBootstrap.js`).
+    - [x] Added relay bootstrap integration coverage for dispatcher registration and action invocation (`tests/relayIntegration.test.js`).
   - [ ] Introduce a root Vue app shell entry that owns mount lifecycle and route-level section visibility.
   - [ ] Acceptance: no UI rendering path depends on bridge handoff from legacy renderers.
 

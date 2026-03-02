@@ -1,10 +1,26 @@
 import { createRelayControlsBridgeMethods } from "./shellRelayBridge.js";
 import {
+  createActionsToolbarRoot,
+  createOnboardingDialogRoot,
+  createRelayBannerRoot,
+} from "./shellPrimitiveViews.js";
+import {
   LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
   registerVueBridge,
   resolveVueBridge,
 } from "./bridgeRegistry.js";
+
+/**
+ * @param {string} actionId
+ * @param {any} [payload]
+ */
+function dispatchShellAction(actionId, payload = null) {
+  const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+  if (shellBridge?.dispatchRelayAction) {
+    shellBridge.dispatchRelayAction(actionId, payload);
+  }
+}
 
 function mountRelayBannerPrimitive() {
   const VueRuntime = globalThis.Vue;
@@ -14,28 +30,7 @@ function mountRelayBannerPrimitive() {
 
   const { createApp, h } = VueRuntime;
   bannerEl.dataset.vueManaged = "true";
-
-  const RelayBannerRoot = {
-    name: "RelayBannerPrimitive",
-    render() {
-      return [
-        h("div", { class: "relay-banner-indicator", id: "relay-status-dot", "aria-hidden": "true" }),
-        h("div", { class: "relay-banner-text" }, [
-          h("p", { class: "relay-banner-status", id: "relay-status-message" }, "Relay status unknown."),
-          h(
-            "p",
-            { class: "relay-banner-meta", id: "relay-status-meta" },
-            "Launch the desktop relay and press Connect to mirror chats into WAAN.",
-          ),
-        ]),
-        h("div", { class: "relay-banner-actions", id: "relay-status-actions", hidden: true }, [
-          h("button", { type: "button", class: "ghost-button small", id: "relay-recovery-reconnect" }, "Reconnect"),
-          h("button", { type: "button", class: "ghost-button small", id: "relay-recovery-resync" }, "Resync"),
-          h("button", { type: "button", class: "ghost-button small", id: "relay-recovery-export" }, "Export diagnostics"),
-        ]),
-      ];
-    },
-  };
+  const RelayBannerRoot = createRelayBannerRoot(h, dispatchShellAction);
 
   const app = createApp(RelayBannerRoot);
   app.mount(bannerEl);
@@ -49,86 +44,7 @@ function mountActionsToolbarPrimitive() {
   if (toolbarEl.dataset.vuePrimitiveMounted === "true") return;
   const { createApp, h } = VueRuntime;
   toolbarEl.dataset.vueManaged = "true";
-
-  const ActionsToolbarRoot = {
-    name: "ActionsToolbarPrimitive",
-    render() {
-      return [
-        h("div", { class: "toolbar-group primary" }, [
-          h("button", { type: "button", class: "ghost-button", id: "download-pdf" }, "Save as PDF"),
-          h("button", { type: "button", class: "ghost-button", id: "download-markdown-report" }, "Save text report"),
-          h("button", { type: "button", class: "ghost-button", id: "download-slides-report" }, "Save slides (HTML)"),
-        ]),
-        h("div", { class: "toolbar-group secondary" }, [
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "compact-toggle",
-              "aria-pressed": "false",
-              title: "Switch between compact and comfort layouts",
-            },
-            "Compact mode",
-          ),
-          h("div", { class: "theme-toggle" }, [
-            h("span", "Theme"),
-            h("div", { class: "segmented-option" }, [
-              h("input", {
-                type: "radio",
-                name: "theme-option",
-                id: "theme-system",
-                value: "system",
-                checked: true,
-              }),
-              h("label", { for: "theme-system" }, "Auto"),
-            ]),
-            h("div", { class: "segmented-option" }, [
-              h("input", {
-                type: "radio",
-                name: "theme-option",
-                id: "theme-light",
-                value: "light",
-              }),
-              h("label", { for: "theme-light" }, "Light"),
-            ]),
-            h("div", { class: "segmented-option" }, [
-              h("input", {
-                type: "radio",
-                name: "theme-option",
-                id: "theme-dark",
-                value: "dark",
-              }),
-              h("label", { for: "theme-dark" }, "Dark"),
-            ]),
-          ]),
-          h("div", { class: "a11y-controls", "aria-label": "Accessibility options" }, [
-            h(
-              "button",
-              {
-                type: "button",
-                class: "ghost-button small",
-                id: "reduce-motion-toggle",
-                "aria-pressed": "mixed",
-              },
-              "Motion: Standard",
-            ),
-            h(
-              "button",
-              {
-                type: "button",
-                class: "ghost-button small",
-                id: "high-contrast-toggle",
-                "aria-pressed": "false",
-              },
-              "Contrast: Standard",
-            ),
-          ]),
-          h("button", { type: "button", class: "ghost-button", id: "log-drawer-toggle" }, "View Relay Logs"),
-        ]),
-      ];
-    },
-  };
+  const ActionsToolbarRoot = createActionsToolbarRoot(h, dispatchShellAction);
 
   const app = createApp(ActionsToolbarRoot);
   app.mount(toolbarEl);
@@ -142,21 +58,7 @@ function mountOnboardingDialogPrimitive() {
   if (onboardingEl.dataset.vuePrimitiveMounted === "true") return;
   const { createApp, h } = VueRuntime;
   onboardingEl.dataset.vueManaged = "true";
-
-  const OnboardingDialogRoot = {
-    name: "OnboardingDialogPrimitive",
-    render() {
-      return h("div", { class: "onboarding-panel" }, [
-        h("h2", "Welcome to WAAN"),
-        h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
-        h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
-        h("div", { class: "onboarding-actions" }, [
-          h("button", { type: "button", class: "ghost-button", id: "onboarding-skip" }, "Skip"),
-          h("button", { type: "button", class: "ghost-button primary", id: "onboarding-next" }, "Next"),
-        ]),
-      ]);
-    },
-  };
+  const OnboardingDialogRoot = createOnboardingDialogRoot(h);
 
   const app = createApp(OnboardingDialogRoot);
   app.mount(onboardingEl);
@@ -264,6 +166,33 @@ function mountFeedbackPrimitiveBridge() {
   const { updateRelayRecoveryActions, updateRelayControlButtons } = createRelayControlsBridgeMethods({
     documentRef: globalThis.document ?? null,
   });
+  /** @type {Record<string, (...args: any[]) => any>} */
+  const relayActionHandlers = {};
+
+  /**
+   * @param {Record<string, (...args: any[]) => any>} handlers
+   */
+  function setRelayActionHandlers(handlers = {}) {
+    Object.keys(relayActionHandlers).forEach(key => {
+      delete relayActionHandlers[key];
+    });
+    Object.entries(handlers).forEach(([actionId, handler]) => {
+      if (typeof handler === "function") {
+        relayActionHandlers[actionId] = handler;
+      }
+    });
+  }
+
+  /**
+   * @param {string} actionId
+   * @param {any} [payload]
+   */
+  function dispatchRelayAction(actionId, payload = null) {
+    const handler = relayActionHandlers[actionId];
+    if (typeof handler !== "function") return false;
+    handler(payload);
+    return true;
+  }
 
   const StatusRoot = {
     name: "StatusSnackbarPrimitive",
@@ -310,6 +239,8 @@ function mountFeedbackPrimitiveBridge() {
     finalizeStatusExit,
     updateRelayRecoveryActions,
     updateRelayControlButtons,
+    setRelayActionHandlers,
+    dispatchRelayAction,
   }, {
     legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.shell],
   });
