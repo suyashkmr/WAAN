@@ -458,10 +458,11 @@ Completed work is archived in git history and was removed from this file for cla
       - [ ] Estimate: 2-3 days.
       - [x] Acceptance: search/saved-view fields stay behaviorally equivalent without legacy hidden inputs/select proxies.
         - [x] Existing behavioral parity coverage retained in `tests/search.test.js`, `tests/searchResultsUi.test.js`, and `tests/savedViews.test.js`.
-    - [ ] `styles/components/search-saved.css` (Owner: Frontend)
+    - [x] `styles/components/search-saved.css` (Owner: Frontend)
       - [x] Replace Shoelace `::part(...)` selectors with PrimeVue/Tailwind-compatible selectors and tokenized classes.
       - [ ] Estimate: 1.5-2.5 days.
-      - [ ] Acceptance: command-surface controls keep current spacing/interaction states across desktop/tablet/mobile snapshots.
+      - [x] Acceptance: command-surface controls keep current spacing/interaction states across desktop/tablet/mobile snapshots.
+        - [x] Verified on 2026-03-03 via `npm run test:visual` (desktop/laptop/tablet/mobile baselines) and `npm run test:accessibility-smoke` (keyboard focusability for migrated command controls).
     - [ ] `js/ui/primitives.js` (Owner: Frontend)
       - [x] Retire Shoelace element factories (`sl-button`, `sl-input`, `sl-select`, `sl-dialog`, `sl-tooltip`, `sl-tab-group`, `sl-card`).
       - [x] Replace with Vue/PrimeVue wrapper components or composables.
