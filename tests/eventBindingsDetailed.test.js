@@ -33,6 +33,7 @@ function createDeps(overrides = {}) {
     applyCustomRange: vi.fn(async () => {}),
     updateWeekdayState: vi.fn(),
     ensureWeekdayDayFilters: vi.fn(),
+    syncWeekdayControlsWithState: vi.fn(),
     rerenderWeekdayFromState: vi.fn(),
     ensureWeekdayHourFilters: vi.fn(),
     updateHourlyState: vi.fn(),
@@ -307,5 +308,37 @@ describe("event bindings detailed", () => {
     expect(deps.syncHourlyControlsWithState).toHaveBeenCalledTimes(3);
     expect(deps.rerenderHourlyFromState).toHaveBeenCalledTimes(3);
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
+  });
+
+  it("avoids direct filter rerenders when state subscriptions are available", () => {
+    const handlers = createHandlers();
+    const deps = createDeps({
+      subscribeAppShellUiState: vi.fn(() => {}),
+    });
+
+    const timeOfDayWeekdayToggle = document.createElement("input");
+    const timeOfDayWeekendToggle = document.createElement("input");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        timeOfDayWeekdayToggle,
+        timeOfDayWeekendToggle,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+    expect(deps.subscribeAppShellUiState).not.toHaveBeenCalled();
+
+    timeOfDayWeekdayToggle.checked = false;
+    timeOfDayWeekdayToggle.dispatchEvent(new Event("change"));
+    timeOfDayWeekendToggle.checked = true;
+    timeOfDayWeekendToggle.dispatchEvent(new Event("change"));
+
+    expect(deps.ensureDayFilters).not.toHaveBeenCalled();
+    expect(deps.syncHourlyControlsWithState).not.toHaveBeenCalled();
+    expect(deps.rerenderHourlyFromState).not.toHaveBeenCalled();
+    expect(deps.updateHourlyState).toHaveBeenCalledTimes(2);
   });
 });

@@ -62,8 +62,10 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   const {
     updateStatus,
     applyCustomRange,
+    subscribeAppShellUiState,
     updateWeekdayState,
     ensureWeekdayDayFilters,
+    syncWeekdayControlsWithState,
     rerenderWeekdayFromState,
     ensureWeekdayHourFilters,
     updateHourlyState,
@@ -72,6 +74,8 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     syncHourlyControlsWithState,
     rerenderHourlyFromState,
   } = deps;
+
+  const hasStateSubscription = typeof subscribeAppShellUiState === "function";
 
   function initEventHandlers() {
     if (chatSelector) {
@@ -173,29 +177,37 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     if (weekdayToggleWeekdays) {
       weekdayToggleWeekdays.addEventListener("change", () => {
         updateWeekdayState({ filters: { weekdays: weekdayToggleWeekdays.checked } });
-        ensureWeekdayDayFilters();
-        rerenderWeekdayFromState();
+        if (!hasStateSubscription) {
+          ensureWeekdayDayFilters();
+          rerenderWeekdayFromState();
+        }
       });
     }
     if (weekdayToggleWeekends) {
       weekdayToggleWeekends.addEventListener("change", () => {
         updateWeekdayState({ filters: { weekends: weekdayToggleWeekends.checked } });
-        ensureWeekdayDayFilters();
-        rerenderWeekdayFromState();
+        if (!hasStateSubscription) {
+          ensureWeekdayDayFilters();
+          rerenderWeekdayFromState();
+        }
       });
     }
     if (weekdayToggleWorking) {
       weekdayToggleWorking.addEventListener("change", () => {
         updateWeekdayState({ filters: { working: weekdayToggleWorking.checked } });
-        ensureWeekdayHourFilters();
-        rerenderWeekdayFromState();
+        if (!hasStateSubscription) {
+          ensureWeekdayHourFilters();
+          rerenderWeekdayFromState();
+        }
       });
     }
     if (weekdayToggleOffhours) {
       weekdayToggleOffhours.addEventListener("change", () => {
         updateWeekdayState({ filters: { offhours: weekdayToggleOffhours.checked } });
-        ensureWeekdayHourFilters();
-        rerenderWeekdayFromState();
+        if (!hasStateSubscription) {
+          ensureWeekdayHourFilters();
+          rerenderWeekdayFromState();
+        }
       });
     }
 
@@ -207,9 +219,11 @@ export function createEventBindingsController({ elements, handlers, deps }) {
             weekdays: timeOfDayWeekdayToggle.checked,
           },
         });
-        ensureDayFilters();
-        syncHourlyControlsWithState();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          ensureDayFilters();
+          syncHourlyControlsWithState();
+          rerenderHourlyFromState();
+        }
       });
     }
     if (timeOfDayWeekendToggle) {
@@ -220,9 +234,11 @@ export function createEventBindingsController({ elements, handlers, deps }) {
             weekends: timeOfDayWeekendToggle.checked,
           },
         });
-        ensureDayFilters();
-        syncHourlyControlsWithState();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          ensureDayFilters();
+          syncHourlyControlsWithState();
+          rerenderHourlyFromState();
+        }
       });
     }
     if (timeOfDayHourStartInput && timeOfDayHourEndInput) {
@@ -231,8 +247,10 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         let end = Number(timeOfDayHourEndInput.value);
         if (start > end) [start, end] = [end, start];
         updateHourlyState({ brush: { start, end } });
-        syncHourlyControlsWithState();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          syncHourlyControlsWithState();
+          rerenderHourlyFromState();
+        }
       };
       timeOfDayHourStartInput.addEventListener("input", updateTimeOfDayBrush);
       timeOfDayHourEndInput.addEventListener("input", updateTimeOfDayBrush);
@@ -250,7 +268,9 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         const endLabel = document.getElementById("weekday-hour-end-label");
         if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
         if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-        rerenderWeekdayFromState();
+        if (!hasStateSubscription) {
+          rerenderWeekdayFromState();
+        }
       };
       weekdayHourStartInput.addEventListener("input", updateBrush);
       weekdayHourEndInput.addEventListener("input", updateBrush);

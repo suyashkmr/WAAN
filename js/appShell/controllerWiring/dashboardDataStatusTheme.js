@@ -138,6 +138,7 @@ export function createDashboardDataStatusThemeWiring({
       updateHourlyState: state.updateHourlyState,
       getWeekdayState: state.getWeekdayState,
       updateWeekdayState: state.updateWeekdayState,
+      subscribeAppShellUiState: state.subscribeAppShellUiState,
       participantFilters,
       setDataAvailabilityState,
       searchPopulateParticipants: () => searchController.populateParticipants(),

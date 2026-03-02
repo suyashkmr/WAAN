@@ -1,3 +1,5 @@
+import { setAppShellRelayStatus } from "../state.js";
+
 export function createRelayStatusApplyController({
   relayUiState,
   elements,
@@ -48,6 +50,7 @@ export function createRelayStatusApplyController({
   } = deps;
 
   function applyRelayStatus(status) {
+    setAppShellRelayStatus(status);
     const stateKind = status?.status || "offline";
     const previousStateKind = relayUiState.lastAppliedStateKind;
     const isStateTransition = previousStateKind === null || previousStateKind !== stateKind;

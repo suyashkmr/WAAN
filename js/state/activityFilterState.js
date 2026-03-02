@@ -1,3 +1,8 @@
+import {
+  setAppShellHourlyFiltersState,
+  setAppShellWeekdayFiltersState,
+} from "./appShellUiState.js";
+
 const hourlyState = {
   heatmap: null,
   summary: null,
@@ -30,6 +35,10 @@ export function getHourlyState() {
 
 export function updateHourlyState(partial) {
   Object.assign(hourlyState, partial);
+  setAppShellHourlyFiltersState({
+    filters: hourlyState.filters,
+    brush: hourlyState.brush,
+  });
 }
 
 export function resetHourlyFilters() {
@@ -40,6 +49,10 @@ export function resetHourlyFilters() {
     offhours: true,
   };
   hourlyState.brush = { start: 0, end: 23 };
+  setAppShellHourlyFiltersState({
+    filters: hourlyState.filters,
+    brush: hourlyState.brush,
+  });
 }
 
 export function getWeekdayState() {
@@ -58,6 +71,10 @@ export function updateWeekdayState(partial) {
   delete rest.filters;
   delete rest.brush;
   Object.assign(weekdayState, rest);
+  setAppShellWeekdayFiltersState({
+    filters: weekdayState.filters,
+    brush: weekdayState.brush,
+  });
 }
 
 export function resetWeekdayFilters() {
@@ -68,4 +85,8 @@ export function resetWeekdayFilters() {
     offhours: true,
   };
   weekdayState.brush = { start: 0, end: 23 };
+  setAppShellWeekdayFiltersState({
+    filters: weekdayState.filters,
+    brush: weekdayState.brush,
+  });
 }

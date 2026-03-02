@@ -40,6 +40,7 @@ describe("appShell assembly wiring", () => {
       getDataAvailable: vi.fn(),
       applyCustomRange: vi.fn(),
       ensureWeekdayDayFilters: vi.fn(),
+      syncWeekdayControlsWithState: vi.fn(),
       rerenderWeekdayFromState: vi.fn(),
       ensureWeekdayHourFilters: vi.fn(),
       ensureDayFilters: vi.fn(),
@@ -68,6 +69,7 @@ describe("appShell assembly wiring", () => {
     };
     const stateStore = {
       updateStatus: vi.fn(),
+      subscribeAppShellUiState: vi.fn(),
       updateWeekdayState: vi.fn(),
       updateHourlyState: vi.fn(),
       getHourlyState: vi.fn(),
@@ -141,7 +143,9 @@ describe("appShell assembly wiring", () => {
       "getHourlyState",
       "rerenderHourlyFromState",
       "rerenderWeekdayFromState",
+      "subscribeAppShellUiState",
       "syncHourlyControlsWithState",
+      "syncWeekdayControlsWithState",
       "updateHourlyState",
       "updateStatus",
       "updateWeekdayState",
@@ -195,6 +199,7 @@ describe("appShell assembly wiring", () => {
       refreshChatSelector: vi.fn(),
       applyCustomRange: vi.fn(),
       ensureWeekdayDayFilters: vi.fn(),
+      syncWeekdayControlsWithState: vi.fn(),
       rerenderWeekdayFromState: vi.fn(),
       ensureWeekdayHourFilters: vi.fn(),
       ensureDayFilters: vi.fn(),
@@ -223,6 +228,7 @@ describe("appShell assembly wiring", () => {
     };
     const stateStore = {
       updateStatus: vi.fn(),
+      subscribeAppShellUiState: vi.fn(),
       updateWeekdayState: vi.fn(),
       updateHourlyState: vi.fn(),
       getHourlyState: vi.fn(),
@@ -243,6 +249,7 @@ describe("appShell assembly wiring", () => {
     expect(handlers.updateStatus).toBe(stateStore.updateStatus);
     expect(deps.applyCustomRange).toBe(controllerWiring.applyCustomRange);
     expect(deps.updateHourlyState).toBe(stateStore.updateHourlyState);
+    expect(deps.subscribeAppShellUiState).toBe(stateStore.subscribeAppShellUiState);
   });
 
   it("returns dataset empty-state export button list in stable order", () => {

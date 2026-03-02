@@ -80,6 +80,7 @@ export function createAppControllerWiring({
     renderDashboard: dashboardControllerApi.renderDashboard,
     ensureWeekdayDayFilters: dashboardControllerApi.ensureWeekdayDayFilters,
     ensureWeekdayHourFilters: dashboardControllerApi.ensureWeekdayHourFilters,
+    syncWeekdayControlsWithState: dashboardControllerApi.syncWeekdayControlsWithState,
     rerenderHourlyFromState: dashboardControllerApi.rerenderHourlyFromState,
     rerenderWeekdayFromState: dashboardControllerApi.rerenderWeekdayFromState,
     ensureDayFilters: dashboardControllerApi.ensureDayFilters,

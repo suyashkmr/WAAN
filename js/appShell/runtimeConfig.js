@@ -67,8 +67,10 @@ export function createRuntimeEventBindings({
     deps: {
       updateStatus: deps.updateStatus,
       applyCustomRange: deps.applyCustomRange,
+      subscribeAppShellUiState: deps.subscribeAppShellUiState,
       updateWeekdayState: deps.updateWeekdayState,
       ensureWeekdayDayFilters: deps.ensureWeekdayDayFilters,
+      syncWeekdayControlsWithState: deps.syncWeekdayControlsWithState,
       rerenderWeekdayFromState: deps.rerenderWeekdayFromState,
       ensureWeekdayHourFilters: deps.ensureWeekdayHourFilters,
       updateHourlyState: deps.updateHourlyState,

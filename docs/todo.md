@@ -228,3 +228,44 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Visual regression status (`npm run test:visual`).
     - [x] Naming/copy consistency verification.
   - [x] Add owner + frequency for each gate (per-release vs milestone).
+
+## Next Wave: Non-React App Improvements
+
+- [ ] Phase 1 (highest priority, 4-6 days): Introduce a single app-shell state layer for UI consistency.
+  - [x] Define one canonical state store for relay status, sync progress, selected chat, and filter context.
+    - [x] Added canonical app-shell UI state module with subscription support (`js/state/appShellUiState.js`).
+    - [x] Wired chat/range/filter state setters to synchronize canonical state (`js/state/chatLibraryState.js`, `js/state/datasetState.js`, `js/state/activityFilterState.js`).
+    - [x] Wired relay status application to synchronize canonical relay state (`js/relayControls/statusApply.js`).
+  - [ ] Replace ad-hoc cross-module DOM state mutations with event-driven state updates.
+    - [x] Converted event-binding filter rerender flow to canonical state subscriptions (`js/appShell/eventBindings.js`, `js/appShell/assemblyWiring.js`, `js/appShell/runtimeConfig.js`).
+    - [x] Converted dashboard activity filter rerender flow to canonical state subscriptions with non-subscriber fallback (`js/appShell/dashboardRender/activityPanels.js`, `js/appShell/dashboardRender.js`, `js/appShell/controllerWiring/dashboardDataStatusTheme.js`).
+    - [ ] Continue replacing remaining direct rerender/mutation call sites in dashboard/activity modules with subscription-driven updates.
+  - [x] Add focused contract tests for state transitions and cross-panel parity.
+    - [x] Added canonical state transition coverage for chat/range/filter/relay status (`tests/appShellUiState.test.js`).
+    - [x] Verified targeted suites: `npm run test -- tests/appShellUiState.test.js tests/state.test.js tests/relayControls.test.js`.
+  - [ ] Exit criteria: cross-panel state parity is deterministic and state-transition tests pass in CI.
+- [ ] Phase 2 (high priority, 1-2 weeks): Incremental TypeScript adoption for high-risk orchestration paths.
+  - [ ] Enable TS config/checking with JS interop (`allowJs`) and no runtime bundler rewrite.
+  - [ ] Migrate `js/appShell/*` and `js/relayControls/*` module-by-module to `.ts` with strict null-safe boundaries.
+  - [ ] Keep existing runtime behavior unchanged and verify with `npm run ci:verify`.
+  - [ ] Exit criteria: core orchestration modules are type-checked and CI remains green without behavior regressions.
+- [ ] Phase 3 (parallel with late phase 2, 3-5 days): Expand reliability gates for core relay and export flows.
+  - [ ] Add release-blocking tests for relay transition edges (`offline -> starting -> waiting -> running`, fallback path shifts).
+  - [ ] Add release-blocking tests for export integrity (CSV/JSON/PDF content sanity + metadata stamping).
+  - [ ] Keep visual + accessibility gates mandatory on release candidates.
+  - [ ] Exit criteria: release candidate path fails fast on relay/export regressions and all mandatory gates are enforced.
+- [ ] Phase 4 (after phases 1-3, 1-2 weeks): Improve heavy-flow performance before any framework migration.
+  - [ ] Move analytics-heavy transforms that can block rendering into worker paths where feasible.
+  - [ ] Add/update perf baselines for long-chat datasets and keep them in `docs/performance-at-scale.md`.
+  - [ ] Add release guardrails for materially regressed render/search/sync latency.
+  - [ ] Exit criteria: long-chat workloads stay responsive and perf baselines/thresholds are documented and enforced.
+- [ ] Phase 5 (after phase 4, 4-7 days): Improve operator UX for sync diagnostics and recovery.
+  - [ ] Add clearer user-facing diagnostics for fallback reasons and sync slowdowns.
+  - [ ] Provide explicit guided recovery actions (`Reconnect`, `Resync`, `Export diagnostics`) in failure states.
+  - [ ] Validate recovery flows with manual smoke steps in `docs/release-smoke-checklist.md`.
+  - [ ] Exit criteria: failure states are actionable in-UI and recovery flows are validated in release smoke.
+
+- [ ] Execution model:
+  - [ ] Run phases 1 -> 2 sequentially.
+  - [ ] Run phase 3 in parallel with late phase 2.
+  - [ ] Run phase 4, then phase 5.

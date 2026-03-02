@@ -257,4 +257,41 @@ describe("activityPanels detailed", () => {
     controller.rerenderHourlyFromState();
     expect(renderTimeOfDayPanel).toHaveBeenCalledTimes(1);
   });
+
+  it("keeps weekday panel render when subscriptions are enabled and filters do not change", () => {
+    const elements = baseElements();
+    const weekdayState = {
+      filters: { weekdays: true, weekends: true, working: true, offhours: true },
+      brush: { start: 0, end: 23 },
+      distribution: null,
+      stats: null,
+    };
+
+    const controller = createActivityPanelsController({
+      elements,
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => weekdayState,
+        updateWeekdayState: patch => {
+          if (patch.filters) weekdayState.filters = { ...weekdayState.filters, ...patch.filters };
+          if (patch.brush) weekdayState.brush = patch.brush;
+          if (patch.distribution) weekdayState.distribution = patch.distribution;
+          if (patch.stats) weekdayState.stats = patch.stats;
+        },
+        applyCustomRange: vi.fn(),
+        subscribeAppShellUiState: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+      },
+    });
+
+    controller.renderWeekdayPanel({ weekday_distribution: [2, 4], weekday_stats: { peak: 4 } });
+
+    expect(weekdayState.distribution).toEqual([2, 4]);
+    expect(weekdayState.stats).toEqual({ peak: 4 });
+    expect(renderWeekdaySection).toHaveBeenCalledTimes(1);
+  });
 });

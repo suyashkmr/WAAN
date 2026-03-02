@@ -333,7 +333,7 @@
     transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
-    z-index: 50;
+    z-index: 360;
 }
 
 .relay-log-drawer[aria-hidden="false"] {

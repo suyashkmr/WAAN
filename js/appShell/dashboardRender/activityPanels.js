@@ -49,11 +49,34 @@ export function createActivityPanelsController({ elements, deps }) {
     getWeekdayState,
     updateWeekdayState,
     applyCustomRange,
+    subscribeAppShellUiState,
     formatNumber,
     formatFloat,
   } = deps;
 
   let hourlyControlsInitialised = false;
+  let stateSubscriptionsInitialised = false;
+  const hasStateSubscription = typeof subscribeAppShellUiState === "function";
+
+  function initStateSubscriptions() {
+    if (!hasStateSubscription || stateSubscriptionsInitialised) return;
+    subscribeAppShellUiState(event => {
+      if (!event?.type) return;
+      if (event.type === "filters.hourly") {
+        ensureDayFilters();
+        ensureHourFilters();
+        syncHourlyControlsWithState();
+        rerenderHourlyFromState();
+      }
+      if (event.type === "filters.weekday") {
+        ensureWeekdayDayFilters();
+        ensureWeekdayHourFilters();
+        syncWeekdayControlsWithState();
+        rerenderWeekdayFromState();
+      }
+    });
+    stateSubscriptionsInitialised = true;
+  }
 
   function renderHourlySummary(summary) {
     if (!hourlyTopHourEl) return;
@@ -83,6 +106,7 @@ export function createActivityPanelsController({ elements, deps }) {
       initHourlyControls();
       hourlyControlsInitialised = true;
     }
+    initStateSubscriptions();
     syncHourlyControlsWithState();
   }
 
@@ -205,7 +229,9 @@ export function createActivityPanelsController({ elements, deps }) {
           },
         });
         ensureDayFilters();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          rerenderHourlyFromState();
+        }
       });
     }
 
@@ -218,7 +244,9 @@ export function createActivityPanelsController({ elements, deps }) {
           },
         });
         ensureDayFilters();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          rerenderHourlyFromState();
+        }
       });
     }
 
@@ -231,7 +259,9 @@ export function createActivityPanelsController({ elements, deps }) {
           },
         });
         ensureHourFilters();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          rerenderHourlyFromState();
+        }
       });
     }
 
@@ -244,7 +274,9 @@ export function createActivityPanelsController({ elements, deps }) {
           },
         });
         ensureHourFilters();
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          rerenderHourlyFromState();
+        }
       });
     }
 
@@ -262,7 +294,9 @@ export function createActivityPanelsController({ elements, deps }) {
         const endLabel = document.getElementById("hourly-brush-end-label");
         if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
         if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-        rerenderHourlyFromState();
+        if (!hasStateSubscription) {
+          rerenderHourlyFromState();
+        }
       };
       brushStart.addEventListener("input", updateBrush);
       brushEnd.addEventListener("input", updateBrush);
@@ -275,28 +309,36 @@ export function createActivityPanelsController({ elements, deps }) {
     const state = getHourlyState();
     const filters = state.filters;
     if (!filters.weekdays && !filters.weekends) {
-      filters.weekdays = true;
-      filters.weekends = true;
+      const normalizedFilters = {
+        ...filters,
+        weekdays: true,
+        weekends: true,
+      };
       const weekdayToggle = document.getElementById("filter-weekdays");
       const weekendToggle = document.getElementById("filter-weekends");
       if (weekdayToggle) weekdayToggle.checked = true;
       if (weekendToggle) weekendToggle.checked = true;
+      updateHourlyState({ filters: normalizedFilters });
+      return;
     }
-    updateHourlyState({ filters });
   }
 
   function ensureHourFilters() {
     const state = getHourlyState();
     const filters = state.filters;
     if (!filters.working && !filters.offhours) {
-      filters.working = true;
-      filters.offhours = true;
+      const normalizedFilters = {
+        ...filters,
+        working: true,
+        offhours: true,
+      };
       const workingToggle = document.getElementById("filter-working");
       const offToggle = document.getElementById("filter-offhours");
       if (workingToggle) workingToggle.checked = true;
       if (offToggle) offToggle.checked = true;
+      updateHourlyState({ filters: normalizedFilters });
+      return;
     }
-    updateHourlyState({ filters });
   }
 
   function syncHourlyControlsWithState() {

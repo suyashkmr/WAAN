@@ -5,3 +5,4 @@ export * from "./state/savedViewsState.js";
 export * from "./state/searchState.js";
 export * from "./state/cacheState.js";
 export * from "./state/activityFilterState.js";
+export * from "./state/appShellUiState.js";

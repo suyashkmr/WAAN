@@ -1,3 +1,5 @@
+import { setAppShellCurrentRange, setAppShellCustomRange } from "./appShellUiState.js";
+
 const datasetState = {
   entries: [],
   analytics: null,
@@ -26,10 +28,12 @@ export function setDatasetLabel(label) {
 
 export function setCurrentRange(range) {
   datasetState.currentRange = range ?? "all";
+  setAppShellCurrentRange(datasetState.currentRange);
 }
 
 export function setCustomRange(range) {
   datasetState.customRange = range;
+  setAppShellCustomRange(datasetState.customRange);
 }
 
 export function getDatasetAnalytics() {
