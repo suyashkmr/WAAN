@@ -78,9 +78,25 @@ export function applyRelayPrimaryAction({
   relayUiState,
   relayServiceName,
 }) {
-  if (!relayStartButton) return;
   const action = getRelayPrimaryAction(status, { relayServiceName });
   relayUiState.primaryAction = action.id;
+  const buttonDisabled = relayUiState.controlsLocked || Boolean(action.disabled);
+
+  /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayControlButtons?: (payload: any) => void } }} */
+  const globalScope = globalThis;
+  const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+  if (shellBridge?.updateRelayControlButtons) {
+    shellBridge.updateRelayControlButtons({
+      start: {
+        action: action.id,
+        label: action.label,
+        title: action.hint || "",
+        disabled: buttonDisabled,
+      },
+    });
+    return;
+  }
+  if (!relayStartButton) return;
   relayStartButton.dataset.relayAction = action.id;
   relayStartButton.textContent = action.label;
   if (action.hint) {
@@ -88,5 +104,5 @@ export function applyRelayPrimaryAction({
   } else {
     relayStartButton.removeAttribute("title");
   }
-  relayStartButton.disabled = relayUiState.controlsLocked || Boolean(action.disabled);
+  relayStartButton.disabled = buttonDisabled;
 }

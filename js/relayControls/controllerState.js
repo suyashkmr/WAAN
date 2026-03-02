@@ -44,6 +44,18 @@ export function setRelayControlsDisabled({
   applyRelayPrimaryAction,
 }) {
   relayUiState.controlsLocked = disabled;
+  /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayControlButtons?: (payload: any) => void } }} */
+  const globalScope = globalThis;
+  const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+  if (shellBridge?.updateRelayControlButtons) {
+    shellBridge.updateRelayControlButtons({
+      start: { disabled: Boolean(disabled) },
+      stopDisabled: Boolean(disabled),
+      logoutDisabled: Boolean(disabled),
+      reloadAllDisabled: Boolean(disabled),
+      clearStorageDisabled: Boolean(disabled),
+    });
+  }
   buttons.forEach(button => {
     if (button) button.disabled = disabled;
   });

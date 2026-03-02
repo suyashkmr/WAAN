@@ -9,6 +9,7 @@ import {
 } from "../../analytics/activity.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
+import { renderWithDashboardPanelsBridge } from "./panelsBridge.js";
 
 /**
  * @typedef {{ weekdays: boolean, weekends: boolean, working: boolean, offhours: boolean }} ActivityFilters
@@ -105,20 +106,21 @@ export function createActivityPanelsController({ elements, deps }) {
 
   /** @param {Record<string, any>} analytics */
   function renderHourlyPanel(analytics) {
-    renderHourlyHeatmapSection(
-      {
-        heatmap: analytics.hourly_heatmap,
-        summary: analytics.hourly_summary,
-        details: analytics.hourly_details,
-        distribution: analytics.hourly_distribution,
-      },
-      {
-        chartEl: hourlyChartEl,
-        filterNoteEl,
-        brushSummaryEl,
-        anomaliesEl: hourlyAnomaliesEl,
-        renderSummary: renderHourlySummary,
-      },
+    const data = {
+      heatmap: analytics.hourly_heatmap,
+      summary: analytics.hourly_summary,
+      details: analytics.hourly_details,
+      distribution: analytics.hourly_distribution,
+    };
+    const options = {
+      chartEl: hourlyChartEl,
+      filterNoteEl,
+      brushSummaryEl,
+      anomaliesEl: hourlyAnomaliesEl,
+      renderSummary: renderHourlySummary,
+    };
+    renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options }, () =>
+      renderHourlyHeatmapSection(data, options),
     );
     if (!hourlyControlsInitialised) {
       initHourlyControls();
@@ -211,44 +213,35 @@ export function createActivityPanelsController({ elements, deps }) {
     if (endLabel) endLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
   }
 
-  /**
-   * @param {Record<string, any>} analytics
-   */
-  function renderTimeOfDayWithBridge(analytics) {
-    /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderTimeOfDay?: (analytics: unknown) => boolean } }} */
-    const globalScope = globalThis;
-    const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
-    if (dashboardPanelsBridge?.renderTimeOfDay) {
-      const handledByVue = dashboardPanelsBridge.renderTimeOfDay(analytics);
-      if (handledByVue) return;
-    }
-    renderTimeOfDayPanel(analytics, {
-      container: timeOfDayChartContainer,
-      sparklineEl: timeOfDaySparklineEl,
-      bandsEl: timeOfDayBandsEl,
-      calloutsEl: timeOfDayCalloutsEl,
-    });
-  }
-
   function rerenderHourlyFromState() {
-    renderHourlyHeatmapSection(null, {
+    const options = {
       chartEl: hourlyChartEl,
       filterNoteEl,
       brushSummaryEl,
       anomaliesEl: hourlyAnomaliesEl,
       renderSummary: renderHourlySummary,
-    });
+    };
+    renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data: null, options }, () =>
+      renderHourlyHeatmapSection(null, options),
+    );
     const analytics = getDatasetAnalytics();
     if (analytics) {
-      renderTimeOfDayWithBridge(analytics);
+      const options = {
+        container: timeOfDayChartContainer,
+        sparklineEl: timeOfDaySparklineEl,
+        bandsEl: timeOfDayBandsEl,
+        calloutsEl: timeOfDayCalloutsEl,
+      };
+      renderWithDashboardPanelsBridge("renderTimeOfDay", analytics, () => renderTimeOfDayPanel(analytics, options));
     }
   }
 
   function rerenderWeekdayFromState() {
-    renderWeekdaySection({
+    const options = {
       container: weekdayChartEl,
       filterNoteEl: weekdayFilterNote,
-    });
+    };
+    renderWithDashboardPanelsBridge("renderWeekdayChart", options, () => renderWeekdaySection(options));
   }
 
   function initHourlyControls() {

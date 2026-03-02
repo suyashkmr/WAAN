@@ -101,24 +101,53 @@ export function createRelayStatusApplyController({
    * @param {RelayStatus | null | undefined} status
    */
   function updateRecoveryActions(status) {
-    if (!relayBannerActions) return;
     const show = shouldShowRecoveryActions(status);
+    const running = status?.status === "running";
+    const reconnectDisabled = Boolean(relayUiState.controlsLocked) || status?.status === "starting";
+    const reconnectTitle = "Restart relay connection and request a fresh status check.";
+    const resyncDisabled = Boolean(relayUiState.controlsLocked) || !running || Boolean(status?.syncingChats);
+    const resyncTitle = "Run an immediate chat sync to refresh loaded conversations.";
+    const exportDisabled = false;
+    const exportTitle = "Download relay diagnostics JSON for support or bug reports.";
+
+    /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayRecoveryActions?: (payload: {
+     *   show: boolean,
+     *   reconnectDisabled: boolean,
+     *   reconnectTitle: string,
+     *   resyncDisabled: boolean,
+     *   resyncTitle: string,
+     *   exportDisabled: boolean,
+     *   exportTitle: string,
+     * }) => void } }} */
+    const globalScope = globalThis;
+    const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+    if (shellBridge?.updateRelayRecoveryActions) {
+      shellBridge.updateRelayRecoveryActions({
+        show,
+        reconnectDisabled,
+        reconnectTitle,
+        resyncDisabled,
+        resyncTitle,
+        exportDisabled,
+        exportTitle,
+      });
+      return;
+    }
+
+    if (!relayBannerActions) return;
     if (show) relayBannerActions.removeAttribute("hidden");
     else relayBannerActions.setAttribute("hidden", "");
-
     if (relayRecoveryReconnectButton) {
-      relayRecoveryReconnectButton.disabled = Boolean(relayUiState.controlsLocked) || status?.status === "starting";
-      relayRecoveryReconnectButton.title = "Restart relay connection and request a fresh status check.";
+      relayRecoveryReconnectButton.disabled = reconnectDisabled;
+      relayRecoveryReconnectButton.title = reconnectTitle;
     }
     if (relayRecoveryResyncButton) {
-      const running = status?.status === "running";
-      relayRecoveryResyncButton.disabled =
-        Boolean(relayUiState.controlsLocked) || !running || Boolean(status?.syncingChats);
-      relayRecoveryResyncButton.title = "Run an immediate chat sync to refresh loaded conversations.";
+      relayRecoveryResyncButton.disabled = resyncDisabled;
+      relayRecoveryResyncButton.title = resyncTitle;
     }
     if (relayRecoveryExportButton) {
-      relayRecoveryExportButton.disabled = false;
-      relayRecoveryExportButton.title = "Download relay diagnostics JSON for support or bug reports.";
+      relayRecoveryExportButton.disabled = exportDisabled;
+      relayRecoveryExportButton.title = exportTitle;
     }
   }
 
@@ -200,17 +229,25 @@ export function createRelayStatusApplyController({
     const running = status.status === "running";
     const waiting = status.status === "waiting_qr" || status.status === "starting";
     const canLogout = running || waiting || Boolean(status.account);
-    if (relayStopButton) {
-      relayStopButton.disabled = !running && !waiting;
-    }
-    if (relayClearStorageButton) {
-      relayClearStorageButton.disabled = relayUiState.controlsLocked;
-    }
-    if (relayLogoutButton) {
-      relayLogoutButton.disabled = !canLogout;
-    }
-    if (relayReloadAllButton) {
-      relayReloadAllButton.disabled = !running;
+    const stopDisabled = !running && !waiting;
+    const clearStorageDisabled = relayUiState.controlsLocked;
+    const logoutDisabled = !canLogout;
+    const reloadAllDisabled = !running;
+    /** @type {(typeof globalThis) & { __WAAN_VUE_SHELL_BRIDGE__?: { updateRelayControlButtons?: (payload: any) => void } }} */
+    const globalScope = globalThis;
+    const shellBridge = globalScope.__WAAN_VUE_SHELL_BRIDGE__ ?? null;
+    if (shellBridge?.updateRelayControlButtons) {
+      shellBridge.updateRelayControlButtons({
+        stopDisabled,
+        clearStorageDisabled,
+        logoutDisabled,
+        reloadAllDisabled,
+      });
+    } else {
+      if (relayStopButton) relayStopButton.disabled = stopDisabled;
+      if (relayClearStorageButton) relayClearStorageButton.disabled = clearStorageDisabled;
+      if (relayLogoutButton) relayLogoutButton.disabled = logoutDisabled;
+      if (relayReloadAllButton) relayReloadAllButton.disabled = reloadAllDisabled;
     }
     if (!getRemoteChatList().length) {
       if (running) {

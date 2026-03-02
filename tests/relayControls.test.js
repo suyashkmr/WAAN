@@ -127,6 +127,7 @@ function createController(overrides = {}) {
 
 describe("relayControls", () => {
   afterEach(() => {
+    delete globalThis.__WAAN_VUE_SHELL_BRIDGE__;
     vi.restoreAllMocks();
     vi.useRealTimers();
   });
@@ -478,6 +479,184 @@ describe("relayControls", () => {
 
     resolveStop();
     await reconnectPromise;
+  });
+
+  it("routes recovery action state updates through Vue shell bridge when available", async () => {
+    const bridgeSpy = vi.fn();
+    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+      updateRelayRecoveryActions: bridgeSpy,
+    };
+    const elements = buildRelayElements();
+    const fetchJson = vi.fn(async url => {
+      if (url.endsWith("/relay/status")) {
+        return {
+          status: "running",
+          account: { pushName: "Alice" },
+          chatCount: 2,
+          syncingChats: false,
+          syncPath: "fallback",
+          lastSyncPathReason: "Primary sync unavailable: session stale",
+        };
+      }
+      if (url.endsWith("/api/chats")) return { chats: [] };
+      return {};
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson,
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        getDatasetLabel: vi.fn(() => "General"),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(bridgeSpy).toHaveBeenCalled();
+    const payload = bridgeSpy.mock.calls.at(-1)?.[0];
+    expect(payload?.show).toBe(true);
+    expect(payload?.resyncDisabled).toBe(false);
+  });
+
+  it("locks recovery actions through Vue shell bridge immediately when reconnect starts", async () => {
+    let resolveStop = () => {};
+    const stopGate = new Promise(resolve => {
+      resolveStop = resolve;
+    });
+    const recoverySpy = vi.fn();
+    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+      updateRelayRecoveryActions: recoverySpy,
+    };
+    const elements = buildRelayElements();
+    const fetchJson = vi.fn(async url => {
+      if (url.endsWith("/relay/status")) {
+        return {
+          status: "running",
+          account: { pushName: "Alice" },
+          chatCount: 2,
+          syncingChats: false,
+          syncPath: "fallback",
+          lastSyncPathReason: "Primary sync unavailable: session stale",
+        };
+      }
+      if (url.endsWith("/relay/stop")) {
+        await stopGate;
+        return { ok: true };
+      }
+      if (url.endsWith("/relay/start")) return { ok: true };
+      if (url.endsWith("/api/chats")) return { chats: [{ id: "chat-1", name: "General" }] };
+      return {};
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson,
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => [{ id: "chat-1", name: "General" }]),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        getDatasetLabel: vi.fn(() => "General"),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    recoverySpy.mockClear();
+
+    const reconnectPromise = controller.handleRecoveryReconnect();
+
+    expect(recoverySpy).toHaveBeenCalled();
+    const disabledPayloadSeen = recoverySpy.mock.calls.some(([payload]) =>
+      payload?.show === true && payload?.reconnectDisabled === true && payload?.resyncDisabled === true
+    );
+    expect(disabledPayloadSeen).toBe(true);
+
+    resolveStop();
+    await reconnectPromise;
+  });
+
+  it("routes primary relay control button updates through Vue shell bridge when available", async () => {
+    const recoverySpy = vi.fn();
+    const controlsSpy = vi.fn();
+    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+      updateRelayRecoveryActions: recoverySpy,
+      updateRelayControlButtons: controlsSpy,
+    };
+    const elements = buildRelayElements();
+    const fetchJson = vi.fn(async url => {
+      if (url.endsWith("/relay/status")) {
+        return {
+          status: "running",
+          account: { pushName: "Alice" },
+          chatCount: 2,
+          syncingChats: false,
+        };
+      }
+      if (url.endsWith("/api/chats")) return { chats: [] };
+      return {};
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson,
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        getDatasetLabel: vi.fn(() => "General"),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(controlsSpy).toHaveBeenCalled();
+    const payloads = controlsSpy.mock.calls.map(call => call[0]);
+    expect(payloads.some(payload => payload?.start?.action === "resync")).toBe(true);
+    expect(payloads.some(payload => payload?.reloadAllDisabled === false)).toBe(true);
   });
 
   it("keeps last known relay status during transient polling failures and shows retry timing", async () => {

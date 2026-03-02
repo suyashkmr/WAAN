@@ -63,6 +63,7 @@ describe("activityPanels detailed", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
+    delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
   });
 
   it("renders hourly summary for empty and populated top-hour states", () => {
@@ -310,5 +311,36 @@ describe("activityPanels detailed", () => {
     expect(weekdayState.distribution).toEqual([2, 4]);
     expect(weekdayState.stats).toEqual({ peak: 4 });
     expect(renderWeekdaySection).toHaveBeenCalledTimes(1);
+  });
+
+  it("delegates hourly and weekday rerenders to Vue dashboard bridge when available", () => {
+    const elements = baseElements();
+    const bridge = {
+      renderHourlyHeatmap: vi.fn(() => true),
+      renderWeekdayChart: vi.fn(() => true),
+    };
+    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = bridge;
+    const controller = createActivityPanelsController({
+      elements,
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+      },
+    });
+
+    controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: {}, hourly_details: [], hourly_distribution: [] });
+    controller.rerenderWeekdayFromState();
+
+    expect(bridge.renderHourlyHeatmap).toHaveBeenCalled();
+    expect(bridge.renderWeekdayChart).toHaveBeenCalled();
+    expect(renderHourlyHeatmapSection).not.toHaveBeenCalled();
+    expect(renderWeekdaySection).not.toHaveBeenCalled();
   });
 });

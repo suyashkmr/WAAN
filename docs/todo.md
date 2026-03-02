@@ -414,14 +414,17 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Replace remaining Shoelace form/control proxies (`sl-button`, `sl-input`, `sl-select`) with PrimeVue-native field/control components.
       - [x] Remove residual Shoelace runtime migration paths once all control/field replacements are complete.
   - [ ] Migrate high-risk surfaces first:
-    - [ ] Dashboard panel rendering (highlights, participants, weekday/hourly/time-of-day).
+    - [x] Dashboard panel rendering (highlights, participants, weekday/hourly/time-of-day).
       - [x] Added Vue dashboard-panels bridge for highlights rendering with legacy fallback (`__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__`).
       - [x] Port participants panel rendering to Vue-managed state while preserving row-toggle/export bindings.
-      - [ ] Port weekday/hourly/time-of-day panel rendering to Vue-managed state while preserving filters/brush interactions.
+      - [x] Port weekday/hourly/time-of-day panel rendering to Vue-managed state while preserving filters/brush interactions.
         - [x] Port time-of-day panel rendering path behind Vue dashboard bridge with legacy fallback.
-        - [ ] Port hourly panel rendering path behind Vue dashboard bridge while preserving heatmap/brush/anomaly behavior.
-        - [ ] Port weekday panel rendering path behind Vue dashboard bridge while preserving bar/heatmap filter behavior.
-    - [ ] Relay controls and recovery actions.
+        - [x] Port hourly panel rendering path behind Vue dashboard bridge while preserving heatmap/brush/anomaly behavior.
+        - [x] Port weekday panel rendering path behind Vue dashboard bridge while preserving bar/heatmap filter behavior.
+    - [x] Relay controls and recovery actions.
+      - [x] Route recovery-action visibility/disabled/title updates through Vue shell bridge with DOM fallback.
+      - [x] Route primary relay control button-state updates (`connect/pause/logout/reload/clear`) through Vue shell bridge with DOM fallback.
+      - [x] Add Vue-specific relay controls integration assertions (including controls-locked race behavior).
     - [ ] Search + saved views orchestration UI.
   - [ ] Tailwind strategy decision (explicit):
     - [ ] Phase 6 default: keep Tailwind during migration to minimize styling churn and preserve token utility coverage.

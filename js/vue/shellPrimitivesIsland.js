@@ -1,3 +1,5 @@
+import { createRelayControlsBridgeMethods } from "./shellRelayBridge.js";
+
 const SHELL_BRIDGE_KEY = "__WAAN_VUE_SHELL_BRIDGE__";
 
 function mountRelayBannerPrimitive() {
@@ -269,6 +271,10 @@ function mountFeedbackPrimitiveBridge() {
     globalThis.setTimeout(() => dismissToast(id), duration);
   }
 
+  const { updateRelayRecoveryActions, updateRelayControlButtons } = createRelayControlsBridgeMethods({
+    documentRef: globalThis.document ?? null,
+  });
+
   const StatusRoot = {
     name: "StatusSnackbarPrimitive",
     render() {
@@ -312,6 +318,8 @@ function mountFeedbackPrimitiveBridge() {
     showStatusMessage,
     beginStatusExit,
     finalizeStatusExit,
+    updateRelayRecoveryActions,
+    updateRelayControlButtons,
   };
 }
 

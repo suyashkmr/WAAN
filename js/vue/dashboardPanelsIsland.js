@@ -1,4 +1,5 @@
 import { renderTimeOfDayPanel } from "../analytics/activity/timeOfDay.js";
+import { renderHourlyHeatmapSection, renderWeekdaySection } from "../analytics/activity.js";
 
 const DASHBOARD_PANELS_BRIDGE_KEY = "__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__";
 
@@ -301,6 +302,26 @@ function mountDashboardPanelsIsland() {
         bandsEl,
         calloutsEl,
       });
+      return true;
+    },
+    /**
+     * @param {{ data: unknown, options: unknown }} payload
+     * @returns {boolean}
+     */
+    renderHourlyHeatmap(payload) {
+      const data = payload?.data ?? null;
+      const options = payload?.options ?? null;
+      if (!options || typeof options !== "object") return false;
+      renderHourlyHeatmapSection(data, options);
+      return true;
+    },
+    /**
+     * @param {unknown} options
+     * @returns {boolean}
+     */
+    renderWeekdayChart(options) {
+      if (!options || typeof options !== "object") return false;
+      renderWeekdaySection(options);
       return true;
     },
   };
