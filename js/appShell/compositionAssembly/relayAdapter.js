@@ -1,3 +1,14 @@
+// @ts-check
+
+/**
+ * @param {{
+ *   dom: Record<string, any>,
+ *   state: Record<string, any>,
+ *   wiring: Record<string, any>,
+ *   withGlobalBusy: <T>(task: () => Promise<T> | T, message?: string) => Promise<T>,
+ *   applyEntriesToApp: (...args: any[]) => Promise<any>,
+ * }} params
+ */
 export function createRelayCompositionAdapter({ dom, state, wiring, withGlobalBusy, applyEntriesToApp }) {
   return {
     relayElements: {

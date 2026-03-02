@@ -1,7 +1,21 @@
+// @ts-check
+
 import { createExporters } from "../exporters.js";
 import { createExportPipeline } from "./exportPipeline.js";
 import { createPdfPreviewController } from "./pdfPreview.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   normalizeRangeValue: (range: any) => any,
+ *   getCurrentRange: () => any,
+ *   describeRange: (range: any) => string,
+ *   participantFilters: AnyRecord,
+ * }} params
+ */
 export function createExportFilterSummary({
   normalizeRangeValue,
   getCurrentRange,
@@ -21,6 +35,9 @@ export function createExportFilterSummary({
   };
 }
 
+/**
+ * @param {AnyRecord} params
+ */
 export function createExportRuntime({
   brandName,
   getDatasetLabel,

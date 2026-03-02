@@ -1,7 +1,12 @@
+// @ts-check
+
 import { createRelaySyncProgressController } from "./syncProgress.js";
 import { createRelayLogController } from "./logStream.js";
 import { createFirstRunSetupController } from "./firstRunSetup.js";
 
+/**
+ * @param {{ elements: Record<string, any>, deps: Record<string, any> }} params
+ */
 export function createRelaySupportControllers({
   elements,
   deps,

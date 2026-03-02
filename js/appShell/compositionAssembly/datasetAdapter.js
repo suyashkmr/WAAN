@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @param {{ dom: Record<string, any>, state: Record<string, any>, utils: Record<string, any>, wiring: Record<string, any> }} params
+ */
 export function createDatasetLifecycleCompositionAdapter({ dom, state, utils, wiring }) {
   return {
     rangeSelect: dom.rangeSelect,

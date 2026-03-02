@@ -1,5 +1,7 @@
+// @ts-check
 import { logPerfDuration } from "../perf.js";
 import { loadRemoteChatFromRelay } from "./loadRemoteChat.js";
+/** @param {Record<string, any>} params */
 export function createRelayActionsController({
   relayUiState,
   relayReloadAllButton,
@@ -30,18 +32,18 @@ export function createRelayActionsController({
   const MAX_RETRY_DELAY_MS = 60000;
   const RETRY_NOTICE_COOLDOWN_MS = 20000;
   const OFFLINE_AFTER_CONSECUTIVE_POLL_FAILURES = 3;
+  /** @type {Promise<any> | null} */
   let statusRequestPromise = null;
+  /** @type {{ silent: boolean, fromPolling: boolean } | null} */
   let statusRequestMeta = null;
-
   const nowMs = () => Date.now();
-
+  /** @param {number} failureCount */
   function buildRetryDelayMs(failureCount) {
     const exponentialDelay = relayPollIntervalMs * (2 ** Math.min(failureCount, 4));
     const jitter = 0.85 + Math.random() * 0.3;
     const jittered = Math.round(exponentialDelay * jitter);
     return Math.max(relayPollIntervalMs, Math.min(MAX_RETRY_DELAY_MS, jittered));
   }
-
   async function startRelaySession() {
     if (!relayBase) return;
     setRelayControlsDisabled(true);
@@ -142,12 +144,11 @@ export function createRelayActionsController({
       syncedCount = await withGlobalBusy(task, "Syncing chats from the relay…");
     }
     const syncFinishedAt = globalThis.performance?.now?.() ?? Date.now();
-    logPerfDuration("relay.sync_chats", syncFinishedAt - syncStartedAt, { syncedCount, silent });
+    logPerfDuration("relay.sync_chats", syncFinishedAt - syncStartedAt, /** @type {any} */ ({ syncedCount, silent }));
     if (!silent && syncedCount && electronAPI?.notifySyncSummary) {
       electronAPI.notifySyncSummary({ syncedChats: syncedCount });
     }
   }
-
   async function reloadAllChats() {
     if (!apiBase) return;
     return fetchJson(`${apiBase}/chats/reload`, { method: "POST" });
@@ -174,7 +175,6 @@ export function createRelayActionsController({
       electronAPI.notifySyncSummary({ syncedChats: syncedCount });
     }
   }
-
   async function refreshRemoteChats({ silent = true } = {}) {
     const startedAt = globalThis.performance?.now?.() ?? Date.now();
     let chatCount = 0;
@@ -196,15 +196,13 @@ export function createRelayActionsController({
       await refreshChatSelector();
     }
     const finishedAt = globalThis.performance?.now?.() ?? Date.now();
-    logPerfDuration("relay.refresh_remote_chats", finishedAt - startedAt, { chatCount, silent });
+    logPerfDuration("relay.refresh_remote_chats", finishedAt - startedAt, /** @type {any} */ ({ chatCount, silent }));
     return chatCount;
   }
-
   async function refreshRelayStatus({ silent = false, fromPolling = false } = {}) {
     if (!relayBase || !relayStatusEl) return null;
     if (statusRequestPromise) {
       if (statusRequestMeta) {
-        // Escalate shared request semantics to the strictest caller.
         if (!fromPolling) statusRequestMeta.fromPolling = false;
         if (!silent) statusRequestMeta.silent = false;
       }
@@ -256,14 +254,13 @@ export function createRelayActionsController({
         return null;
       } finally {
         const finishedAt = globalThis.performance?.now?.() ?? Date.now();
-        logPerfDuration("relay.refresh_status", finishedAt - startedAt, { silent });
+        logPerfDuration("relay.refresh_status", finishedAt - startedAt, /** @type {any} */ ({ silent }));
         statusRequestPromise = null;
         statusRequestMeta = null;
       }
     })();
     return statusRequestPromise;
   }
-
   function startStatusPolling() {
     const addVisibilityListener = visibilityAdapter?.addChangeListener;
     const isDocumentHidden = () => Boolean(visibilityAdapter?.isHidden?.());
@@ -300,6 +297,7 @@ export function createRelayActionsController({
     poll();
   }
 
+  /** @param {string} chatId @param {Record<string, any>} [options] */
   async function loadRemoteChat(chatId, options = {}) {
     return loadRemoteChatFromRelay({
       chatId,
@@ -317,14 +315,17 @@ export function createRelayActionsController({
     });
   }
 
-  const relayPrimaryActionHandlers = {
+  const relayPrimaryActionHandlers = /** @type {Record<string, () => void>} */ ({
     connect: () => startRelaySession(),
     reconnect: () => startRelaySession(),
     resync: () => syncRelayChats({ silent: false }),
-  };
+  });
 
+  /** @param {{ currentTarget?: EventTarget | null }} event */
   function handlePrimaryActionClick(event) {
-    const target = event.currentTarget;
+    const target = /** @type {HTMLButtonElement | null} */ (
+      event.currentTarget instanceof HTMLButtonElement ? event.currentTarget : null
+    );
     if (!target || target.disabled) {
       return;
     }
@@ -334,7 +335,6 @@ export function createRelayActionsController({
       handler();
     }
   }
-
   return {
     handlePrimaryActionClick,
     startRelaySession,

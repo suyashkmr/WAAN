@@ -1,16 +1,33 @@
+// @ts-check
+
 import { decorateToolbarRow } from "../ui/appShellPrimitives.js";
 
+/**
+ * @typedef {{ id: string, label: string }} SectionNavItemConfig
+ */
+
+/**
+ * @param {{ containerEl: HTMLElement | null | undefined, navItemsConfig?: SectionNavItemConfig[] }} params
+ */
 export function createSectionNavController({
   containerEl,
   navItemsConfig = [],
 }) {
+  /** @type {HTMLAnchorElement[]} */
   let sectionNavLinks = [];
+  /** @type {Array<{ link: HTMLAnchorElement, target: HTMLElement, id: string }>} */
   let sectionNavItems = [];
+  /** @type {IntersectionObserver | null} */
   let sectionNavObserver = null;
+  /** @type {(() => void) | null} */
   let sectionNavViewportListener = null;
+  /** @type {string | null} */
   let activeSectionId = null;
   const intersectingSections = new Map();
 
+  /**
+   * @param {string | null} targetId
+   */
   function setActiveSectionNav(targetId) {
     if (!targetId || activeSectionId === targetId) return;
     activeSectionId = targetId;
@@ -134,7 +151,7 @@ export function createSectionNavController({
       link.addEventListener("focus", () => {
         setActiveSectionNav(id);
       });
-      link.addEventListener("keydown", event => {
+      link.addEventListener("keydown", /** @param {KeyboardEvent} event */ event => {
         if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
         event.preventDefault();
         const index = navItems.findIndex(entry => entry.link === link);
@@ -160,7 +177,7 @@ export function createSectionNavController({
     intersectingSections.clear();
 
     sectionNavObserver = new IntersectionObserver(
-      observerEntries => {
+      /** @param {IntersectionObserverEntry[]} observerEntries */ observerEntries => {
         observerEntries.forEach(entry => {
           const id = entry?.target?.id;
           if (!id) return;
@@ -179,7 +196,9 @@ export function createSectionNavController({
       },
     );
 
-    navItems.forEach(({ target }) => sectionNavObserver.observe(target));
+    if (!sectionNavObserver) return;
+    const observer = sectionNavObserver;
+    navItems.forEach(({ target }) => observer.observe(target));
     sectionNavViewportListener = () => syncActiveSection();
     window.addEventListener("scroll", sectionNavViewportListener, { passive: true });
     window.addEventListener("resize", sectionNavViewportListener);

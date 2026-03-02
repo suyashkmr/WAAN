@@ -1,9 +1,22 @@
+// @ts-check
+
+/**
+ * @param {{
+ *   getDatasetAnalytics: () => Record<string, any> | null,
+ *   getExportThemeConfig: () => { label: string } & Record<string, any>,
+ *   generatePdfDocumentHtmlAsync: (analytics: Record<string, any>, theme: Record<string, any>) => Promise<{ content: string }>,
+ *   updateStatus: (message: string, tone: string) => void,
+ * }} params
+ */
 export function createPdfPreviewController({
   getDatasetAnalytics,
   getExportThemeConfig,
   generatePdfDocumentHtmlAsync,
   updateStatus,
 }) {
+  /**
+   * @param {string} html
+   */
   function launchPrintableDocument(html) {
     try {
       const blob = new Blob([html], { type: "text/html" });
@@ -33,6 +46,7 @@ export function createPdfPreviewController({
           }
           cleanup();
         };
+        /** @type {number | null} */
         let cleanupTimer = window.setTimeout(() => {
           handleAfterPrint();
         }, 60000);

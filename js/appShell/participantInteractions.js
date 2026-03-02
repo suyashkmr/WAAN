@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   applyParticipantTopChange,
   applyParticipantSortChange,
@@ -6,6 +8,13 @@ import {
   toggleParticipantRow,
 } from "./dashboardRender.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createParticipantInteractionsController({ elements, deps }) {
   const {
     participantsTopSelect,
@@ -40,8 +49,11 @@ export function createParticipantInteractionsController({ elements, deps }) {
     rerenderParticipantsIfAvailable();
   }
 
+  /**
+   * @param {MouseEvent & { currentTarget?: Element | null }} event
+   */
   function handleParticipantPresetClick(event) {
-    const preset = event.currentTarget?.dataset?.participantsPreset;
+    const preset = /** @type {any} */ (event.currentTarget)?.dataset?.participantsPreset;
     applyParticipantPreset(participantFilters, preset, {
       participantsTopSelect,
       participantsSortSelect,
@@ -50,6 +62,9 @@ export function createParticipantInteractionsController({ elements, deps }) {
     rerenderParticipantsIfAvailable();
   }
 
+  /**
+   * @param {MouseEvent} event
+   */
   function handleParticipantRowToggle(event) {
     toggleParticipantRow(event, participantsBody);
   }

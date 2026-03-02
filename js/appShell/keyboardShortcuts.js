@@ -1,3 +1,12 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ deps: AnyRecord }} params
+ */
 export function createKeyboardShortcutsController({ deps }) {
   const {
     syncRelayChats,
@@ -9,10 +18,16 @@ export function createKeyboardShortcutsController({ deps }) {
     onboardingController,
   } = deps;
 
+  /**
+   * @param {KeyboardEvent} event
+   */
   function handleKeydown(event) {
-    const targetTag = event.target?.tagName;
+    const target = /** @type {Element | null} */ (event.target instanceof Element ? event.target : null);
+    const targetTag = target?.tagName;
     const isTypingTarget =
-      targetTag === "INPUT" || targetTag === "TEXTAREA" || event.target?.isContentEditable;
+      targetTag === "INPUT"
+      || targetTag === "TEXTAREA"
+      || Boolean(target instanceof HTMLElement && target.isContentEditable);
 
     if (event.metaKey || event.ctrlKey) {
       if (isTypingTarget) return;

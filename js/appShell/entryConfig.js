@@ -1,3 +1,24 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   filterRefs: AnyRecord,
+ *   dashboardRefs: AnyRecord,
+ *   savedViewRefs: AnyRecord,
+ *   searchRefs: AnyRecord,
+ *   runtimeRefs: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   brandName: string,
+ *   searchResultLimit: number,
+ *   datasetEmptyStateManager: AnyRecord,
+ *   setDatasetEmptyMessage: (...args: any[]) => void,
+ * }} params
+ */
 export function buildControllerWiringArgs({
   filterRefs,
   dashboardRefs,
@@ -41,6 +62,20 @@ export function buildControllerWiringArgs({
   };
 }
 
+/**
+ * @param {{
+ *   filterRefs: AnyRecord,
+ *   runtimeRefs: AnyRecord,
+ *   relayRefs: AnyRecord,
+ *   state: AnyRecord,
+ *   utils: AnyRecord,
+ *   analytics: AnyRecord,
+ *   brandName: string,
+ *   apiBase: string,
+ *   wiring: AnyRecord,
+ *   electronAPI: AnyRecord,
+ * }} params
+ */
 export function buildCompositionAssemblyArgs({
   filterRefs,
   runtimeRefs,

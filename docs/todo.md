@@ -246,13 +246,13 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Verified targeted suites: `npm run test -- tests/appShellUiState.test.js tests/state.test.js tests/relayControls.test.js`.
   - [x] Exit criteria: cross-panel state parity is deterministic and state-transition tests pass in CI.
     - [x] Verified full gate suite with `npm run ci:verify` after subscription-flow refactors.
-- [ ] Phase 2 (high priority, 1-2 weeks): Incremental TypeScript adoption for high-risk orchestration paths.
+- [x] Phase 2 (high priority, 1-2 weeks): Incremental TypeScript adoption for high-risk orchestration paths.
   - [x] Enable TS config/checking with JS interop (`allowJs`) and no runtime bundler rewrite.
     - [x] Added root TypeScript config with `allowJs` + no-emit checking (`tsconfig.json`).
     - [x] Added `check:types` script and wired it into `ci:verify` (`package.json`).
     - [x] Added pinned TypeScript dev dependency (`typescript`).
     - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
-  - [ ] Migrate `js/appShell/*` and `js/relayControls/*` module-by-module to `.ts` with strict null-safe boundaries.
+  - [x] Migrate `js/appShell/*` and `js/relayControls/*` module-by-module to `.ts` with strict null-safe boundaries.
     - [x] Migrated first low-risk leaf slice to strict typed-JS contracts with `@ts-check` + JSDoc while preserving runtime import paths:
       - [x] `js/appShell/dashboardRender/hourlySummary.js`
       - [x] `js/appShell/dashboardRender/highlightsStats.js`
@@ -261,7 +261,7 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] `js/appShell/dashboardRender/activityPanels.js`
       - [x] `js/relayControls/statusApply.js`
       - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
-    - [ ] Continue module conversion for orchestration-heavy files and move converted modules from typed-JS to `.ts` once runtime-safe import strategy is finalized.
+    - [x] Continue module conversion for orchestration-heavy files and move converted modules from typed-JS to `.ts` once runtime-safe import strategy is finalized.
       - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for orchestration wiring modules:
         - [x] `js/appShell/assemblyWiring.js`
         - [x] `js/appShell/runtimeConfig.js`
@@ -312,30 +312,40 @@ Completed work is archived in git history and was removed from this file for cla
         - [x] `js/appShell/dashboardRender/hourlyControlBindings.js`
         - [x] `js/appShell/dashboardRender/participantsPanel.js`
       - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
-      - [ ] Remaining typed-JS conversion backlog (tracked explicitly):
-        - [ ] `js/appShell/chatSelection.js`
-        - [ ] `js/appShell/compositionAssembly/datasetAdapter.js`
-        - [ ] `js/appShell/compositionAssembly/relayAdapter.js`
-        - [ ] `js/appShell/datasetLifecycle.js`
-        - [ ] `js/appShell/domRefGroups.js`
-        - [ ] `js/appShell/domRefs.js`
-        - [ ] `js/appShell/entryConfig.js`
-        - [ ] `js/appShell/exportPipeline.js`
-        - [ ] `js/appShell/exportRuntime.js`
-        - [ ] `js/appShell/keyboardShortcuts.js`
-        - [ ] `js/appShell/onboarding.js`
-        - [ ] `js/appShell/participantDirectory.js`
-        - [ ] `js/appShell/participantInteractions.js`
-        - [ ] `js/appShell/pdfPreview.js`
-        - [ ] `js/appShell/sectionNav.js`
-        - [ ] `js/appShell/statusUi.js`
-        - [ ] `js/appShell/themeUi.js`
-        - [ ] `js/relayControls/actions.js`
-        - [ ] `js/relayControls/controllerSupport.js`
-        - [ ] `js/relayControls/firstRunSetup.js`
-        - [ ] `js/relayControls/logStream.js`
-  - [ ] Keep existing runtime behavior unchanged and verify with `npm run ci:verify`.
-  - [ ] Exit criteria: core orchestration modules are type-checked and CI remains green without behavior regressions.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for app-shell UI interaction modules:
+        - [x] `js/appShell/onboarding.js`
+        - [x] `js/appShell/statusUi.js`
+        - [x] `js/appShell/themeUi.js`
+        - [x] `js/appShell/sectionNav.js`
+        - [x] `js/appShell/keyboardShortcuts.js`
+      - [x] Verified with `npm run check:types`, `npm run check:appshell-contracts`, and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for app-shell dataset/participant modules:
+        - [x] `js/appShell/chatSelection.js`
+        - [x] `js/appShell/datasetLifecycle.js`
+        - [x] `js/appShell/participantDirectory.js`
+        - [x] `js/appShell/participantInteractions.js`
+      - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for app-shell DOM/config modules:
+        - [x] `js/appShell/domRefs.js`
+        - [x] `js/appShell/domRefGroups.js`
+        - [x] `js/appShell/entryConfig.js`
+      - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for app-shell export modules:
+        - [x] `js/appShell/exportPipeline.js`
+        - [x] `js/appShell/exportRuntime.js`
+        - [x] `js/appShell/pdfPreview.js`
+      - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
+      - [x] Added strict typed-JS contracts (`@ts-check` + JSDoc) for remaining composition/relay modules:
+        - [x] `js/appShell/compositionAssembly/datasetAdapter.js`
+        - [x] `js/appShell/compositionAssembly/relayAdapter.js`
+        - [x] `js/relayControls/actions.js`
+        - [x] `js/relayControls/controllerSupport.js`
+        - [x] `js/relayControls/firstRunSetup.js`
+        - [x] `js/relayControls/logStream.js`
+      - [x] Remaining typed-JS conversion backlog is cleared for `js/appShell/*` and `js/relayControls/*` (no untyped modules left).
+      - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
+  - [x] Keep existing runtime behavior unchanged and verify with `npm run ci:verify`.
+  - [x] Exit criteria: core orchestration modules are type-checked and CI remains green without behavior regressions.
 - [ ] Phase 3 (parallel with late phase 2, 3-5 days): Expand reliability gates for core relay and export flows.
   - [ ] Add release-blocking tests for relay transition edges (`offline -> starting -> waiting -> running`, fallback path shifts).
   - [ ] Add release-blocking tests for export integrity (CSV/JSON/PDF content sanity + metadata stamping).

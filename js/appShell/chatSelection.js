@@ -1,3 +1,19 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   chatSelector: HTMLSelectElement | null | undefined,
+ *   brandName: string,
+ *   formatNumber: (value: number) => string,
+ *   formatDisplayDate: (value: any) => string,
+ *   getActiveChatId: () => string | null,
+ *   setActiveChatId: (value: string) => void,
+ * }} params
+ */
 export function createChatSelectionController({
   chatSelector,
   brandName,
@@ -7,14 +23,22 @@ export function createChatSelectionController({
   setActiveChatId,
 }) {
   const remoteChatState = {
+    /** @type {AnyRecord[]} */
     list: [],
     lastFetchedAt: 0,
   };
 
+  /**
+   * @param {string} source
+   * @param {string} id
+   */
   function encodeChatSelectorValue(source, id) {
     return `${source}:${id}`;
   }
 
+  /**
+   * @param {string | null | undefined} value
+   */
   function decodeChatSelectorValue(value) {
     if (!value) return null;
     const [prefix, ...rest] = value.split(":");
@@ -22,6 +46,9 @@ export function createChatSelectionController({
     return { source: prefix, id: rest.join(":") };
   }
 
+  /**
+   * @param {AnyRecord} chat
+   */
   function formatRemoteChatLabel(chat) {
     const parts = [chat.name || chat.id || `${brandName} chat`];
     if (Number.isFinite(chat.messageCount)) {
@@ -33,6 +60,9 @@ export function createChatSelectionController({
     return parts.join(" · ");
   }
 
+  /**
+   * @param {AnyRecord[]} [list]
+   */
   function setRemoteChatList(list = []) {
     remoteChatState.list = Array.isArray(list) ? list : [];
     remoteChatState.lastFetchedAt = Date.now();
@@ -83,6 +113,10 @@ export function createChatSelectionController({
     }
   }
 
+  /**
+   * @param {AnyRecord} event
+   * @param {{ loadRemoteChat: (id: string, options?: AnyRecord) => Promise<void>, updateStatus: (message: string, tone: string) => void }} params
+   */
   async function handleChatSelectionChange(event, { loadRemoteChat, updateStatus }) {
     const target = event?.target;
     const selectionValue = target?.value || "";

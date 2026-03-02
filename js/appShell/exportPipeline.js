@@ -1,10 +1,25 @@
+// @ts-check
+
+/**
+ * @typedef {{ resolve: (value: any) => void, reject: (reason?: any) => void }} WorkerRequestCallbacks
+ */
+
+/**
+ * @param {{
+ *   getDatasetLabel: () => string,
+ *   getExportFilterSummary: () => string[],
+ *   brandName: string,
+ * }} params
+ */
 export function createExportPipeline({
   getDatasetLabel,
   getExportFilterSummary,
   brandName,
 }) {
+  /** @type {Worker | null} */
   let exportWorkerInstance = null;
   let exportWorkerRequestId = 0;
+  /** @type {Map<number, WorkerRequestCallbacks>} */
   const exportWorkerRequests = new Map();
 
   function ensureExportWorker() {
@@ -12,7 +27,7 @@ export function createExportPipeline({
     exportWorkerInstance = new Worker(new URL("../exportWorker.js", import.meta.url), {
       type: "module",
     });
-    exportWorkerInstance.onmessage = event => {
+    exportWorkerInstance.onmessage = (/** @type {MessageEvent} */ event) => {
       const { id, type, content, error } = event.data || {};
       if (typeof id === "undefined") return;
       const request = exportWorkerRequests.get(id);
@@ -34,6 +49,10 @@ export function createExportPipeline({
     return exportWorkerInstance;
   }
 
+  /**
+   * @param {"markdown" | "slides" | "pdf"} task
+   * @param {Record<string, any>} payload
+   */
   function requestExportTask(task, payload) {
     const worker = ensureExportWorker();
     const id = ++exportWorkerRequestId;
@@ -43,6 +62,10 @@ export function createExportPipeline({
     });
   }
 
+  /**
+   * @param {Record<string, any>} analytics
+   * @param {Record<string, any>} theme
+   */
   function generateMarkdownReportAsync(analytics, theme) {
     return requestExportTask("markdown", {
       analytics,
@@ -53,6 +76,10 @@ export function createExportPipeline({
     });
   }
 
+  /**
+   * @param {Record<string, any>} analytics
+   * @param {Record<string, any>} theme
+   */
   function generateSlidesHtmlAsync(analytics, theme) {
     return requestExportTask("slides", {
       analytics,
@@ -63,6 +90,10 @@ export function createExportPipeline({
     });
   }
 
+  /**
+   * @param {Record<string, any>} analytics
+   * @param {Record<string, any>} theme
+   */
   function generatePdfDocumentHtmlAsync(analytics, theme) {
     return requestExportTask("pdf", {
       analytics,

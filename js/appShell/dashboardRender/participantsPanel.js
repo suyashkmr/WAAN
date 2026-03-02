@@ -72,7 +72,7 @@ export function applyParticipantTimeframeChange(participantFilters, value) {
 
 /**
  * @param {AnyRecord} participantFilters
- * @param {string} preset
+ * @param {string | undefined} preset
  * @param {{ participantsTopSelect: HTMLSelectElement | null | undefined, participantsSortSelect: HTMLSelectElement | null | undefined, participantsTimeframeSelect: HTMLSelectElement | null | undefined }} controls
  */
 export function applyParticipantPreset(participantFilters, preset, controls) {

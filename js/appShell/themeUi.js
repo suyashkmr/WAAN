@@ -1,9 +1,24 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   themeToggleInputs?: Array<HTMLInputElement>,
+ *   mediaQuery?: MediaQueryList | null,
+ *   exportThemeStyles?: AnyRecord,
+ *   storageKey?: string,
+ * }} params
+ */
 export function createThemeUiController({
   themeToggleInputs = [],
   mediaQuery = null,
   exportThemeStyles = {},
   storageKey = "waan-theme-preference",
 }) {
+  /** @type {{ preference: string, mediaQuery: MediaQueryList | null }} */
   const themeState = {
     preference: "system",
     mediaQuery,
@@ -23,22 +38,28 @@ export function createThemeUiController({
     return "light";
   }
 
+  /**
+   * @param {string} preference
+   */
   function resolveColorScheme(preference) {
     if (preference === "dark") return "dark";
     if (preference === "light") return "light";
     return detectSystemScheme();
   }
 
+  /**
+   * @param {string} preference
+   */
   function applyTheme(preference) {
     const root = document.documentElement;
     if (!root) return;
     root.dataset.theme = preference;
-    localStorage.setItem(storageKey, preference);
+    globalThis.localStorage?.setItem(storageKey, preference);
     root.dataset.colorScheme = resolveColorScheme(preference);
   }
 
   function initThemeControls() {
-    const saved = localStorage.getItem(storageKey);
+    const saved = globalThis.localStorage?.getItem(storageKey);
     const initial = saved || "system";
     themeState.preference = initial;
     applyTheme(initial);

@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @param {Record<string, any>} refs
+ */
 export function createAppDomRefGroups(refs) {
   return {
     runtimeRefs: {

@@ -1,5 +1,10 @@
+// @ts-check
+
 import { createDomCache } from "../ui.js";
 
+/**
+ * @returns {Record<string, any>}
+ */
 export function createAppDomRefs() {
   const domCache = createDomCache();
   return {

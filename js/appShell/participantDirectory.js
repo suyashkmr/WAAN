@@ -1,12 +1,27 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {unknown} value
+ */
 function normalizeJid(value) {
   if (!value) return "";
   return String(value).trim().toLowerCase();
 }
 
+/**
+ * @param {string} value
+ */
 function stripJidSuffix(value) {
   return value.replace(/@[\w.]+$/, "");
 }
 
+/**
+ * @param {unknown} value
+ */
 function normalizeContactId(value) {
   if (!value) return null;
   const text = String(value).trim();
@@ -17,6 +32,10 @@ function normalizeContactId(value) {
   return normalizeJid(text);
 }
 
+/**
+ * @param {string | null | undefined} next
+ * @param {string | null | undefined} current
+ */
 function shouldPreferLabel(next, current) {
   if (!current) return true;
   if (!next) return false;
@@ -27,10 +46,19 @@ function shouldPreferLabel(next, current) {
   return next.length <= current.length;
 }
 
+/**
+ * @param {AnyRecord[]} [entries]
+ * @param {AnyRecord[]} [participants]
+ */
 export function createParticipantDirectory(entries = [], participants = []) {
+  /** @type {Map<string, { id: string, label: string | null, aliases: Set<string> }>} */
   const records = new Map();
+  /** @type {Map<string, { id: string, label: string | null, aliases: Set<string> }>} */
   const aliasIndex = new Map();
 
+  /**
+   * @param {unknown} id
+   */
   const ensureRecord = id => {
     const normalized = normalizeContactId(id);
     if (!normalized) return null;
@@ -40,6 +68,10 @@ export function createParticipantDirectory(entries = [], participants = []) {
     return records.get(normalized);
   };
 
+  /**
+   * @param {unknown} id
+   * @param {unknown} label
+   */
   const register = (id, label) => {
     let record = ensureRecord(id);
     const cleanLabel = label ? String(label).trim() : "";
@@ -63,6 +95,9 @@ export function createParticipantDirectory(entries = [], participants = []) {
     return record;
   };
 
+  /**
+   * @param {AnyRecord} participant
+   */
   participants.forEach(participant => {
     const label = participant.label || participant.name || participant.displayName || participant.pushname;
     const id = participant.id || participant.jid || participant.phone || participant.identifier;
@@ -71,6 +106,9 @@ export function createParticipantDirectory(entries = [], participants = []) {
     }
   });
 
+  /**
+   * @param {AnyRecord} entry
+   */
   entries.forEach(entry => {
     register(entry.sender_jid || entry.sender_id || entry.sender, entry.sender);
   });
@@ -78,6 +116,9 @@ export function createParticipantDirectory(entries = [], participants = []) {
   return { records, aliasIndex };
 }
 
+/**
+ * @param {{ records: Map<string, { id: string, label: string | null, aliases: Set<string> }> } | null | undefined} directory
+ */
 export function serializeParticipantDirectory(directory) {
   if (!directory) return null;
   return Array.from(directory.records.entries()).map(([id, record]) => ({
@@ -87,6 +128,9 @@ export function serializeParticipantDirectory(directory) {
   }));
 }
 
+/**
+ * @param {AnyRecord[] | null | undefined} snapshot
+ */
 export function deserializeParticipantDirectory(snapshot) {
   if (!Array.isArray(snapshot) || !snapshot.length) return null;
   const records = new Map();
@@ -108,10 +152,17 @@ export function deserializeParticipantDirectory(snapshot) {
   return { records, aliasIndex };
 }
 
-export function normalizeEntriesWithDirectory(entries = [], directory) {
+/**
+ * @param {AnyRecord[]} [entries]
+ * @param {{ records: Map<string, { id: string, label: string | null, aliases: Set<string> }>, aliasIndex: Map<string, { id: string, label: string | null, aliases: Set<string> }> } | null | undefined} directory
+ */
+export function normalizeEntriesWithDirectory(entries = [], directory = null) {
   if (!directory) return entries;
   const { records, aliasIndex } = directory;
 
+  /**
+   * @param {AnyRecord} entry
+   */
   const resolveRecord = entry => {
     const candidates = [entry.sender_jid, entry.sender_id, entry.sender];
     for (const candidate of candidates) {
@@ -151,8 +202,12 @@ export function normalizeEntriesWithDirectory(entries = [], directory) {
   });
 }
 
+/**
+ * @param {{ records: Map<string, { id: string, label: string | null, aliases: Set<string> }> } | null | undefined} directory
+ */
 export function buildParticipantRoster(directory) {
   if (!directory) return [];
+  /** @type {Array<{ id: string, label: string }>} */
   const roster = [];
   directory.records.forEach(record => {
     const label = record.label || stripJidSuffix(record.id);

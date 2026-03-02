@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   buildDiagnosticsFilename,
   buildDiagnosticsSnapshot,
@@ -7,6 +9,9 @@ import {
 
 const MAX_LOG_ENTRIES = 400;
 
+/**
+ * @param {Record<string, any>} params
+ */
 export function createRelayLogController({
   brandName,
   relayServiceName,
@@ -24,12 +29,18 @@ export function createRelayLogController({
   updateStatus,
 }) {
   const relayLogState = {
+    /** @type {string[]} */
     entries: [],
+    /** @type {EventSource | null} */
     eventSource: null,
+    /** @type {ReturnType<typeof setTimeout> | null} */
     reconnectTimer: null,
     drawerOpen: false,
   };
 
+  /**
+   * @param {string} text
+   */
   function setLogConnectionLabel(text) {
     if (logDrawerConnectionLabel) {
       logDrawerConnectionLabel.textContent = text;
@@ -56,6 +67,9 @@ export function createRelayLogController({
     }
   }
 
+  /**
+   * @param {string} entry
+   */
   function appendRelayLog(entry) {
     if (!logDrawerList) return;
     if (logDrawerList.firstChild?.classList?.contains?.("relay-log-empty")) {
@@ -91,6 +105,9 @@ export function createRelayLogController({
     return relayLogState.drawerOpen;
   }
 
+  /**
+   * @param {MouseEvent} event
+   */
   function handleLogDrawerDocumentClick(event) {
     if (!relayLogState.drawerOpen) return;
     const target = event.target;
@@ -99,6 +116,9 @@ export function createRelayLogController({
     closeLogDrawer();
   }
 
+  /**
+   * @param {KeyboardEvent} event
+   */
   function handleLogDrawerKeydown(event) {
     if (event.key === "Escape" && relayLogState.drawerOpen) {
       closeLogDrawer();
@@ -118,6 +138,11 @@ export function createRelayLogController({
     }
   }
 
+  /**
+   * @param {string} filename
+   * @param {string} content
+   * @param {string} [mime]
+   */
   function downloadTextFile(filename, content, mime = "application/json;charset=utf-8;") {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -191,7 +216,7 @@ export function createRelayLogController({
     source.onopen = () => {
       setLogConnectionLabel("Live log stream");
     };
-    source.onmessage = event => {
+    source.onmessage = (/** @type {MessageEvent} */ event) => {
       relayLogState.entries.push(event.data);
       if (relayLogState.entries.length > MAX_LOG_ENTRIES) {
         relayLogState.entries.splice(0, relayLogState.entries.length - MAX_LOG_ENTRIES);

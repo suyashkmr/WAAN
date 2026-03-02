@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   createParticipantDirectory,
   serializeParticipantDirectory,
@@ -5,6 +7,13 @@ import {
   normalizeEntriesWithDirectory,
 } from "./participantDirectory.js";
 
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ */
 export function createDatasetLifecycleController({ elements, deps }) {
   const { rangeSelect } = elements;
 
@@ -36,6 +45,11 @@ export function createDatasetLifecycleController({ elements, deps }) {
     populateSearchParticipants,
   } = deps;
 
+  /**
+   * @param {AnyRecord[]} entries
+   * @param {string} label
+   * @param {AnyRecord} [options]
+   */
   async function applyEntriesToApp(entries, label, options = {}) {
     let participantDirectory = null;
     if (options.participantDirectoryData) {

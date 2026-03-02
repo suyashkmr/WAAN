@@ -1,3 +1,19 @@
+// @ts-check
+
+/**
+ * @typedef {{ copy: string, target?: string | null }} OnboardingStep
+ */
+
+/**
+ * @param {{
+ *   overlayEl: HTMLElement | null | undefined,
+ *   copyEl: HTMLElement | null | undefined,
+ *   stepLabelEl: HTMLElement | null | undefined,
+ *   nextButtonEl: HTMLButtonElement | null | undefined,
+ *   steps?: OnboardingStep[],
+ *   storageKey?: string,
+ * }} params
+ */
 export function createOnboardingController({
   overlayEl,
   copyEl,
@@ -7,6 +23,7 @@ export function createOnboardingController({
   storageKey = "waan-onboarding-dismissed",
 }) {
   let onboardingIndex = 0;
+  /** @type {Element | null} */
   let onboardingHighlight = null;
 
   function clearHighlight() {
@@ -21,9 +38,12 @@ export function createOnboardingController({
     overlayEl?.setAttribute("aria-hidden", "true");
     document.body.classList.remove("onboarding-active");
     if (stepLabelEl) stepLabelEl.textContent = "";
-    localStorage.setItem(storageKey, "done");
+    globalThis.localStorage?.setItem(storageKey, "done");
   }
 
+  /**
+   * @param {string | null | undefined} selector
+   */
   function highlightTarget(selector) {
     clearHighlight();
     if (!selector) return;
@@ -35,6 +55,9 @@ export function createOnboardingController({
     }
   }
 
+  /**
+   * @param {number} index
+   */
   function showStep(index) {
     if (!overlayEl || !copyEl) return;
     const step = steps[index];
@@ -53,7 +76,7 @@ export function createOnboardingController({
   }
 
   function start() {
-    if (!overlayEl || localStorage.getItem(storageKey) === "done") return;
+    if (!overlayEl || globalThis.localStorage?.getItem(storageKey) === "done") return;
     onboardingIndex = 0;
     document.body.classList.add("onboarding-active");
     overlayEl.setAttribute("aria-hidden", "false");

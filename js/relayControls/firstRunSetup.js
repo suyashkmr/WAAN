@@ -1,3 +1,19 @@
+// @ts-check
+
+/**
+ * @typedef {Record<string, any>} AnyRecord
+ */
+
+/**
+ * @param {{
+ *   firstRunSetup?: HTMLElement | null,
+ *   firstRunSetupSteps?: Array<HTMLElement> | null,
+ *   firstRunPrimaryActionButton?: HTMLButtonElement | null,
+ *   relayStartButton?: HTMLButtonElement | null,
+ *   getControlsLocked?: (() => boolean) | null,
+ *   getDataAvailable?: (() => boolean) | null,
+ * }} [params]
+ */
 export function createFirstRunSetupController({
   firstRunSetup,
   firstRunSetupSteps,
@@ -6,11 +22,17 @@ export function createFirstRunSetupController({
   getControlsLocked,
   getDataAvailable,
 } = {}) {
+  /**
+   * @param {Element | null | undefined} target
+   */
   function scrollToElement(target) {
     if (!target) return;
     target.scrollIntoView({ behavior: "auto", block: "center" });
   }
 
+  /**
+   * @param {{ status?: AnyRecord | null, hasData?: boolean }} [params]
+   */
   function updateFirstRunSetup({ status, hasData = false } = {}) {
     if (!firstRunSetup || !firstRunSetupSteps?.length) return;
     if (hasData) {
@@ -22,7 +44,7 @@ export function createFirstRunSetupController({
     const state = status?.status || "offline";
     const chatCount = Number(status?.chatCount ?? 0);
 
-    firstRunSetupSteps.forEach(step => {
+    firstRunSetupSteps.forEach(/** @param {HTMLElement} step */ step => {
       const stepId = step.dataset.setupStep;
       let value = "pending";
       if (stepId === "connect") {
@@ -78,6 +100,9 @@ export function createFirstRunSetupController({
     }
   }
 
+  /**
+   * @param {AnyRecord | null | undefined} status
+   */
   function refreshForCurrentData(status) {
     updateFirstRunSetup({ status, hasData: Boolean(getDataAvailable?.()) });
   }

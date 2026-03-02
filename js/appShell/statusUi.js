@@ -1,3 +1,14 @@
+// @ts-check
+
+/**
+ * @param {{
+ *   statusEl: HTMLElement | null | undefined,
+ *   toastContainer: HTMLElement | null | undefined,
+ *   autoHideDelayMs?: number,
+ *   exitDurationMs?: number,
+ *   maxToasts?: number,
+ * }} params
+ */
 export function createStatusUiController({
   statusEl,
   toastContainer,
@@ -5,10 +16,16 @@ export function createStatusUiController({
   exitDurationMs = 300,
   maxToasts = 4,
 }) {
+  /** @type {HTMLElement[]} */
   const toasts = [];
+  /** @type {number | null} */
   let statusHideTimer = null;
+  /** @type {number | null} */
   let statusExitTimer = null;
 
+  /**
+   * @param {HTMLElement} toast
+   */
   function dismissToast(toast) {
     if (!toast?.isConnected) return;
     toast.classList.add("toast-dismiss");
@@ -19,6 +36,11 @@ export function createStatusUiController({
     }, 150);
   }
 
+  /**
+   * @param {string} message
+   * @param {string} [tone]
+   * @param {{ duration?: number }} [options]
+   */
   function showToast(message, tone = "info", { duration = 5000 } = {}) {
     if (!toastContainer) return;
     const toast = document.createElement("div");
@@ -58,6 +80,10 @@ export function createStatusUiController({
     statusExitTimer = window.setTimeout(() => finalizeStatusExit(), exitDurationMs);
   }
 
+  /**
+   * @param {string} message
+   * @param {string | null | undefined} tone
+   */
   function showStatusMessage(message, tone) {
     if (!statusEl) return;
     statusEl.classList.remove("hidden", "is-exiting", "success", "warning", "error");
