@@ -137,6 +137,12 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
     },
   ];
 
+  const summaryBridge = globalThis.__WAAN_VUE_SUMMARY_BRIDGE__;
+  if (summaryBridge && typeof summaryBridge.render === "function") {
+    const handledByVue = summaryBridge.render(cards);
+    if (handledByVue) return;
+  }
+
   summaryEl.innerHTML = "";
   cards.forEach(({ title, value, hint }) => {
     const card = document.createElement("sl-card");

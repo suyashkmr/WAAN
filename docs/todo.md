@@ -388,20 +388,88 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added explicit manual recovery smoke steps for offline, fallback, and diagnostics flows in release checklist (`docs/release-smoke-checklist.md`).
     - [x] Executed the recovery smoke steps against packaged `WAAN.app` and recorded PASS sign-off (`docs/release-smoke-checklist.md`, dated 2026-03-02).
   - [x] Exit criteria: failure states are actionable in-UI and recovery flows are validated in release smoke.
-- [ ] Phase 6 (after phase 5, 1-2 weeks): Local-first group privacy policy enforcement.
-  - [ ] Add per-group policy tiers with local persistence: `blocked`, `aggregate_only`, `detailed`.
-  - [ ] Enforce detailed analytics gating behind local policy + role/allowlist checks (fail-safe downgrade when role metadata is unavailable).
-  - [ ] Enforce aggregate-only sanitization in analytics data path (no message text, no per-member attribution, coarse/thresholded aggregates).
-  - [ ] Enforce policy in export paths (block detailed exports unless policy allows).
-  - [ ] Add group policy UX surfaces:
-    - [ ] Group-level privacy badges in selection/status surfaces.
-    - [ ] Clear disable reasons/tooltips and policy guidance messaging.
-    - [ ] Per-group settings controls + purge action for locally stored analytics.
-  - [ ] Add regression and contract coverage for policy transitions and enforcement:
-    - [ ] Relay ingest/store enforcement tests.
-    - [ ] Dashboard render gating tests.
-    - [ ] Export guard tests.
-  - [ ] Exit criteria: policy tier is enforced consistently across ingest, analytics, UI, and export flows with local-only data handling.
+- [ ] Phase 6 (after phase 5, 2-4 weeks): Frontend architecture overhaul to Vue 3 + Shoelace replacement.
+  - [ ] Finalize target UI framework/library:
+    - [ ] Adopt Vue 3 as the frontend runtime.
+    - [ ] Replace Shoelace with PrimeVue (locked decision).
+  - [ ] Define migration boundaries without backend changes:
+    - [ ] Keep existing server/API contracts unchanged.
+    - [ ] Introduce a frontend adapter layer that maps current app-shell state and relay endpoints to Vue stores/composables.
+  - [ ] Build migration scaffold:
+    - [ ] Add Vue build/runtime integration and app bootstrap entry.
+    - [ ] Vendor Vue/PrimeVue runtime assets for packaged release hardening:
+      - [x] Copy pinned runtime files into versioned local vendor paths (do not depend on `node_modules` at runtime).
+      - [x] Update `index.html`/runtime bootstrap to load vendored assets only.
+      - [x] Add a CI check to verify vendored runtime files exist and match pinned versions.
+      - [x] Exit criteria: packaged app runs without `node_modules` dependency for Vue/PrimeVue runtime assets.
+    - [ ] Port shared shell primitives (toolbar, cards, dialogs, toasts, relay status strip) to Vue components.
+      - [x] Port relay status strip shell to Vue-managed primitive while preserving existing DOM IDs and runtime bindings.
+      - [x] Port status/toast surface to Vue-backed bridge (`__WAAN_VUE_SHELL_BRIDGE__`) with legacy `statusUi` fallback.
+      - [ ] Port toolbar and dialog primitives to Vue components.
+      - [ ] Port remaining card shell primitives to Vue components.
+    - [ ] Replace Shoelace usage incrementally with Vue-native equivalents.
+  - [ ] Migrate high-risk surfaces first:
+    - [ ] Dashboard panel rendering (highlights, participants, weekday/hourly/time-of-day).
+    - [ ] Relay controls and recovery actions.
+    - [ ] Search + saved views orchestration UI.
+  - [ ] Tailwind strategy decision (explicit):
+    - [ ] Phase 6 default: keep Tailwind during migration to minimize styling churn and preserve token utility coverage.
+    - [ ] Post-parity decision: either keep Tailwind long-term or remove it with a dedicated cleanup phase and CI guardrail updates (`check:tailwind-adoption`).
+  - [ ] Preserve/expand quality gates during migration:
+    - [ ] Keep `ci:verify`, release reliability, visual, accessibility, and perf budget gates green throughout migration.
+    - [ ] Add Vue component/integration tests for migrated surfaces before removing legacy wiring.
+  - [ ] File-by-file migration checklist (PrimeVue + Vue 3):
+    - [ ] `index.html` (Owner: Frontend)
+      - [ ] Replace Shoelace stylesheet/runtime includes with Vue mount root + PrimeVue bootstrap wiring.
+      - [ ] Replace static `sl-card` panel shells with Vue component mount points while preserving IDs used by analytics/event bindings.
+      - [ ] Estimate: 1.5-2.5 days.
+      - [ ] Acceptance: app-shell renders in Vue, panel anchors/IDs still satisfy navigation + existing integration tests.
+    - [ ] `js/ui/primitivesMigrations.js` (Owner: Frontend)
+      - [ ] Remove legacy button/banner proxy migration path (`button -> sl-button`, `section -> sl-card`).
+      - [ ] Replace with Vue component composition for relay controls and status banner.
+      - [ ] Estimate: 1.5-2.5 days.
+      - [ ] Acceptance: no runtime proxy insertion or mutation-observer sync needed for relay/search/export controls.
+    - [ ] `js/ui/primitivesFieldMigrations.js` (Owner: Frontend)
+      - [ ] Remove `input/select -> sl-input/sl-select` proxy and rebinding logic.
+      - [ ] Replace with Vue `v-model` + PrimeVue field components.
+      - [ ] Estimate: 2-3 days.
+      - [ ] Acceptance: search/saved-view fields stay behaviorally equivalent without legacy hidden inputs/select proxies.
+    - [ ] `styles/components/search-saved.css` (Owner: Frontend)
+      - [ ] Replace Shoelace `::part(...)` selectors with PrimeVue/Tailwind-compatible selectors and tokenized classes.
+      - [ ] Estimate: 1.5-2.5 days.
+      - [ ] Acceptance: command-surface controls keep current spacing/interaction states across desktop/tablet/mobile snapshots.
+    - [ ] `js/ui/primitives.js` (Owner: Frontend)
+      - [ ] Retire Shoelace element factories (`sl-button`, `sl-input`, `sl-select`, `sl-dialog`, `sl-tooltip`, `sl-tab-group`, `sl-card`).
+      - [ ] Replace with Vue/PrimeVue wrapper components or composables.
+      - [ ] Estimate: 1-1.5 days.
+      - [ ] Acceptance: no new Shoelace custom elements are created at runtime.
+    - [ ] `js/ui/primitivesRuntime.js` (Owner: Frontend)
+      - [ ] Remove Shoelace autoloader + `customElements.whenDefined("sl-*")` gating.
+      - [ ] Add Vue/PrimeVue runtime bootstrap initialization path.
+      - [ ] Estimate: 0.5-1 day.
+      - [ ] Acceptance: frontend startup succeeds with no Shoelace runtime dependency.
+    - [ ] `styles.shoelace.css` (Owner: Frontend)
+      - [ ] Remove `--sl-*` bridge + `sl-card::part(base)` styling once PrimeVue theme parity is established.
+      - [ ] Move required theme tokens to shared CSS variable layer/PrimeVue preset overrides.
+      - [ ] Estimate: 0.5-1 day.
+      - [ ] Acceptance: no visual regressions on card/surface chrome in visual-gate snapshots.
+    - [ ] `js/analytics/summary.js` and `js/ui/appShellPrimitives.js` (Owner: Frontend)
+      - [ ] Replace `document.createElement("sl-card")` with Vue-rendered summary card components.
+      - [ ] Remove `querySelectorAll(".card, sl-card")` assumptions and use framework-native hooks.
+      - [ ] Estimate: 0.75-1.5 days.
+      - [ ] Acceptance: summary cards and panel primitive decorations render correctly without Shoelace tags.
+    - [ ] Tests: `tests/uiPrimitives.test.js`, `tests/uiFieldsShoelaceMigration.test.js`, `tests/uiControlsShoelaceMigration.test.js`, `tests/relayStatusBannerShoelaceMigration.test.js`, `tests/relayShoelaceMigration.test.js`, `tests/dashboardPanelShellMigration.test.js`, `tests/summaryCards.test.js` (Owner: QA/Frontend)
+      - [ ] Replace Shoelace-tag assertions with Vue/PrimeVue behavior assertions.
+      - [ ] Preserve relay/search/export behavior coverage while removing migration-proxy-specific expectations.
+      - [ ] Estimate: 2-3.5 days.
+      - [ ] Acceptance: full `npm run ci:verify` green with no Shoelace-specific tests remaining.
+    - [ ] Docs: `docs/design-tokens.md`, `docs/ui-primitives.md`, `docs/ui-overhaul-spec.md` (Owner: Docs/Frontend)
+      - [ ] Replace Shoelace architecture references with Vue 3 + PrimeVue guidance.
+      - [ ] Document final Tailwind decision and resulting CI guardrail updates.
+      - [ ] Estimate: 0.5 day.
+      - [ ] Acceptance: docs reflect actual runtime stack and migration process.
+    - [ ] Planned effort envelope: 10-16 engineering days for Shoelace -> PrimeVue migration workstream.
+  - [ ] Exit criteria: Vue 3 + chosen component library fully replaces Shoelace in app-shell surfaces with no backend contract changes and release gates remain green.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.

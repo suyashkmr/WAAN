@@ -20,6 +20,7 @@ function buildAnalytics() {
 describe("renderSummaryCards", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    delete globalThis.__WAAN_VUE_SUMMARY_BRIDGE__;
   });
 
   it("renders summary cards with Shoelace by default", () => {
@@ -34,6 +35,28 @@ describe("renderSummaryCards", () => {
 
     expect(summaryEl.querySelectorAll("sl-card.summary-card--shoelace")).toHaveLength(4);
     expect(summaryEl.querySelectorAll("div.summary-card")).toHaveLength(0);
+  });
+
+  it("delegates summary card rendering to the Vue bridge when available", () => {
+    const summaryEl = document.createElement("section");
+    document.body.appendChild(summaryEl);
+    const captured = [];
+    globalThis.__WAAN_VUE_SUMMARY_BRIDGE__ = {
+      render(cards) {
+        captured.push(cards);
+        return true;
+      },
+    };
+
+    renderSummaryCards({
+      analytics: buildAnalytics(),
+      label: "Test Chat",
+      summaryEl,
+    });
+
+    expect(captured).toHaveLength(1);
+    expect(captured[0]).toHaveLength(4);
+    expect(summaryEl.querySelectorAll("sl-card.summary-card--shoelace")).toHaveLength(0);
   });
 });
 

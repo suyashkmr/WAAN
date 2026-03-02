@@ -160,6 +160,9 @@ export function migrateRelayStatusBannerToShoelace({
   if (!documentRef) return false;
   const banner = documentRef.getElementById("relay-status-banner");
   if (!banner) return false;
+  if (banner.dataset?.vueManaged === "true") {
+    return false;
+  }
   if (banner.tagName.toLowerCase() === "sl-card") {
     banner.classList.add("relay-status-banner--shoelace");
     return false;
