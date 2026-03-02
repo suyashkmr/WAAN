@@ -163,24 +163,9 @@ function mountDashboardCardShellPrimitives() {
   const VueRuntime = globalThis.Vue;
   if (!VueRuntime || typeof globalThis.document === "undefined") return;
   const { createApp } = VueRuntime;
-  const cardIds = [
-    "insight-highlights",
-    "participants",
-    "hourly-activity",
-    "daily-activity",
-    "weekly-trend",
-    "weekday-trend",
-    "timeofday-trend",
-    "sentiment-overview",
-    "message-types",
-    "polls-card",
-    "saved-views-card",
-    "search-panel",
-    "faq-card",
-  ];
+  const cardMountEls = globalThis.document.querySelectorAll('section[data-vue-shell-mount="card-shell"]');
 
-  cardIds.forEach(id => {
-    const existing = globalThis.document.getElementById(id);
+  cardMountEls.forEach(existing => {
     if (!existing) return;
     if (existing.dataset.vuePrimitiveMounted === "true") return;
     const tagName = existing.tagName.toLowerCase();
@@ -189,9 +174,10 @@ function mountDashboardCardShellPrimitives() {
     const template = existing.innerHTML;
     existing.dataset.vueManaged = "true";
     existing.dataset.vuePrimitiveMounted = "true";
+    const cardId = existing.id || "unknown";
 
     createApp({
-      name: `CardShellPrimitive-${id}`,
+      name: `CardShellPrimitive-${cardId}`,
       template,
     }).mount(existing);
   });

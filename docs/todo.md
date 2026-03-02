@@ -433,32 +433,39 @@ Completed work is archived in git history and was removed from this file for cla
   - [ ] Tailwind strategy decision (explicit):
     - [x] Phase 6 default: keep Tailwind during migration to minimize styling churn and preserve token utility coverage.
     - [x] Post-parity decision: keep Tailwind long-term with `check:tailwind-adoption` as a required CI guardrail (documented in `docs/design-tokens.md`, adoption decision dated 2026-02-25).
-  - [ ] Preserve/expand quality gates during migration:
-    - [ ] Keep `ci:verify`, release reliability, visual, accessibility, and perf budget gates green throughout migration.
-    - [ ] Add Vue component/integration tests for migrated surfaces before removing legacy wiring.
+  - [x] Preserve/expand quality gates during migration:
+    - [x] Keep `ci:verify`, release reliability, visual, accessibility, and perf budget gates green throughout migration.
+      - [x] Verified on 2026-03-03: `npm run ci:verify`, `npm run check:perf-budgets`, `npm run test:accessibility-smoke`, and `npm run test:visual` all pass on `rewrite`.
+    - [x] Add Vue component/integration tests for migrated surfaces before removing legacy wiring.
+      - [x] Added cross-island Vue bridge integration contract coverage for summary/dashboard/shell/search-saved mounts (`tests/vueBridgeIslandsIntegration.test.js`).
   - [ ] File-by-file migration checklist (PrimeVue + Vue 3):
     - [ ] `index.html` (Owner: Frontend)
       - [x] Replace Shoelace stylesheet/runtime includes with Vue mount root + PrimeVue bootstrap wiring.
-      - [ ] Replace static `sl-card` panel shells with Vue component mount points while preserving IDs used by analytics/event bindings.
+      - [x] Replace static `sl-card` panel shells with Vue component mount points while preserving IDs used by analytics/event bindings.
+        - [x] Added explicit `data-vue-shell-mount="card-shell"` markers for migrated dashboard sections and mounted card-shell primitives by marker (`index.html`, `js/vue/shellPrimitivesIsland.js`).
       - [ ] Estimate: 1.5-2.5 days.
-      - [ ] Acceptance: app-shell renders in Vue, panel anchors/IDs still satisfy navigation + existing integration tests.
+      - [x] Acceptance: app-shell renders in Vue, panel anchors/IDs still satisfy navigation + existing integration tests.
+        - [x] Added index contract coverage for migrated panel IDs + nav anchors (`tests/dashboardPanelShellMigration.test.js`) and verified app-shell integration suites remain green.
     - [ ] `js/ui/primitivesMigrations.js` (Owner: Frontend)
-      - [ ] Remove legacy button/banner proxy migration path (`button -> sl-button`, `section -> sl-card`).
-      - [ ] Replace with Vue component composition for relay controls and status banner.
+      - [x] Remove legacy button/banner proxy migration path (`button -> sl-button`, `section -> sl-card`).
+      - [x] Replace with Vue component composition for relay controls and status banner.
       - [ ] Estimate: 1.5-2.5 days.
-      - [ ] Acceptance: no runtime proxy insertion or mutation-observer sync needed for relay/search/export controls.
+      - [x] Acceptance: no runtime proxy insertion or mutation-observer sync needed for relay/search/export controls.
+        - [x] Added regression guard to keep legacy migration modules removed/unreferenced (`tests/uiLegacyMigrationRemoval.test.js`).
     - [ ] `js/ui/primitivesFieldMigrations.js` (Owner: Frontend)
-      - [ ] Remove `input/select -> sl-input/sl-select` proxy and rebinding logic.
-      - [ ] Replace with Vue `v-model` + PrimeVue field components.
+      - [x] Remove `input/select -> sl-input/sl-select` proxy and rebinding logic.
+      - [x] Replace with Vue `v-model` + PrimeVue field components.
       - [ ] Estimate: 2-3 days.
-      - [ ] Acceptance: search/saved-view fields stay behaviorally equivalent without legacy hidden inputs/select proxies.
+      - [x] Acceptance: search/saved-view fields stay behaviorally equivalent without legacy hidden inputs/select proxies.
+        - [x] Existing behavioral parity coverage retained in `tests/search.test.js`, `tests/searchResultsUi.test.js`, and `tests/savedViews.test.js`.
     - [ ] `styles/components/search-saved.css` (Owner: Frontend)
       - [x] Replace Shoelace `::part(...)` selectors with PrimeVue/Tailwind-compatible selectors and tokenized classes.
       - [ ] Estimate: 1.5-2.5 days.
       - [ ] Acceptance: command-surface controls keep current spacing/interaction states across desktop/tablet/mobile snapshots.
     - [ ] `js/ui/primitives.js` (Owner: Frontend)
       - [x] Retire Shoelace element factories (`sl-button`, `sl-input`, `sl-select`, `sl-dialog`, `sl-tooltip`, `sl-tab-group`, `sl-card`).
-      - [ ] Replace with Vue/PrimeVue wrapper components or composables.
+      - [x] Replace with Vue/PrimeVue wrapper components or composables.
+        - [x] Added Vue composable primitive wrappers with PrimeVue-aware card rendering (`createVuePrimitiveComposables` in `js/ui/primitivesVueComposables.js`) and regression coverage (`tests/uiPrimitives.test.js`).
       - [ ] Estimate: 1-1.5 days.
       - [x] Acceptance: no new Shoelace custom elements are created at runtime.
     - [ ] `js/ui/primitivesRuntime.js` (Owner: Frontend)

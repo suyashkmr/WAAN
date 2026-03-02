@@ -29,11 +29,11 @@ describe("ui primitives runtime", () => {
     };
     const mockWindow = {
       MutationObserver: observerStub,
-      Vue: {},
+      Vue: { h: () => ({}) },
       primevue: { Config: {} },
     };
 
-    const { runtime, cleanup } = initUiRuntime({
+    const { runtime, cleanup, vuePrimitiveComposables } = initUiRuntime({
       windowRef: mockWindow,
       documentRef: doc,
     });
@@ -41,6 +41,7 @@ describe("ui primitives runtime", () => {
     expect(mockWindow[WAAN_UI_RUNTIME_KEY]).toEqual(runtime);
     expect(doc.documentElement.dataset.vueRuntime).toBe("ready");
     expect(doc.documentElement.dataset.primevueRuntime).toBe("ready");
+    expect(vuePrimitiveComposables).toBeTruthy();
     expect(typeof cleanup).toBe("function");
   });
 });

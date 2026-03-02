@@ -1,4 +1,5 @@
 import { initUiPrimitives } from "./primitives.js";
+import { createVuePrimitiveComposables } from "./primitivesVueComposables.js";
 
 export const WAAN_UI_RUNTIME_KEY = "__WAAN_UI_RUNTIME__";
 
@@ -39,6 +40,7 @@ export function initUiRuntime({
     MutationObserverImpl: windowRef?.MutationObserver ?? globalThis.MutationObserver ?? null,
   });
   const runtime = getUiRuntimeState({ windowRef });
+  const vuePrimitiveComposables = createVuePrimitiveComposables({ windowRef });
   if (windowRef) {
     windowRef[WAAN_UI_RUNTIME_KEY] = runtime;
   }
@@ -48,6 +50,7 @@ export function initUiRuntime({
   }
   return {
     runtime,
+    vuePrimitiveComposables,
     cleanup: cleanupPrimitives,
   };
 }
