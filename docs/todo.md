@@ -393,8 +393,9 @@ Completed work is archived in git history and was removed from this file for cla
     - [ ] Adopt Vue 3 as the frontend runtime.
     - [ ] Replace Shoelace with PrimeVue (locked decision).
   - [ ] Define migration boundaries without backend changes:
-    - [ ] Keep existing server/API contracts unchanged.
-    - [ ] Introduce a frontend adapter layer that maps current app-shell state and relay endpoints to Vue stores/composables.
+    - [x] Keep existing server/API contracts unchanged.
+      - [x] Added app-shell boundary contract assertion for Vue frontend adapter relay/API endpoint paths (`tests/appShellBoundaryIntegration.test.js`).
+    - [x] Introduce a frontend adapter layer that maps current app-shell state and relay endpoints to Vue stores/composables.
   - [ ] Build migration scaffold:
     - [x] Add Vue build/runtime integration and app bootstrap entry.
     - [ ] Vendor Vue/PrimeVue runtime assets for packaged release hardening:
@@ -402,7 +403,7 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Update `index.html`/runtime bootstrap to load vendored assets only.
       - [x] Add a CI check to verify vendored runtime files exist and match pinned versions.
       - [x] Exit criteria: packaged app runs without `node_modules` dependency for Vue/PrimeVue runtime assets.
-    - [ ] Port shared shell primitives (toolbar, cards, dialogs, toasts, relay status strip) to Vue components.
+    - [x] Port shared shell primitives (toolbar, cards, dialogs, toasts, relay status strip) to Vue components.
       - [x] Port relay status strip shell to Vue-managed primitive while preserving existing DOM IDs and runtime bindings.
       - [x] Port status/toast surface to Vue-backed bridge (`__WAAN_VUE_SHELL_BRIDGE__`) with legacy `statusUi` fallback.
       - [x] Port toolbar and dialog primitives to Vue components.
@@ -425,13 +426,13 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Route recovery-action visibility/disabled/title updates through Vue shell bridge with DOM fallback.
       - [x] Route primary relay control button-state updates (`connect/pause/logout/reload/clear`) through Vue shell bridge with DOM fallback.
       - [x] Add Vue-specific relay controls integration assertions (including controls-locked race behavior).
-    - [ ] Search + saved views orchestration UI.
+    - [x] Search + saved views orchestration UI.
       - [x] Added Vue search/saved panel-state bridge (`__WAAN_VUE_SEARCH_SAVED_BRIDGE__`) for search-results and saved-views empty/loading states with legacy DOM fallback.
       - [x] Port search results list + insights rendering to Vue-managed state while preserving worker-progress and action behavior.
       - [x] Port saved-view gallery/comparison summary rendering to Vue-managed state while preserving apply/dirty-state interactions.
   - [ ] Tailwind strategy decision (explicit):
-    - [ ] Phase 6 default: keep Tailwind during migration to minimize styling churn and preserve token utility coverage.
-    - [ ] Post-parity decision: either keep Tailwind long-term or remove it with a dedicated cleanup phase and CI guardrail updates (`check:tailwind-adoption`).
+    - [x] Phase 6 default: keep Tailwind during migration to minimize styling churn and preserve token utility coverage.
+    - [x] Post-parity decision: keep Tailwind long-term with `check:tailwind-adoption` as a required CI guardrail (documented in `docs/design-tokens.md`, adoption decision dated 2026-02-25).
   - [ ] Preserve/expand quality gates during migration:
     - [ ] Keep `ci:verify`, release reliability, visual, accessibility, and perf budget gates green throughout migration.
     - [ ] Add Vue component/integration tests for migrated surfaces before removing legacy wiring.
@@ -462,7 +463,7 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Acceptance: no new Shoelace custom elements are created at runtime.
     - [ ] `js/ui/primitivesRuntime.js` (Owner: Frontend)
       - [x] Remove Shoelace autoloader + `customElements.whenDefined("sl-*")` gating.
-      - [ ] Add Vue/PrimeVue runtime bootstrap initialization path.
+      - [x] Add Vue/PrimeVue runtime bootstrap initialization path.
       - [ ] Estimate: 0.5-1 day.
       - [x] Acceptance: frontend startup succeeds with no Shoelace runtime dependency.
     - [x] `styles.shoelace.css` (Owner: Frontend)
