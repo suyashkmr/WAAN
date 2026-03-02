@@ -62,7 +62,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   const {
     updateStatus,
     applyCustomRange,
-    subscribeAppShellUiState,
+    enableDirectFilterRerenderFallback,
     updateWeekdayState,
     ensureWeekdayDayFilters,
     syncWeekdayControlsWithState,
@@ -75,7 +75,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     rerenderHourlyFromState,
   } = deps;
 
-  const hasStateSubscription = typeof subscribeAppShellUiState === "function";
+  const useDirectFilterRerenderFallback = enableDirectFilterRerenderFallback === true;
 
   function initEventHandlers() {
     if (chatSelector) {
@@ -177,7 +177,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     if (weekdayToggleWeekdays) {
       weekdayToggleWeekdays.addEventListener("change", () => {
         updateWeekdayState({ filters: { weekdays: weekdayToggleWeekdays.checked } });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           ensureWeekdayDayFilters();
           rerenderWeekdayFromState();
         }
@@ -186,7 +186,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     if (weekdayToggleWeekends) {
       weekdayToggleWeekends.addEventListener("change", () => {
         updateWeekdayState({ filters: { weekends: weekdayToggleWeekends.checked } });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           ensureWeekdayDayFilters();
           rerenderWeekdayFromState();
         }
@@ -195,7 +195,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     if (weekdayToggleWorking) {
       weekdayToggleWorking.addEventListener("change", () => {
         updateWeekdayState({ filters: { working: weekdayToggleWorking.checked } });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           ensureWeekdayHourFilters();
           rerenderWeekdayFromState();
         }
@@ -204,7 +204,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     if (weekdayToggleOffhours) {
       weekdayToggleOffhours.addEventListener("change", () => {
         updateWeekdayState({ filters: { offhours: weekdayToggleOffhours.checked } });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           ensureWeekdayHourFilters();
           rerenderWeekdayFromState();
         }
@@ -219,7 +219,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
             weekdays: timeOfDayWeekdayToggle.checked,
           },
         });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           ensureDayFilters();
           syncHourlyControlsWithState();
           rerenderHourlyFromState();
@@ -234,7 +234,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
             weekends: timeOfDayWeekendToggle.checked,
           },
         });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           ensureDayFilters();
           syncHourlyControlsWithState();
           rerenderHourlyFromState();
@@ -247,7 +247,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         let end = Number(timeOfDayHourEndInput.value);
         if (start > end) [start, end] = [end, start];
         updateHourlyState({ brush: { start, end } });
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           syncHourlyControlsWithState();
           rerenderHourlyFromState();
         }
@@ -268,7 +268,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         const endLabel = document.getElementById("weekday-hour-end-label");
         if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
         if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
-        if (!hasStateSubscription) {
+        if (useDirectFilterRerenderFallback) {
           rerenderWeekdayFromState();
         }
       };

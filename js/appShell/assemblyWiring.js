@@ -82,7 +82,7 @@ export function createRuntimeDeps({ controllerWiring, stateStore }) {
   return {
     updateStatus: stateStore.updateStatus,
     applyCustomRange: controllerWiring.applyCustomRange,
-    subscribeAppShellUiState: stateStore.subscribeAppShellUiState,
+    enableDirectFilterRerenderFallback: false,
     updateWeekdayState: stateStore.updateWeekdayState,
     ensureWeekdayDayFilters: controllerWiring.ensureWeekdayDayFilters,
     syncWeekdayControlsWithState: controllerWiring.syncWeekdayControlsWithState,

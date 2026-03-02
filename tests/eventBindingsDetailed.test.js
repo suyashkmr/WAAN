@@ -31,6 +31,7 @@ function createDeps(overrides = {}) {
   return {
     updateStatus: vi.fn(),
     applyCustomRange: vi.fn(async () => {}),
+    enableDirectFilterRerenderFallback: true,
     updateWeekdayState: vi.fn(),
     ensureWeekdayDayFilters: vi.fn(),
     syncWeekdayControlsWithState: vi.fn(),
@@ -313,7 +314,7 @@ describe("event bindings detailed", () => {
   it("avoids direct filter rerenders when state subscriptions are available", () => {
     const handlers = createHandlers();
     const deps = createDeps({
-      subscribeAppShellUiState: vi.fn(() => {}),
+      enableDirectFilterRerenderFallback: false,
     });
 
     const timeOfDayWeekdayToggle = document.createElement("input");
@@ -329,7 +330,6 @@ describe("event bindings detailed", () => {
     });
 
     initEventHandlers();
-    expect(deps.subscribeAppShellUiState).not.toHaveBeenCalled();
 
     timeOfDayWeekdayToggle.checked = false;
     timeOfDayWeekdayToggle.dispatchEvent(new Event("change"));

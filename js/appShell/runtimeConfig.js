@@ -67,7 +67,7 @@ export function createRuntimeEventBindings({
     deps: {
       updateStatus: deps.updateStatus,
       applyCustomRange: deps.applyCustomRange,
-      subscribeAppShellUiState: deps.subscribeAppShellUiState,
+      enableDirectFilterRerenderFallback: deps.enableDirectFilterRerenderFallback,
       updateWeekdayState: deps.updateWeekdayState,
       ensureWeekdayDayFilters: deps.ensureWeekdayDayFilters,
       syncWeekdayControlsWithState: deps.syncWeekdayControlsWithState,

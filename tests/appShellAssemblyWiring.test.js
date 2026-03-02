@@ -69,7 +69,6 @@ describe("appShell assembly wiring", () => {
     };
     const stateStore = {
       updateStatus: vi.fn(),
-      subscribeAppShellUiState: vi.fn(),
       updateWeekdayState: vi.fn(),
       updateHourlyState: vi.fn(),
       getHourlyState: vi.fn(),
@@ -137,13 +136,13 @@ describe("appShell assembly wiring", () => {
 
     expect(Object.keys(createRuntimeDeps({ controllerWiring, stateStore })).sort()).toEqual([
       "applyCustomRange",
+      "enableDirectFilterRerenderFallback",
       "ensureDayFilters",
       "ensureWeekdayDayFilters",
       "ensureWeekdayHourFilters",
       "getHourlyState",
       "rerenderHourlyFromState",
       "rerenderWeekdayFromState",
-      "subscribeAppShellUiState",
       "syncHourlyControlsWithState",
       "syncWeekdayControlsWithState",
       "updateHourlyState",
@@ -228,7 +227,6 @@ describe("appShell assembly wiring", () => {
     };
     const stateStore = {
       updateStatus: vi.fn(),
-      subscribeAppShellUiState: vi.fn(),
       updateWeekdayState: vi.fn(),
       updateHourlyState: vi.fn(),
       getHourlyState: vi.fn(),
@@ -249,7 +247,7 @@ describe("appShell assembly wiring", () => {
     expect(handlers.updateStatus).toBe(stateStore.updateStatus);
     expect(deps.applyCustomRange).toBe(controllerWiring.applyCustomRange);
     expect(deps.updateHourlyState).toBe(stateStore.updateHourlyState);
-    expect(deps.subscribeAppShellUiState).toBe(stateStore.subscribeAppShellUiState);
+    expect(deps.enableDirectFilterRerenderFallback).toBe(false);
   });
 
   it("returns dataset empty-state export button list in stable order", () => {
