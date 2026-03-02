@@ -415,6 +415,12 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Remove residual Shoelace runtime migration paths once all control/field replacements are complete.
   - [ ] Migrate high-risk surfaces first:
     - [ ] Dashboard panel rendering (highlights, participants, weekday/hourly/time-of-day).
+      - [x] Added Vue dashboard-panels bridge for highlights rendering with legacy fallback (`__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__`).
+      - [x] Port participants panel rendering to Vue-managed state while preserving row-toggle/export bindings.
+      - [ ] Port weekday/hourly/time-of-day panel rendering to Vue-managed state while preserving filters/brush interactions.
+        - [x] Port time-of-day panel rendering path behind Vue dashboard bridge with legacy fallback.
+        - [ ] Port hourly panel rendering path behind Vue dashboard bridge while preserving heatmap/brush/anomaly behavior.
+        - [ ] Port weekday panel rendering path behind Vue dashboard bridge while preserving bar/heatmap filter behavior.
     - [ ] Relay controls and recovery actions.
     - [ ] Search + saved views orchestration UI.
   - [ ] Tailwind strategy decision (explicit):
@@ -453,9 +459,9 @@ Completed work is archived in git history and was removed from this file for cla
       - [ ] Add Vue/PrimeVue runtime bootstrap initialization path.
       - [ ] Estimate: 0.5-1 day.
       - [x] Acceptance: frontend startup succeeds with no Shoelace runtime dependency.
-    - [ ] `styles.shoelace.css` (Owner: Frontend)
-      - [ ] Remove `--sl-*` bridge + `sl-card::part(base)` styling once PrimeVue theme parity is established.
-      - [ ] Move required theme tokens to shared CSS variable layer/PrimeVue preset overrides.
+    - [x] `styles.shoelace.css` (Owner: Frontend)
+      - [x] Remove `--sl-*` bridge + `sl-card::part(base)` styling once PrimeVue theme parity is established.
+      - [x] Move required theme tokens to shared CSS variable layer/PrimeVue preset overrides.
       - [ ] Estimate: 0.5-1 day.
       - [ ] Acceptance: no visual regressions on card/surface chrome in visual-gate snapshots.
     - [ ] `js/analytics/summary.js` and `js/ui/appShellPrimitives.js` (Owner: Frontend)
@@ -465,12 +471,12 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Acceptance: summary cards and panel primitive decorations render correctly without Shoelace tags.
     - [ ] Tests: `tests/uiPrimitives.test.js`, `tests/dashboardPanelShellMigration.test.js`, `tests/summaryCards.test.js`, `tests/statusUiDetailed.test.js`, `tests/uiModules.test.js` (Owner: QA/Frontend)
       - [x] Replace Shoelace-tag assertions with Vue/PrimeVue behavior assertions.
-      - [ ] Preserve relay/search/export behavior coverage while removing migration-proxy-specific expectations.
+      - [x] Preserve relay/search/export behavior coverage while removing migration-proxy-specific expectations.
       - [ ] Estimate: 2-3.5 days.
-      - [ ] Acceptance: full `npm run ci:verify` green with no Shoelace-specific tests remaining.
+      - [x] Acceptance: full `npm run ci:verify` green with no Shoelace-specific tests remaining.
     - [ ] Docs: `docs/design-tokens.md`, `docs/ui-primitives.md`, `docs/ui-overhaul-spec.md` (Owner: Docs/Frontend)
       - [x] Replace Shoelace architecture references with Vue 3 + PrimeVue guidance.
-      - [ ] Document final Tailwind decision and resulting CI guardrail updates.
+      - [x] Document final Tailwind decision and resulting CI guardrail updates.
       - [ ] Estimate: 0.5 day.
       - [ ] Acceptance: docs reflect actual runtime stack and migration process.
     - [ ] Planned effort envelope: 10-16 engineering days for Shoelace -> PrimeVue migration workstream.

@@ -13,10 +13,10 @@ export function applyUiRuntimeState({
 } = {}) {
   if (!root) return;
   const scheme = root.dataset.colorScheme === "light" ? "light" : "dark";
-  root.classList.toggle("sl-theme-light", scheme === "light");
-  root.classList.toggle("sl-theme-dark", scheme === "dark");
-  root.dataset.slContrast = body?.dataset?.contrast === "high" ? "high" : "standard";
-  root.dataset.slMotion = body?.dataset?.reduceMotion === "true" ? "reduced" : "standard";
+  root.classList.toggle("app-theme-light", scheme === "light");
+  root.classList.toggle("app-theme-dark", scheme === "dark");
+  root.dataset.uiContrast = body?.dataset?.contrast === "high" ? "high" : "standard";
+  root.dataset.uiMotion = body?.dataset?.reduceMotion === "true" ? "reduced" : "standard";
 }
 
 export function initUiPrimitives({

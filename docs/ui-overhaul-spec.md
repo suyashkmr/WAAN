@@ -63,6 +63,8 @@ Vue 3 + PrimeVue-backed islands provide behavior primitives; app provides visual
 - Tailwind: layout, spacing, responsive utilities, tokenized classes.
 - Vue/PrimeVue: interactive controls and app-shell component composition.
 - App CSS modules: brand visuals, gradients, shell chrome, motion signatures.
+- Final decision: Tailwind remains in Phase 6 and post-parity runtime to avoid churn in tokenized utility coverage.
+- CI guardrails that enforce this contract: `check:tailwind-adoption`, `tailwind:build`, and `check:tailwind-size` inside `npm run ci:verify`.
 
 ## File-Level Implementation Plan
 

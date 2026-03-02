@@ -6,7 +6,6 @@ import {
   sanitizeText,
 } from "../utils.js";
 import { buildParticipantDetail } from "./participantDetail.js";
-
 function computeParticipantTimeframeStats(entries, timeframe, analytics) {
   if (timeframe !== "week") return null;
   if (!entries.length) {
@@ -142,7 +141,6 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
     const handledByVue = summaryBridge.render(cards);
     if (handledByVue) return;
   }
-
   summaryEl.innerHTML = "";
   cards.forEach(({ title, value, hint }) => {
     const card = document.createElement("section");
@@ -178,6 +176,9 @@ export function renderParticipants({
   participantsVirtualizer,
 }) {
   if (!participantsBody || !analytics) return;
+  /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderParticipantsRows?: (rows: unknown) => boolean, renderParticipantsEmpty?: (message: unknown) => boolean } }} */
+  const globalScope = globalThis;
+  const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
   if (!participantsVirtualizer) {
     participantsBody.innerHTML = "";
   }
@@ -190,6 +191,10 @@ export function renderParticipants({
   }
 
   const handleEmptyState = message => {
+    if (!participantsVirtualizer && dashboardPanelsBridge?.renderParticipantsEmpty) {
+      const handledByVue = dashboardPanelsBridge.renderParticipantsEmpty(message);
+      if (handledByVue) return;
+    }
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
       <td colspan="5" class="empty-state">${message}</td>
@@ -240,60 +245,74 @@ export function renderParticipants({
     participantsNote.textContent = `${parts.join(" — ")}.`;
   }
 
-  const buildRows = (entry, index) => {
-    const rowId = entry.id || `participant-${index}`;
+  const buildRowData = (entry, index) => {
+    const rowId = String(entry.id || `participant-${index}`);
     const detailId = `${rowId}-detail`;
-    const senderLabel = entry.sender || "Unknown";
-    const row = document.createElement("tr");
-    row.className = "participant-row";
-    row.dataset.rowId = rowId;
+    const senderLabel = String(entry.sender || "Unknown");
     const shareWidth = Number.isFinite(entry.share) ? Math.min(Math.max(entry.share * 100, 0), 100) : 0;
     const shareValue = Number.isFinite(entry.share) ? `${formatFloat(entry.share * 100, 1)}%` : "—";
     const avgWords = Number.isFinite(entry.avg_words) ? formatFloat(entry.avg_words, 1) : null;
+    return {
+      rowId,
+      detailId,
+      rank: index + 1,
+      senderLabel,
+      messageCount: formatNumber(entry.count),
+      shareWidth,
+      shareValue,
+      shareTitle: `Share of messages in selected scope: ${shareValue}`,
+      avgWordsDisplay: avgWords !== null ? avgWords : "—",
+      avgWordsTitle:
+        avgWords !== null ? `Average words per message: ${avgWords}` : "Average words per message: unavailable",
+      detailHtml: buildParticipantDetail(entry),
+    };
+  };
 
+  const buildRows = (entry, index) => {
+    const rowData = buildRowData(entry, index);
+    const row = document.createElement("tr");
+    row.className = "participant-row";
+    row.dataset.rowId = rowData.rowId;
     row.innerHTML = `
-      <td data-label="Rank">${index + 1}</td>
+      <td data-label="Rank">${rowData.rank}</td>
       <td data-label="Participant">
-        <button type="button" class="participant-toggle" aria-expanded="false" aria-controls="${detailId}">
+        <button type="button" class="participant-toggle" aria-expanded="false" aria-controls="${rowData.detailId}">
           <span class="toggle-icon">▸</span>
-          <span class="participant-name">${sanitizeText(senderLabel)}</span>
+          <span class="participant-name">${sanitizeText(rowData.senderLabel)}</span>
         </button>
       </td>
-      <td data-label="Messages">${formatNumber(entry.count)}</td>
+      <td data-label="Messages">${rowData.messageCount}</td>
       <td data-label="Share">
         <div class="participant-share">
           <div class="share-bar">
-            <span class="share-fill" style="width: ${shareWidth}%"></span>
+            <span class="share-fill" style="width: ${rowData.shareWidth}%"></span>
           </div>
-          <span class="share-value">${shareValue}</span>
+          <span class="share-value">${rowData.shareValue}</span>
         </div>
       </td>
-      <td data-label="Avg Words">${avgWords !== null ? avgWords : "—"}</td>
+      <td data-label="Avg Words">${rowData.avgWordsDisplay}</td>
     `;
     const toggle = row.querySelector(".participant-toggle");
     if (toggle) {
-      toggle.setAttribute("aria-label", `Show details for ${senderLabel}`);
+      toggle.setAttribute("aria-label", `Show details for ${rowData.senderLabel}`);
     }
     const participantNameEl = row.querySelector(".participant-name");
-    if (participantNameEl) participantNameEl.setAttribute("title", senderLabel);
+    if (participantNameEl) participantNameEl.setAttribute("title", rowData.senderLabel);
     const shareCell = row.querySelector('td[data-label="Share"]');
     if (shareCell) {
-      shareCell.setAttribute("title", `Share of messages in selected scope: ${shareValue}`);
+      shareCell.setAttribute("title", rowData.shareTitle);
     }
     const avgWordsCell = row.querySelector('td[data-label="Avg Words"]');
     if (avgWordsCell) {
-      avgWordsCell.setAttribute(
-        "title",
-        avgWords !== null ? `Average words per message: ${avgWords}` : "Average words per message: unavailable",
-      );
+      avgWordsCell.setAttribute("title", rowData.avgWordsTitle);
     }
     const detailRow = document.createElement("tr");
     detailRow.className = "participant-detail-row hidden";
-    detailRow.id = detailId;
-    detailRow.dataset.rowId = rowId;
+    detailRow.id = rowData.detailId;
+    detailRow.dataset.rowId = rowData.rowId;
     detailRow.innerHTML = `
       <td colspan="5">
-        ${buildParticipantDetail(entry)}
+        ${rowData.detailHtml}
       </td>
     `;
     return [row, detailRow];
@@ -309,6 +328,15 @@ export function renderParticipants({
     });
     participantsVirtualizer.setItems(visible, (entry, index) => buildRows(entry, index));
   } else {
+    if (dashboardPanelsBridge?.renderParticipantsRows) {
+      const rowPayload = visible.map((entry, index) => buildRowData(entry, index));
+      const handledByVue = dashboardPanelsBridge.renderParticipantsRows(rowPayload);
+      if (handledByVue) {
+        updateParticipantPresetStates(participantFilters, participantPresetButtons);
+        if (typeof setParticipantView === "function") setParticipantView(visible);
+        return;
+      }
+    }
     visible.forEach((entry, index) => {
       const nodes = buildRows(entry, index);
       nodes.forEach(node => participantsBody.appendChild(node));

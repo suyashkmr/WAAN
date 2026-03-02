@@ -62,6 +62,7 @@ describe("renderSummaryCards", () => {
 describe("renderParticipants", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
   });
 
   it("adds contextual metric hints and accessible toggle labels", () => {
@@ -101,5 +102,50 @@ describe("renderParticipants", () => {
     expect(participantsBody.querySelector(".participant-name")?.getAttribute("title")).toBe("Alice");
     expect(participantsBody.querySelector('td[data-label="Share"]')?.getAttribute("title")).toContain("35.0%");
     expect(participantsBody.querySelector('td[data-label="Avg Words"]')?.getAttribute("title")).toContain("12.5");
+  });
+
+  it("delegates participants row rendering to the Vue dashboard bridge when available", () => {
+    const participantsTable = document.createElement("table");
+    const participantsBody = document.createElement("tbody");
+    const participantsNote = document.createElement("div");
+    participantsTable.appendChild(participantsBody);
+    document.body.append(participantsTable, participantsNote);
+    const captured = [];
+    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = {
+      renderParticipantsRows(rows) {
+        captured.push(rows);
+        return true;
+      },
+    };
+
+    renderParticipants({
+      analytics: {
+        top_senders: [
+          {
+            id: "alice-id",
+            sender: "Alice",
+            count: 42,
+            share: 0.35,
+            avg_words: 12.5,
+            avg_chars: 54.1,
+          },
+        ],
+      },
+      entries: [],
+      participantFilters: {
+        topCount: 25,
+        sortMode: "most",
+        timeframe: "all",
+      },
+      participantsBody,
+      participantsNote,
+      participantPresetButtons: [],
+      setParticipantView: () => {},
+    });
+
+    expect(captured).toHaveLength(1);
+    expect(captured[0]).toHaveLength(1);
+    expect(captured[0][0].senderLabel).toBe("Alice");
+    expect(participantsBody.children.length).toBe(0);
   });
 });

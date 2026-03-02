@@ -211,6 +211,25 @@ export function createActivityPanelsController({ elements, deps }) {
     if (endLabel) endLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
   }
 
+  /**
+   * @param {Record<string, any>} analytics
+   */
+  function renderTimeOfDayWithBridge(analytics) {
+    /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderTimeOfDay?: (analytics: unknown) => boolean } }} */
+    const globalScope = globalThis;
+    const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
+    if (dashboardPanelsBridge?.renderTimeOfDay) {
+      const handledByVue = dashboardPanelsBridge.renderTimeOfDay(analytics);
+      if (handledByVue) return;
+    }
+    renderTimeOfDayPanel(analytics, {
+      container: timeOfDayChartContainer,
+      sparklineEl: timeOfDaySparklineEl,
+      bandsEl: timeOfDayBandsEl,
+      calloutsEl: timeOfDayCalloutsEl,
+    });
+  }
+
   function rerenderHourlyFromState() {
     renderHourlyHeatmapSection(null, {
       chartEl: hourlyChartEl,
@@ -221,12 +240,7 @@ export function createActivityPanelsController({ elements, deps }) {
     });
     const analytics = getDatasetAnalytics();
     if (analytics) {
-      renderTimeOfDayPanel(analytics, {
-        container: timeOfDayChartContainer,
-        sparklineEl: timeOfDaySparklineEl,
-        bandsEl: timeOfDayBandsEl,
-        calloutsEl: timeOfDayCalloutsEl,
-      });
+      renderTimeOfDayWithBridge(analytics);
     }
   }
 

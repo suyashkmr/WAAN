@@ -182,7 +182,7 @@ function mountDashboardCardShellPrimitives() {
     if (!existing) return;
     if (existing.dataset.vuePrimitiveMounted === "true") return;
     const tagName = existing.tagName.toLowerCase();
-    if (tagName !== "sl-card" && tagName !== "section") return;
+    if (tagName !== "section") return;
 
     const template = existing.innerHTML;
     existing.dataset.vueManaged = "true";

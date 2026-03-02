@@ -145,6 +145,25 @@ export function createDashboardRenderController({ elements, deps }) {
   /**
    * @param {AnyRecord} analytics
    */
+  function renderTimeOfDayPanelWithBridge(analytics) {
+    /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderTimeOfDay?: (analytics: unknown) => boolean } }} */
+    const globalScope = globalThis;
+    const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
+    if (dashboardPanelsBridge?.renderTimeOfDay) {
+      const handledByVue = dashboardPanelsBridge.renderTimeOfDay(analytics);
+      if (handledByVue) return;
+    }
+    renderTimeOfDayPanel(analytics, {
+      container: timeOfDayChartContainer,
+      sparklineEl: timeOfDaySparklineEl,
+      bandsEl: timeOfDayBandsEl,
+      calloutsEl: timeOfDayCalloutsEl,
+    });
+  }
+
+  /**
+   * @param {AnyRecord} analytics
+   */
   function renderDashboard(analytics) {
     const label = getDatasetLabel();
     const currentToken = ++renderTaskToken;
@@ -184,13 +203,7 @@ export function createDashboardRenderController({ elements, deps }) {
     measureRenderStep("weekday", () => renderWeekdayPanel(analytics), { totalMessages });
     scheduleMeasuredDeferred(
       "time_of_day",
-      () =>
-        renderTimeOfDayPanel(analytics, {
-          container: timeOfDayChartContainer,
-          sparklineEl: timeOfDaySparklineEl,
-          bandsEl: timeOfDayBandsEl,
-          calloutsEl: timeOfDayCalloutsEl,
-        }),
+      () => renderTimeOfDayPanelWithBridge(analytics),
       currentToken,
       { totalMessages },
     );

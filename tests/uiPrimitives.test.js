@@ -18,10 +18,10 @@ describe("ui primitives", () => {
 
     applyUiRuntimeState();
 
-    expect(document.documentElement.classList.contains("sl-theme-light")).toBe(true);
-    expect(document.documentElement.classList.contains("sl-theme-dark")).toBe(false);
-    expect(document.documentElement.dataset.slMotion).toBe("reduced");
-    expect(document.documentElement.dataset.slContrast).toBe("high");
+    expect(document.documentElement.classList.contains("app-theme-light")).toBe(true);
+    expect(document.documentElement.classList.contains("app-theme-dark")).toBe(false);
+    expect(document.documentElement.dataset.uiMotion).toBe("reduced");
+    expect(document.documentElement.dataset.uiContrast).toBe("high");
   });
 
   it("creates core semantic primitives", () => {

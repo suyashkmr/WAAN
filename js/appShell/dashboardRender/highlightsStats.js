@@ -83,6 +83,13 @@ export function createHighlightsStatsController({ elements, deps }) {
    */
   function renderHighlights(highlights) {
     if (!highlightList) return;
+    /** @type {(typeof globalThis) & { __WAAN_VUE_DASHBOARD_PANELS_BRIDGE__?: { renderHighlights?: (highlights: unknown) => boolean } }} */
+    const globalScope = globalThis;
+    const dashboardPanelsBridge = globalScope.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ ?? null;
+    if (dashboardPanelsBridge?.renderHighlights) {
+      const handledByVue = dashboardPanelsBridge.renderHighlights(highlights);
+      if (handledByVue) return;
+    }
     highlightList.innerHTML = "";
 
     if (!Array.isArray(highlights) || !highlights.length) {

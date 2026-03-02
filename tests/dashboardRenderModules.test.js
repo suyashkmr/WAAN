@@ -54,6 +54,35 @@ describe("dashboardRender modules", () => {
     expect(tooltip?.textContent).toContain("How fast messages are coming in");
   });
 
+  it("highlightsStats delegates to Vue dashboard panels bridge when available", () => {
+    const highlightList = document.createElement("div");
+    let captured = null;
+    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = {
+      renderHighlights(payload) {
+        captured = payload;
+        return true;
+      },
+    };
+    try {
+      const controller = createHighlightsStatsController({
+        elements: { highlightList },
+        deps: {
+          sanitizeText: value => String(value || "").replace(/[^\w-]+/g, ""),
+          formatNumber: value => String(value ?? ""),
+          formatFloat: (value, digits = 1) => Number(value || 0).toFixed(digits),
+        },
+      });
+
+      const highlights = [{ type: "velocity", label: "Message pace", value: "120/day" }];
+      controller.renderHighlights(highlights);
+
+      expect(captured).toEqual(highlights);
+      expect(highlightList.children.length).toBe(0);
+    } finally {
+      delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
+    }
+  });
+
   it("highlightsStats formats sentiment and statistics", () => {
     const ids = [
       "media-count",

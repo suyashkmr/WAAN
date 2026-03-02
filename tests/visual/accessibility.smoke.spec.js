@@ -17,11 +17,11 @@ test.describe("WAAN Accessibility Smoke", () => {
 
     await page.click("#reduce-motion-toggle");
     await page.waitForFunction(() => document.body?.dataset.reduceMotion === "true");
-    await page.waitForFunction(() => document.documentElement?.dataset.slMotion === "reduced");
+    await page.waitForFunction(() => document.documentElement?.dataset.uiMotion === "reduced");
 
     await page.click("#high-contrast-toggle");
     await page.waitForFunction(() => document.body?.dataset.contrast === "high");
-    await page.waitForFunction(() => document.documentElement?.dataset.slContrast === "high");
+    await page.waitForFunction(() => document.documentElement?.dataset.uiContrast === "high");
   });
 
   test("keeps migrated command controls keyboard focusable", async ({ page }) => {

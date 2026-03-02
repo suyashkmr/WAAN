@@ -148,6 +148,7 @@ describe("analytics pipeline", () => {
 describe("dashboard render controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
   });
 
   it("renders full dashboard and updates availability", () => {
@@ -222,6 +223,63 @@ describe("dashboard render controller", () => {
     expect(searchPopulateParticipants).toHaveBeenCalled();
     expect(searchRenderResults).toHaveBeenCalled();
     expect(setDataAvailabilityState).toHaveBeenCalledWith(true);
+  });
+
+  it("delegates time-of-day panel rendering to Vue dashboard bridge when available", () => {
+    const renderTimeOfDay = vi.fn(() => true);
+    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = { renderTimeOfDay };
+    const controller = createDashboardRenderController({
+      elements: {
+        summaryEl: document.createElement("div"),
+        sentimentSummaryEl: document.createElement("div"),
+        sentimentTrendNote: document.createElement("div"),
+        sentimentDailyChart: document.createElement("div"),
+        sentimentPositiveList: document.createElement("div"),
+        sentimentNegativeList: document.createElement("div"),
+        messageTypeSummaryEl: document.createElement("div"),
+        messageTypeNoteEl: document.createElement("div"),
+        pollsListEl: document.createElement("div"),
+        pollsTotalEl: document.createElement("div"),
+        pollsCreatorsEl: document.createElement("div"),
+        pollsNote: document.createElement("div"),
+        timeOfDayChartContainer: document.createElement("div"),
+        timeOfDaySparklineEl: document.createElement("div"),
+        timeOfDayBandsEl: document.createElement("div"),
+        timeOfDayCalloutsEl: document.createElement("div"),
+      },
+      deps: {
+        getDatasetLabel: () => "Demo",
+        getDatasetEntries: () => [],
+        getDatasetAnalytics: () => null,
+        getCustomRange: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        participantFilters: {},
+        setParticipantView: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        searchPopulateParticipants: vi.fn(),
+        searchRenderResults: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: value => String(value),
+        sanitizeText: text => String(text),
+      },
+    });
+
+    controller.renderDashboard({
+      highlights: [],
+      sentiment: {},
+      message_types: {},
+      polls: {},
+      weekly_counts: [],
+      weekly_summary: {},
+      total_messages: 5,
+    });
+
+    expect(renderTimeOfDay).toHaveBeenCalledTimes(1);
+    expect(mocked.renderTimeOfDayPanel).not.toHaveBeenCalled();
   });
 });
 
