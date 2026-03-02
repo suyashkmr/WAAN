@@ -17,6 +17,32 @@ export function createSearchResultsUiController({
   let resultsRenderCacheKey = "";
   let renderToken = 0;
 
+  /**
+   * @returns {{ renderSearchPanelState?: (payload: any) => boolean, renderSearchResults?: (payload: any) => boolean, renderSearchInsights?: (payload: any) => boolean } | null}
+   */
+  function getSearchSavedBridge() {
+    /** @type {(typeof globalThis) & { __WAAN_VUE_SEARCH_SAVED_BRIDGE__?: {
+     *   renderSearchPanelState?: (payload: {
+     *     tone?: string,
+     *     title?: string,
+     *     message?: string,
+     *     actions?: Array<{ id?: string, label?: string, disabled?: boolean }>,
+     *     onAction?: ((actionId: string) => void),
+     *   }) => boolean,
+     *   renderSearchResults?: (payload: {
+     *     results?: unknown[],
+     *     total?: number,
+     *     lastRunFiltered?: boolean,
+     *   }) => boolean,
+     *   renderSearchInsights?: (payload: {
+     *     summary?: unknown,
+     *     resultLimit?: number,
+     *   }) => boolean,
+     * } }} */
+    const globalScope = globalThis;
+    return globalScope.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ ?? null;
+  }
+
   function cancelPendingRender() {
     renderToken += 1;
   }
@@ -32,8 +58,29 @@ export function createSearchResultsUiController({
 
   function renderResultsState({ tone = "empty", title = "", message = "", actions = [] } = {}) {
     cancelPendingRender();
+    const searchSavedBridge = getSearchSavedBridge();
     if (insightsEl) {
-      renderSearchInsights({ insightsEl, summary: null, resultLimit });
+      const handledInsights = Boolean(
+        searchSavedBridge?.renderSearchInsights?.({
+          summary: null,
+          resultLimit,
+        }),
+      );
+      if (!handledInsights) {
+        renderSearchInsights({ insightsEl, summary: null, resultLimit });
+      }
+    }
+    if (searchSavedBridge?.renderSearchPanelState) {
+      const handled = searchSavedBridge.renderSearchPanelState({
+        tone,
+        title,
+        message,
+        actions,
+        onAction: actionId => {
+          if (typeof handleStateAction === "function") handleStateAction(actionId);
+        },
+      });
+      if (handled) return;
     }
     renderPanelState({
       container: resultsListEl,
@@ -94,6 +141,7 @@ export function createSearchResultsUiController({
     const hasFilters = hasSearchFilters(query);
     cancelPendingRender();
     const activeRenderToken = renderToken;
+    const searchSavedBridge = getSearchSavedBridge();
     resultsSummaryEl.textContent = buildResultsSummaryText({
       hasRunSearch,
       total,
@@ -113,9 +161,29 @@ export function createSearchResultsUiController({
           : "Add keywords, participant, or date filters to find messages.",
         actions: hasFilters ? [{ id: "clear-search-filters", label: "Clear filters" }] : [],
       });
-      renderSearchInsights({ insightsEl, summary: null, resultLimit });
       resultsRenderCacheKey = nextRenderCacheKey;
       return;
+    }
+
+    if (searchSavedBridge?.renderSearchResults) {
+      const handledResults = searchSavedBridge.renderSearchResults({
+        results,
+        total,
+        lastRunFiltered,
+      });
+      if (handledResults) {
+        const handledInsights = Boolean(
+          searchSavedBridge?.renderSearchInsights?.({
+            summary,
+            resultLimit,
+          }),
+        );
+        if (!handledInsights) {
+          renderSearchInsights({ insightsEl, summary, resultLimit });
+        }
+        resultsRenderCacheKey = nextRenderCacheKey;
+        return;
+      }
     }
 
     if (results.length <= 120) {

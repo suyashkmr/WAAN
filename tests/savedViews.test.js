@@ -111,6 +111,7 @@ function buildDependencies() {
 describe("savedViews controller", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
   });
 
   it("disables controls when no dataset is available", () => {
@@ -179,6 +180,50 @@ describe("savedViews controller", () => {
     expect(action).toBeTruthy();
     action?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(dependencies.addSavedView).toHaveBeenCalledTimes(1);
+  });
+
+  it("delegates empty saved-view gallery state rendering to Vue search/saved bridge when available", () => {
+    const elements = buildElements();
+    elements.gallery.id = "saved-view-gallery";
+    document.body.appendChild(elements.gallery);
+    const dependencies = buildDependencies();
+    const bridgeSpy = vi.fn(() => true);
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSavedViewsPanelState: bridgeSpy,
+    };
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(false);
+
+    expect(bridgeSpy).toHaveBeenCalled();
+    const payload = bridgeSpy.mock.calls.at(-1)?.[0];
+    expect(payload?.title).toContain("Load a chat");
+    expect(elements.gallery.querySelector(".panel-state")).toBeNull();
+  });
+
+  it("delegates populated gallery and comparison rendering to Vue search/saved bridge when available", () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    const gallerySpy = vi.fn(() => true);
+    const comparisonSpy = vi.fn(() => true);
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSavedViewsGallery: gallerySpy,
+      renderSavedViewsComparison: comparisonSpy,
+    };
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+    elements.nameInput.value = "A";
+    elements.saveButton.click();
+    elements.nameInput.value = "B";
+    elements.saveButton.click();
+
+    expect(gallerySpy).toHaveBeenCalled();
+    expect(comparisonSpy).toHaveBeenCalled();
+    expect(elements.gallery.querySelector(".saved-view-card")).toBeNull();
+    expect(elements.compareSummaryEl.textContent).toBe("");
   });
 
   it("shows active, dirty, and recency affordances for applied saved views", async () => {

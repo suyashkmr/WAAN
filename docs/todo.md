@@ -426,6 +426,9 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Route primary relay control button-state updates (`connect/pause/logout/reload/clear`) through Vue shell bridge with DOM fallback.
       - [x] Add Vue-specific relay controls integration assertions (including controls-locked race behavior).
     - [ ] Search + saved views orchestration UI.
+      - [x] Added Vue search/saved panel-state bridge (`__WAAN_VUE_SEARCH_SAVED_BRIDGE__`) for search-results and saved-views empty/loading states with legacy DOM fallback.
+      - [x] Port search results list + insights rendering to Vue-managed state while preserving worker-progress and action behavior.
+      - [x] Port saved-view gallery/comparison summary rendering to Vue-managed state while preserving apply/dirty-state interactions.
   - [ ] Tailwind strategy decision (explicit):
     - [ ] Phase 6 default: keep Tailwind during migration to minimize styling churn and preserve token utility coverage.
     - [ ] Post-parity decision: either keep Tailwind long-term or remove it with a dedicated cleanup phase and CI guardrail updates (`check:tailwind-adoption`).

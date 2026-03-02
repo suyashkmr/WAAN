@@ -35,6 +35,35 @@ export function createSavedViewsUiController({
     onPanelAction,
   } = deps;
 
+  /**
+   * @returns {{
+   *   renderSavedViewsPanelState?: (payload: any) => boolean,
+   *   renderSavedViewsGallery?: (payload: any) => boolean,
+   *   renderSavedViewsComparison?: (payload: any) => boolean,
+   * } | null}
+   */
+  function getSearchSavedBridge() {
+    /** @type {(typeof globalThis) & { __WAAN_VUE_SEARCH_SAVED_BRIDGE__?: {
+     *   renderSavedViewsPanelState?: (payload: {
+     *     tone?: string,
+     *     title?: string,
+     *     message?: string,
+     *     actions?: Array<{ id?: string, label?: string, disabled?: boolean }>,
+     *     onAction?: ((actionId: string) => void),
+     *   }) => boolean,
+     *   renderSavedViewsGallery?: (payload: {
+     *     cardsHtml?: string,
+     *     interactive?: boolean,
+     *   }) => boolean,
+     *   renderSavedViewsComparison?: (payload: {
+     *     html?: string,
+     *     empty?: boolean,
+     *   }) => boolean,
+     * } }} */
+    const globalScope = globalThis;
+    return globalScope.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ ?? null;
+  }
+
   function formatSavedViewTopHour(snapshot) {
     if (!snapshot?.topHour) {
       return "No hourly data yet";
@@ -147,20 +176,40 @@ export function createSavedViewsUiController({
     const activeContext = typeof deps.getActiveViewContext === "function"
       ? deps.getActiveViewContext()
       : {};
+    const searchSavedBridge = getSearchSavedBridge();
     if (!list.length) {
+      const tone = dataAvailableGetter() ? "empty" : "loading";
+      const title = dataAvailableGetter() ? "No saved views yet" : "Load a chat to use saved views";
+      const message = dataAvailableGetter()
+        ? "Save your current filters and chart settings to create a reusable view."
+        : "Connect relay and select a chat, then save a view for quick re-apply.";
+      const actions = dataAvailableGetter()
+        ? [
+            { id: "save-view", label: "Save current view" },
+            { id: "focus-range", label: "Set time range" },
+          ]
+        : [];
+      if (searchSavedBridge?.renderSavedViewsPanelState) {
+        const handled = searchSavedBridge.renderSavedViewsPanelState({
+          tone,
+          title,
+          message,
+          actions,
+          onAction: actionId => {
+            if (typeof onPanelAction === "function") onPanelAction(actionId);
+          },
+        });
+        if (handled) {
+          gallery.dataset.interactive = "false";
+          return;
+        }
+      }
       renderPanelState({
         container: gallery,
-        tone: dataAvailableGetter() ? "empty" : "loading",
-        title: dataAvailableGetter() ? "No saved views yet" : "Load a chat to use saved views",
-        message: dataAvailableGetter()
-          ? "Save your current filters and chart settings to create a reusable view."
-          : "Connect relay and select a chat, then save a view for quick re-apply.",
-        actions: dataAvailableGetter()
-          ? [
-              { id: "save-view", label: "Save current view" },
-              { id: "focus-range", label: "Set time range" },
-            ]
-          : [],
+        tone,
+        title,
+        message,
+        actions,
         onAction: actionId => {
           if (typeof onPanelAction === "function") onPanelAction(actionId);
         },
@@ -169,6 +218,13 @@ export function createSavedViewsUiController({
       return;
     }
     const cards = list.map(view => buildSavedViewCard(view, activeContext)).join("");
+    if (searchSavedBridge?.renderSavedViewsGallery) {
+      const handled = searchSavedBridge.renderSavedViewsGallery({
+        cardsHtml: cards,
+        interactive: dataAvailableGetter(),
+      });
+      if (handled) return;
+    }
     gallery.innerHTML = cards;
     gallery.dataset.interactive = dataAvailableGetter() ? "true" : "false";
   }
@@ -201,7 +257,7 @@ export function createSavedViewsUiController({
   }
 
   function renderComparisonSummary(primaryId, secondaryId) {
-    renderSavedViewsComparison({
+    const args = {
       compareSummaryEl,
       allViews: getSavedViews(),
       selection: getCompareSelection(),
@@ -214,7 +270,21 @@ export function createSavedViewsUiController({
       formatNumber,
       formatFloat,
       sanitizeText,
-    });
+    };
+    const searchSavedBridge = getSearchSavedBridge();
+    if (compareSummaryEl && searchSavedBridge?.renderSavedViewsComparison) {
+      const detached = document.createElement("div");
+      renderSavedViewsComparison({
+        ...args,
+        compareSummaryEl: detached,
+      });
+      const handled = searchSavedBridge.renderSavedViewsComparison({
+        html: detached.innerHTML,
+        empty: detached.classList.contains("empty"),
+      });
+      if (handled) return;
+    }
+    renderSavedViewsComparison(args);
   }
 
   function refreshUI() {
