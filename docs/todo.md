@@ -346,11 +346,18 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] Verified with `npm run check:types` and full `npm run ci:verify`.
   - [x] Keep existing runtime behavior unchanged and verify with `npm run ci:verify`.
   - [x] Exit criteria: core orchestration modules are type-checked and CI remains green without behavior regressions.
-- [ ] Phase 3 (parallel with late phase 2, 3-5 days): Expand reliability gates for core relay and export flows.
-  - [ ] Add release-blocking tests for relay transition edges (`offline -> starting -> waiting -> running`, fallback path shifts).
-  - [ ] Add release-blocking tests for export integrity (CSV/JSON/PDF content sanity + metadata stamping).
-  - [ ] Keep visual + accessibility gates mandatory on release candidates.
-  - [ ] Exit criteria: release candidate path fails fast on relay/export regressions and all mandatory gates are enforced.
+- [x] Phase 3 (parallel with late phase 2, 3-5 days): Expand reliability gates for core relay and export flows.
+  - [x] Add release-blocking tests for relay transition edges (`offline -> starting -> waiting -> running`, fallback path shifts).
+    - [x] Added dedicated relay transition reliability suite (`tests/releaseRelayTransitions.test.js`).
+    - [x] Covered sync-path shift assertions (`primary -> fallback`) in running-state metadata.
+  - [x] Add release-blocking tests for export integrity (CSV/JSON/PDF content sanity + metadata stamping).
+    - [x] Added dedicated export integrity reliability suite (`tests/releaseExportIntegrity.test.js`).
+    - [x] Covered CSV row/header sanity, JSON range-filtered payload sanity, and PDF metadata stamping checks.
+  - [x] Keep visual + accessibility gates mandatory on release candidates.
+    - [x] Added explicit per-release reliability gate + retained accessibility/visual mandatory gates in release checklist (`docs/release-smoke-checklist.md`).
+  - [x] Exit criteria: release candidate path fails fast on relay/export regressions and all mandatory gates are enforced.
+    - [x] Added `check:release-reliability` npm script and wired it into `ci:verify` (`package.json`).
+    - [x] Verified with `npm run check:release-reliability`, `npm run check:types`, and full `npm run ci:verify`.
 - [ ] Phase 4 (after phases 1-3, 1-2 weeks): Improve heavy-flow performance before any framework migration.
   - [ ] Move analytics-heavy transforms that can block rendering into worker paths where feasible.
   - [ ] Add/update perf baselines for long-chat datasets and keep them in `docs/performance-at-scale.md`.
