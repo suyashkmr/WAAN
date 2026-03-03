@@ -1,6 +1,7 @@
 import { createRelayControlsBridgeMethods } from "./shellRelayBridge.js";
 import {
   createActionsToolbarRoot,
+  createFirstRunActionsRoot,
   createOnboardingDialogRoot,
   createRelayBannerRoot,
 } from "./shellPrimitiveViews.js";
@@ -74,6 +75,20 @@ function mountOnboardingDialogPrimitive(globalScope = globalThis) {
   const app = createApp(OnboardingDialogRoot);
   app.mount(onboardingEl);
   onboardingEl.dataset.vuePrimitiveMounted = "true";
+}
+
+function mountFirstRunActionsPrimitive(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const firstRunActionsEl = globalScope?.document?.querySelector?.("#first-run-setup .first-run-actions");
+  if (!VueRuntime || !firstRunActionsEl) return;
+  if (firstRunActionsEl.dataset.vuePrimitiveMounted === "true") return;
+  const { createApp, h } = VueRuntime;
+  firstRunActionsEl.dataset.vueManaged = "true";
+  const FirstRunActionsRoot = createFirstRunActionsRoot(h, (actionId, payload = null) =>
+    dispatchShellAction(actionId, payload, globalScope),
+  );
+  createApp(FirstRunActionsRoot).mount(firstRunActionsEl);
+  firstRunActionsEl.dataset.vuePrimitiveMounted = "true";
 }
 
 function mountDashboardCardShellPrimitives(globalScope = globalThis) {
@@ -268,6 +283,7 @@ export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   mountRelayBannerPrimitive(globalScope);
   mountActionsToolbarPrimitive(globalScope);
   mountOnboardingDialogPrimitive(globalScope);
+  mountFirstRunActionsPrimitive(globalScope);
   mountDashboardCardShellPrimitives(globalScope);
   mountFeedbackPrimitiveBridge(globalScope);
 }

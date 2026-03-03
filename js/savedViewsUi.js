@@ -60,7 +60,7 @@ export function createSavedViewsUiController({
      *     html?: string,
      *     empty?: boolean,
      *   }) => boolean,
-     *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string) => void>) => boolean,
+     *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
      * } | null} */
     return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
   }
@@ -70,6 +70,7 @@ export function createSavedViewsUiController({
     searchSavedBridge.setPanelActionHandlers({
       "savedViews:save-view": () => onPanelAction("save-view"),
       "savedViews:focus-range": () => onPanelAction("focus-range"),
+      "savedViews:apply-view": (_actionId, payload) => onPanelAction("apply-view", payload),
     });
   }
 
@@ -211,6 +212,7 @@ export function createSavedViewsUiController({
           return;
         }
       }
+      delete gallery.dataset.galleryActionsBound;
       renderPanelState({
         container: gallery,
         tone,
@@ -232,6 +234,7 @@ export function createSavedViewsUiController({
       });
       if (handled) return;
     }
+    delete gallery.dataset.galleryActionsBound;
     gallery.innerHTML = cards;
     gallery.dataset.interactive = dataAvailableGetter() ? "true" : "false";
   }

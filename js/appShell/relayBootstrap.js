@@ -100,6 +100,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     if (supportsRelayActionDispatch) {
       shellBridge.setRelayActionHandlers({
         "relay.logDrawerOpen": openLogDrawer,
+        "relay.firstRunOpenRelay": handleFirstRunOpenRelay,
+        "relay.firstRunPrimaryAction": handleFirstRunPrimaryAction,
         "relay.recoveryReconnect": handleRecoveryReconnect,
         "relay.recoveryResync": handleRecoveryResync,
         "relay.recoveryExportDiagnostics": handleRecoveryExportDiagnostics,
@@ -118,8 +120,10 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     logDrawerExportButton?.addEventListener("click", handleExportDiagnostics);
     logDrawerReportButton?.addEventListener("click", handleReportIssue);
     logDrawerClearButton?.addEventListener("click", handleLogClear);
-    firstRunOpenRelayButton?.addEventListener("click", handleFirstRunOpenRelay);
-    firstRunPrimaryActionButton?.addEventListener("click", handleFirstRunPrimaryAction);
+    if (!supportsRelayActionDispatch) {
+      firstRunOpenRelayButton?.addEventListener("click", handleFirstRunOpenRelay);
+      firstRunPrimaryActionButton?.addEventListener("click", handleFirstRunPrimaryAction);
+    }
     if (!supportsRelayActionDispatch) {
       relayRecoveryReconnectButton?.addEventListener("click", handleRecoveryReconnect);
       relayRecoveryResyncButton?.addEventListener("click", handleRecoveryResync);

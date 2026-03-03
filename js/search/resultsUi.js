@@ -39,7 +39,7 @@ export function createSearchResultsUiController({
      *     summary?: unknown,
      *     resultLimit?: number,
      *   }) => boolean,
-     *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string) => void>) => boolean,
+     *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
      * } | null} */
     return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
   }

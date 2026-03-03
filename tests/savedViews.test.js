@@ -226,6 +226,60 @@ describe("savedViews controller", () => {
     expect(elements.compareSummaryEl.textContent).toBe("");
   });
 
+  it("routes saved-view apply actions through Vue panel dispatcher when available", async () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    /** @type {Record<string, Function>} */
+    let panelActionHandlers = {};
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      setPanelActionHandlers: vi.fn(handlers => {
+        panelActionHandlers = handlers;
+        return true;
+      }),
+      renderSavedViewsGallery: vi.fn(() => true),
+      renderSavedViewsComparison: vi.fn(() => true),
+      renderSavedViewsPanelState: vi.fn(() => true),
+    };
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+    elements.nameInput.value = "Dispatcher View";
+    elements.saveButton.click();
+
+    expect(typeof panelActionHandlers["savedViews:apply-view"]).toBe("function");
+
+    await panelActionHandlers["savedViews:apply-view"]("savedViews:apply-view", { viewId: "view-1" });
+    await Promise.resolve();
+
+    expect(dependencies.applyRangeAndRender).toHaveBeenCalledWith("all");
+    expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Dispatcher View".', "success");
+  });
+
+  it("keeps legacy gallery apply interactions when bridge has dispatcher but no Vue gallery renderer", async () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    elements.gallery.dataset.galleryActionsBound = "true";
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      setPanelActionHandlers: vi.fn(() => true),
+      renderSavedViewsPanelState: vi.fn(() => true),
+    };
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+    elements.nameInput.value = "Fallback View";
+    elements.saveButton.click();
+
+    const card = elements.gallery.querySelector(".saved-view-card");
+    expect(card).toBeTruthy();
+    card?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(dependencies.applyRangeAndRender).toHaveBeenCalledWith("all");
+    expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Fallback View".', "success");
+  });
+
   it("shows active, dirty, and recency affordances for applied saved views", async () => {
     const elements = buildElements();
     const allOption = document.createElement("option");

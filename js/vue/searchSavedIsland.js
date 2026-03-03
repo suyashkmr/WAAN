@@ -6,6 +6,7 @@ import {
   resolveVueBridge,
 } from "./bridgeRegistry.js";
 import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
+import { ensureSavedViewsGalleryActions } from "./searchSavedGalleryActions.js";
 
 function normalizeActions(value) {
   if (!Array.isArray(value)) return [];
@@ -225,6 +226,7 @@ function renderSearchInsightsWithVue({
 function renderSavedViewsGalleryWithVue({
   cardsHtml = "",
   interactive = false,
+  dispatchAction = null,
   container,
   vueRuntime = globalThis.Vue,
 }) {
@@ -236,6 +238,7 @@ function renderSavedViewsGalleryWithVue({
   render(null, container);
   container.innerHTML = String(cardsHtml || "");
   container.dataset.interactive = interactive ? "true" : "false";
+  ensureSavedViewsGalleryActions({ container, dispatchAction });
   return true;
 }
 
@@ -314,6 +317,8 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
       const container = doc?.getElementById?.("saved-view-gallery") ?? null;
       return renderSavedViewsGalleryWithVue({
         ...payload,
+        dispatchAction: (actionId, payloadData = null) =>
+          dispatchPanelAction(`savedViews:${actionId}`, payloadData),
         container,
         vueRuntime,
       });

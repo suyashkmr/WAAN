@@ -208,15 +208,21 @@ describe("relay integration", () => {
 
     expect(setRelayActionHandlers).toHaveBeenCalledTimes(1);
     expect(typeof registeredHandlers["relay.logDrawerOpen"]).toBe("function");
+    expect(typeof registeredHandlers["relay.firstRunOpenRelay"]).toBe("function");
+    expect(typeof registeredHandlers["relay.firstRunPrimaryAction"]).toBe("function");
     expect(typeof registeredHandlers["relay.recoveryReconnect"]).toBe("function");
     expect(typeof registeredHandlers["relay.recoveryResync"]).toBe("function");
     expect(typeof registeredHandlers["relay.recoveryExportDiagnostics"]).toBe("function");
 
     registeredHandlers["relay.logDrawerOpen"]();
+    registeredHandlers["relay.firstRunOpenRelay"]();
+    registeredHandlers["relay.firstRunPrimaryAction"]();
     registeredHandlers["relay.recoveryReconnect"]();
     registeredHandlers["relay.recoveryResync"]();
     registeredHandlers["relay.recoveryExportDiagnostics"]();
     expect(handlers.openLogDrawer).toHaveBeenCalledTimes(1);
+    expect(handlers.handleFirstRunOpenRelay).toHaveBeenCalledTimes(1);
+    expect(handlers.handleFirstRunPrimaryAction).toHaveBeenCalledTimes(1);
     expect(handlers.handleRecoveryReconnect).toHaveBeenCalledTimes(1);
     expect(handlers.handleRecoveryResync).toHaveBeenCalledTimes(1);
     expect(handlers.handleRecoveryExportDiagnostics).toHaveBeenCalledTimes(1);

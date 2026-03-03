@@ -234,3 +234,46 @@ export function createOnboardingDialogRoot(h, onAction) {
     },
   };
 }
+
+/**
+ * @param {any} h
+ * @param {(actionId: string, payload?: any) => void} onAction
+ */
+export function createFirstRunActionsRoot(h, onAction) {
+  return {
+    name: "FirstRunActionsPrimitive",
+    render() {
+      return [
+        h(
+          "button",
+          {
+            type: "button",
+            class: "ghost-button tiny",
+            id: "first-run-open-relay",
+            onClick: () => onAction("relay.firstRunOpenRelay"),
+          },
+          "Open Relay Controls",
+        ),
+        h(
+          "button",
+          {
+            type: "button",
+            class: "ghost-button tiny primary",
+            id: "first-run-primary-action",
+            onClick: () => onAction("relay.firstRunPrimaryAction"),
+          },
+          "Connect Relay",
+        ),
+        h(
+          "a",
+          {
+            class: "ghost-button tiny",
+            id: "first-run-macos-help-link",
+            href: "#faq-macos-gatekeeper",
+          },
+          "macOS launch help",
+        ),
+      ];
+    },
+  };
+}

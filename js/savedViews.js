@@ -10,7 +10,6 @@ import {
   captureCurrentViewSignature,
   bindSavedViewDirtyWatchers,
 } from "./savedViewsDirtyTracking.js";
-
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
     nameInput,
@@ -153,9 +152,10 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
         activeViewId,
         activeViewDirty: isActiveViewDirty(),
       }),
-      onPanelAction: actionId => {
+      onPanelAction: (actionId, payload = null) => {
         if (actionId === "save-view") return handleSaveView();
         if (actionId === "focus-range") rangeSelect?.focus();
+        if (actionId === "apply-view") return applySavedViewById(payload?.viewId);
       },
     },
   });
@@ -295,12 +295,14 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   async function handleSavedViewGalleryClick(event) {
+    if (gallery?.dataset.galleryActionsBound === "true") return;
     const card = event.target.closest(".saved-view-card");
     if (!card) return;
     await applySavedViewById(card.dataset.viewId);
   }
 
   async function handleSavedViewGalleryKeydown(event) {
+    if (gallery?.dataset.galleryActionsBound === "true") return;
     if (event.key !== "Enter" && event.key !== " ") return;
     const card = event.target.closest(".saved-view-card");
     if (!card) return;
@@ -342,8 +344,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       attachEvents();
       refreshUI();
     },
-    refreshUI,
-    resetForNewDataset,
-    setDataAvailability: setDataAvailabilityState,
+    refreshUI, resetForNewDataset, setDataAvailability: setDataAvailabilityState,
   };
 }

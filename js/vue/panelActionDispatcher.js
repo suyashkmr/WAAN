@@ -1,23 +1,24 @@
 /**
  * @returns {{
- *   dispatchPanelAction: (actionKey: string) => void,
- *   setPanelActionHandlers: (handlers: Record<string, (actionId: string) => void>) => boolean,
+ *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
+ *   setPanelActionHandlers: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
  * }}
  */
 export function createPanelActionDispatcher() {
-  /** @type {Record<string, (actionId: string) => void>} */
+  /** @type {Record<string, (actionId: string, payload?: any) => void>} */
   const panelActionHandlers = {};
 
   /**
    * @param {string} actionKey
+   * @param {any} [payload]
    */
-  function dispatchPanelAction(actionKey) {
+  function dispatchPanelAction(actionKey, payload = null) {
     const handler = panelActionHandlers[actionKey];
-    if (typeof handler === "function") handler(actionKey);
+    if (typeof handler === "function") handler(actionKey, payload);
   }
 
   /**
-   * @param {Record<string, (actionId: string) => void>} handlers
+   * @param {Record<string, (actionId: string, payload?: any) => void>} handlers
    */
   function setPanelActionHandlers(handlers = {}) {
     Object.entries(handlers).forEach(([actionKey, handler]) => {
