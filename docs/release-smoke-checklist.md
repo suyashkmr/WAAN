@@ -108,6 +108,13 @@ Then follow `docs/relay-troubleshooting.md`.
 
 ## Latest Sign-off
 
+- Date: 2026-03-04
+- Status: PRE-RELEASE GATES PASS
+- Verified by: automated release gates pass (`ci:verify`, `test:visual`, accessibility smoke, `check:perf-budgets` with `WAAN_PERF_BUDGET_PROFILE=release-ci`, release-notes validation)
+- Recovery checks:
+  - Packaged `WAAN.app` manual relay + recovery smoke: PENDING (run against `v2.4.7` artifact once release workflow publishes assets)
+- Notes: Release notes for `v2.4.7` are present and validator-compliant; tagged-release prerequisite gates are green.
+
 - Date: 2026-03-02
 - Status: PASS
 - Verified by: automated release gates pass (`test:visual`, accessibility smoke, perf benchmarks, naming scan) and packaged `WAAN.app` manual relay + recovery smoke

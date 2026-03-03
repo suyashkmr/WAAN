@@ -544,7 +544,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Removed legacy activity-panel rerender fallbacks (`renderHourlyHeatmapSection`, `renderWeekdaySection`, `renderTimeOfDayPanel`) from dashboard activity controller; panel rerenders now dispatch only through dashboard Vue bridge (`js/appShell/dashboardRender/activityPanels.js`).
   - [x] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
     - [x] Removed legacy participant table/detail row node-construction path; participants now render through the Vue dashboard panels bridge only (`js/analytics/summaryParticipants.js`, `js/analytics/participantDetail.js`).
-    - [x] Removed legacy search results panel/list fallback renderer path; search results now render through the Vue search/saved bridge only with lazy bridge mount (`js/search/resultsUi.js`).
+    - [x] Removed legacy search results panel/list fallback renderer path; search results now render through the Vue search/saved bridge only (`js/search/resultsUi.js`).
     - [x] Removed legacy dashboard highlights DOM card-construction fallback; highlights now render through Vue dashboard bridge only (`js/appShell/dashboardRender/highlightsStats.js`).
     - [x] Removed obsolete legacy activity DOM renderer implementations now that hourly/weekday/time-of-day are Vue-owned (`js/analytics/activity/hourly.js` deleted, `js/analytics/activity/timeOfDay.js` + `js/analytics/activity/weekday.js` reduced to shared data helpers only).
   - [x] Delete no-longer-needed bridge wiring/adapters once Vue paths are primary-only.
