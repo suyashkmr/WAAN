@@ -25,19 +25,20 @@ WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell
 
 ## Usage Rules
 
-- Use primitives for all new interactive UI in migration phases; avoid adding new ad-hoc button/input/select patterns.
-- Keep existing app-specific classes until each surface is fully migrated and parity-verified.
+- Use primitives for all new interactive UI; avoid adding new ad-hoc button/input/select patterns.
+- Keep existing app-specific classes unless a surface is being intentionally redesigned.
 - Drive colors/spacing/motion through existing tokens (`--surface-*`, `--text-*`, `--border-*`, `--state-*`, `--motion-*`), not hard-coded values.
 - Prefer shared shell/component classes for repeated UI chrome; use Tailwind utilities for local layout composition only.
 - Respect accessibility state attributes:
   - motion: `body[data-reduce-motion="true"]`
   - contrast: `body[data-contrast="high"]`
-- Prefer Vue shell bridges/components for dialogs/tooltips/tabs and keep native fallback primitives behaviorally aligned.
+- Prefer Vue shell bridges/components for dialogs/tooltips/tabs.
 
 ## Notes
 
-- This remains a compatibility primitive layer for a vanilla JS + Electron app while Vue islands incrementally expand.
+- This is the active primitive compatibility layer for the Vue-owned app-shell runtime.
 - `initUiPrimitives()` syncs runtime theme/motion/contrast state markers from `data-color-scheme`, `data-reduce-motion`, and `data-contrast`.
 - Relay status indicator internals intentionally remain custom (`#relay-status-dot.relay-banner-indicator`) to preserve existing pulse/reduced-motion/high-contrast behavior without extra runtime dependencies.
 - Summary cards, relay controls, and search/saved-view controls now run without Shoelace custom-element proxies.
 - Runtime contract: do not introduce new `sl-*` custom elements in app-shell surfaces; use semantic HTML + Vue/PrimeVue wrappers/composables instead.
+- Phase 8 status: migrated dashboard/search/saved/status surfaces no longer use legacy DOM fallback rendering paths.

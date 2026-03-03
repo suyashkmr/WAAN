@@ -533,7 +533,7 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Acceptance: no UI rendering path depends on bridge handoff from legacy renderers.
     - [x] Verified on 2026-03-03 by removing remaining dashboard bridge handoff to legacy activity renderers (time-of-day, weekday, hourly) and removing Vue-results DOM verification fallback in search bridge path; full `npm run ci:verify` green.
 
-- [ ] Phase 8 (1-2 weeks): Remove legacy DOM renderers and fallback paths.
+- [x] Phase 8 (1-2 weeks): Remove legacy DOM renderers and fallback paths.
   - [x] Remove legacy fallback render branches in:
     - [x] `js/analytics/summary.js`
     - [x] `js/appShell/dashboardRender/*`
@@ -542,19 +542,20 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] `js/appShell/statusUi.js`
     - [x] Removed remaining legacy `renderTimeOfDayPanel` fallback invocation from dashboard orchestration; time-of-day now mounts and renders via dashboard Vue bridge only (`js/appShell/dashboardRender.js`).
     - [x] Removed legacy activity-panel rerender fallbacks (`renderHourlyHeatmapSection`, `renderWeekdaySection`, `renderTimeOfDayPanel`) from dashboard activity controller; panel rerenders now dispatch only through dashboard Vue bridge (`js/appShell/dashboardRender/activityPanels.js`).
-  - [ ] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
+  - [x] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
     - [x] Removed legacy participant table/detail row node-construction path; participants now render through the Vue dashboard panels bridge only (`js/analytics/summaryParticipants.js`, `js/analytics/participantDetail.js`).
     - [x] Removed legacy search results panel/list fallback renderer path; search results now render through the Vue search/saved bridge only with lazy bridge mount (`js/search/resultsUi.js`).
     - [x] Removed legacy dashboard highlights DOM card-construction fallback; highlights now render through Vue dashboard bridge only (`js/appShell/dashboardRender/highlightsStats.js`).
     - [x] Removed obsolete legacy activity DOM renderer implementations now that hourly/weekday/time-of-day are Vue-owned (`js/analytics/activity/hourly.js` deleted, `js/analytics/activity/timeOfDay.js` + `js/analytics/activity/weekday.js` reduced to shared data helpers only).
-  - [ ] Delete no-longer-needed bridge wiring/adapters once Vue paths are primary-only.
+  - [x] Delete no-longer-needed bridge wiring/adapters once Vue paths are primary-only.
     - [x] Removed `js/appShell/dashboardRender/panelsBridge.js` and inlined dashboard-panel bridge dispatch in `activityPanels`.
     - [x] Removed obsolete shared legacy panel-state renderer module after search/saved fallback removal (`js/ui/panelState.js`).
     - [x] Removed obsolete legacy search render helper exports (`buildSearchResultItem`, `renderSearchInsights`) and detached controller wiring from legacy search DOM rendering helpers (`js/search/renderUtils.js`, `js/search.js`, `js/search/resultsUi.js`).
     - [x] Removed legacy saved-view gallery DOM interaction fallback listeners; gallery apply now routes only through Vue search/saved dispatcher actions (`js/savedViews.js`).
     - [x] Removed legacy direct toast DOM-dismiss fallback from status controller; toast dismissal now routes through Vue shell bridge only (`js/appShell/statusUi.js`).
     - [x] Removed obsolete frontend adapter layer wiring (`__WAAN_VUE_FRONTEND_ADAPTER__`) from app-shell bootstrap and deleted the adapter module/test (`js/appShell.js`, `js/appShell/index.js`, `js/appShell/vueFrontendAdapterLayer.js`, `tests/vueFrontendAdapterLayer.test.js`).
-  - [ ] Acceptance: migrated surfaces render only via Vue components with no legacy fallback branches.
+  - [x] Acceptance: migrated surfaces render only via Vue components with no legacy fallback branches.
+    - [x] Verified on 2026-03-03 with full `npm run ci:verify` green after removing dashboard/search/saved/status fallback branches and obsolete adapter wiring.
 
 - [ ] Phase 9 (4-7 days): Consolidate frontend architecture and testing around Vue.
   - [ ] Standardize composables/stores for shared state (filters, relay status, saved views, search worker progress).

@@ -13,10 +13,15 @@
 | `js/appShell/sharedRuntime.js` | Shared runtime helpers (`fetchJson`, global busy wrapper, relay account formatting). | Active. |
 | `js/appShell/dashboardRender.js` + `js/appShell/dashboardRender/*` | Dashboard rendering orchestration split into `activityPanels`, `highlightsStats`, and `participantsPanel`. | Active. Large render domain now segmented. |
 | `js/relayControls.js` | Relay lifecycle/status syncing, QR/session handling, log drawer runtime behavior. | Active. Consumed by app-shell composition. |
-| `js/analytics.js` + `js/analytics/*` | Parse and compute analytics (summary, activity, sentiment, message types, highlights, system events). | Active; analytics behavior covered by existing analytics tests. |
+| `js/analytics.js` + `js/analytics/*` | Parse and compute analytics (summary, activity, sentiment, message types, highlights, system events). | Active; legacy activity DOM renderer implementations were removed in Phase 8, leaving shared helper/view-model code for Vue-owned panels. |
 | `js/search.js` + `js/searchWorker.js` | Search query execution and worker-based filtering/progress. | Active. |
 | `js/exporters.js`, `js/exportShared.js`, `js/exportWorker.js` | CSV/text/slides/PDF exports and worker-backed report generation. | Active; exporter smoke tests exist. |
 | `js/state.js` | Central in-memory state for dataset, library, range/filter, search, and saved views. | Active; unit-tested. |
+
+## Removed During Vue Cutover
+
+- `js/appShell/vueFrontendAdapterLayer.js` (and `tests/vueFrontendAdapterLayer.test.js`) removed in Phase 8.
+- Legacy dashboard activity fallback renderers removed from active runtime paths.
 
 ## Quality Gates
 
