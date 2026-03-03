@@ -1,6 +1,7 @@
-import { formatNumber, formatFloat, formatDisplayDate, sanitizeText } from "../utils.js";
-import { buildParticipantDetail, buildParticipantDetailModel } from "./participantDetail.js";
+import { formatNumber, formatFloat, formatDisplayDate } from "../utils.js";
+import { buildParticipantDetailModel } from "./participantDetail.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
 
 function computeParticipantTimeframeStats(entries, timeframe, analytics) {
   if (timeframe !== "week") return null;
@@ -119,55 +120,12 @@ function buildParticipantRowData(entry, index) {
   };
 }
 
-function buildParticipantRows(entry, index) {
-  const rowData = buildParticipantRowData(entry, index);
-  const row = document.createElement("tr");
-  row.className = "participant-row";
-  row.dataset.rowId = rowData.rowId;
-  row.innerHTML = `
-    <td data-label="Rank">${rowData.rank}</td>
-    <td data-label="Participant">
-      <button type="button" class="participant-toggle" aria-expanded="false" aria-controls="${rowData.detailId}">
-        <span class="toggle-icon">▸</span>
-        <span class="participant-name">${sanitizeText(rowData.senderLabel)}</span>
-      </button>
-    </td>
-    <td data-label="Messages">${rowData.messageCount}</td>
-    <td data-label="Share">
-      <div class="participant-share">
-        <div class="share-bar">
-          <span class="share-fill" style="width: ${rowData.shareWidth}%"></span>
-        </div>
-        <span class="share-value">${rowData.shareValue}</span>
-      </div>
-    </td>
-    <td data-label="Avg Words">${rowData.avgWordsDisplay}</td>
-  `;
-  const toggle = row.querySelector(".participant-toggle");
-  if (toggle) {
-    toggle.setAttribute("aria-label", `Show details for ${rowData.senderLabel}`);
-  }
-  const participantNameEl = row.querySelector(".participant-name");
-  if (participantNameEl) participantNameEl.setAttribute("title", rowData.senderLabel);
-  const shareCell = row.querySelector('td[data-label="Share"]');
-  if (shareCell) {
-    shareCell.setAttribute("title", rowData.shareTitle);
-  }
-  const avgWordsCell = row.querySelector('td[data-label="Avg Words"]');
-  if (avgWordsCell) {
-    avgWordsCell.setAttribute("title", rowData.avgWordsTitle);
-  }
-  const detailRow = document.createElement("tr");
-  detailRow.className = "participant-detail-row hidden";
-  detailRow.id = rowData.detailId;
-  detailRow.dataset.rowId = rowData.rowId;
-  const detailHtml = buildParticipantDetail(entry);
-  detailRow.innerHTML = `
-    <td colspan="5">
-      ${detailHtml}
-    </td>
-  `;
-  return [row, detailRow];
+function resolveDashboardPanelsBridge() {
+  let bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
+  if (bridge) return bridge;
+  mountDashboardPanelsIsland();
+  bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
+  return bridge;
 }
 
 export function renderParticipants({
@@ -180,12 +138,11 @@ export function renderParticipants({
   setParticipantView,
   participantsVirtualizer,
 }) {
+  void participantsVirtualizer;
   if (!participantsBody || !analytics) return;
   /** @type {{ renderParticipantsRows?: (rows: unknown) => boolean, renderParticipantsEmpty?: (message: unknown) => boolean } | null} */
-  const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
-  if (!participantsVirtualizer) {
-    participantsBody.innerHTML = "";
-  }
+  const dashboardPanelsBridge = resolveDashboardPanelsBridge();
+  if (!dashboardPanelsBridge) return;
   if (typeof setParticipantView === "function") {
     setParticipantView([]);
   }
@@ -195,18 +152,7 @@ export function renderParticipants({
   }
 
   const handleEmptyState = message => {
-    if (!participantsVirtualizer && dashboardPanelsBridge?.renderParticipantsEmpty) {
-      const handledByVue = dashboardPanelsBridge.renderParticipantsEmpty(message);
-      if (handledByVue) return;
-    }
-    const emptyRow = document.createElement("tr");
-    emptyRow.innerHTML = `<td colspan="5" class="empty-state">${message}</td>`;
-    if (participantsVirtualizer) {
-      participantsVirtualizer.setEmptyRenderer(() => emptyRow.cloneNode(true));
-      participantsVirtualizer.setItems([]);
-    } else {
-      participantsBody.appendChild(emptyRow);
-    }
+    dashboardPanelsBridge?.renderParticipantsEmpty?.(message);
   };
 
   if (!analytics.top_senders?.length) {
@@ -247,28 +193,8 @@ export function renderParticipants({
     participantsNote.textContent = `${parts.join(" — ")}.`;
   }
 
-  if (participantsVirtualizer) {
-    participantsVirtualizer.setEmptyRenderer(() => {
-      const emptyRow = document.createElement("tr");
-      emptyRow.innerHTML = `<td colspan="5" class="empty-state">No participants match the current filters.</td>`;
-      return emptyRow;
-    });
-    participantsVirtualizer.setItems(visible, (entry, index) => buildParticipantRows(entry, index));
-  } else {
-    if (dashboardPanelsBridge?.renderParticipantsRows) {
-      const rowPayload = visible.map((entry, index) => buildParticipantRowData(entry, index));
-      const handledByVue = dashboardPanelsBridge.renderParticipantsRows(rowPayload);
-      if (handledByVue) {
-        updateParticipantPresetStates(participantFilters, participantPresetButtons);
-        if (typeof setParticipantView === "function") setParticipantView(visible);
-        return;
-      }
-    }
-    visible.forEach((entry, index) => {
-      const nodes = buildParticipantRows(entry, index);
-      nodes.forEach(node => participantsBody.appendChild(node));
-    });
-  }
+  const rowPayload = visible.map((entry, index) => buildParticipantRowData(entry, index));
+  dashboardPanelsBridge?.renderParticipantsRows?.(rowPayload);
 
   updateParticipantPresetStates(participantFilters, participantPresetButtons);
   if (typeof setParticipantView === "function") {

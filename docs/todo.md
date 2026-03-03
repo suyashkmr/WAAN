@@ -541,7 +541,11 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] `js/savedViewsUi.js`
     - [x] `js/appShell/statusUi.js`
   - [ ] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
+    - [x] Removed legacy participant table/detail row node-construction path; participants now render through the Vue dashboard panels bridge only (`js/analytics/summaryParticipants.js`, `js/analytics/participantDetail.js`).
+    - [x] Removed legacy search results panel/list fallback renderer path; search results now render through the Vue search/saved bridge only with lazy bridge mount (`js/search/resultsUi.js`).
   - [ ] Delete no-longer-needed bridge wiring/adapters once Vue paths are primary-only.
+    - [x] Removed `js/appShell/dashboardRender/panelsBridge.js` and inlined dashboard-panel bridge dispatch in `activityPanels`.
+    - [x] Removed obsolete shared legacy panel-state renderer module after search/saved fallback removal (`js/ui/panelState.js`).
   - [ ] Acceptance: migrated surfaces render only via Vue components with no legacy fallback branches.
 
 - [ ] Phase 9 (4-7 days): Consolidate frontend architecture and testing around Vue.

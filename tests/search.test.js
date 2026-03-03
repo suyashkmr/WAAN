@@ -41,6 +41,49 @@ function buildElements() {
   };
 }
 
+function installSearchSavedBridge(elements, overrides = {}) {
+  const bridge = {
+    renderSearchPanelState(payload = {}) {
+      elements.resultsListEl.innerHTML = "";
+      const node = document.createElement("div");
+      node.className = `panel-state panel-state--${payload.tone || "empty"}`;
+      node.textContent = `${payload.title || ""} ${payload.message || ""}`.trim();
+      elements.resultsListEl.appendChild(node);
+      (payload.actions || []).forEach(action => {
+        const actionButton = document.createElement("button");
+        actionButton.dataset.panelAction = String(action?.id || "");
+        elements.resultsListEl.appendChild(actionButton);
+      });
+      return true;
+    },
+    renderSearchResults(payload = {}) {
+      elements.resultsListEl.innerHTML = "";
+      const results = Array.isArray(payload.results) ? payload.results.filter(Boolean) : [];
+      results.forEach(result => {
+        const node = document.createElement("div");
+        node.className = "search-result";
+        node.textContent = String(result?.message || "");
+        elements.resultsListEl.appendChild(node);
+      });
+      return true;
+    },
+    renderSearchInsights(payload = {}) {
+      if (!payload.summary) {
+        elements.insightsEl.classList.add("hidden");
+        elements.insightsEl.textContent = "";
+        return true;
+      }
+      elements.insightsEl.classList.remove("hidden");
+      elements.insightsEl.textContent = "summary";
+      return true;
+    },
+    setPanelActionHandlers: vi.fn(() => true),
+    ...overrides,
+  };
+  globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = bridge;
+  return bridge;
+}
+
 describe("search controller", () => {
   let OriginalWorker;
   let workerInstances;
@@ -145,6 +188,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
+    installSearchSavedBridge(elements);
     const controller = createSearchController({ elements, options: { resultLimit: 10 } });
     controller.init();
 
@@ -181,6 +225,7 @@ describe("search controller", () => {
 
   it("renders recovery state when search runs without dataset", () => {
     const elements = buildElements();
+    installSearchSavedBridge(elements);
     const controller = createSearchController({ elements });
     controller.init();
 
@@ -210,7 +255,7 @@ describe("search controller", () => {
     elements.form.append(actionsEl);
     /** @type {Record<string, Function>} */
     let panelActionHandlers = {};
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedBridge(elements, {
       setPanelActionHandlers: handlers => {
         panelActionHandlers = {
           ...panelActionHandlers,
@@ -218,7 +263,7 @@ describe("search controller", () => {
         };
         return true;
       },
-    };
+    });
 
     const controller = createSearchController({ elements, options: { resultLimit: 10 } });
     controller.init();
@@ -303,6 +348,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
+    installSearchSavedBridge(elements);
     const controller = createSearchController({ elements, options: { resultLimit: 10 } });
     controller.init();
     elements.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));

@@ -36,7 +36,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   if (!VueRuntime || !doc) return;
   if (resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope })) return;
 
-  const mountEl = doc.getElementById("highlights-list");
+  const mountEl = doc.getElementById("highlight-list") || doc.getElementById("highlights-list");
   const participantsMountEl = doc.querySelector("#top-senders tbody");
   const timeOfDayMountEl = doc.getElementById("timeofday-chart");
   let hourlyMountEl = doc.getElementById("hourly-chart");

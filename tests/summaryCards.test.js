@@ -65,7 +65,7 @@ describe("renderParticipants", () => {
     delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
   });
 
-  it("adds contextual metric hints and accessible toggle labels", () => {
+  it("skips participants DOM fallback rendering when dashboard bridge is unavailable", () => {
     const participantsTable = document.createElement("table");
     const participantsBody = document.createElement("tbody");
     const participantsNote = document.createElement("div");
@@ -97,11 +97,7 @@ describe("renderParticipants", () => {
       setParticipantView: () => {},
     });
 
-    const toggle = participantsBody.querySelector(".participant-toggle");
-    expect(toggle?.getAttribute("aria-label")).toBe("Show details for Alice");
-    expect(participantsBody.querySelector(".participant-name")?.getAttribute("title")).toBe("Alice");
-    expect(participantsBody.querySelector('td[data-label="Share"]')?.getAttribute("title")).toContain("35.0%");
-    expect(participantsBody.querySelector('td[data-label="Avg Words"]')?.getAttribute("title")).toContain("12.5");
+    expect(participantsBody.children.length).toBe(0);
   });
 
   it("delegates participants row rendering to the Vue dashboard bridge when available", () => {

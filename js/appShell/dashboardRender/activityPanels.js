@@ -7,9 +7,9 @@ import {
   renderWeeklySection,
   renderWeekdaySection,
 } from "../../analytics/activity.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
-import { renderWithDashboardPanelsBridge } from "./panelsBridge.js";
 
 /**
  * @typedef {{ weekdays: boolean, weekends: boolean, working: boolean, offhours: boolean }} ActivityFilters
@@ -72,6 +72,14 @@ export function createActivityPanelsController({ elements, deps }) {
   let hourlyControlsInitialised = false;
   let stateSubscriptionsInitialised = false;
   const hasStateSubscription = typeof subscribeAppShellUiState === "function";
+
+  function renderWithDashboardPanelsBridge(/** @type {string} */ method, /** @type {any} */ payload) {
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
+    /** @type {any} */
+    const handler = bridge?.[method];
+    if (typeof handler !== "function") return false;
+    return Boolean(handler(payload));
+  }
 
   function initStateSubscriptions() {
     if (!hasStateSubscription || stateSubscriptionsInitialised) return;

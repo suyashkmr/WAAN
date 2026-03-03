@@ -1,5 +1,5 @@
-import { renderPanelState } from "../ui/panelState.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { mountSearchSavedBridge } from "../vue/searchSavedIsland.js";
 
 export function createSearchResultsUiController({
   resultsSummaryEl,
@@ -16,12 +16,12 @@ export function createSearchResultsUiController({
   handleStateAction,
 }) {
   let resultsRenderCacheKey = "";
-  let renderToken = 0;
 
   /**
    * @returns {{ renderSearchPanelState?: (payload: any) => boolean, renderSearchResults?: (payload: any) => boolean, renderSearchInsights?: (payload: any) => boolean } | null}
    */
   function getSearchSavedBridge() {
+    mountSearchSavedBridge();
     /** @type {{
      *   renderSearchPanelState?: (payload: {
      *     tone?: string,
@@ -53,87 +53,21 @@ export function createSearchResultsUiController({
   }
 
   function cancelPendingRender() {
-    renderToken += 1;
-  }
-
-  function appendNoticeIfNeeded({ resultsListEl, lastRunFiltered, total, renderedCount }) {
-    if (lastRunFiltered && total > renderedCount) {
-      const note = document.createElement("div");
-      note.className = "search-results-empty";
-      note.textContent = "Narrow your filters to see more matches.";
-      resultsListEl.appendChild(note);
-    }
-  }
-
-  function renderResultsLegacy({
-    results,
-    total,
-    summary,
-    lastRunFiltered,
-    activeRenderToken,
-    onComplete,
-  }) {
-    if (results.length <= 120) {
-      const fragment = document.createDocumentFragment();
-      results.forEach(result => {
-        fragment.appendChild(buildSearchResultItem(result));
-      });
-      if (activeRenderToken !== renderToken) return;
-      resultsListEl.appendChild(fragment);
-      appendNoticeIfNeeded({
-        resultsListEl,
-        lastRunFiltered,
-        total,
-        renderedCount: results.length,
-      });
-      renderSearchInsights({ insightsEl, summary, resultLimit });
-      if (typeof onComplete === "function") onComplete();
-      return;
-    }
-
-    const batchSize = 40;
-    let index = 0;
-    const renderBatch = () => {
-      if (activeRenderToken !== renderToken) return;
-      const fragment = document.createDocumentFragment();
-      const end = Math.min(index + batchSize, results.length);
-      for (let cursor = index; cursor < end; cursor += 1) {
-        fragment.appendChild(buildSearchResultItem(results[cursor]));
-      }
-      resultsListEl.appendChild(fragment);
-      index = end;
-      if (index < results.length) {
-        setTimeout(renderBatch, 0);
-        return;
-      }
-      appendNoticeIfNeeded({
-        resultsListEl,
-        lastRunFiltered,
-        total,
-        renderedCount: results.length,
-      });
-      renderSearchInsights({ insightsEl, summary, resultLimit });
-      if (typeof onComplete === "function") onComplete();
-    };
-    renderBatch();
+    // No-op kept for interface parity with loading/error state transitions.
   }
 
   function renderResultsState({ tone = "empty", title = "", message = "", actions = [] } = {}) {
     cancelPendingRender();
     const searchSavedBridge = getSearchSavedBridge();
+    if (!searchSavedBridge) return false;
     registerPanelActionHandlers(searchSavedBridge);
     if (insightsEl) {
-      const handledInsights = Boolean(
-        searchSavedBridge?.renderSearchInsights?.({
-          summary: null,
-          resultLimit,
-        }),
-      );
-      if (!handledInsights) {
-        renderSearchInsights({ insightsEl, summary: null, resultLimit });
-      }
+      searchSavedBridge?.renderSearchInsights?.({
+        summary: null,
+        resultLimit,
+      });
     }
-    if (searchSavedBridge?.renderSearchPanelState) {
+    if (searchSavedBridge.renderSearchPanelState) {
       const handled = searchSavedBridge.renderSearchPanelState({
         tone,
         title,
@@ -142,17 +76,7 @@ export function createSearchResultsUiController({
       });
       if (handled) return true;
     }
-    renderPanelState({
-      container: resultsListEl,
-      tone,
-      title,
-      message,
-      actions,
-      onAction: actionId => {
-        if (typeof handleStateAction === "function") handleStateAction(actionId);
-      },
-    });
-    return true;
+    return false;
   }
 
   function renderLoadingState(message = "Searching messages…") {
@@ -201,8 +125,11 @@ export function createSearchResultsUiController({
 
     const hasFilters = hasSearchFilters(query);
     cancelPendingRender();
-    const activeRenderToken = renderToken;
+    void buildSearchResultItem;
+    void renderSearchInsights;
     const searchSavedBridge = getSearchSavedBridge();
+    if (!searchSavedBridge) return;
+    registerPanelActionHandlers(searchSavedBridge);
     resultsSummaryEl.textContent = buildResultsSummaryText({
       hasRunSearch,
       total,
@@ -250,24 +177,11 @@ export function createSearchResultsUiController({
             resultLimit,
           }),
         );
-        if (!handledInsights) {
-          renderSearchInsights({ insightsEl, summary, resultLimit });
-        }
+        if (!handledInsights) return;
         resultsRenderCacheKey = nextRenderCacheKey;
         return;
       }
     }
-
-    renderResultsLegacy({
-      results,
-      total,
-      summary,
-      lastRunFiltered,
-      activeRenderToken,
-      onComplete: () => {
-        resultsRenderCacheKey = nextRenderCacheKey;
-      },
-    });
   }
 
   function resetResultsRenderCache() {

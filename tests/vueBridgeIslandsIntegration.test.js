@@ -89,4 +89,19 @@ describe("vue bridge islands integration", () => {
       }),
     ).toBe(true);
   });
+
+  it("mounts dashboard panels bridge when markup uses #highlight-list", async () => {
+    document.body.innerHTML = `
+      <div id="highlight-list"></div>
+      <table id="top-senders"><tbody></tbody></table>
+      <div id="timeofday-chart"></div>
+      <div id="hourly-chart"></div>
+      <div id="weekday-chart"></div>
+    `;
+
+    await import("../js/vue/dashboardPanelsIsland.js");
+
+    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__).toBeTruthy();
+    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__.renderParticipantsRows([])).toBe(true);
+  });
 });

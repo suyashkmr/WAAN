@@ -59,22 +59,3 @@ export function buildParticipantDetailModel(entry) {
     { label: "Peak weekday", value: sanitizeText(topWeekdayText) },
   ];
 }
-
-export function buildParticipantDetail(entry) {
-  const detailItems = buildParticipantDetailModel(entry);
-
-  return `
-    <div class="participant-detail">
-      <div class="detail-grid">
-        ${detailItems
-          .map(item => `
-            <div class="detail-item">
-              <span class="detail-label">${sanitizeText(item.label)}</span>
-              <span class="detail-value">${sanitizeText(item.value)}</span>
-            </div>
-          `)
-          .join("")}
-      </div>
-    </div>
-  `;
-}

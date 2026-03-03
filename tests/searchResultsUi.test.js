@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { createSearchResultsUiController } from "../js/search/resultsUi.js";
 
 function buildResult(index) {
@@ -14,114 +14,73 @@ function buildResult(index) {
 }
 
 describe("search results ui controller", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
     delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
   });
 
-  it("cancels stale batched renders when loading state is shown", () => {
+  it("does not cache empty state when bridge is unavailable", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
-    let state = {
-      query: { text: "hello", participant: "", start: "", end: "" },
-      results: Array.from({ length: 160 }, (_, index) => buildResult(index + 1)),
-      total: 160,
-      summary: { total: 160 },
-      lastRun: Date.now(),
-      lastRunHasFilters: true,
-    };
+    let panelStateCalls = 0;
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
       resultsListEl,
       insightsEl,
       resultLimit: 200,
-      getSearchState: () => state,
-      getDatasetFingerprint: () => "fp-1",
+      getSearchState: () => ({
+        query: { text: "hello", participant: "", start: "", end: "" },
+        results: [],
+        total: 0,
+        summary: null,
+        lastRun: Date.now(),
+        lastRunHasFilters: true,
+      }),
+      getDatasetFingerprint: () => "fp-no-bridge",
       buildSearchRenderCacheKey: payload => JSON.stringify(payload),
       hasSearchFilters: query => Boolean(query?.text),
       buildResultsSummaryText: () => "summary",
-      buildSearchResultItem: result => {
-        const el = document.createElement("div");
-        el.className = "search-result";
-        el.textContent = result.message;
-        return el;
-      },
-      renderSearchInsights: () => {},
+      buildSearchResultItem: () => document.createElement("div"),
+      renderSearchInsights: vi.fn(),
       handleStateAction: () => {},
     });
 
     controller.renderResults();
-    expect(resultsListEl.querySelectorAll(".search-result").length).toBe(40);
+    expect(resultsListEl.children.length).toBe(0);
 
-    controller.renderLoadingState("Scanning...");
-    vi.runAllTimers();
-
-    expect(resultsListEl.querySelector(".panel-state--loading")).toBeTruthy();
-    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
-  });
-
-  it("rerenders after interrupted batched legacy render with same cache key", () => {
-    const resultsSummaryEl = document.createElement("div");
-    const resultsListEl = document.createElement("div");
-    const insightsEl = document.createElement("div");
-    let state = {
-      query: { text: "hello", participant: "", start: "", end: "" },
-      results: Array.from({ length: 160 }, (_, index) => buildResult(index + 1)),
-      total: 160,
-      summary: { total: 160 },
-      lastRun: Date.now(),
-      lastRunHasFilters: true,
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchPanelState() {
+        panelStateCalls += 1;
+        return true;
+      },
+      renderSearchInsights: () => true,
     };
 
-    const controller = createSearchResultsUiController({
-      resultsSummaryEl,
-      resultsListEl,
-      insightsEl,
-      resultLimit: 200,
-      getSearchState: () => state,
-      getDatasetFingerprint: () => "fp-interrupt",
-      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
-      hasSearchFilters: query => Boolean(query?.text),
-      buildResultsSummaryText: () => "summary",
-      buildSearchResultItem: result => {
-        const el = document.createElement("div");
-        el.className = "search-result";
-        el.textContent = result.message;
-        return el;
-      },
-      renderSearchInsights: () => {},
-      handleStateAction: () => {},
-    });
-
     controller.renderResults();
-    expect(resultsListEl.querySelectorAll(".search-result").length).toBe(40);
-
-    controller.renderLoadingState("Scanning...");
-    expect(resultsListEl.querySelector(".panel-state--loading")).toBeTruthy();
-
-    controller.renderResults();
-    expect(resultsListEl.querySelectorAll(".search-result").length).toBe(40);
+    expect(panelStateCalls).toBe(1);
   });
 
-  it("clears insights when error state is shown", () => {
+  it("clears insights when error state is shown via bridge", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
     insightsEl.classList.remove("hidden");
     insightsEl.innerHTML = "<div>stale summary</div>";
 
-    const renderSearchInsights = ({ insightsEl: target, summary }) => {
+    const panelStateCalls = vi.fn(() => true);
+    const insightsCalls = vi.fn(({ summary }) => {
       if (!summary) {
-        target.classList.add("hidden");
-        target.innerHTML = "";
+        insightsEl.classList.add("hidden");
+        insightsEl.innerHTML = "";
       }
+      return true;
+    });
+
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchPanelState: panelStateCalls,
+      renderSearchInsights: insightsCalls,
     };
 
     const controller = createSearchResultsUiController({
@@ -142,22 +101,21 @@ describe("search results ui controller", () => {
       hasSearchFilters: () => false,
       buildResultsSummaryText: () => "summary",
       buildSearchResultItem: () => document.createElement("div"),
-      renderSearchInsights,
+      renderSearchInsights: vi.fn(),
       handleStateAction: () => {},
     });
 
     controller.renderErrorState("Search failed");
 
+    expect(insightsCalls).toHaveBeenCalled();
+    expect(panelStateCalls).toHaveBeenCalled();
     expect(insightsEl.classList.contains("hidden")).toBe(true);
     expect(insightsEl.innerHTML).toBe("");
-    expect(resultsListEl.querySelector(".panel-state--error")).toBeTruthy();
   });
 
   it("delegates search panel state rendering to Vue search/saved bridge when available", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
-    resultsListEl.id = "search-results-list";
-    document.body.appendChild(resultsListEl);
     const insightsEl = document.createElement("div");
     let payloadSeen = null;
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
@@ -165,6 +123,7 @@ describe("search results ui controller", () => {
         payloadSeen = payload;
         return true;
       },
+      renderSearchInsights: () => true,
     };
 
     const controller = createSearchResultsUiController({
@@ -193,19 +152,17 @@ describe("search results ui controller", () => {
 
     expect(payloadSeen).toBeTruthy();
     expect(payloadSeen?.tone).toBe("empty");
-    expect(resultsListEl.children.length).toBe(0);
   });
 
-  it("does not run fallback insights render in no-results path when bridge handles it", () => {
+  it("renders panel state even when insights renderer is unavailable", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
     const renderSearchPanelState = vi.fn(() => true);
-    const renderSearchInsightsBridge = vi.fn(() => true);
-    const fallbackRenderInsights = vi.fn();
+    const renderSearchInsights = vi.fn(() => false);
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchPanelState,
-      renderSearchInsights: renderSearchInsightsBridge,
+      renderSearchInsights,
     };
 
     const controller = createSearchResultsUiController({
@@ -214,30 +171,28 @@ describe("search results ui controller", () => {
       insightsEl,
       resultLimit: 200,
       getSearchState: () => ({
-        query: { text: "hello", participant: "", start: "", end: "" },
+        query: { text: "", participant: "", start: "", end: "" },
         results: [],
         total: 0,
         summary: null,
         lastRun: Date.now(),
-        lastRunHasFilters: true,
+        lastRunHasFilters: false,
       }),
-      getDatasetFingerprint: () => "fp-5",
+      getDatasetFingerprint: () => "fp-panel-state-without-insights",
       buildSearchRenderCacheKey: payload => JSON.stringify(payload),
-      hasSearchFilters: query => Boolean(query?.text),
+      hasSearchFilters: () => false,
       buildResultsSummaryText: () => "summary",
       buildSearchResultItem: () => document.createElement("div"),
-      renderSearchInsights: fallbackRenderInsights,
+      renderSearchInsights: vi.fn(),
       handleStateAction: () => {},
     });
 
-    controller.renderResults();
-
-    expect(renderSearchPanelState).toHaveBeenCalled();
-    expect(renderSearchInsightsBridge).toHaveBeenCalledTimes(1);
-    expect(fallbackRenderInsights).not.toHaveBeenCalled();
+    controller.renderLoadingState("Scanning…");
+    expect(renderSearchInsights).toHaveBeenCalledTimes(1);
+    expect(renderSearchPanelState).toHaveBeenCalledTimes(1);
   });
 
-  it("delegates populated search results and insights rendering to Vue bridge when available", () => {
+  it("delegates populated search results and insights rendering to Vue bridge", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
@@ -248,8 +203,6 @@ describe("search results ui controller", () => {
       return true;
     });
     const renderSearchInsightsBridge = vi.fn(() => true);
-    const fallbackRenderInsights = vi.fn();
-    const fallbackBuildResultItem = vi.fn(() => document.createElement("div"));
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchResults,
       renderSearchInsights: renderSearchInsightsBridge,
@@ -262,10 +215,7 @@ describe("search results ui controller", () => {
       resultLimit: 200,
       getSearchState: () => ({
         query: { text: "hello", participant: "", start: "", end: "" },
-        results: [
-          buildResult(1),
-          buildResult(2),
-        ],
+        results: [buildResult(1), buildResult(2)],
         total: 2,
         summary: {
           total: 2,
@@ -281,8 +231,8 @@ describe("search results ui controller", () => {
       buildSearchRenderCacheKey: payload => JSON.stringify(payload),
       hasSearchFilters: query => Boolean(query?.text),
       buildResultsSummaryText: () => "summary",
-      buildSearchResultItem: fallbackBuildResultItem,
-      renderSearchInsights: fallbackRenderInsights,
+      buildSearchResultItem: vi.fn(() => document.createElement("div")),
+      renderSearchInsights: vi.fn(),
       handleStateAction: () => {},
     });
 
@@ -290,22 +240,25 @@ describe("search results ui controller", () => {
 
     expect(renderSearchResults).toHaveBeenCalled();
     expect(renderSearchInsightsBridge).toHaveBeenCalled();
-    expect(fallbackBuildResultItem).not.toHaveBeenCalled();
-    expect(fallbackRenderInsights).not.toHaveBeenCalled();
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
   });
 
-  it("falls back to legacy list rendering when bridge reports handled but renders no rows", () => {
+  it("does not commit cache key when bridge returns handled but renders no rows", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
-    const renderSearchResults = vi.fn(() => true);
+
+    const renderSearchResults = vi
+      .fn()
+      .mockImplementationOnce(() => true)
+      .mockImplementationOnce(() => {
+        const item = document.createElement("div");
+        item.className = "search-result";
+        resultsListEl.appendChild(item);
+        return true;
+      });
     const renderSearchInsightsBridge = vi.fn(() => true);
-    const fallbackBuildResultItem = vi.fn(result => {
-      const el = document.createElement("div");
-      el.className = "search-result";
-      el.textContent = result.message;
-      return el;
-    });
+
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchResults,
       renderSearchInsights: renderSearchInsightsBridge,
@@ -334,48 +287,18 @@ describe("search results ui controller", () => {
       buildSearchRenderCacheKey: payload => JSON.stringify(payload),
       hasSearchFilters: query => Boolean(query?.text),
       buildResultsSummaryText: () => "summary",
-      buildSearchResultItem: fallbackBuildResultItem,
+      buildSearchResultItem: vi.fn(() => document.createElement("div")),
       renderSearchInsights: vi.fn(),
       handleStateAction: () => {},
     });
 
     controller.renderResults();
-
     expect(renderSearchResults).toHaveBeenCalledTimes(1);
-    expect(fallbackBuildResultItem).toHaveBeenCalledTimes(1);
-    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
-    expect(renderSearchInsightsBridge).not.toHaveBeenCalled();
-  });
-
-  it("renders empty state via legacy fallback when bridge is unavailable", () => {
-    const resultsSummaryEl = document.createElement("div");
-    const resultsListEl = document.createElement("div");
-    const insightsEl = document.createElement("div");
-
-    const controller = createSearchResultsUiController({
-      resultsSummaryEl,
-      resultsListEl,
-      insightsEl,
-      resultLimit: 200,
-      getSearchState: () => ({
-        query: { text: "hello", participant: "", start: "", end: "" },
-        results: [],
-        total: 0,
-        summary: null,
-        lastRun: Date.now(),
-        lastRunHasFilters: true,
-      }),
-      getDatasetFingerprint: () => "fp-no-bridge",
-      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
-      hasSearchFilters: query => Boolean(query?.text),
-      buildResultsSummaryText: () => "summary",
-      buildSearchResultItem: () => document.createElement("div"),
-      renderSearchInsights: vi.fn(),
-      handleStateAction: () => {},
-    });
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
 
     controller.renderResults();
-    expect(resultsListEl.querySelector(".panel-state--empty")).toBeTruthy();
-    expect(resultsListEl.textContent).toContain("Try different keywords");
+    expect(renderSearchResults).toHaveBeenCalledTimes(2);
+    expect(renderSearchInsightsBridge).toHaveBeenCalledTimes(1);
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
   });
 });
