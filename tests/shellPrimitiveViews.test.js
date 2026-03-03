@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { createActionsToolbarRoot, createFirstRunActionsRoot } from "../js/vue/shellPrimitiveViews.js";
+import {
+  createActionsToolbarRoot,
+  createFirstRunActionsRoot,
+  createRelayHeaderActionsRoot,
+  createRelayLiveActionsRoot,
+} from "../js/vue/shellPrimitiveViews.js";
 
 function h(type, props = {}, children = []) {
   return { type, props, children };
@@ -82,5 +87,50 @@ describe("shell primitive views", () => {
 
     expect(onAction).toHaveBeenNthCalledWith(1, "relay.firstRunOpenRelay");
     expect(onAction).toHaveBeenNthCalledWith(2, "relay.firstRunPrimaryAction");
+  });
+
+  it("dispatches relay core actions from Vue relay action primitives", () => {
+    const onAction = vi.fn();
+    const headerRoot = createRelayHeaderActionsRoot(h, onAction);
+    const headerTree = headerRoot.render();
+    const reloadButton = findNode(
+      headerTree,
+      node => node?.type === "button" && node?.props?.id === "relay-reload-all",
+    );
+    const clearButton = findNode(
+      headerTree,
+      node => node?.type === "button" && node?.props?.id === "relay-clear-storage",
+    );
+    expect(reloadButton).toBeTruthy();
+    expect(clearButton).toBeTruthy();
+    reloadButton.props.onClick();
+    clearButton.props.onClick();
+
+    const liveRoot = createRelayLiveActionsRoot(h, onAction);
+    const liveTree = liveRoot.render();
+    const connectButton = findNode(
+      liveTree,
+      node => node?.type === "button" && node?.props?.id === "relay-start",
+    );
+    const stopButton = findNode(
+      liveTree,
+      node => node?.type === "button" && node?.props?.id === "relay-stop",
+    );
+    const logoutButton = findNode(
+      liveTree,
+      node => node?.type === "button" && node?.props?.id === "relay-logout",
+    );
+    expect(connectButton).toBeTruthy();
+    expect(stopButton).toBeTruthy();
+    expect(logoutButton).toBeTruthy();
+    connectButton.props.onClick();
+    stopButton.props.onClick();
+    logoutButton.props.onClick();
+
+    expect(onAction).toHaveBeenNthCalledWith(1, "relay.reloadAll");
+    expect(onAction).toHaveBeenNthCalledWith(2, "relay.clearStorage");
+    expect(onAction).toHaveBeenNthCalledWith(3, "relay.primaryAction");
+    expect(onAction).toHaveBeenNthCalledWith(4, "relay.stop");
+    expect(onAction).toHaveBeenNthCalledWith(5, "relay.logout");
   });
 });

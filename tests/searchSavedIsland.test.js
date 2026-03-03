@@ -70,4 +70,26 @@ describe("search saved island bridge mounting", () => {
     expect(bridge?.__runtimeBoundToVue).toBe(true);
     expect(bridge?.renderSearchResults?.({ results: [{ sender: "u", timestamp: "", message: "m" }], total: 1 })).toBe(true);
   });
+
+  it("mounts bridge in render-only Vue runtime even when search actions container exists", () => {
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `
+        <form id="advanced-search-form">
+          <div class="search-actions"></div>
+        </form>
+      `,
+    );
+    const fakeWindow = {
+      document,
+      console,
+      Vue: createVueRuntimeStub(),
+    };
+
+    expect(() => mountSearchSavedBridge({ globalScope: fakeWindow })).not.toThrow();
+
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });
+    expect(bridge).toBeTruthy();
+    expect(bridge?.__runtimeBoundToVue).toBe(true);
+  });
 });

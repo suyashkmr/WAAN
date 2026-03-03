@@ -835,4 +835,85 @@ describe("relayControls", () => {
       "http://127.0.0.1:3334/api/chats/chat-1%40c.us/messages?limit=2500&refresh=1&full=2500",
     );
   });
+
+  it("updates live relay control buttons when cached refs are stale after Vue action mounts", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const elements = buildRelayElements();
+    const staleStopButton = elements.relayStopButton;
+    const staleLogoutButton = elements.relayLogoutButton;
+    const staleReloadButton = elements.relayReloadAllButton;
+    const staleClearButton = elements.relayClearStorageButton;
+
+    const liveStopButton = document.createElement("button");
+    liveStopButton.id = "relay-stop";
+    liveStopButton.disabled = true;
+    const liveLogoutButton = document.createElement("button");
+    liveLogoutButton.id = "relay-logout";
+    liveLogoutButton.disabled = true;
+    const liveReloadButton = document.createElement("button");
+    liveReloadButton.id = "relay-reload-all";
+    liveReloadButton.disabled = true;
+    const liveClearButton = document.createElement("button");
+    liveClearButton.id = "relay-clear-storage";
+    liveClearButton.disabled = true;
+    document.body.append(liveStopButton, liveLogoutButton, liveReloadButton, liveClearButton);
+
+    elements.relayStopButton = staleStopButton;
+    elements.relayLogoutButton = staleLogoutButton;
+    elements.relayReloadAllButton = staleReloadButton;
+    elements.relayClearStorageButton = staleClearButton;
+
+    let statusCallCount = 0;
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) {
+            statusCallCount += 1;
+            if (statusCallCount === 1) {
+              return {
+                status: "running",
+                account: { pushName: "Alice" },
+                chatCount: 5,
+                syncingChats: false,
+              };
+            }
+            throw new Error("relay offline");
+          }
+          if (url.endsWith("/api/chats")) return { chats: [] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    expect(liveStopButton.disabled).toBe(false);
+    expect(liveReloadButton.disabled).toBe(false);
+    expect(liveLogoutButton.disabled).toBe(false);
+    expect(liveClearButton.disabled).toBe(false);
+
+    await controller.refreshRelayStatus({ silent: true });
+    expect(liveStopButton.disabled).toBe(true);
+    expect(liveReloadButton.disabled).toBe(true);
+    expect(liveClearButton.disabled).toBe(false);
+    errorSpy.mockRestore();
+  });
 });

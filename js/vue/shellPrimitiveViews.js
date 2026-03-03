@@ -1,3 +1,8 @@
+export {
+  createRelayHeaderActionsRoot,
+  createRelayLiveActionsRoot,
+} from "./shellRelayActionViews.js";
+
 /**
  * @param {any} h
  * @param {(actionId: string) => void} onAction

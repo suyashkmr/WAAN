@@ -84,6 +84,17 @@ export function createRelayStatusApplyController({
     getDataAvailable,
   } = deps;
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
+  const documentRef = globalThis.document;
+
+  /**
+   * @param {string} id
+   * @param {HTMLButtonElement | null | undefined} fallback
+   */
+  function resolveRelayButton(id, fallback) {
+    return /** @type {HTMLButtonElement | null} */ (
+      documentRef?.getElementById?.(id) || fallback || null
+    );
+  }
 
   /**
    * @param {RelayStatus | null | undefined} status
@@ -187,9 +198,12 @@ export function createRelayStatusApplyController({
         relayHelpText.textContent =
           "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
       }
-      if (relayStopButton) relayStopButton.disabled = true;
-      if (relayReloadAllButton) relayReloadAllButton.disabled = true;
-      if (relayClearStorageButton) relayClearStorageButton.disabled = false;
+      const stopButton = resolveRelayButton("relay-stop", relayStopButton);
+      const reloadAllButton = resolveRelayButton("relay-reload-all", relayReloadAllButton);
+      const clearStorageButton = resolveRelayButton("relay-clear-storage", relayClearStorageButton);
+      if (stopButton) stopButton.disabled = true;
+      if (reloadAllButton) reloadAllButton.disabled = true;
+      if (clearStorageButton) clearStorageButton.disabled = false;
       if (isStateTransition) {
         setRemoteChatList([]);
         relayUiState.lastStatusKind = "offline";
@@ -243,10 +257,14 @@ export function createRelayStatusApplyController({
         reloadAllDisabled,
       });
     } else {
-      if (relayStopButton) relayStopButton.disabled = stopDisabled;
-      if (relayClearStorageButton) relayClearStorageButton.disabled = clearStorageDisabled;
-      if (relayLogoutButton) relayLogoutButton.disabled = logoutDisabled;
-      if (relayReloadAllButton) relayReloadAllButton.disabled = reloadAllDisabled;
+      const stopButton = resolveRelayButton("relay-stop", relayStopButton);
+      const clearStorageButton = resolveRelayButton("relay-clear-storage", relayClearStorageButton);
+      const logoutButton = resolveRelayButton("relay-logout", relayLogoutButton);
+      const reloadAllButton = resolveRelayButton("relay-reload-all", relayReloadAllButton);
+      if (stopButton) stopButton.disabled = stopDisabled;
+      if (clearStorageButton) clearStorageButton.disabled = clearStorageDisabled;
+      if (logoutButton) logoutButton.disabled = logoutDisabled;
+      if (reloadAllButton) reloadAllButton.disabled = reloadAllDisabled;
     }
     if (!getRemoteChatList().length) {
       if (running) {

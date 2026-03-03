@@ -1,9 +1,15 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { createRelayBootstrapController } from "../js/appShell/relayBootstrap.js";
 import { createDataStatusController } from "../js/appShell/dataStatus.js";
 import { VUE_RUNTIME_REGISTRY_KEY, VUE_BRIDGE_NAMES } from "../js/vue/bridgeRegistry.js";
 
 describe("relay integration", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
+    vi.restoreAllMocks();
+  });
+
   it("wires relay bootstrap controls and clear-storage flow, then updates hero status", async () => {
     const relayStartButton = document.createElement("button");
     const relayStopButton = document.createElement("button");
@@ -46,7 +52,9 @@ describe("relay integration", () => {
     });
 
     const handlers = {
-      handleRelayPrimaryActionClick: vi.fn(),
+      handleRelayPrimaryActionClick: vi.fn(event => {
+        if (!event?.currentTarget) throw new Error("missing currentTarget");
+      }),
       stopRelaySession: vi.fn(),
       logoutRelaySession: vi.fn(),
       handleReloadAllChats: vi.fn(),
@@ -86,6 +94,11 @@ describe("relay integration", () => {
       },
       handlers,
       deps,
+    });
+
+    Object.defineProperty(window, "confirm", {
+      configurable: true,
+      value: vi.fn(() => true),
     });
 
     Object.defineProperty(window, "confirm", {
@@ -139,7 +152,7 @@ describe("relay integration", () => {
     expect(heroStatusCopy.textContent).toContain("12 chats indexed.");
   });
 
-  it("registers relay action handlers with Vue shell bridge dispatcher when available", () => {
+  it("registers relay action handlers with Vue shell bridge dispatcher when available", async () => {
     const relayStartButton = document.createElement("button");
     const relayStatusEl = document.createElement("div");
     const logDrawerToggleButton = document.createElement("button");
@@ -207,6 +220,11 @@ describe("relay integration", () => {
     initRelayControls();
 
     expect(setRelayActionHandlers).toHaveBeenCalledTimes(1);
+    expect(typeof registeredHandlers["relay.primaryAction"]).toBe("function");
+    expect(typeof registeredHandlers["relay.stop"]).toBe("function");
+    expect(typeof registeredHandlers["relay.logout"]).toBe("function");
+    expect(typeof registeredHandlers["relay.reloadAll"]).toBe("function");
+    expect(typeof registeredHandlers["relay.clearStorage"]).toBe("function");
     expect(typeof registeredHandlers["relay.logDrawerOpen"]).toBe("function");
     expect(typeof registeredHandlers["relay.firstRunOpenRelay"]).toBe("function");
     expect(typeof registeredHandlers["relay.firstRunPrimaryAction"]).toBe("function");
@@ -214,12 +232,25 @@ describe("relay integration", () => {
     expect(typeof registeredHandlers["relay.recoveryResync"]).toBe("function");
     expect(typeof registeredHandlers["relay.recoveryExportDiagnostics"]).toBe("function");
 
+    registeredHandlers["relay.primaryAction"]();
+    registeredHandlers["relay.stop"]();
+    registeredHandlers["relay.logout"]();
+    registeredHandlers["relay.reloadAll"]();
+    await registeredHandlers["relay.clearStorage"]();
     registeredHandlers["relay.logDrawerOpen"]();
     registeredHandlers["relay.firstRunOpenRelay"]();
     registeredHandlers["relay.firstRunPrimaryAction"]();
     registeredHandlers["relay.recoveryReconnect"]();
     registeredHandlers["relay.recoveryResync"]();
     registeredHandlers["relay.recoveryExportDiagnostics"]();
+    expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledTimes(1);
+    expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledWith(
+      expect.objectContaining({ currentTarget: relayStartButton }),
+    );
+    expect(handlers.stopRelaySession).toHaveBeenCalledTimes(1);
+    expect(handlers.logoutRelaySession).toHaveBeenCalledTimes(1);
+    expect(handlers.handleReloadAllChats).toHaveBeenCalledTimes(1);
+    expect(deps.fetchJson).toHaveBeenCalledWith("http://127.0.0.1:3334/chats/clear", { method: "POST" });
     expect(handlers.openLogDrawer).toHaveBeenCalledTimes(1);
     expect(handlers.handleFirstRunOpenRelay).toHaveBeenCalledTimes(1);
     expect(handlers.handleFirstRunPrimaryAction).toHaveBeenCalledTimes(1);
@@ -228,5 +259,157 @@ describe("relay integration", () => {
     expect(handlers.handleRecoveryExportDiagnostics).toHaveBeenCalledTimes(1);
 
     delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
+  });
+
+  it("disables live clear-storage button for dispatcher action even when cached ref is stale", async () => {
+    const relayStartButton = document.createElement("button");
+    const relayStatusEl = document.createElement("div");
+    const staleClearStorageButton = document.createElement("button");
+    const liveClearStorageButton = document.createElement("button");
+    liveClearStorageButton.id = "relay-clear-storage";
+    document.body.appendChild(liveClearStorageButton);
+
+    /** @type {Record<string, Function>} */
+    let registeredHandlers = {};
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setRelayActionHandlers: handlers => {
+            registeredHandlers = handlers;
+          },
+          dispatchRelayAction: vi.fn(),
+        },
+      },
+    };
+
+    let resolveClear;
+    const clearPromise = new Promise(resolve => {
+      resolveClear = resolve;
+    });
+    const deps = {
+      fetchJson: vi.fn(async url => {
+        if (url.endsWith("/chats/clear")) {
+          await clearPromise;
+          return {};
+        }
+        return {};
+      }),
+      apiBase: "http://127.0.0.1:3334",
+      setRemoteChatList: vi.fn(),
+      refreshChatSelector: vi.fn(async () => {}),
+      updateStatus: vi.fn(),
+    };
+    const handlers = {
+      handleRelayPrimaryActionClick: vi.fn(),
+      stopRelaySession: vi.fn(),
+      logoutRelaySession: vi.fn(),
+      handleReloadAllChats: vi.fn(),
+      openLogDrawer: vi.fn(),
+      closeLogDrawer: vi.fn(),
+      handleExportDiagnostics: vi.fn(),
+      handleReportIssue: vi.fn(),
+      handleLogClear: vi.fn(),
+      handleLogDrawerDocumentClick: vi.fn(),
+      handleLogDrawerKeydown: vi.fn(),
+      handleFirstRunOpenRelay: vi.fn(),
+      handleFirstRunPrimaryAction: vi.fn(),
+      handleRecoveryReconnect: vi.fn(),
+      handleRecoveryResync: vi.fn(),
+      handleRecoveryExportDiagnostics: vi.fn(),
+      refreshRelayStatus: vi.fn(async () => {}),
+      startStatusPolling: vi.fn(),
+      initLogStream: vi.fn(),
+    };
+
+    const { initRelayControls } = createRelayBootstrapController({
+      elements: {
+        relayStartButton,
+        relayStatusEl,
+        relayClearStorageButton: staleClearStorageButton,
+      },
+      handlers,
+      deps,
+    });
+
+    Object.defineProperty(window, "confirm", {
+      configurable: true,
+      value: vi.fn(() => true),
+    });
+    initRelayControls();
+
+    const pending = registeredHandlers["relay.clearStorage"]();
+    await Promise.resolve();
+    expect(liveClearStorageButton.disabled).toBe(true);
+    resolveClear();
+    await pending;
+    expect(liveClearStorageButton.disabled).toBe(false);
+  });
+
+  it("does not attach legacy live-action listeners when only live actions are Vue-managed", () => {
+    const liveActionsContainer = document.createElement("div");
+    liveActionsContainer.className = "live-actions";
+    liveActionsContainer.dataset.vuePrimitiveMounted = "true";
+    const relayStartButton = document.createElement("button");
+    liveActionsContainer.appendChild(relayStartButton);
+    document.body.appendChild(liveActionsContainer);
+
+    const relayStatusEl = document.createElement("div");
+    /** @type {Record<string, Function>} */
+    let registeredHandlers = {};
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setRelayActionHandlers: handlers => {
+            registeredHandlers = handlers;
+          },
+          dispatchRelayAction: vi.fn(),
+        },
+      },
+    };
+
+    const handlers = {
+      handleRelayPrimaryActionClick: vi.fn(),
+      stopRelaySession: vi.fn(),
+      logoutRelaySession: vi.fn(),
+      handleReloadAllChats: vi.fn(),
+      openLogDrawer: vi.fn(),
+      closeLogDrawer: vi.fn(),
+      handleExportDiagnostics: vi.fn(),
+      handleReportIssue: vi.fn(),
+      handleLogClear: vi.fn(),
+      handleLogDrawerDocumentClick: vi.fn(),
+      handleLogDrawerKeydown: vi.fn(),
+      handleFirstRunOpenRelay: vi.fn(),
+      handleFirstRunPrimaryAction: vi.fn(),
+      handleRecoveryReconnect: vi.fn(),
+      handleRecoveryResync: vi.fn(),
+      handleRecoveryExportDiagnostics: vi.fn(),
+      refreshRelayStatus: vi.fn(async () => {}),
+      startStatusPolling: vi.fn(),
+      initLogStream: vi.fn(),
+    };
+    const deps = {
+      fetchJson: vi.fn(async () => ({})),
+      apiBase: "http://127.0.0.1:3334",
+      setRemoteChatList: vi.fn(),
+      refreshChatSelector: vi.fn(async () => {}),
+      updateStatus: vi.fn(),
+    };
+
+    const { initRelayControls } = createRelayBootstrapController({
+      elements: {
+        relayStartButton,
+        relayStatusEl,
+      },
+      handlers,
+      deps,
+    });
+    initRelayControls();
+
+    relayStartButton.click();
+    expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledTimes(0);
+
+    registeredHandlers["relay.primaryAction"]?.();
+    expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledTimes(1);
   });
 });

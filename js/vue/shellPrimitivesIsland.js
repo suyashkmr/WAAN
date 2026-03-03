@@ -4,6 +4,8 @@ import {
   createFirstRunActionsRoot,
   createOnboardingDialogRoot,
   createRelayBannerRoot,
+  createRelayHeaderActionsRoot,
+  createRelayLiveActionsRoot,
 } from "./shellPrimitiveViews.js";
 import {
   LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
@@ -89,6 +91,34 @@ function mountFirstRunActionsPrimitive(globalScope = globalThis) {
   );
   createApp(FirstRunActionsRoot).mount(firstRunActionsEl);
   firstRunActionsEl.dataset.vuePrimitiveMounted = "true";
+}
+
+function mountRelayHeaderActionsPrimitive(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const actionsEl = globalScope?.document?.querySelector?.("#relay-live-card .card-header-actions");
+  if (!VueRuntime || !actionsEl) return;
+  if (actionsEl.dataset.vuePrimitiveMounted === "true") return;
+  const { createApp, h } = VueRuntime;
+  actionsEl.dataset.vueManaged = "true";
+  const RelayHeaderActionsRoot = createRelayHeaderActionsRoot(h, (actionId, payload = null) =>
+    dispatchShellAction(actionId, payload, globalScope),
+  );
+  createApp(RelayHeaderActionsRoot).mount(actionsEl);
+  actionsEl.dataset.vuePrimitiveMounted = "true";
+}
+
+function mountRelayLiveActionsPrimitive(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const actionsEl = globalScope?.document?.querySelector?.("#relay-live-card .live-actions");
+  if (!VueRuntime || !actionsEl) return;
+  if (actionsEl.dataset.vuePrimitiveMounted === "true") return;
+  const { createApp, h } = VueRuntime;
+  actionsEl.dataset.vueManaged = "true";
+  const RelayLiveActionsRoot = createRelayLiveActionsRoot(h, (actionId, payload = null) =>
+    dispatchShellAction(actionId, payload, globalScope),
+  );
+  createApp(RelayLiveActionsRoot).mount(actionsEl);
+  actionsEl.dataset.vuePrimitiveMounted = "true";
 }
 
 function mountDashboardCardShellPrimitives(globalScope = globalThis) {
@@ -281,6 +311,8 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
 export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   if (typeof globalScope?.document === "undefined") return;
   mountRelayBannerPrimitive(globalScope);
+  mountRelayHeaderActionsPrimitive(globalScope);
+  mountRelayLiveActionsPrimitive(globalScope);
   mountActionsToolbarPrimitive(globalScope);
   mountOnboardingDialogPrimitive(globalScope);
   mountFirstRunActionsPrimitive(globalScope);

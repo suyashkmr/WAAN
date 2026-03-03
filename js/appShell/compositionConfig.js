@@ -66,6 +66,7 @@ export function createControllerWiringConfig({
     updateHourlyState: stateStore.updateHourlyState,
     getWeekdayState: stateStore.getWeekdayState,
     updateWeekdayState: stateStore.updateWeekdayState,
+    subscribeAppShellUiState: stateStore.subscribeAppShellUiState,
   };
   const controllerWiringUtils = {
     formatNumber,

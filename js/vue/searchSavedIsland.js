@@ -7,6 +7,7 @@ import {
 } from "./bridgeRegistry.js";
 import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
 import { ensureSavedViewsGalleryActions } from "./searchSavedGalleryActions.js";
+import { mountSearchActionsPrimitive } from "./searchSavedActionPrimitives.js";
 
 function normalizeActions(value) {
   if (!Array.isArray(value)) return [];
@@ -275,6 +276,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
   );
   if (!hasRenderableVueRuntime) return;
   const { dispatchPanelAction, setPanelActionHandlers } = createPanelActionDispatcher();
+  mountSearchActionsPrimitive({ globalScope, dispatchPanelAction });
 
   registerVueBridge(VUE_BRIDGE_NAMES.searchSaved, {
     __waanVueSearchBridge: true,

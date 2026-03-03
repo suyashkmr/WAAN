@@ -66,6 +66,27 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     return fetchJson(`${apiBase}/chats/clear`, { method: "POST" });
   }
 
+  /**
+   * @param {string} id
+   * @param {HTMLButtonElement | null | undefined} fallback
+   */
+  function resolveRelayButton(id, fallback) {
+    const live = /** @type {HTMLButtonElement | null} */ (globalThis.document?.getElementById?.(id) ?? null);
+    return live || fallback || null;
+  }
+
+  /**
+   * @param {any} [payload]
+   */
+  function dispatchRelayPrimaryAction(payload = null) {
+    const startButton = resolveRelayButton("relay-start", relayStartButton);
+    handleRelayPrimaryActionClick({
+      ...(payload && typeof payload === "object" ? payload : {}),
+      currentTarget: startButton,
+      target: startButton,
+    });
+  }
+
   async function handleClearStorageClick() {
     if (typeof window !== "undefined" && window.confirm) {
       const confirmed = window.confirm(
@@ -74,7 +95,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       if (!confirmed) return;
     }
 
-    if (relayClearStorageButton) relayClearStorageButton.disabled = true;
+    const clearStorageButton = resolveRelayButton("relay-clear-storage", relayClearStorageButton);
+    if (clearStorageButton) clearStorageButton.disabled = true;
     try {
       await clearStoredChatsOnServer();
       setRemoteChatList([]);
@@ -84,7 +106,7 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       console.error(error);
       updateStatus("We couldn't clear the cached chats.", "error");
     } finally {
-      if (relayClearStorageButton) relayClearStorageButton.disabled = false;
+      if (clearStorageButton) clearStorageButton.disabled = false;
     }
   }
 
@@ -99,6 +121,11 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       typeof shellBridge?.dispatchRelayAction === "function";
     if (supportsRelayActionDispatch) {
       shellBridge.setRelayActionHandlers({
+        "relay.primaryAction": /** @param {any} payload */ payload => dispatchRelayPrimaryAction(payload),
+        "relay.stop": stopRelaySession,
+        "relay.logout": logoutRelaySession,
+        "relay.reloadAll": handleReloadAllChats,
+        "relay.clearStorage": handleClearStorageClick,
         "relay.logDrawerOpen": openLogDrawer,
         "relay.firstRunOpenRelay": handleFirstRunOpenRelay,
         "relay.firstRunPrimaryAction": handleFirstRunPrimaryAction,
@@ -108,11 +135,19 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       });
     }
 
-    relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
-    relayStopButton?.addEventListener("click", stopRelaySession);
-    relayLogoutButton?.addEventListener("click", logoutRelaySession);
-    relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
-    relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
+    const liveActionsVueManaged =
+      relayStartButton?.closest?.(".live-actions")?.dataset?.vuePrimitiveMounted === "true";
+    const headerActionsVueManaged =
+      relayReloadAllButton?.closest?.(".card-header-actions")?.dataset?.vuePrimitiveMounted === "true";
+    if (!supportsRelayActionDispatch || !liveActionsVueManaged) {
+      relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
+      relayStopButton?.addEventListener("click", stopRelaySession);
+      relayLogoutButton?.addEventListener("click", logoutRelaySession);
+    }
+    if (!supportsRelayActionDispatch || !headerActionsVueManaged) {
+      relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
+      relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
+    }
     if (!supportsRelayActionDispatch) {
       logDrawerToggleButton?.addEventListener("click", openLogDrawer);
     }

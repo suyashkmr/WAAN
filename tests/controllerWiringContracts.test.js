@@ -104,10 +104,7 @@ vi.mock("../js/appShell/index.js", () => ({
     handleParticipantRowToggle: vi.fn(),
   })),
   createExportFilterSummary: vi.fn(() => h.getExportFilterSummary),
-  createDashboardRuntime: vi.fn(() => ({
-    controller: h.dashboardController,
-    getParticipantView: h.getParticipantView,
-  })),
+  createDashboardRuntime: h.createDashboardRuntime,
   createThemeUiController: vi.fn(() => h.themeUiController),
   formatRelayAccount: vi.fn(() => "Relay User"),
 }));
@@ -191,6 +188,7 @@ describe("controllerWiring contracts", () => {
       updateHourlyState: vi.fn(),
       getWeekdayState: vi.fn(() => ({ dayFilter: "all", hourRange: [0, 23] })),
       updateWeekdayState: vi.fn(),
+      subscribeAppShellUiState: vi.fn(() => () => {}),
     };
 
     const result = createAppControllerWiring({
@@ -231,5 +229,7 @@ describe("controllerWiring contracts", () => {
     expect(typeof result.initThemeControls).toBe("function");
     expect(typeof result.getExportThemeConfig).toBe("function");
     expect(h.createSavedViewsController).toHaveBeenCalledTimes(1);
+    const dashboardRuntimeConfig = h.createDashboardRuntime.mock.calls[0]?.[0];
+    expect(dashboardRuntimeConfig?.deps?.subscribeAppShellUiState).toBe(state.subscribeAppShellUiState);
   });
 });

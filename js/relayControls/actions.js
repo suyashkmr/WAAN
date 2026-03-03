@@ -65,7 +65,6 @@ export function createRelayActionsController({
       applyRelayStatus(relayUiState.status);
     }
   }
-
   async function stopRelaySession() {
     if (!relayBase) return;
     setRelayControlsDisabled(true);
@@ -86,7 +85,6 @@ export function createRelayActionsController({
       applyRelayStatus(relayUiState.status);
     }
   }
-
   async function logoutRelaySession() {
     if (!relayBase) return;
     setRelayControlsDisabled(true);
@@ -106,7 +104,6 @@ export function createRelayActionsController({
       setRelayControlsDisabled(false);
     }
   }
-
   async function syncRelayChats({ silent = true } = {}) {
     if (!relayBase) return;
     if (!relayUiState.status || relayUiState.status.status !== "running") {
@@ -155,8 +152,11 @@ export function createRelayActionsController({
   }
 
   async function handleReloadAllChats() {
-    if (!relayBase || !relayReloadAllButton) return;
-    relayReloadAllButton.disabled = true;
+    if (!relayBase) return;
+    const reloadAllButton = /** @type {HTMLButtonElement | null} */ (
+      globalThis.document?.getElementById?.("relay-reload-all") || relayReloadAllButton || null
+    );
+    if (reloadAllButton) reloadAllButton.disabled = true;
     let syncedCount = 0;
     try {
       syncedCount = await withGlobalBusy(async () => {
@@ -169,7 +169,7 @@ export function createRelayActionsController({
       console.error(error);
       updateStatus("We couldn't reload the chat list.", "error");
     } finally {
-      relayReloadAllButton.disabled = false;
+      if (reloadAllButton) reloadAllButton.disabled = false;
     }
     if (syncedCount && electronAPI?.notifySyncSummary) {
       electronAPI.notifySyncSummary({ syncedChats: syncedCount });

@@ -108,6 +108,7 @@ describe("search controller", () => {
   afterEach(() => {
     globalThis.Worker = OriginalWorker;
     vi.restoreAllMocks();
+    delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
   });
 
   it("populates participant selector from dataset entries", () => {
@@ -187,5 +188,68 @@ describe("search controller", () => {
     expect(elements.resultsListEl.querySelector(".panel-state--error")).toBeTruthy();
     expect(elements.resultsListEl.textContent).toContain("Load a chat first");
     expect(elements.resultsListEl.querySelector('[data-panel-action="retry-search"]')).toBeTruthy();
+  });
+
+  it("routes search actions through panel dispatcher when Vue search actions are mounted", async () => {
+    setDatasetEntries([
+      {
+        type: "message",
+        sender: "Ana",
+        timestamp: "2025-01-02T10:00:00.000Z",
+        message: "hello world",
+      },
+    ]);
+
+    const elements = buildElements();
+    const actionsEl = document.createElement("div");
+    actionsEl.className = "search-actions";
+    actionsEl.dataset.vuePrimitiveMounted = "true";
+    elements.form.append(actionsEl);
+    /** @type {Record<string, Function>} */
+    let panelActionHandlers = {};
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      setPanelActionHandlers: handlers => {
+        panelActionHandlers = {
+          ...panelActionHandlers,
+          ...(handlers || {}),
+        };
+        return true;
+      },
+    };
+
+    const controller = createSearchController({ elements, options: { resultLimit: 10 } });
+    controller.init();
+
+    elements.keywordInput.value = "world";
+    await panelActionHandlers["search:run-search"]();
+    await Promise.resolve();
+    expect(workerInstances.length).toBe(1);
+    expect(elements.resultsListEl.querySelectorAll(".search-result").length).toBe(1);
+
+    elements.keywordInput.value = "reset me";
+    panelActionHandlers["search:clear-search-filters"]();
+    expect(elements.keywordInput.value).toBe("");
+  });
+
+  it("keeps legacy reset button listener when bridge exists but Vue search actions are not mounted", () => {
+    setDatasetEntries([
+      {
+        type: "message",
+        sender: "Ana",
+        timestamp: "2025-01-02T10:00:00.000Z",
+        message: "hello world",
+      },
+    ]);
+
+    const elements = buildElements();
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      setPanelActionHandlers: vi.fn(() => true),
+    };
+    const controller = createSearchController({ elements });
+    controller.init();
+
+    elements.keywordInput.value = "reset me";
+    elements.resetButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(elements.keywordInput.value).toBe("");
   });
 });
