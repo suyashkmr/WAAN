@@ -111,6 +111,14 @@ Current enforced thresholds (`scripts/check-perf-budgets.mjs`):
 
 If any threshold is exceeded, the gate fails and prints the offending metric(s).
 
+Budget profiles:
+
+- `strict` (default): local/dev baseline thresholds.
+- `release-ci`: used by tag-release macOS workflow to account for hosted-runner I/O jitter while preserving regression guardrails.
+  - `appendMessage (default batched metadata path)` duration: <= 300ms
+  - `appendMessage (forced immediate metadata persist)` duration: <= 450ms
+  - `appendMessage (default batched metadata path)` reduction: >= 98.5%
+
 ## Next Improvements
 
 - Owner: Engineering

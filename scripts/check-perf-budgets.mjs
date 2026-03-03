@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import process from "node:process";
 
-const BUDGETS = {
+const BASE_BUDGETS = {
   search: {
     indexBuildMsMax: 700,
     keywordIndexedMsMax: 8,
@@ -19,6 +19,22 @@ const BUDGETS = {
     appendDefaultReductionPctMin: 99,
   },
 };
+
+function resolveBudgets(profile) {
+  if (profile === "release-ci") {
+    return {
+      ...BASE_BUDGETS,
+      sync: {
+        ...BASE_BUDGETS.sync,
+        // Hosted macOS runners can show higher I/O jitter; keep guardrails but avoid false negatives.
+        appendDefaultBatchedMsMax: 300,
+        appendForcedImmediateMsMax: 450,
+        appendDefaultReductionPctMin: 98.5,
+      },
+    };
+  }
+  return BASE_BUDGETS;
+}
 
 function runNodeScript(args) {
   return execFileSync(process.execPath, args, {
@@ -79,6 +95,8 @@ function compareMin(value, min, label, failures) {
 }
 
 function main() {
+  const budgetProfile = String(process.env.WAAN_PERF_BUDGET_PROFILE || "strict");
+  const BUDGETS = resolveBudgets(budgetProfile);
   const searchOutput = runNodeScript(["scripts/measure-search-worker-index.mjs"]);
   const chatstoreOutput = runNodeScript(["scripts/measure-chatstore-write-amplification.mjs"]);
   const stressOutput = runNodeScript(["--expose-gc", "scripts/stress-large-chat.mjs", "--sizes=120000"]);
@@ -159,6 +177,7 @@ function main() {
 
   const lines = [
     "# WAAN performance budget check",
+    `profile=${budgetProfile}`,
     `search.indexBuild=${metrics.searchIndexBuildMs}ms (max ${BUDGETS.search.indexBuildMsMax}ms)`,
     `search.keywordIndexed=${metrics.searchKeywordIndexedMs}ms (max ${BUDGETS.search.keywordIndexedMsMax}ms)`,
     `search.participantKeywordIndexed=${metrics.searchParticipantKeywordIndexedMs}ms (max ${BUDGETS.search.participantKeywordIndexedMsMax}ms)`,
