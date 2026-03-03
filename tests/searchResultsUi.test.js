@@ -346,4 +346,36 @@ describe("search results ui controller", () => {
     expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
     expect(renderSearchInsightsBridge).not.toHaveBeenCalled();
   });
+
+  it("renders empty state via legacy fallback when bridge is unavailable", () => {
+    const resultsSummaryEl = document.createElement("div");
+    const resultsListEl = document.createElement("div");
+    const insightsEl = document.createElement("div");
+
+    const controller = createSearchResultsUiController({
+      resultsSummaryEl,
+      resultsListEl,
+      insightsEl,
+      resultLimit: 200,
+      getSearchState: () => ({
+        query: { text: "hello", participant: "", start: "", end: "" },
+        results: [],
+        total: 0,
+        summary: null,
+        lastRun: Date.now(),
+        lastRunHasFilters: true,
+      }),
+      getDatasetFingerprint: () => "fp-no-bridge",
+      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
+      hasSearchFilters: query => Boolean(query?.text),
+      buildResultsSummaryText: () => "summary",
+      buildSearchResultItem: () => document.createElement("div"),
+      renderSearchInsights: vi.fn(),
+      handleStateAction: () => {},
+    });
+
+    controller.renderResults();
+    expect(resultsListEl.querySelector(".panel-state--empty")).toBeTruthy();
+    expect(resultsListEl.textContent).toContain("Try different keywords");
+  });
 });

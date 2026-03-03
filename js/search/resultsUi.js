@@ -140,7 +140,7 @@ export function createSearchResultsUiController({
         message,
         actions,
       });
-      if (handled) return;
+      if (handled) return true;
     }
     renderPanelState({
       container: resultsListEl,
@@ -152,6 +152,7 @@ export function createSearchResultsUiController({
         if (typeof handleStateAction === "function") handleStateAction(actionId);
       },
     });
+    return true;
   }
 
   function renderLoadingState(message = "Searching messages…") {
@@ -213,7 +214,7 @@ export function createSearchResultsUiController({
 
     resultsListEl.innerHTML = "";
     if (!total) {
-      renderResultsState({
+      const renderedState = renderResultsState({
         tone: hasRunSearch ? "empty" : "loading",
         title: hasRunSearch ? "No matching messages" : "Search this chat",
         message: hasFilters
@@ -221,7 +222,7 @@ export function createSearchResultsUiController({
           : "Add keywords, participant, or date filters to find messages.",
         actions: hasFilters ? [{ id: "clear-search-filters", label: "Clear filters" }] : [],
       });
-      resultsRenderCacheKey = nextRenderCacheKey;
+      if (renderedState) resultsRenderCacheKey = nextRenderCacheKey;
       return;
     }
 

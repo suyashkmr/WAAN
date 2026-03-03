@@ -119,9 +119,8 @@ export function createActivityPanelsController({ elements, deps }) {
       anomaliesEl: hourlyAnomaliesEl,
       renderSummary: renderHourlySummary,
     };
-    renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options }, () =>
-      renderHourlyHeatmapSection(data, options),
-    );
+    const handled = renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options });
+    if (!handled) renderHourlyHeatmapSection(data, options);
     if (!hourlyControlsInitialised) {
       initHourlyControls();
       hourlyControlsInitialised = true;
@@ -221,9 +220,8 @@ export function createActivityPanelsController({ elements, deps }) {
       anomaliesEl: hourlyAnomaliesEl,
       renderSummary: renderHourlySummary,
     };
-    renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data: null, options }, () =>
-      renderHourlyHeatmapSection(null, options),
-    );
+    const handledHourly = renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data: null, options });
+    if (!handledHourly) renderHourlyHeatmapSection(null, options);
     const analytics = getDatasetAnalytics();
     if (analytics) {
       const options = {
@@ -232,7 +230,8 @@ export function createActivityPanelsController({ elements, deps }) {
         bandsEl: timeOfDayBandsEl,
         calloutsEl: timeOfDayCalloutsEl,
       };
-      renderWithDashboardPanelsBridge("renderTimeOfDay", analytics, () => renderTimeOfDayPanel(analytics, options));
+      const handledTimeOfDay = renderWithDashboardPanelsBridge("renderTimeOfDay", analytics);
+      if (!handledTimeOfDay) renderTimeOfDayPanel(analytics, options);
     }
   }
 
@@ -241,7 +240,8 @@ export function createActivityPanelsController({ elements, deps }) {
       container: weekdayChartEl,
       filterNoteEl: weekdayFilterNote,
     };
-    renderWithDashboardPanelsBridge("renderWeekdayChart", options, () => renderWeekdaySection(options));
+    const handledWeekday = renderWithDashboardPanelsBridge("renderWeekdayChart", options);
+    if (!handledWeekday) renderWeekdaySection(options);
   }
 
   function initHourlyControls() {

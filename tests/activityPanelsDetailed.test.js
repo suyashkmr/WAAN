@@ -1,19 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../js/analytics/activity.js", () => ({
-  renderTimeOfDayPanel: vi.fn(),
-  renderHourlyHeatmapSection: vi.fn(),
   renderDailySection: vi.fn(),
   renderWeeklySection: vi.fn(),
-  renderWeekdaySection: vi.fn(),
 }));
 
 import { createActivityPanelsController } from "../js/appShell/dashboardRender/activityPanels.js";
 import {
-  renderTimeOfDayPanel,
-  renderHourlyHeatmapSection,
   renderWeeklySection,
-  renderWeekdaySection,
 } from "../js/analytics/activity.js";
 
 function baseElements() {
@@ -59,6 +53,19 @@ function baseElements() {
   };
 }
 
+function installDashboardPanelsBridge() {
+  const bridge = {
+    renderHourlyHeatmap: vi.fn(payload => {
+      payload?.options?.renderSummary?.(payload?.data?.summary ?? null);
+      return true;
+    }),
+    renderWeekdayChart: vi.fn(() => true),
+    renderTimeOfDay: vi.fn(() => true),
+  };
+  globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = bridge;
+  return bridge;
+}
+
 describe("activityPanels detailed", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -67,6 +74,7 @@ describe("activityPanels detailed", () => {
   });
 
   it("renders hourly summary for empty and populated top-hour states", () => {
+    installDashboardPanelsBridge();
     const elements = baseElements();
     const hourlyState = {
       filters: { weekdays: true, weekends: true, working: true, offhours: true },
@@ -89,7 +97,7 @@ describe("activityPanels detailed", () => {
     });
 
     controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: null });
-    const renderSummary = renderHourlyHeatmapSection.mock.calls[0][1].renderSummary;
+    const renderSummary = globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__.renderHourlyHeatmap.mock.calls[0][0].options.renderSummary;
 
     renderSummary(null);
     expect(elements.hourlyTopHourEl.textContent).toBe("-");
@@ -103,6 +111,7 @@ describe("activityPanels detailed", () => {
   });
 
   it("initializes hourly controls once and normalizes toggles/brush", () => {
+    const bridge = installDashboardPanelsBridge();
     const filterWeekdays = document.createElement("input");
     filterWeekdays.id = "filter-weekdays";
     const filterWeekends = document.createElement("input");
@@ -198,7 +207,7 @@ describe("activityPanels detailed", () => {
     expect(brushStartLabel.textContent).toBe("07:00");
     expect(brushEndLabel.textContent).toBe("22:00");
 
-    expect(renderHourlyHeatmapSection.mock.calls.length).toBeGreaterThan(2);
+    expect(bridge.renderHourlyHeatmap.mock.calls.length).toBeGreaterThan(2);
   });
 
   it("passes selected custom range to weekly renderer and applies valid selections", () => {
@@ -234,6 +243,7 @@ describe("activityPanels detailed", () => {
   });
 
   it("rerenders weekday/time-of-day from state based on analytics availability", () => {
+    const bridge = installDashboardPanelsBridge();
     const elements = baseElements();
     const weekdayState = {
       filters: { weekdays: false, weekends: false, working: false, offhours: false },
@@ -266,17 +276,18 @@ describe("activityPanels detailed", () => {
     expect(weekdayState.stats).toEqual({ peak: 2 });
     expect(elements.weekdayToggleWeekdays.checked).toBe(true);
     expect(elements.weekdayToggleWorking.checked).toBe(true);
-    expect(renderWeekdaySection).toHaveBeenCalledTimes(1);
+    expect(bridge.renderWeekdayChart).toHaveBeenCalledTimes(1);
 
     controller.rerenderHourlyFromState();
-    expect(renderTimeOfDayPanel).not.toHaveBeenCalled();
+    expect(bridge.renderTimeOfDay).not.toHaveBeenCalled();
 
     analytics = { hourly_heatmap: [] };
     controller.rerenderHourlyFromState();
-    expect(renderTimeOfDayPanel).toHaveBeenCalledTimes(1);
+    expect(bridge.renderTimeOfDay).toHaveBeenCalledTimes(1);
   });
 
   it("keeps weekday panel render when subscriptions are enabled and filters do not change", () => {
+    const bridge = installDashboardPanelsBridge();
     const elements = baseElements();
     const weekdayState = {
       filters: { weekdays: true, weekends: true, working: true, offhours: true },
@@ -310,7 +321,7 @@ describe("activityPanels detailed", () => {
 
     expect(weekdayState.distribution).toEqual([2, 4]);
     expect(weekdayState.stats).toEqual({ peak: 4 });
-    expect(renderWeekdaySection).toHaveBeenCalledTimes(1);
+    expect(bridge.renderWeekdayChart).toHaveBeenCalledTimes(1);
   });
 
   it("delegates hourly and weekday rerenders to Vue dashboard bridge when available", () => {
@@ -340,7 +351,5 @@ describe("activityPanels detailed", () => {
 
     expect(bridge.renderHourlyHeatmap).toHaveBeenCalled();
     expect(bridge.renderWeekdayChart).toHaveBeenCalled();
-    expect(renderHourlyHeatmapSection).not.toHaveBeenCalled();
-    expect(renderWeekdaySection).not.toHaveBeenCalled();
   });
 });

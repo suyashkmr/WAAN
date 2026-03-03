@@ -10,7 +10,10 @@ vi.mock("../js/analytics/activity.js", () => ({
 
 import { createActivityPanelsController } from "../js/appShell/dashboardRender/activityPanels.js";
 import {
+  renderTimeOfDayPanel,
+  renderHourlyHeatmapSection,
   renderWeeklySection,
+  renderWeekdaySection,
 } from "../js/analytics/activity.js";
 
 function createRangeSelect() {
@@ -224,5 +227,66 @@ describe("activityPanels controller", () => {
 
     expect(applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-07");
     expect(rangeSelect.value).toBe("custom");
+  });
+
+  it("falls back to legacy activity renderers when dashboard bridge is unavailable", () => {
+    const controller = createActivityPanelsController({
+      elements: {
+        hourlyChartEl: document.createElement("div"),
+        filterNoteEl: document.createElement("div"),
+        brushSummaryEl: document.createElement("div"),
+        hourlyAnomaliesEl: document.createElement("div"),
+        hourlyTopHourEl: document.createElement("div"),
+        dailyChartEl: document.createElement("div"),
+        dailyAvgDayEl: document.createElement("div"),
+        weeklyChartEl: document.createElement("div"),
+        weeklyCumulativeEl: document.createElement("div"),
+        weeklyRollingEl: document.createElement("div"),
+        weeklyAverageEl: document.createElement("div"),
+        weekdayChartEl: document.createElement("div"),
+        weekdayFilterNote: document.createElement("div"),
+        weekdayToggleWeekdays: document.createElement("input"),
+        weekdayToggleWeekends: document.createElement("input"),
+        weekdayToggleWorking: document.createElement("input"),
+        weekdayToggleOffhours: document.createElement("input"),
+        weekdayHourStartInput: document.createElement("input"),
+        weekdayHourEndInput: document.createElement("input"),
+        timeOfDayWeekdayToggle: document.createElement("input"),
+        timeOfDayWeekendToggle: document.createElement("input"),
+        timeOfDayHourStartInput: document.createElement("input"),
+        timeOfDayHourEndInput: document.createElement("input"),
+        timeOfDayHourStartLabel: document.createElement("span"),
+        timeOfDayHourEndLabel: document.createElement("span"),
+        timeOfDayChartContainer: document.createElement("div"),
+        timeOfDaySparklineEl: document.createElement("div"),
+        timeOfDayBandsEl: document.createElement("div"),
+        timeOfDayCalloutsEl: document.createElement("div"),
+        rangeSelect: createRangeSelect(),
+      },
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => ({ hourly_heatmap: [] }),
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+      },
+    });
+
+    controller.renderHourlyPanel({
+      hourly_heatmap: [],
+      hourly_summary: {},
+      hourly_details: [],
+      hourly_distribution: [],
+    });
+    controller.rerenderWeekdayFromState();
+    controller.rerenderHourlyFromState();
+
+    expect(renderHourlyHeatmapSection).toHaveBeenCalled();
+    expect(renderWeekdaySection).toHaveBeenCalled();
+    expect(renderTimeOfDayPanel).toHaveBeenCalled();
   });
 });

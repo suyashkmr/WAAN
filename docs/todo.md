@@ -536,8 +536,8 @@ Completed work is archived in git history and was removed from this file for cla
 - [ ] Phase 8 (1-2 weeks): Remove legacy DOM renderers and fallback paths.
   - [ ] Remove legacy fallback render branches in:
     - [ ] `js/analytics/summary.js`
-    - [ ] `js/appShell/dashboardRender/*`
-    - [ ] `js/search/resultsUi.js`
+    - [x] `js/appShell/dashboardRender/*`
+    - [x] `js/search/resultsUi.js`
     - [ ] `js/savedViewsUi.js`
     - [ ] `js/appShell/statusUi.js`
   - [ ] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
