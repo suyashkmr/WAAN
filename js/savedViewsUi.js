@@ -3,12 +3,10 @@ import {
   formatFloat,
   sanitizeText,
 } from "./utils.js";
-import { renderPanelState } from "./ui/panelState.js";
-import { renderSavedViewsComparison } from "./savedViewsCompare.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
+import { mountSearchSavedBridge } from "./vue/searchSavedIsland.js";
 import {
   formatSavedViewTopHour,
-  buildSavedViewCard,
   buildSavedViewCardModel,
 } from "./savedViewsCards.js";
 import { buildSavedViewsComparisonPayload } from "./savedViewsComparisonPayload.js";
@@ -67,7 +65,11 @@ export function createSavedViewsUiController({
      *   }) => boolean,
      *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
      * } | null} */
-    return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    let bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    if (bridge) return bridge;
+    mountSearchSavedBridge();
+    bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    return bridge;
   }
 
   function registerPanelActionHandlers(searchSavedBridge) {
@@ -111,25 +113,10 @@ export function createSavedViewsUiController({
           return;
         }
       }
-      delete gallery.dataset.galleryActionsBound;
-      renderPanelState({
-        container: gallery,
-        tone,
-        title,
-        message,
-        actions,
-        onAction: actionId => {
-          if (typeof onPanelAction === "function") onPanelAction(actionId);
-        },
-      });
+      gallery.textContent = "";
       gallery.dataset.interactive = "false";
       return;
     }
-    const cards = list.map(view => buildSavedViewCard(view, activeContext, {
-      ensureViewSnapshot,
-      formatSavedViewRange,
-      dataAvailableGetter,
-    })).join("");
     if (searchSavedBridge?.renderSavedViewsGallery) {
       const cards = list
         .map(view => buildSavedViewCardModel(view, activeContext, {
@@ -144,9 +131,8 @@ export function createSavedViewsUiController({
       });
       if (handled) return;
     }
-    delete gallery.dataset.galleryActionsBound;
-    gallery.innerHTML = cards;
-    gallery.dataset.interactive = dataAvailableGetter() ? "true" : "false";
+    gallery.textContent = "";
+    gallery.dataset.interactive = "false";
   }
 
   function populateSavedSelect(select, views, selectedId, placeholder) {
@@ -197,7 +183,7 @@ export function createSavedViewsUiController({
       const handled = searchSavedBridge.renderSavedViewsComparison(payload);
       if (handled) return;
     }
-    renderSavedViewsComparison(args);
+    if (compareSummaryEl) compareSummaryEl.textContent = "";
   }
 
   function refreshUI() {

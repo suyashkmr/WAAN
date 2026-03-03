@@ -108,6 +108,59 @@ function buildDependencies() {
   };
 }
 
+function installSavedViewsBridge(elements) {
+  /** @type {Record<string, Function>} */
+  let panelActionHandlers = {};
+  globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    setPanelActionHandlers: vi.fn(handlers => {
+      panelActionHandlers = {
+        ...panelActionHandlers,
+        ...(handlers || {}),
+      };
+      return true;
+    }),
+    renderSavedViewsPanelState: vi.fn(payload => {
+      const { tone = "empty", title = "", message = "", actions = [] } = payload || {};
+      elements.gallery.innerHTML = "";
+      const panel = document.createElement("div");
+      panel.className = `panel-state panel-state--${tone}`;
+      panel.textContent = `${title} ${message}`.trim();
+      elements.gallery.appendChild(panel);
+      actions.forEach(action => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.setAttribute("data-panel-action", action.id || "");
+        button.textContent = action.label || "Action";
+        button.addEventListener("click", () => panelActionHandlers[`savedViews:${action.id}`]?.());
+        elements.gallery.appendChild(button);
+      });
+      return true;
+    }),
+    renderSavedViewsGallery: vi.fn(payload => {
+      const cards = Array.isArray(payload?.cards) ? payload.cards : [];
+      elements.gallery.innerHTML = "";
+      cards.forEach(card => {
+        const article = document.createElement("article");
+        article.className = "saved-view-card";
+        if (card?.isActive) article.classList.add("is-active");
+        if (card?.isDirty) article.classList.add("is-dirty");
+        article.dataset.viewId = card?.viewId || "";
+        article.textContent = [
+          card?.viewName || "",
+          card?.isActive ? "Active" : "",
+          card?.isDirty ? "Unsaved changes" : "",
+          card?.recencyHint || "",
+        ].join(" ").trim();
+        article.addEventListener("click", () => panelActionHandlers["savedViews:apply-view"]?.("savedViews:apply-view", { viewId: card?.viewId }));
+        elements.gallery.appendChild(article);
+      });
+      elements.gallery.dataset.galleryActionsBound = "true";
+      return true;
+    }),
+    renderSavedViewsComparison: vi.fn(() => true),
+  };
+}
+
 describe("savedViews controller", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -116,6 +169,7 @@ describe("savedViews controller", () => {
 
   it("disables controls when no dataset is available", () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const dependencies = buildDependencies();
     const controller = createSavedViewsController({ elements, dependencies });
 
@@ -130,6 +184,7 @@ describe("savedViews controller", () => {
 
   it("saves, applies, and deletes a view via UI handlers", async () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const dependencies = buildDependencies();
     const controller = createSavedViewsController({ elements, dependencies });
 
@@ -157,6 +212,7 @@ describe("savedViews controller", () => {
 
   it("resets saved views when dataset changes", () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const dependencies = buildDependencies();
     const controller = createSavedViewsController({ elements, dependencies });
 
@@ -170,6 +226,7 @@ describe("savedViews controller", () => {
 
   it("shows empty gallery recovery actions when data is available", () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const dependencies = buildDependencies();
     const controller = createSavedViewsController({ elements, dependencies });
 
@@ -256,7 +313,7 @@ describe("savedViews controller", () => {
     expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Dispatcher View".', "success");
   });
 
-  it("keeps legacy gallery apply interactions when bridge has dispatcher but no Vue gallery renderer", async () => {
+  it("does not fallback to legacy gallery interactions when Vue gallery renderer is unavailable", async () => {
     const elements = buildElements();
     const dependencies = buildDependencies();
     elements.gallery.dataset.galleryActionsBound = "true";
@@ -272,16 +329,16 @@ describe("savedViews controller", () => {
     elements.saveButton.click();
 
     const card = elements.gallery.querySelector(".saved-view-card");
-    expect(card).toBeTruthy();
+    expect(card).toBeNull();
     card?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     await Promise.resolve();
 
-    expect(dependencies.applyRangeAndRender).toHaveBeenCalledWith("all");
-    expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Fallback View".', "success");
+    expect(dependencies.applyRangeAndRender).not.toHaveBeenCalled();
   });
 
   it("shows active, dirty, and recency affordances for applied saved views", async () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const allOption = document.createElement("option");
     allOption.value = "all";
     allOption.textContent = "All";
@@ -324,6 +381,7 @@ describe("savedViews controller", () => {
 
   it("hydrates missing saved-view snapshots through analytics worker path", async () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const dependencies = buildDependencies();
     dependencies.getDatasetAnalytics = vi.fn(() => null);
     dependencies.computeAnalyticsWithWorker = vi.fn(async () => ({
@@ -361,6 +419,7 @@ describe("savedViews controller", () => {
 
   it("falls back to sync snapshot hydration when analytics worker fails", async () => {
     const elements = buildElements();
+    installSavedViewsBridge(elements);
     const dependencies = buildDependencies();
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     dependencies.getDatasetAnalytics = vi.fn(() => null);

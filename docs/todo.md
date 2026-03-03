@@ -534,12 +534,12 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Verified on 2026-03-03 by removing remaining dashboard bridge handoff to legacy activity renderers (time-of-day, weekday, hourly) and removing Vue-results DOM verification fallback in search bridge path; full `npm run ci:verify` green.
 
 - [ ] Phase 8 (1-2 weeks): Remove legacy DOM renderers and fallback paths.
-  - [ ] Remove legacy fallback render branches in:
-    - [ ] `js/analytics/summary.js`
+  - [x] Remove legacy fallback render branches in:
+    - [x] `js/analytics/summary.js`
     - [x] `js/appShell/dashboardRender/*`
     - [x] `js/search/resultsUi.js`
-    - [ ] `js/savedViewsUi.js`
-    - [ ] `js/appShell/statusUi.js`
+    - [x] `js/savedViewsUi.js`
+    - [x] `js/appShell/statusUi.js`
   - [ ] Replace remaining `innerHTML`/manual node-construction render flows on migrated surfaces with Vue templates/components.
   - [ ] Delete no-longer-needed bridge wiring/adapters once Vue paths are primary-only.
   - [ ] Acceptance: migrated surfaces render only via Vue components with no legacy fallback branches.

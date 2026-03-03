@@ -23,7 +23,7 @@ describe("renderSummaryCards", () => {
     delete globalThis.__WAAN_VUE_SUMMARY_BRIDGE__;
   });
 
-  it("renders semantic summary card sections by default", () => {
+  it("skips DOM fallback rendering when summary bridge is unavailable", () => {
     const summaryEl = document.createElement("section");
     document.body.appendChild(summaryEl);
 
@@ -33,7 +33,7 @@ describe("renderSummaryCards", () => {
       summaryEl,
     });
 
-    expect(summaryEl.querySelectorAll("section.summary-card.summary-card--semantic")).toHaveLength(4);
+    expect(summaryEl.querySelectorAll("section.summary-card.summary-card--semantic")).toHaveLength(0);
   });
 
   it("delegates summary card rendering to the Vue bridge when available", () => {

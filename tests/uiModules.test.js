@@ -119,66 +119,48 @@ describe("pdf preview controller", () => {
 describe("status ui controller", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    vi.useFakeTimers();
-    vi.stubGlobal("requestAnimationFrame", cb => {
-      cb();
-      return 0;
-    });
+    delete globalThis.__WAAN_VUE_SHELL_BRIDGE__;
   });
 
   afterEach(() => {
-    vi.useRealTimers();
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it("shows and auto-dismisses status messages", () => {
-    const statusEl = document.createElement("div");
-    statusEl.className = "hidden";
+  it("no-ops when shell bridge is unavailable", () => {
+    const controller = createStatusUiController({ autoHideDelayMs: 100, exitDurationMs: 50 });
 
-    const controller = createStatusUiController({
-      statusEl,
-      toastContainer: null,
-      autoHideDelayMs: 100,
-      exitDurationMs: 50,
-    });
-
-    controller.showStatusMessage("Done", "success");
-
-    expect(statusEl.textContent).toBe("Done");
-    expect(statusEl.classList.contains("success")).toBe(true);
-    expect(statusEl.classList.contains("is-active")).toBe(true);
-
-    vi.advanceTimersByTime(110);
-    expect(statusEl.classList.contains("is-exiting")).toBe(true);
-
-    vi.advanceTimersByTime(60);
-    expect(statusEl.classList.contains("hidden")).toBe(true);
-    expect(statusEl.classList.contains("is-active")).toBe(false);
+    expect(() => controller.showStatusMessage("Done", "success")).not.toThrow();
+    expect(() => controller.beginStatusExit()).not.toThrow();
+    expect(() => controller.finalizeStatusExit()).not.toThrow();
   });
 
-  it("limits and dismisses toasts", () => {
-    const toastContainer = document.createElement("div");
-    document.body.appendChild(toastContainer);
-    const controller = createStatusUiController({
-      statusEl: null,
-      toastContainer,
-      maxToasts: 2,
-    });
+  it("delegates toasts and status messages to shell bridge", () => {
+    const showToast = vi.fn();
+    const dismissToast = vi.fn();
+    const showStatusMessage = vi.fn();
+    const beginStatusExit = vi.fn();
+    const finalizeStatusExit = vi.fn();
+    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+      showToast,
+      dismissToast,
+      showStatusMessage,
+      beginStatusExit,
+      finalizeStatusExit,
+    };
+    const controller = createStatusUiController({ autoHideDelayMs: 100, exitDurationMs: 50, maxToasts: 2 });
 
+    const toast = document.createElement("div");
     controller.showToast("one", "info", { duration: 1000 });
-    controller.showToast("two", "warning", { duration: 1000 });
-    controller.showToast("three", "error", { duration: 1000 });
+    controller.dismissToast(toast);
+    controller.showStatusMessage("Done", "success");
+    controller.beginStatusExit();
+    controller.finalizeStatusExit();
 
-    expect(toastContainer.children.length).toBe(2);
-    expect(toastContainer.textContent).not.toContain("one");
-    expect(toastContainer.textContent).toContain("two");
-    expect(toastContainer.textContent).toContain("three");
-
-    const dismissButton = toastContainer.querySelector(".toast-close");
-    dismissButton.click();
-    vi.advanceTimersByTime(200);
-    expect(toastContainer.children.length).toBe(1);
+    expect(showToast).toHaveBeenCalledWith("one", "info", { duration: 1000, maxToasts: 2 });
+    expect(dismissToast).toHaveBeenCalledWith(toast);
+    expect(showStatusMessage).toHaveBeenCalledWith("Done", "success", { autoHideDelayMs: 100, exitDurationMs: 50 });
+    expect(beginStatusExit).toHaveBeenCalledWith(50);
+    expect(finalizeStatusExit).toHaveBeenCalled();
   });
 });
 

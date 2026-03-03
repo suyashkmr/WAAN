@@ -3,7 +3,16 @@ import {
   formatDateRangeWithTime,
 } from "../utils.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { mountSummaryIsland } from "../vue/summaryIsland.js";
 export { renderParticipants } from "./summaryParticipants.js";
+
+function resolveSummaryBridge() {
+  let summaryBridge = resolveVueBridge(VUE_BRIDGE_NAMES.summary);
+  if (summaryBridge?.render) return summaryBridge;
+  mountSummaryIsland();
+  summaryBridge = resolveVueBridge(VUE_BRIDGE_NAMES.summary);
+  return summaryBridge?.render ? summaryBridge : null;
+}
 
 export function renderSummaryCards({ analytics, label, summaryEl }) {
   if (!summaryEl || !analytics) return;
@@ -41,31 +50,6 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
     },
   ];
 
-  const summaryBridge = resolveVueBridge(VUE_BRIDGE_NAMES.summary);
-  if (summaryBridge && typeof summaryBridge.render === "function") {
-    const handledByVue = summaryBridge.render(cards);
-    if (handledByVue) return;
-  }
-  summaryEl.innerHTML = "";
-  cards.forEach(({ title, value, hint }) => {
-    const card = document.createElement("section");
-    card.className = "summary-card summary-card--semantic";
-
-    const header = document.createElement("h3");
-    header.textContent = title;
-    card.appendChild(header);
-
-    const valueEl = document.createElement("p");
-    valueEl.className = "value";
-    valueEl.textContent = value;
-    card.appendChild(valueEl);
-
-    if (hint) {
-      const hintEl = document.createElement("small");
-      hintEl.textContent = hint;
-      card.appendChild(hintEl);
-    }
-
-    summaryEl.appendChild(card);
-  });
+  const summaryBridge = resolveSummaryBridge();
+  summaryBridge?.render?.(cards);
 }
