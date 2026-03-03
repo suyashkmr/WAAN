@@ -237,23 +237,17 @@ export function createSearchResultsUiController({
         handledResults = false;
       }
       if (handledResults) {
-        const shouldVerifyDomRender = searchSavedBridge?.__waanVueSearchBridge === true;
-        const renderedItems = shouldVerifyDomRender
-          ? resultsListEl.querySelectorAll(".search-result").length
-          : results.length;
-        if (!results.length || renderedItems > 0) {
-          const handledInsights = Boolean(
-            searchSavedBridge?.renderSearchInsights?.({
-              summary,
-              resultLimit,
-            }),
-          );
-          if (!handledInsights) {
-            renderSearchInsights({ insightsEl, summary, resultLimit });
-          }
-          resultsRenderCacheKey = nextRenderCacheKey;
-          return;
+        const handledInsights = Boolean(
+          searchSavedBridge?.renderSearchInsights?.({
+            summary,
+            resultLimit,
+          }),
+        );
+        if (!handledInsights) {
+          renderSearchInsights({ insightsEl, summary, resultLimit });
         }
+        resultsRenderCacheKey = nextRenderCacheKey;
+        return;
       }
     }
 

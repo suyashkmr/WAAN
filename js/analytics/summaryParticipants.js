@@ -116,7 +116,6 @@ function buildParticipantRowData(entry, index) {
     avgWordsTitle:
       avgWords !== null ? `Average words per message: ${avgWords}` : "Average words per message: unavailable",
     detailItems: buildParticipantDetailModel(entry),
-    detailHtml: buildParticipantDetail(entry),
   };
 }
 
@@ -162,9 +161,10 @@ function buildParticipantRows(entry, index) {
   detailRow.className = "participant-detail-row hidden";
   detailRow.id = rowData.detailId;
   detailRow.dataset.rowId = rowData.rowId;
+  const detailHtml = buildParticipantDetail(entry);
   detailRow.innerHTML = `
     <td colspan="5">
-      ${rowData.detailHtml}
+      ${detailHtml}
     </td>
   `;
   return [row, detailRow];

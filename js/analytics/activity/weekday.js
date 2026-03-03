@@ -173,6 +173,8 @@ function computeWeekdayFilteredData(state) {
   };
 }
 
+export { computeWeekdayFilteredData };
+
 function buildWeekdayHeatmapMobile(entries) {
   const heatmap = document.createElement("div");
   heatmap.className = "weekday-heatmap-mobile";
@@ -225,6 +227,10 @@ function buildWeekdayHeatmapMobile(entries) {
 
 function updateWeekdayFilterNote(filterNoteEl, state) {
   if (!filterNoteEl) return;
+  filterNoteEl.textContent = buildWeekdayFilterNote(state);
+}
+
+export function buildWeekdayFilterNote(state) {
   const { filters, brush } = state;
   const pieces = [];
   if (!filters.weekdays || !filters.weekends) {
@@ -238,5 +244,5 @@ function updateWeekdayFilterNote(filterNoteEl, state) {
   if (!(brush.start === 0 && brush.end === 23)) {
     pieces.push(`${String(brush.start).padStart(2, "0")}:00–${String(brush.end).padStart(2, "0")}:00`);
   }
-  filterNoteEl.textContent = pieces.length ? pieces.join(" · ") : "";
+  return pieces.length ? pieces.join(" · ") : "";
 }

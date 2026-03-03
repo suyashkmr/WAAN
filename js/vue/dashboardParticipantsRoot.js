@@ -114,7 +114,7 @@ export function createParticipantsRoot(h, participantsState) {
                             h("span", { class: "detail-label" }, String(item?.label || "")),
                             h("span", { class: "detail-value" }, String(item?.value || "—")),
                           ]))
-                        : [h("div", { innerHTML: row.detailHtml || "" })],
+                        : [],
                     ),
                   ]),
                 ]),

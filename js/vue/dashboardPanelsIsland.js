@@ -1,6 +1,8 @@
-import { renderTimeOfDayPanel } from "../analytics/activity/timeOfDay.js";
-import { renderHourlyHeatmapSection, renderWeekdaySection } from "../analytics/activity.js";
+import { getWeekdayState } from "../state.js";
 import { createParticipantsRoot } from "./dashboardParticipantsRoot.js";
+import { createHourlyRoot, renderHourlyFromPayload } from "./dashboardHourlyRoot.js";
+import { createTimeOfDayModel, createTimeOfDayRoot } from "./dashboardTimeOfDayRoot.js";
+import { createWeekdayModel, createWeekdayRoot } from "./dashboardWeekdayRoot.js";
 import {
   LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
@@ -37,16 +39,28 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   const mountEl = doc.getElementById("highlights-list");
   const participantsMountEl = doc.querySelector("#top-senders tbody");
   const timeOfDayMountEl = doc.getElementById("timeofday-chart");
+  let hourlyMountEl = doc.getElementById("hourly-chart");
+  let weekdayMountEl = doc.getElementById("weekday-chart");
   if (!mountEl || mountEl.dataset.vueHighlightsMounted === "true") return;
 
   const { createApp, h, reactive } = VueRuntime;
   const state = reactive({
     highlights: [],
   });
+  const timeOfDayState = reactive({
+    model: null,
+  });
   const participantsState = reactive({
     rows: [],
     emptyMessage: "",
     expandedByRowId: {},
+  });
+  const hourlyState = reactive({
+    model: null,
+    anomalyBadges: [],
+  });
+  const weekdayState = reactive({
+    model: null,
   });
 
   const iconPath =
@@ -135,28 +149,34 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   }
 
   if (timeOfDayMountEl && timeOfDayMountEl.dataset.vueTimeOfDayMounted !== "true") {
-    const TimeOfDayRoot = {
-      name: "WaanTimeOfDayIsland",
-      setup() {
-        return () => [
-          h("div", {
-            class: "timeofday-sparkline",
-            id: "timeofday-sparkline",
-          }),
-          h("div", {
-            class: "timeofday-band-grid",
-            id: "timeofday-bands",
-          }),
-          h("div", {
-            class: "timeofday-callouts",
-            id: "timeofday-callouts",
-          }),
-        ];
-      },
-    };
+    const TimeOfDayRoot = createTimeOfDayRoot(h, timeOfDayState);
     createApp(TimeOfDayRoot).mount(timeOfDayMountEl);
     timeOfDayMountEl.dataset.vueTimeOfDayMounted = "true";
   }
+
+  function ensureHourlyMounted(container) {
+    if (!container) return false;
+    hourlyMountEl = container;
+    if (hourlyMountEl.dataset.vueHourlyMounted === "true") return true;
+    const HourlyRoot = createHourlyRoot(h, hourlyState);
+    createApp(HourlyRoot).mount(hourlyMountEl);
+    hourlyMountEl.dataset.vueHourlyMounted = "true";
+    return true;
+  }
+
+  if (hourlyMountEl) ensureHourlyMounted(hourlyMountEl);
+
+  function ensureWeekdayMounted(container) {
+    if (!container) return false;
+    weekdayMountEl = container;
+    if (weekdayMountEl.dataset.vueWeekdayMounted === "true") return true;
+    const WeekdayRoot = createWeekdayRoot(h, weekdayState);
+    createApp(WeekdayRoot).mount(weekdayMountEl);
+    weekdayMountEl.dataset.vueWeekdayMounted = "true";
+    return true;
+  }
+
+  if (weekdayMountEl) ensureWeekdayMounted(weekdayMountEl);
 
   registerVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, {
     /**
@@ -199,18 +219,8 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
      */
     renderTimeOfDay(analytics) {
       if (!timeOfDayMountEl) return false;
-      if (!doc) return false;
-      const sparklineEl = doc.getElementById("timeofday-sparkline");
-      const bandsEl = doc.getElementById("timeofday-bands");
-      const calloutsEl = doc.getElementById("timeofday-callouts");
-      if (!sparklineEl || !bandsEl || !calloutsEl) return false;
-
-      renderTimeOfDayPanel(analytics, {
-        container: timeOfDayMountEl,
-        sparklineEl,
-        bandsEl,
-        calloutsEl,
-      });
+      const chartWidth = timeOfDayMountEl.clientWidth || 480;
+      timeOfDayState.model = createTimeOfDayModel(analytics, chartWidth);
       return true;
     },
     /**
@@ -218,10 +228,22 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
      * @returns {boolean}
      */
     renderHourlyHeatmap(payload) {
-      const data = payload?.data ?? null;
       const options = payload?.options ?? null;
       if (!options || typeof options !== "object") return false;
-      renderHourlyHeatmapSection(data, options);
+      const chartEl = /** @type {{ chartEl?: HTMLElement | null }} */ (options).chartEl;
+      if (!ensureHourlyMounted(chartEl || hourlyMountEl)) return false;
+      const handled = renderHourlyFromPayload(payload, hourlyState);
+      if (!handled) return false;
+      const anomaliesEl = /** @type {{ anomaliesEl?: HTMLElement | null }} */ (options).anomaliesEl;
+      if (anomaliesEl && hourlyState.anomalyBadges.length) {
+        anomaliesEl.textContent = "";
+        hourlyState.anomalyBadges.forEach(text => {
+          const badge = doc.createElement("span");
+          badge.className = "badge";
+          badge.textContent = text;
+          anomaliesEl.appendChild(badge);
+        });
+      }
       return true;
     },
     /**
@@ -230,7 +252,14 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
      */
     renderWeekdayChart(options) {
       if (!options || typeof options !== "object") return false;
-      renderWeekdaySection(options);
+      const container = /** @type {{ container?: HTMLElement | null, filterNoteEl?: HTMLElement | null }} */ (options).container;
+      const filterNoteEl = /** @type {{ container?: HTMLElement | null, filterNoteEl?: HTMLElement | null }} */ (options).filterNoteEl;
+      if (!ensureWeekdayMounted(container || weekdayMountEl)) return false;
+      const state = getWeekdayState();
+      weekdayState.model = createWeekdayModel(state);
+      if (filterNoteEl) {
+        filterNoteEl.textContent = weekdayState.model?.filterNote || "";
+      }
       return true;
     },
     ownsParticipantInteractions: true,

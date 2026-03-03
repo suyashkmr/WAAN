@@ -500,11 +500,11 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Exit criteria: Vue 3 + chosen component library fully replaces Shoelace in app-shell surfaces with no backend contract changes and release gates remain green.
     - [x] Verified on 2026-03-03: no active `sl-*` runtime usage in app code, Vue/PrimeVue vendored runtime checks pass, and `npm run ci:verify` + `npm run test:visual` are green on `rewrite`.
 
-- [ ] Phase 7 (1-2 weeks): Convert app-shell orchestration to Vue-first state and lifecycle.
+- [x] Phase 7 (1-2 weeks): Convert app-shell orchestration to Vue-first state and lifecycle.
   - [x] Replace bridge globals (`__WAAN_VUE_*_BRIDGE__`) with Vue-owned composition/state flow.
     - [x] Added shared Vue bridge registry (`js/vue/bridgeRegistry.js`) and rewired shell/dashboard/search-saved/summary bridge consumers to resolve via registry with legacy-key compatibility.
     - [x] Verified on 2026-03-03 with `npm run ci:verify` (green).
-  - [ ] Move dashboard/search/saved/relay UI event orchestration from imperative DOM listeners into Vue component emits/actions.
+  - [x] Move dashboard/search/saved/relay UI event orchestration from imperative DOM listeners into Vue component emits/actions.
     - [x] Relay slice: added Vue shell bridge relay action dispatcher (`setRelayActionHandlers` / `dispatchRelayAction`) and moved Vue-owned log drawer/recovery controls to dispatcher-driven actions (`js/vue/shellPrimitivesIsland.js`, `js/appShell/relayBootstrap.js`).
     - [x] Added relay bootstrap integration coverage for dispatcher registration and action invocation (`tests/relayIntegration.test.js`).
     - [x] Search/Saved slice: added Vue search-saved panel action dispatcher (`setPanelActionHandlers`) and moved panel-state action routing to dispatcher keys (`search:*`, `savedViews:*`) instead of per-render callback closures (`js/vue/searchSavedIsland.js`, `js/search/resultsUi.js`, `js/savedViewsUi.js`).
@@ -512,6 +512,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Dashboard participants slice: moved row expand/collapse behavior into Vue participants island state and skipped legacy `participantsBody` click binding when Vue dashboard bridge owns interactions (`js/vue/dashboardPanelsIsland.js`, `js/appShell/eventBindings.js`).
     - [x] Added event-binding regression coverage for Vue-owned participant interaction path (`tests/eventBindingsDetailed.test.js`).
     - [x] Dashboard participant-detail render slice: removed Vue participants row dependence on legacy `detailHtml` by passing structured detail items from analytics summary payloads and rendering detail grids as Vue nodes (`js/analytics/participantDetail.js`, `js/analytics/summary.js`, `js/vue/dashboardParticipantsRoot.js`).
+    - [x] Dashboard participant-detail contract hardening: removed remaining Vue-side `detailHtml` fallback/consumption so bridge payloads are `detailItems`-only (`js/analytics/summaryParticipants.js`, `js/vue/dashboardParticipantsRoot.js`).
     - [x] Onboarding slice: routed onboarding dialog Skip/Next through Vue shell action dispatcher (`onboarding.*`) with fallback DOM listeners only when dispatcher is unavailable (`js/vue/shellPrimitiveViews.js`, `js/vue/shellPrimitivesIsland.js`, `js/appShell/bootstrap.js`).
     - [x] Added bootstrap regression coverage for shell-dispatched onboarding actions (`tests/bootstrapKeyboardSharedRuntime.test.js`).
     - [x] Toolbar export slice: routed Vue toolbar export buttons (`export.pdf|markdown|slides`) through shell action dispatcher with fallback DOM listeners when dispatcher is unavailable (`js/vue/shellPrimitiveViews.js`, `js/appShell/eventBindings.js`).
@@ -523,10 +524,14 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Search actions slice: mounted search action row as Vue primitive and routed `Search messages`/`Clear filters` through panel dispatcher (`search:run-search`, `search:clear-search-filters`) while preserving legacy reset fallback when Vue search actions are not mounted (`js/vue/searchSavedActionPrimitives.js`, `js/vue/searchSavedIsland.js`, `js/search.js`).
     - [x] Relay core controls slice: mounted relay header/live action groups as Vue shell primitives and routed connect/pause/logout/reload/clear controls through relay dispatcher (`relay.primaryAction`, `relay.stop`, `relay.logout`, `relay.reloadAll`, `relay.clearStorage`) with legacy listeners only as fallback when Vue relay actions are not mounted (`js/vue/shellPrimitiveViews.js`, `js/vue/shellPrimitivesIsland.js`, `js/appShell/relayBootstrap.js`).
     - [x] Saved-views render contract slice: removed Vue bridge dependence on legacy HTML handoff for gallery/comparison by passing structured payloads and rendering cards/comparison columns in Vue (`js/savedViewsUi.js`, `js/vue/searchSavedIsland.js`).
+    - [x] Dashboard time-of-day render contract slice: removed Vue bridge dependence on legacy time-of-day DOM renderer by computing structured chart/band/callout view-models and rendering the panel as Vue nodes (`js/vue/dashboardTimeOfDayRoot.js`, `js/vue/dashboardPanelsIsland.js`).
+    - [x] Dashboard weekday render contract slice: removed Vue bridge dependence on legacy weekday DOM renderer by moving filtered weekday bar/mobile heatmap rendering into Vue-owned view-model + island state (`js/vue/dashboardWeekdayRoot.js`, `js/vue/dashboardPanelsIsland.js`, `js/analytics/activity/weekday.js`).
+    - [x] Dashboard hourly render contract slice: removed Vue bridge dependence on legacy hourly DOM renderer by moving heatmap rendering and note/anomaly payload generation into Vue-owned view-model state (`js/vue/dashboardHourlyRoot.js`, `js/vue/dashboardPanelsIsland.js`).
   - [x] Introduce a root Vue app shell entry that owns mount lifecycle and route-level section visibility.
     - [x] Added centralized Vue app-shell lifecycle orchestrator and root mount state marker (`js/vue/appShellRoot.js`) and switched `js/main.js` to mount through this root entry.
     - [x] Added regression coverage for root lifecycle idempotence (`tests/vueAppShellRoot.test.js`).
-  - [ ] Acceptance: no UI rendering path depends on bridge handoff from legacy renderers.
+  - [x] Acceptance: no UI rendering path depends on bridge handoff from legacy renderers.
+    - [x] Verified on 2026-03-03 by removing remaining dashboard bridge handoff to legacy activity renderers (time-of-day, weekday, hourly) and removing Vue-results DOM verification fallback in search bridge path; full `npm run ci:verify` green.
 
 - [ ] Phase 8 (1-2 weeks): Remove legacy DOM renderers and fallback paths.
   - [ ] Remove legacy fallback render branches in:
