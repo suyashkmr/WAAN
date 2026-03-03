@@ -290,9 +290,9 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedBridge(elements, {
       setPanelActionHandlers: vi.fn(() => true),
-    };
+    });
     const controller = createSearchController({ elements });
     controller.init();
 

@@ -1,6 +1,5 @@
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountSearchSavedBridge } from "../vue/searchSavedIsland.js";
-import { createLegacySearchFallbackRenderer } from "./legacyResultsFallback.js";
 
 export function createSearchResultsUiController({
   resultsSummaryEl,
@@ -15,18 +14,20 @@ export function createSearchResultsUiController({
   handleStateAction,
 }) {
   let resultsRenderCacheKey = "";
-  const legacyFallbackRenderer = createLegacySearchFallbackRenderer({
-    resultsListEl,
-    insightsEl,
-    resultLimit,
-    handleStateAction,
-  });
+
+  function hasSearchBridgeContracts(searchSavedBridge) {
+    if (!searchSavedBridge || typeof searchSavedBridge !== "object") return false;
+    return (
+      typeof searchSavedBridge.renderSearchPanelState === "function" &&
+      typeof searchSavedBridge.renderSearchResults === "function" &&
+      typeof searchSavedBridge.renderSearchInsights === "function"
+    );
+  }
 
   /**
    * @returns {{ renderSearchPanelState?: (payload: any) => boolean, renderSearchResults?: (payload: any) => boolean, renderSearchInsights?: (payload: any) => boolean } | null}
    */
-  function getSearchSavedBridge() {
-    mountSearchSavedBridge();
+  function getSearchSavedBridge({ attemptRecover = true } = {}) {
     /** @type {{
      *   renderSearchPanelState?: (payload: {
      *     tone?: string,
@@ -46,7 +47,12 @@ export function createSearchResultsUiController({
      *   }) => boolean,
      *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
      * } | null} */
-    return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    if (hasSearchBridgeContracts(bridge)) return bridge;
+    if (!attemptRecover) return null;
+    mountSearchSavedBridge();
+    const recoveredBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    return hasSearchBridgeContracts(recoveredBridge) ? recoveredBridge : null;
   }
 
   function registerPanelActionHandlers(searchSavedBridge) {
@@ -73,7 +79,6 @@ export function createSearchResultsUiController({
         summary: null,
         resultLimit,
       });
-      if (!searchSavedBridge?.renderSearchInsights) legacyFallbackRenderer.renderInsights(null);
     }
     if (searchSavedBridge?.renderSearchPanelState) {
       const handled = searchSavedBridge.renderSearchPanelState({
@@ -84,7 +89,7 @@ export function createSearchResultsUiController({
       });
       if (handled) return "bridge";
     }
-    return legacyFallbackRenderer.renderState({ tone, title, message, actions }) ? "fallback" : null;
+    return null;
   }
 
   function renderLoadingState(message = "Searching messages…") {
@@ -133,7 +138,7 @@ export function createSearchResultsUiController({
 
     const hasFilters = hasSearchFilters(query);
     cancelPendingRender();
-    const searchSavedBridge = getSearchSavedBridge();
+    let searchSavedBridge = getSearchSavedBridge();
     if (searchSavedBridge) registerPanelActionHandlers(searchSavedBridge);
     resultsSummaryEl.textContent = buildResultsSummaryText({
       hasRunSearch,
@@ -144,7 +149,6 @@ export function createSearchResultsUiController({
       resultLimit,
     });
 
-    resultsListEl.innerHTML = "";
     if (!total) {
       const renderedStateSource = renderResultsState({
         tone: hasRunSearch ? "empty" : "loading",
@@ -175,6 +179,28 @@ export function createSearchResultsUiController({
           handledResults = false;
         }
       }
+      if (!handledResults) {
+        const recoveredBridge = getSearchSavedBridge({ attemptRecover: true });
+        if (recoveredBridge && recoveredBridge !== searchSavedBridge) {
+          searchSavedBridge = recoveredBridge;
+          registerPanelActionHandlers(searchSavedBridge);
+          try {
+            handledResults = Boolean(searchSavedBridge.renderSearchResults({
+              results,
+              total,
+              lastRunFiltered,
+            }));
+          } catch {
+            handledResults = false;
+          }
+          if (handledResults) {
+            const expectedRenderCount = Array.isArray(results) ? results.filter(Boolean).length : 0;
+            if (expectedRenderCount > 0 && !resultsListEl.querySelector(".search-result")) {
+              handledResults = false;
+            }
+          }
+        }
+      }
       if (handledResults) {
         const handledInsights = Boolean(
           searchSavedBridge?.renderSearchInsights?.({
@@ -183,23 +209,12 @@ export function createSearchResultsUiController({
           }),
         );
         if (!handledInsights) {
-          const fallbackInsightsHandled = legacyFallbackRenderer.renderInsights(summary);
-          if (fallbackInsightsHandled) {
-            resultsRenderCacheKey = nextRenderCacheKey;
-          }
           return;
         }
         resultsRenderCacheKey = nextRenderCacheKey;
         return;
       }
     }
-
-    const handledFallbackResults = legacyFallbackRenderer.renderResults({
-      results,
-      total,
-      lastRunFiltered,
-    });
-    if (handledFallbackResults) legacyFallbackRenderer.renderInsights(summary);
   }
 
   function resetResultsRenderCache() {

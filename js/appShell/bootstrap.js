@@ -2,6 +2,7 @@
 
 import { initAppShellPrimitives } from "../ui/appShellPrimitives.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { mountVueAppShellRoot } from "../vue/appShellRoot.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -117,7 +118,28 @@ export function createBootstrapController({ elements, deps }) {
     });
   }
 
+  function assertSearchSavedBridgeReady() {
+    const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
+    if (isVitestRuntime) return;
+    const rootState = mountVueAppShellRoot();
+    if (!rootState?.mounted) {
+      throw new Error("Vue app-shell root did not mount before search bootstrap.");
+    }
+    const searchSavedBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+    const hasSearchContracts = Boolean(
+      searchSavedBridge
+        && typeof searchSavedBridge.renderSearchPanelState === "function"
+        && typeof searchSavedBridge.renderSearchResults === "function"
+        && typeof searchSavedBridge.renderSearchInsights === "function"
+        && typeof searchSavedBridge.setPanelActionHandlers === "function",
+    );
+    if (!hasSearchContracts) {
+      throw new Error("SearchSaved bridge is not ready with required contracts.");
+    }
+  }
+
   function initAppBootstrap() {
+    assertSearchSavedBridgeReady();
     initAppShellPrimitives({ documentRef: document });
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     const supportsShellActionDispatch =

@@ -19,7 +19,7 @@ describe("search results ui controller", () => {
     delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
   });
 
-  it("renders fallback empty state and still retries when bridge becomes available", () => {
+  it("does not cache empty state when bridge is unavailable", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
@@ -48,13 +48,14 @@ describe("search results ui controller", () => {
     });
 
     controller.renderResults();
-    expect(resultsListEl.querySelectorAll(".panel-state")).toHaveLength(1);
+    expect(resultsListEl.children.length).toBe(0);
 
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchPanelState() {
         panelStateCalls += 1;
         return true;
       },
+      renderSearchResults: () => true,
       renderSearchInsights: () => true,
     };
 
@@ -80,6 +81,7 @@ describe("search results ui controller", () => {
 
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchPanelState: panelStateCalls,
+      renderSearchResults: () => true,
       renderSearchInsights: insightsCalls,
     };
 
@@ -123,6 +125,7 @@ describe("search results ui controller", () => {
         payloadSeen = payload;
         return true;
       },
+      renderSearchResults: () => true,
       renderSearchInsights: () => true,
     };
 
@@ -162,6 +165,7 @@ describe("search results ui controller", () => {
     const renderSearchInsights = vi.fn(() => false);
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchPanelState,
+      renderSearchResults: () => true,
       renderSearchInsights,
     };
 
@@ -204,6 +208,7 @@ describe("search results ui controller", () => {
     });
     const renderSearchInsightsBridge = vi.fn(() => true);
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchPanelState: () => true,
       renderSearchResults,
       renderSearchInsights: renderSearchInsightsBridge,
     };
@@ -243,7 +248,68 @@ describe("search results ui controller", () => {
     expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
   });
 
-  it("falls back to legacy rows when bridge reports handled but renders no rows", () => {
+  it("does not clear Vue-managed container before populated rerender after loading state", () => {
+    const resultsSummaryEl = document.createElement("div");
+    const resultsListEl = document.createElement("div");
+    const insightsEl = document.createElement("div");
+    const state = {
+      query: { text: "hello", participant: "", start: "", end: "" },
+      results: [],
+      total: 0,
+      summary: null,
+      lastRun: Date.now(),
+      lastRunHasFilters: true,
+    };
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchPanelState: () => {
+        resultsListEl.dataset.vueOwned = "true";
+        resultsListEl.innerHTML = '<div class="panel-state"></div>';
+        return true;
+      },
+      renderSearchResults: () => {
+        if (resultsListEl.dataset.vueOwned === "true" && !resultsListEl.querySelector(".panel-state")) {
+          throw new Error("Vue container was externally cleared.");
+        }
+        resultsListEl.innerHTML = '<div class="search-result">rendered</div>';
+        return true;
+      },
+      renderSearchInsights: () => true,
+    };
+
+    const controller = createSearchResultsUiController({
+      resultsSummaryEl,
+      resultsListEl,
+      insightsEl,
+      resultLimit: 200,
+      getSearchState: () => state,
+      getDatasetFingerprint: () => "fp-vue-container-preserved",
+      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
+      hasSearchFilters: query => Boolean(query?.text),
+      buildResultsSummaryText: () => "summary",
+      buildSearchResultItem: vi.fn(() => document.createElement("div")),
+      renderSearchInsights: vi.fn(),
+      handleStateAction: () => {},
+    });
+
+    controller.renderLoadingState("Scanning…");
+    expect(resultsListEl.querySelector(".panel-state")).toBeTruthy();
+
+    state.results = [buildResult(1)];
+    state.total = 1;
+    state.summary = {
+      total: 1,
+      truncated: false,
+      hitsPerDay: [{ date: "2026-02-24", count: 1 }],
+      topParticipants: [{ sender: "User 1", count: 1 }],
+      filters: ["Keyword: hello"],
+    };
+    state.lastRun = new Date().toISOString();
+
+    controller.renderResults();
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
+  });
+
+  it("does not commit cache key when bridge returns handled but renders no rows", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
@@ -260,6 +326,7 @@ describe("search results ui controller", () => {
     const renderSearchInsightsBridge = vi.fn(() => true);
 
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchPanelState: () => true,
       renderSearchResults,
       renderSearchInsights: renderSearchInsightsBridge,
     };
@@ -294,11 +361,91 @@ describe("search results ui controller", () => {
 
     controller.renderResults();
     expect(renderSearchResults).toHaveBeenCalledTimes(1);
-    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
 
     controller.renderResults();
     expect(renderSearchResults).toHaveBeenCalledTimes(2);
     expect(renderSearchInsightsBridge).toHaveBeenCalledTimes(1);
     expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
+  });
+
+  it("does not render populated results when search bridge is unavailable", () => {
+    const resultsSummaryEl = document.createElement("div");
+    const resultsListEl = document.createElement("div");
+    const insightsEl = document.createElement("div");
+
+    const controller = createSearchResultsUiController({
+      resultsSummaryEl,
+      resultsListEl,
+      insightsEl,
+      resultLimit: 200,
+      getSearchState: () => ({
+        query: { text: "hello", participant: "", start: "", end: "" },
+        results: [buildResult(1)],
+        total: 1,
+        summary: {
+          total: 1,
+          truncated: false,
+          hitsPerDay: [{ date: "2026-02-24", count: 1 }],
+          topParticipants: [{ sender: "User 1", count: 1 }],
+          filters: ["Keyword: hello"],
+        },
+        lastRun: Date.now(),
+        lastRunHasFilters: true,
+      }),
+      getDatasetFingerprint: () => "fp-no-bridge-results",
+      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
+      hasSearchFilters: query => Boolean(query?.text),
+      buildResultsSummaryText: () => "summary",
+      buildSearchResultItem: vi.fn(() => document.createElement("div")),
+      renderSearchInsights: vi.fn(),
+      handleStateAction: () => {},
+    });
+
+    controller.renderResults();
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
+  });
+
+  it("ignores partial bridge contracts for populated-result rendering", () => {
+    const resultsSummaryEl = document.createElement("div");
+    const resultsListEl = document.createElement("div");
+    const insightsEl = document.createElement("div");
+
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchPanelState: () => true,
+      renderSearchInsights: () => true,
+      // Missing renderSearchResults on purpose.
+    };
+
+    const controller = createSearchResultsUiController({
+      resultsSummaryEl,
+      resultsListEl,
+      insightsEl,
+      resultLimit: 200,
+      getSearchState: () => ({
+        query: { text: "hello", participant: "", start: "", end: "" },
+        results: [buildResult(1)],
+        total: 1,
+        summary: {
+          total: 1,
+          truncated: false,
+          hitsPerDay: [{ date: "2026-02-24", count: 1 }],
+          topParticipants: [{ sender: "User 1", count: 1 }],
+          filters: ["Keyword: hello"],
+        },
+        lastRun: Date.now(),
+        lastRunHasFilters: true,
+      }),
+      getDatasetFingerprint: () => "fp-partial-bridge-results",
+      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
+      hasSearchFilters: query => Boolean(query?.text),
+      buildResultsSummaryText: () => "summary",
+      buildSearchResultItem: vi.fn(() => document.createElement("div")),
+      renderSearchInsights: vi.fn(),
+      handleStateAction: () => {},
+    });
+
+    controller.renderResults();
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
   });
 });
