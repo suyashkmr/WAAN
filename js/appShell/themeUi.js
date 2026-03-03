@@ -58,19 +58,33 @@ export function createThemeUiController({
     root.dataset.colorScheme = resolveColorScheme(preference);
   }
 
-  function initThemeControls() {
+  /**
+   * @param {string} preference
+   */
+  function setThemePreference(preference) {
+    const normalized = preference === "dark" || preference === "light" || preference === "system"
+      ? preference
+      : "system";
+    themeState.preference = normalized;
+    applyTheme(normalized);
+    themeToggleInputs.forEach(input => {
+      input.checked = input.value === normalized;
+    });
+    return normalized;
+  }
+
+  function initThemeControls({ bindInputListeners = true } = {}) {
     const saved = globalThis.localStorage?.getItem(storageKey);
     const initial = saved || "system";
-    themeState.preference = initial;
-    applyTheme(initial);
+    setThemePreference(initial);
     themeToggleInputs.forEach(input => {
-      input.checked = input.value === initial;
-      input.addEventListener("change", () => {
-        if (input.checked) {
-          themeState.preference = input.value;
-          applyTheme(input.value);
-        }
-      });
+      if (bindInputListeners) {
+        input.addEventListener("change", () => {
+          if (input.checked) {
+            setThemePreference(input.value);
+          }
+        });
+      }
     });
     if (themeState.mediaQuery) {
       themeState.mediaQuery.addEventListener("change", () => {
@@ -98,6 +112,7 @@ export function createThemeUiController({
 
   return {
     initThemeControls,
+    setThemePreference,
     getExportThemeConfig,
   };
 }

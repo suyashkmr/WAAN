@@ -14,6 +14,7 @@ function makeBootstrapDeps(overrides = {}) {
     initEventHandlers: vi.fn(),
     initRelayControls: vi.fn(),
     initThemeControls: vi.fn(),
+    setThemePreference: vi.fn(),
     initCompactMode: vi.fn(),
     initAccessibilityControls: vi.fn(),
     toggleCompactMode: vi.fn(),
@@ -92,7 +93,7 @@ describe("bootstrap controller", () => {
 
     expect(deps.initEventHandlers).toHaveBeenCalledTimes(1);
     expect(deps.initRelayControls).toHaveBeenCalledTimes(1);
-    expect(deps.initThemeControls).toHaveBeenCalledTimes(1);
+    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: true });
     expect(deps.initCompactMode).toHaveBeenCalledTimes(1);
     expect(deps.initAccessibilityControls).toHaveBeenCalledTimes(1);
     expect(deps.setDataAvailabilityState).toHaveBeenCalledWith(false);
@@ -151,17 +152,21 @@ describe("bootstrap controller", () => {
     expect(typeof handlers["ui.compact.toggle"]).toBe("function");
     expect(typeof handlers["ui.motion.cycle"]).toBe("function");
     expect(typeof handlers["ui.contrast.toggle"]).toBe("function");
+    expect(typeof handlers["ui.theme.set"]).toBe("function");
 
     handlers["onboarding.skip"]();
     handlers["onboarding.next"]();
     handlers["ui.compact.toggle"]();
     handlers["ui.motion.cycle"]();
     handlers["ui.contrast.toggle"]();
+    handlers["ui.theme.set"]({ preference: "dark" });
     expect(deps.onboardingController.skip).toHaveBeenCalledTimes(1);
     expect(deps.onboardingController.advance).toHaveBeenCalledTimes(1);
     expect(deps.toggleCompactMode).toHaveBeenCalledTimes(1);
     expect(deps.cycleReduceMotionPreference).toHaveBeenCalledTimes(1);
     expect(deps.toggleHighContrastPreference).toHaveBeenCalledTimes(1);
+    expect(deps.setThemePreference).toHaveBeenCalledWith("dark");
+    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: false });
     expect(deps.initCompactMode).toHaveBeenCalledWith({ bindToggleListener: false });
     expect(deps.initAccessibilityControls).toHaveBeenCalledWith({ bindToggleListeners: false });
   });

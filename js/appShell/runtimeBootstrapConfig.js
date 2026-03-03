@@ -55,6 +55,7 @@ export function createRuntimeBootstrapConfig({
     deps: {
       initRelayControls: handlers.initRelayControls,
       initThemeControls: handlers.initThemeControls,
+      setThemePreference: handlers.setThemePreference,
       setDataAvailabilityState: handlers.setDataAvailabilityState,
       startRelaySession: handlers.startRelaySession,
       stopRelaySession: handlers.stopRelaySession,

@@ -20,6 +20,7 @@ export function createBootstrapController({ elements, deps }) {
     initEventHandlers,
     initRelayControls,
     initThemeControls,
+    setThemePreference,
     initCompactMode,
     initAccessibilityControls,
     toggleCompactMode,
@@ -133,6 +134,11 @@ export function createBootstrapController({ elements, deps }) {
         "ui.contrast.toggle": () => {
           if (typeof toggleHighContrastPreference === "function") toggleHighContrastPreference();
         },
+        "ui.theme.set": /** @param {any} payload */ payload => {
+          if (typeof setThemePreference === "function") {
+            setThemePreference(payload?.preference);
+          }
+        },
         "onboarding.skip": onboardingController.skip,
         "onboarding.next": onboardingController.advance,
       });
@@ -140,7 +146,7 @@ export function createBootstrapController({ elements, deps }) {
 
     initEventHandlers();
     initRelayControls();
-    initThemeControls();
+    initThemeControls({ bindInputListeners: !supportsShellActionDispatch });
     initCompactMode({ bindToggleListener: !supportsShellActionDispatch });
     initAccessibilityControls({ bindToggleListeners: !supportsShellActionDispatch });
     setDataAvailabilityState(false);

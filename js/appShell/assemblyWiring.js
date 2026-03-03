@@ -86,6 +86,7 @@ export function createRuntimeHandlers({ controllerWiring, compositionAssembly, s
     handleParticipantRowToggle: controllerWiring.handleParticipantRowToggle,
     initRelayControls: compositionAssembly.initRelayControls,
     initThemeControls: controllerWiring.initThemeControls,
+    setThemePreference: controllerWiring.setThemePreference,
     setDataAvailabilityState: controllerWiring.setDataAvailabilityState,
     startRelaySession: compositionAssembly.startRelaySession,
     stopRelaySession: compositionAssembly.stopRelaySession,

@@ -179,7 +179,7 @@ export function createDashboardDataStatusThemeWiring({
     mediaQuery: /** @type {any} */ (viewAdapter.getThemeMediaQuery()),
     exportThemeStyles: EXPORT_THEME_STYLES,
   });
-  const { initThemeControls, getExportThemeConfig } = themeUiController;
+  const { initThemeControls, setThemePreference, getExportThemeConfig } = themeUiController;
 
   return {
     setDashboardLoadingState,
@@ -194,6 +194,7 @@ export function createDashboardDataStatusThemeWiring({
     getExportFilterSummary,
     getParticipantView,
     initThemeControls,
+    setThemePreference,
     getExportThemeConfig,
   };
 }

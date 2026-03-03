@@ -55,7 +55,7 @@ export function createRelayBannerRoot(h, onAction) {
 
 /**
  * @param {any} h
- * @param {(actionId: string) => void} onAction
+ * @param {(actionId: string, payload?: any) => void} onAction
  */
 export function createActionsToolbarRoot(h, onAction) {
   return {
@@ -116,6 +116,12 @@ export function createActionsToolbarRoot(h, onAction) {
                 id: "theme-system",
                 value: "system",
                 checked: true,
+                onChange: event => {
+                  const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
+                  if (target?.checked) {
+                    onAction("ui.theme.set", { preference: "system" });
+                  }
+                },
               }),
               h("label", { for: "theme-system" }, "Auto"),
             ]),
@@ -125,6 +131,12 @@ export function createActionsToolbarRoot(h, onAction) {
                 name: "theme-option",
                 id: "theme-light",
                 value: "light",
+                onChange: event => {
+                  const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
+                  if (target?.checked) {
+                    onAction("ui.theme.set", { preference: "light" });
+                  }
+                },
               }),
               h("label", { for: "theme-light" }, "Light"),
             ]),
@@ -134,6 +146,12 @@ export function createActionsToolbarRoot(h, onAction) {
                 name: "theme-option",
                 id: "theme-dark",
                 value: "dark",
+                onChange: event => {
+                  const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
+                  if (target?.checked) {
+                    onAction("ui.theme.set", { preference: "dark" });
+                  }
+                },
               }),
               h("label", { for: "theme-dark" }, "Dark"),
             ]),

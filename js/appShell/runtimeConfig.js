@@ -96,6 +96,7 @@ export function createRuntimeBootstrapDeps({ deps, relayServiceName }) {
   return {
     initRelayControls: deps.initRelayControls,
     initThemeControls: deps.initThemeControls,
+    setThemePreference: deps.setThemePreference,
     setDataAvailabilityState: deps.setDataAvailabilityState,
     startRelaySession: deps.startRelaySession,
     stopRelaySession: deps.stopRelaySession,
