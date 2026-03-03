@@ -557,6 +557,23 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Acceptance: migrated surfaces render only via Vue components with no legacy fallback branches.
     - [x] Verified on 2026-03-03 with full `npm run ci:verify` green after removing dashboard/search/saved/status fallback branches and obsolete adapter wiring.
 
+- [ ] Phase 8a (2-4 days): Purist no-fallback enforcement before Phase 9.
+  - [ ] Make bridge mount deterministic before search/saved controller init.
+    - [ ] Ensure `mountVueAppShellRoot` + `searchSaved` bridge readiness is established before `createSearchController().init()` runs.
+    - [ ] Remove lazy/implicit bridge dependency for migrated search/saved rendering paths.
+  - [ ] Enforce strict bridge contracts at registration/runtime.
+    - [ ] Require `renderSearchPanelState`, `renderSearchResults`, and `renderSearchInsights` to be present and callable for registered search bridge instances.
+    - [ ] Fail fast on partial bridge registration (no silent partial-runtime fallback behavior).
+  - [ ] Remove the reintroduced search DOM fallback renderer path after deterministic bridge readiness is in place.
+    - [ ] Delete fallback rendering branches/functions from `js/search/resultsUi.js`.
+    - [ ] Keep bridge-first rendering as the only valid runtime path for migrated search surfaces.
+  - [ ] Add no-fallback quality gates.
+    - [ ] Add test coverage that fails when migrated search rendering succeeds without a mounted/valid bridge contract.
+    - [ ] Add startup sequencing tests covering Vue runtime load -> bridge register -> controller init ordering.
+  - [ ] Add minimal runtime diagnostics for mount/contract failures.
+    - [ ] Emit explicit diagnostics for bridge readiness/contract violations to support release triage.
+  - [ ] Acceptance: migrated search/saved rendering has zero DOM fallback branches and passes `npm run ci:verify`.
+
 - [ ] Phase 9 (4-7 days): Consolidate frontend architecture and testing around Vue.
   - [ ] Standardize composables/stores for shared state (filters, relay status, saved views, search worker progress).
   - [ ] Remove obsolete app-shell adapter glue that existed only for incremental migration.

@@ -115,8 +115,9 @@ Budget profiles:
 
 - `strict` (default): local/dev baseline thresholds.
 - `release-ci`: used by tag-release macOS workflow to account for hosted-runner I/O jitter while preserving regression guardrails.
+  - `keyword (indexed)`: <= 10ms
   - `appendMessage (default batched metadata path)` duration: <= 300ms
-  - `appendMessage (forced immediate metadata persist)` duration: <= 450ms
+  - `appendMessage (forced immediate metadata persist)` duration: <= 650ms
   - `appendMessage (default batched metadata path)` reduction: >= 98.5%
 
 ## Next Improvements
