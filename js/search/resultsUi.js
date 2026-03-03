@@ -237,6 +237,12 @@ export function createSearchResultsUiController({
         handledResults = false;
       }
       if (handledResults) {
+        const expectedRenderCount = Array.isArray(results) ? results.filter(Boolean).length : 0;
+        if (expectedRenderCount > 0 && !resultsListEl.querySelector(".search-result")) {
+          handledResults = false;
+        }
+      }
+      if (handledResults) {
         const handledInsights = Boolean(
           searchSavedBridge?.renderSearchInsights?.({
             summary,

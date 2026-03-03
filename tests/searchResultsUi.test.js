@@ -241,7 +241,12 @@ describe("search results ui controller", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
-    const renderSearchResults = vi.fn(() => true);
+    const renderSearchResults = vi.fn(() => {
+      const item = document.createElement("div");
+      item.className = "search-result";
+      resultsListEl.appendChild(item);
+      return true;
+    });
     const renderSearchInsightsBridge = vi.fn(() => true);
     const fallbackRenderInsights = vi.fn();
     const fallbackBuildResultItem = vi.fn(() => document.createElement("div"));
@@ -287,5 +292,58 @@ describe("search results ui controller", () => {
     expect(renderSearchInsightsBridge).toHaveBeenCalled();
     expect(fallbackBuildResultItem).not.toHaveBeenCalled();
     expect(fallbackRenderInsights).not.toHaveBeenCalled();
+  });
+
+  it("falls back to legacy list rendering when bridge reports handled but renders no rows", () => {
+    const resultsSummaryEl = document.createElement("div");
+    const resultsListEl = document.createElement("div");
+    const insightsEl = document.createElement("div");
+    const renderSearchResults = vi.fn(() => true);
+    const renderSearchInsightsBridge = vi.fn(() => true);
+    const fallbackBuildResultItem = vi.fn(result => {
+      const el = document.createElement("div");
+      el.className = "search-result";
+      el.textContent = result.message;
+      return el;
+    });
+    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+      renderSearchResults,
+      renderSearchInsights: renderSearchInsightsBridge,
+    };
+
+    const controller = createSearchResultsUiController({
+      resultsSummaryEl,
+      resultsListEl,
+      insightsEl,
+      resultLimit: 200,
+      getSearchState: () => ({
+        query: { text: "hello", participant: "", start: "", end: "" },
+        results: [buildResult(1)],
+        total: 1,
+        summary: {
+          total: 1,
+          truncated: false,
+          hitsPerDay: [{ date: "2026-02-24", count: 1 }],
+          topParticipants: [{ sender: "User 1", count: 1 }],
+          filters: ["Keyword: hello"],
+        },
+        lastRun: Date.now(),
+        lastRunHasFilters: true,
+      }),
+      getDatasetFingerprint: () => "fp-bridge-empty",
+      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
+      hasSearchFilters: query => Boolean(query?.text),
+      buildResultsSummaryText: () => "summary",
+      buildSearchResultItem: fallbackBuildResultItem,
+      renderSearchInsights: vi.fn(),
+      handleStateAction: () => {},
+    });
+
+    controller.renderResults();
+
+    expect(renderSearchResults).toHaveBeenCalledTimes(1);
+    expect(fallbackBuildResultItem).toHaveBeenCalledTimes(1);
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
+    expect(renderSearchInsightsBridge).not.toHaveBeenCalled();
   });
 });

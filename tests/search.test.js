@@ -255,4 +255,59 @@ describe("search controller", () => {
     elements.resetButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(elements.keywordInput.value).toBe("");
   });
+
+  it("compacts sparse worker result arrays before rendering", async () => {
+    class SparseWorker {
+      constructor() {
+        this.onmessage = null;
+        this.onerror = null;
+      }
+
+      postMessage(payload) {
+        if (payload?.type !== "search") return;
+        const sparseResults = new Array(3);
+        sparseResults[1] = {
+          sender: "Ana",
+          timestamp: "2025-01-02T10:00:00.000Z",
+          message: "hello world",
+          messageSegments: [{ text: "hello world", highlighted: false }],
+        };
+        this.onmessage?.({
+          data: {
+            id: payload.id,
+            type: "result",
+            results: sparseResults,
+            total: 1,
+            summary: {
+              total: 1,
+              truncated: false,
+              hitsPerDay: [{ date: "2025-01-02", count: 1 }],
+              topParticipants: [{ sender: "Ana", count: 1 }],
+              filters: ["Filters: none (all messages)"],
+            },
+          },
+        });
+      }
+
+      terminate() {}
+    }
+
+    globalThis.Worker = SparseWorker;
+    setDatasetEntries([
+      {
+        type: "message",
+        sender: "Ana",
+        timestamp: "2025-01-02T10:00:00.000Z",
+        message: "hello world",
+      },
+    ]);
+
+    const elements = buildElements();
+    const controller = createSearchController({ elements, options: { resultLimit: 10 } });
+    controller.init();
+    elements.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+
+    expect(elements.resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
+  });
 });

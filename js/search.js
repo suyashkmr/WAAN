@@ -34,6 +34,21 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
+function normalizeWorkerSearchResults(results) {
+  if (!Array.isArray(results)) return [];
+  const normalized = [];
+  results.forEach(result => {
+    if (!result || typeof result !== "object") return;
+    normalized.push({
+      sender: result.sender,
+      timestamp: result.timestamp,
+      message: result.message ?? "",
+      messageSegments: Array.isArray(result.messageSegments) ? result.messageSegments : [],
+    });
+  });
+  return normalized;
+}
+
 export function createSearchController({ elements = {}, options = {} } = {}) {
   const {
     form,
@@ -184,12 +199,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         clearStateOverride();
         hideSearchProgress();
         setSearchResults(
-          results.map(result => ({
-            sender: result.sender,
-            timestamp: result.timestamp,
-            message: result.message ?? "",
-            messageSegments: Array.isArray(result.messageSegments) ? result.messageSegments : [],
-          })),
+          normalizeWorkerSearchResults(results),
           total,
           summary,
           { hasFilters: requestHasFilters },
