@@ -15,7 +15,7 @@ function formatSentimentScore(value, digits = 2) {
   return formatFloat(0, digits);
 }
 
-export function buildParticipantDetail(entry) {
+export function buildParticipantDetailModel(entry) {
   const startLabel = entry.first_message ? sanitizeText(formatDisplayDate(entry.first_message)) : null;
   const endLabel = entry.last_message ? sanitizeText(formatDisplayDate(entry.last_message)) : null;
   let rangeText = "—";
@@ -50,33 +50,30 @@ export function buildParticipantDetail(entry) {
     ? `${weekdayName} (${formatNumber(entry.top_weekday.count)} msgs)`
     : "No weekday data yet";
 
+  return [
+    { label: "Active range", value: rangeText },
+    { label: "Share of messages", value: shareText },
+    { label: "Average length", value: `${avgWords} · ${avgChars}` },
+    { label: "Sentiment", value: sentimentSummary },
+    { label: "Peak hour", value: sanitizeText(topHourText) },
+    { label: "Peak weekday", value: sanitizeText(topWeekdayText) },
+  ];
+}
+
+export function buildParticipantDetail(entry) {
+  const detailItems = buildParticipantDetailModel(entry);
+
   return `
     <div class="participant-detail">
       <div class="detail-grid">
-        <div class="detail-item">
-          <span class="detail-label">Active range</span>
-          <span class="detail-value">${rangeText}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Share of messages</span>
-          <span class="detail-value">${shareText}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Average length</span>
-          <span class="detail-value">${avgWords} · ${avgChars}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Sentiment</span>
-          <span class="detail-value">${sentimentSummary}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Peak hour</span>
-          <span class="detail-value">${sanitizeText(topHourText)}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Peak weekday</span>
-          <span class="detail-value">${sanitizeText(topWeekdayText)}</span>
-        </div>
+        ${detailItems
+          .map(item => `
+            <div class="detail-item">
+              <span class="detail-label">${sanitizeText(item.label)}</span>
+              <span class="detail-value">${sanitizeText(item.value)}</span>
+            </div>
+          `)
+          .join("")}
       </div>
     </div>
   `;

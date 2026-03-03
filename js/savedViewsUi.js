@@ -53,12 +53,13 @@ export function createSavedViewsUiController({
      *     onAction?: ((actionId: string) => void),
      *   }) => boolean,
      *   renderSavedViewsGallery?: (payload: {
-     *     cardsHtml?: string,
+     *     cards?: Array<Record<string, any>>,
      *     interactive?: boolean,
      *   }) => boolean,
      *   renderSavedViewsComparison?: (payload: {
-     *     html?: string,
      *     empty?: boolean,
+     *     message?: string,
+     *     columns?: Array<Record<string, any>>,
      *   }) => boolean,
      *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
      * } | null} */
@@ -180,6 +181,57 @@ export function createSavedViewsUiController({
     `;
   }
 
+  function buildSavedViewCardModel(view, activeContext = {}) {
+    if (!view) return null;
+    const snapshot = ensureViewSnapshot(view);
+    const viewId = String(view?.id ?? "");
+    const viewName = view?.name || "Untitled view";
+    const rangeLabel = view.rangeLabel || formatSavedViewRange(view);
+    const createdAtLabel = view.createdAt ? `Saved ${formatTimestampDisplay(view.createdAt)}` : "";
+    const recencyHint = formatRelativeTime(view.lastAppliedAt);
+    const totalMessages = snapshot ? formatNumber(snapshot.totalMessages ?? 0) : "—";
+    const participants = snapshot ? formatNumber(snapshot.uniqueSenders ?? 0) : "—";
+    const avgPerDay = snapshot && Number.isFinite(snapshot.dailyAverage)
+      ? `${formatFloat(snapshot.dailyAverage, 1)} / day`
+      : "Not enough data";
+    const topSender = snapshot?.topSender || null;
+    const sharePercent =
+      topSender && typeof topSender.share === "number"
+        ? Math.round(topSender.share * 100)
+        : null;
+    const topSenderShare =
+      topSender && sharePercent !== null ? `${sharePercent}% of messages` : "Share updates soon";
+    const peakHour = formatSavedViewTopHour(snapshot);
+    const peakHourCount =
+      snapshot?.topHour && Number.isFinite(snapshot.topHour.count)
+        ? `${formatNumber(snapshot.topHour.count)} msgs`
+        : "Waiting for hourly data";
+    const barWidth = sharePercent !== null ? Math.min(100, Math.max(0, sharePercent)) : 8;
+    const interactive = dataAvailableGetter();
+    const isActive = activeContext.activeViewId === viewId;
+    const isDirty = isActive && activeContext.activeViewDirty;
+
+    return {
+      viewId,
+      viewName,
+      rangeLabel,
+      recencyHint,
+      createdAtLabel,
+      totalMessages,
+      participants,
+      avgPerDay,
+      topSenderName: topSender ? String(topSender.sender || "—") : "—",
+      topSenderShare,
+      peakHour,
+      peakHourCount,
+      barWidth,
+      shareEmpty: sharePercent === null,
+      interactive,
+      isActive,
+      isDirty,
+    };
+  }
+
   function renderSavedViewGallery(views) {
     if (!gallery) return;
     const list = Array.isArray(views) ? views : [];
@@ -228,8 +280,9 @@ export function createSavedViewsUiController({
     }
     const cards = list.map(view => buildSavedViewCard(view, activeContext)).join("");
     if (searchSavedBridge?.renderSavedViewsGallery) {
+      const cards = list.map(view => buildSavedViewCardModel(view, activeContext)).filter(Boolean);
       const handled = searchSavedBridge.renderSavedViewsGallery({
-        cardsHtml: cards,
+        cards,
         interactive: dataAvailableGetter(),
       });
       if (handled) return;
@@ -283,15 +336,112 @@ export function createSavedViewsUiController({
     };
     const searchSavedBridge = getSearchSavedBridge();
     if (compareSummaryEl && searchSavedBridge?.renderSavedViewsComparison) {
-      const detached = document.createElement("div");
-      renderSavedViewsComparison({
-        ...args,
-        compareSummaryEl: detached,
-      });
-      const handled = searchSavedBridge.renderSavedViewsComparison({
-        html: detached.innerHTML,
-        empty: detached.classList.contains("empty"),
-      });
+      const allViews = args.allViews;
+      const selectedPrimaryId = primaryId ?? args.selection.primary;
+      const selectedSecondaryId = secondaryId ?? args.selection.secondary;
+      const primaryView = args.getSavedViewById(selectedPrimaryId);
+      const secondaryView = args.getSavedViewById(selectedSecondaryId);
+
+      let payload;
+      if (allViews.length < 2) {
+        payload = {
+          empty: true,
+          message: allViews.length
+            ? "Save one more view to enable comparisons."
+            : "Save a view to start building comparisons.",
+        };
+      } else if (!primaryView || !secondaryView) {
+        payload = {
+          empty: true,
+          message: "Pick two saved views to compare their activity side-by-side.",
+        };
+      } else {
+        const primarySnapshot = args.ensureViewSnapshot(primaryView);
+        const secondarySnapshot = args.ensureViewSnapshot(secondaryView);
+        if (!primarySnapshot || !secondarySnapshot) {
+          payload = {
+            empty: true,
+            message: "Unable to compute comparison for these views. Try re-saving them.",
+          };
+        } else {
+          const metrics = [
+            { key: "range", label: "Date Range", get: (snapshot, view) => args.formatSavedViewRange(view), diff: false },
+            { key: "totalMessages", label: "Messages", get: snapshot => snapshot.totalMessages, diff: true, digits: 0 },
+            { key: "uniqueSenders", label: "Participants", get: snapshot => snapshot.uniqueSenders, diff: true, digits: 0 },
+            { key: "averageWords", label: "Avg words per message", get: snapshot => snapshot.averageWords, diff: true, digits: 1 },
+            { key: "averageChars", label: "Avg characters per message", get: snapshot => snapshot.averageChars, diff: true, digits: 1 },
+            { key: "weeklyAverage", label: "Avg per week", get: snapshot => snapshot.weeklyAverage, diff: true, digits: 1 },
+            { key: "dailyAverage", label: "Avg per day", get: snapshot => snapshot.dailyAverage, diff: true, digits: 1 },
+            {
+              key: "topSender",
+              label: "Top Sender",
+              get: snapshot =>
+                snapshot.topSender
+                  ? `${snapshot.topSender.sender} (${args.formatNumber(snapshot.topSender.count)} msgs)`
+                  : null,
+              diff: false,
+            },
+            {
+              key: "topHour",
+              label: "Top Hour",
+              get: snapshot =>
+                snapshot.topHour
+                  ? `${args.formatTopHourLabel(snapshot)} (${args.formatNumber(snapshot.topHour.count)} msgs)`
+                  : null,
+              diff: false,
+            },
+          ];
+          const formatMetricValue = (value, digits = 0) => {
+            if (value === null || value === undefined) return "—";
+            if (typeof value === "number" && !Number.isNaN(value)) {
+              return digits > 0 ? args.formatFloat(value, digits) : args.formatNumber(value);
+            }
+            return String(value);
+          };
+          const buildColumn = (heading, view, snapshot) => ({
+            heading: `${heading} · ${view.name}`,
+            metrics: metrics.map(metric => ({
+              label: metric.label,
+              value: formatMetricValue(metric.get(snapshot, view), metric.digits ?? 0),
+            })),
+          });
+          const diffColumn = {
+            heading: "Difference (B - A)",
+            metrics: metrics
+              .filter(metric => metric.diff)
+              .map(metric => {
+                const valueA = metric.get(primarySnapshot);
+                const valueB = metric.get(secondarySnapshot);
+                if (valueA === null || valueA === undefined || valueB === null || valueB === undefined) {
+                  return { label: metric.label, value: "—", tone: "neutral" };
+                }
+                const diff = valueB - valueA;
+                const digits = metric.digits ?? 0;
+                const formatted = Math.abs(diff) < 0.0001
+                  ? "0"
+                  : digits > 0
+                    ? args.formatFloat(diff, digits)
+                    : args.formatNumber(diff);
+                const prefix = diff > 0 && !String(formatted).startsWith("+") ? "+" : "";
+                return {
+                  label: metric.label,
+                  value: `${prefix}${formatted}`,
+                  tone: diff > 0 ? "positive" : diff < 0 ? "negative" : "neutral",
+                };
+              }),
+          };
+          payload = {
+            empty: false,
+            columns: [
+              buildColumn("View A", primaryView, primarySnapshot),
+              buildColumn("View B", secondaryView, secondarySnapshot),
+              diffColumn,
+            ],
+          };
+        }
+      }
+
+      const handled = searchSavedBridge.renderSavedViewsComparison(payload);
       if (handled) return;
     }
     renderSavedViewsComparison(args);

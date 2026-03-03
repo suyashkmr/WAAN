@@ -92,4 +92,54 @@ describe("search saved island bridge mounting", () => {
     expect(bridge).toBeTruthy();
     expect(bridge?.__runtimeBoundToVue).toBe(true);
   });
+
+  it("keeps a stable Vue root for saved-view gallery rerenders", () => {
+    const fakeWindow = {
+      document,
+      console,
+      Vue: {
+        h: (type, props = {}, children = []) => ({ type, props, children }),
+        render: (vnode, container) => {
+          if (!container) return;
+          if (!vnode) {
+            container.innerHTML = "";
+            return;
+          }
+          const cssClass = typeof vnode?.props?.class === "string" ? vnode.props.class : "";
+          if (cssClass.includes("saved-view-gallery-vue-root")) {
+            const children = Array.isArray(vnode.children) ? vnode.children : [];
+            container.innerHTML = `<div class="saved-view-gallery-vue-root">${children
+              .map(
+                child =>
+                  `<article class="saved-view-card" data-view-id="${String(child?.props?.["data-view-id"] || "")}"></article>`,
+              )
+              .join("")}</div>`;
+            return;
+          }
+          container.innerHTML = "<div>rendered</div>";
+        },
+      },
+    };
+
+    mountSearchSavedBridge({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });
+    expect(bridge).toBeTruthy();
+
+    bridge?.renderSavedViewsGallery?.({
+      cards: [{ viewId: "view-1", viewName: "View 1", interactive: true }],
+      interactive: true,
+    });
+    expect(document.querySelectorAll(".saved-view-gallery-vue-root").length).toBe(1);
+    expect(document.querySelectorAll("#saved-view-gallery .saved-view-card").length).toBe(1);
+
+    bridge?.renderSavedViewsGallery?.({
+      cards: [
+        { viewId: "view-1", viewName: "View 1", interactive: true },
+        { viewId: "view-2", viewName: "View 2", interactive: true },
+      ],
+      interactive: true,
+    });
+    expect(document.querySelectorAll(".saved-view-gallery-vue-root").length).toBe(1);
+    expect(document.querySelectorAll("#saved-view-gallery .saved-view-card").length).toBe(2);
+  });
 });

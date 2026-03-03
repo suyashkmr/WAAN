@@ -225,7 +225,7 @@ function renderSearchInsightsWithVue({
 }
 
 function renderSavedViewsGalleryWithVue({
-  cardsHtml = "",
+  cards = [],
   interactive = false,
   dispatchAction = null,
   container,
@@ -233,19 +233,101 @@ function renderSavedViewsGalleryWithVue({
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
-  const { render } = VueRuntime;
-  if (typeof render !== "function") return false;
-  // Keep cards as direct children so existing .saved-view-gallery grid rules continue to apply.
-  render(null, container);
-  container.innerHTML = String(cardsHtml || "");
+  const { h, render } = VueRuntime;
+  if (typeof h !== "function" || typeof render !== "function") return false;
+  const safeCards = Array.isArray(cards)
+    ? cards.filter(Boolean).map(card => ({
+      viewId: String(card?.viewId || ""),
+      viewName: String(card?.viewName || "Untitled view"),
+      rangeLabel: String(card?.rangeLabel || ""),
+      recencyHint: String(card?.recencyHint || ""),
+      createdAtLabel: String(card?.createdAtLabel || ""),
+      totalMessages: String(card?.totalMessages || "—"),
+      participants: String(card?.participants || "—"),
+      avgPerDay: String(card?.avgPerDay || "Not enough data"),
+      topSenderName: String(card?.topSenderName || "—"),
+      topSenderShare: String(card?.topSenderShare || ""),
+      peakHour: String(card?.peakHour || "No hourly data yet"),
+      peakHourCount: String(card?.peakHourCount || ""),
+      barWidth: Number.isFinite(Number(card?.barWidth)) ? Number(card.barWidth) : 8,
+      shareEmpty: Boolean(card?.shareEmpty),
+      interactive: Boolean(card?.interactive),
+      isActive: Boolean(card?.isActive),
+      isDirty: Boolean(card?.isDirty),
+    }))
+    : [];
+  render(h(
+    "div",
+    { class: "saved-view-gallery-vue-root" },
+    safeCards.map(card =>
+      h("article", {
+        class: [
+          "saved-view-card",
+          card.interactive ? "" : "disabled",
+          card.isActive ? "is-active" : "",
+          card.isDirty ? "is-dirty" : "",
+        ],
+        "data-view-id": card.viewId,
+        "data-active": String(card.isActive),
+        "data-dirty": String(card.isDirty),
+        role: "button",
+        tabindex: card.interactive ? 0 : -1,
+        "aria-disabled": card.interactive ? undefined : "true",
+        "aria-label": card.interactive ? `Apply saved view ${card.viewName}` : undefined,
+      }, [
+        h("header", { class: "saved-view-card-header" }, [
+          h("div", {}, [
+            h("p", { class: "saved-view-card-title" }, card.viewName),
+            h("p", { class: "saved-view-card-range" }, card.rangeLabel),
+          ]),
+          h("div", { class: "saved-view-card-meta" }, [
+            card.isActive ? h("span", { class: "saved-view-chip saved-view-chip-active" }, "Active") : null,
+            card.isDirty ? h("span", { class: "saved-view-chip saved-view-chip-dirty" }, "Unsaved changes") : null,
+            card.recencyHint ? h("span", { class: "saved-view-card-used" }, card.recencyHint) : null,
+            card.createdAtLabel ? h("span", { class: "saved-view-card-created" }, card.createdAtLabel) : null,
+          ]),
+        ]),
+        h("div", { class: "saved-view-card-metrics" }, [
+          h("div", { class: "saved-view-stat" }, [
+            h("span", { class: "stat-label" }, "Messages"),
+            h("span", { class: "stat-value" }, card.totalMessages),
+          ]),
+          h("div", { class: "saved-view-stat" }, [
+            h("span", { class: "stat-label" }, "Participants"),
+            h("span", { class: "stat-value" }, card.participants),
+          ]),
+          h("div", { class: "saved-view-stat" }, [
+            h("span", { class: "stat-label" }, "Avg pace"),
+            h("span", { class: "stat-value" }, card.avgPerDay),
+          ]),
+        ]),
+        h("div", { class: "saved-view-card-foot" }, [
+          h("div", { class: "saved-view-detail" }, [
+            h("span", { class: "detail-label" }, "Top voice"),
+            h("span", { class: "detail-value" }, card.topSenderName),
+            h("span", { class: "detail-meta" }, card.topSenderShare),
+          ]),
+          h("div", { class: "saved-view-detail" }, [
+            h("span", { class: "detail-label" }, "Peak hour"),
+            h("span", { class: "detail-value" }, card.peakHour),
+            h("span", { class: "detail-meta" }, card.peakHourCount),
+          ]),
+        ]),
+        h("div", { class: ["saved-view-share-bar", card.shareEmpty ? "is-empty" : ""] }, [
+          h("span", { style: { width: `${Math.min(100, Math.max(0, card.barWidth))}%` } }),
+        ]),
+      ]),
+    ),
+  ), container);
   container.dataset.interactive = interactive ? "true" : "false";
   ensureSavedViewsGalleryActions({ container, dispatchAction });
   return true;
 }
 
 function renderSavedViewsComparisonWithVue({
-  html = "",
   empty = false,
+  message = "",
+  columns = [],
   container,
   vueRuntime = globalThis.Vue,
 }) {
@@ -253,8 +335,49 @@ function renderSavedViewsComparisonWithVue({
   if (!VueRuntime || !container) return false;
   const { h, render } = VueRuntime;
   if (typeof h !== "function" || typeof render !== "function") return false;
+  const safeColumns = Array.isArray(columns)
+    ? columns.filter(Boolean).map(column => ({
+      heading: String(column?.heading || ""),
+      metrics: Array.isArray(column?.metrics)
+        ? column.metrics.filter(Boolean).map(metric => ({
+          label: String(metric?.label || ""),
+          value: String(metric?.value || "—"),
+          tone: String(metric?.tone || "neutral"),
+        }))
+        : [],
+    }))
+    : [];
   container.classList.toggle("empty", Boolean(empty));
-  render(h("div", { class: "saved-views-compare-vue", innerHTML: String(html || "") }), container);
+  if (empty) {
+    render(h("div", { class: "saved-views-compare-vue" }, [
+      h("p", null, String(message || "Pick two saved views to compare their activity side-by-side.")),
+    ]), container);
+    return true;
+  }
+  render(h("div", { class: "saved-views-compare-vue" }, [
+    h("div", { class: "compare-summary-grid" }, safeColumns.map(column =>
+      h("div", { class: "compare-column" }, [
+        h("h3", null, column.heading),
+        h("ul", { class: "compare-metrics" }, column.metrics.map(metric =>
+          h("li", null, [
+            h("span", { class: "compare-label" }, metric.label),
+            h(
+              "span",
+              {
+                class: [
+                  "compare-value",
+                  metric.tone !== "neutral" ? "compare-diff" : "",
+                  metric.tone === "positive" ? "positive" : "",
+                  metric.tone === "negative" ? "negative" : "",
+                ],
+              },
+              metric.value,
+            ),
+          ]),
+        )),
+      ]),
+    )),
+  ]), container);
   return true;
 }
 

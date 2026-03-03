@@ -5,7 +5,7 @@ import {
   formatDateRangeWithTime,
   sanitizeText,
 } from "../utils.js";
-import { buildParticipantDetail } from "./participantDetail.js";
+import { buildParticipantDetail, buildParticipantDetailModel } from "./participantDetail.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 function computeParticipantTimeframeStats(entries, timeframe, analytics) {
   if (timeframe !== "week") return null;
@@ -264,6 +264,7 @@ export function renderParticipants({
       avgWordsDisplay: avgWords !== null ? avgWords : "—",
       avgWordsTitle:
         avgWords !== null ? `Average words per message: ${avgWords}` : "Average words per message: unavailable",
+      detailItems: buildParticipantDetailModel(entry),
       detailHtml: buildParticipantDetail(entry),
     };
   };

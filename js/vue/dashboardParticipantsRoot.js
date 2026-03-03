@@ -103,10 +103,21 @@ export function createParticipantsRoot(h, participantsState) {
                 "data-row-id": row.rowId,
               },
               [
-                h("td", {
-                  colspan: "5",
-                  innerHTML: row.detailHtml,
-                }),
+                h("td", { colspan: "5" }, [
+                  h("div", { class: "participant-detail" }, [
+                    h(
+                      "div",
+                      { class: "detail-grid" },
+                      Array.isArray(row.detailItems) && row.detailItems.length
+                        ? row.detailItems.map(item =>
+                          h("div", { class: "detail-item" }, [
+                            h("span", { class: "detail-label" }, String(item?.label || "")),
+                            h("span", { class: "detail-value" }, String(item?.value || "—")),
+                          ]))
+                        : [h("div", { innerHTML: row.detailHtml || "" })],
+                    ),
+                  ]),
+                ]),
               ],
             ),
           );
