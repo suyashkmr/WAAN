@@ -86,8 +86,6 @@ export function buildSearchResultItem(result) {
       node.textContent = text;
       messageEl.appendChild(node);
     });
-  } else if (result.messageHtml) {
-    messageEl.innerHTML = result.messageHtml;
   } else {
     messageEl.textContent = result.message || "";
   }

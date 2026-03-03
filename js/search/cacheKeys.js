@@ -27,7 +27,6 @@ function buildResultsCacheKey(results) {
       sender: item?.sender || "",
       timestamp: item?.timestamp || "",
       message: item?.message || "",
-      messageHtml: item?.messageHtml || "",
       messageSegments: Array.isArray(item?.messageSegments)
         ? item.messageSegments.map(segment => ({
             text: String(segment?.text || ""),

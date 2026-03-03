@@ -1,4 +1,4 @@
-import { toISODate, sanitizeText, formatDisplayDate } from "./utils.js";
+import { toISODate, formatDisplayDate } from "./utils.js";
 import {
   createDatasetIndexCache,
   ensureIndexedDataset,
@@ -103,7 +103,6 @@ function runSearch({ jobId, entries, query, resultLimit, startMs, endMs, dataset
         sender: record.sender,
         timestamp: record.timestampIso,
         message: record.message,
-        messageHtml: highlightMessage(record.message, tokens),
         messageSegments: highlightMessageSegments(record.message, tokens),
       });
     }
@@ -126,19 +125,6 @@ function runSearch({ jobId, entries, query, resultLimit, startMs, endMs, dataset
     : null;
 
   return { results, total: totalMatches, summary };
-}
-
-function highlightMessage(text, tokens) {
-  const safe = sanitizeText(text || "");
-  if (!tokens || !tokens.length) return safe;
-  return tokens.reduce((output, token) => {
-    if (!token) return output;
-    const escapedToken = sanitizeText(token);
-    if (!escapedToken) return output;
-    const escaped = escapedToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(${escaped})`, "gi");
-    return output.replace(regex, "<mark>$1</mark>");
-  }, safe);
 }
 
 function highlightMessageSegments(text, tokens) {
