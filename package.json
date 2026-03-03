@@ -1,6 +1,6 @@
 {
   "name": "waan-suite",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "private": true,
   "type": "module",
   "description": "WAAN macOS distribution containing the offline ChatScope analytics dashboard.",
