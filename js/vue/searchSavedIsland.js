@@ -5,10 +5,8 @@ import {
   registerVueBridge,
   resolveVueBridge,
 } from "./bridgeRegistry.js";
+import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
 
-/**
- * @param {unknown} value
- */
 function normalizeActions(value) {
   if (!Array.isArray(value)) return [];
   return value.filter(Boolean).map(action => ({
@@ -24,7 +22,7 @@ function normalizeActions(value) {
  *   title?: string,
  *   message?: string,
  *   actions?: unknown[],
- *   onAction?: ((actionId: string) => void) | null,
+ *   dispatchAction?: ((actionId: string) => void) | null,
  *   container: HTMLElement | null,
  * }} params
  */
@@ -33,12 +31,14 @@ function renderPanelStateWithVue({
   title = "",
   message = "",
   actions = [],
-  onAction = null,
+  dispatchAction = null,
   container,
+  vueRuntime = globalThis.Vue,
 }) {
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
   const { h, render } = VueRuntime;
+  if (typeof h !== "function" || typeof render !== "function") return false;
   const safeActions = normalizeActions(actions);
   const safeTone = String(tone || "empty");
   const safeTitle = String(title || "");
@@ -59,7 +59,7 @@ function renderPanelStateWithVue({
             "data-panel-action": action.id,
             disabled: action.disabled,
             onClick: () => {
-              if (typeof onAction === "function") onAction(action.id);
+              if (typeof dispatchAction === "function") dispatchAction(action.id);
             },
           }, action.label),
         ))
@@ -70,9 +70,6 @@ function renderPanelStateWithVue({
   return true;
 }
 
-/**
- * @param {unknown} value
- */
 function normalizeSearchResults(value) {
   if (!Array.isArray(value)) return [];
   return value.filter(Boolean).map(result => ({
@@ -96,10 +93,12 @@ function renderSearchResultsWithVue({
   total = 0,
   lastRunFiltered = false,
   container,
+  vueRuntime = globalThis.Vue,
 }) {
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
   const { h, render } = VueRuntime;
+  if (typeof h !== "function" || typeof render !== "function") return false;
   const safeResults = normalizeSearchResults(results);
   const safeTotal = Number(total || 0);
   const showNarrowNotice = Boolean(lastRunFiltered) && safeTotal > safeResults.length;
@@ -165,10 +164,12 @@ function renderSearchInsightsWithVue({
   summary,
   resultLimit = 200,
   container,
+  vueRuntime = globalThis.Vue,
 }) {
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
   const { h, render } = VueRuntime;
+  if (typeof h !== "function" || typeof render !== "function") return false;
   const safeSummary = normalizeSummary(summary);
   if (!safeSummary || !safeSummary.total) {
     container.classList.add("hidden");
@@ -221,21 +222,16 @@ function renderSearchInsightsWithVue({
   return true;
 }
 
-/**
- * @param {{
- *   cardsHtml?: string,
- *   interactive?: boolean,
- *   container: HTMLElement | null,
- * }} params
- */
 function renderSavedViewsGalleryWithVue({
   cardsHtml = "",
   interactive = false,
   container,
+  vueRuntime = globalThis.Vue,
 }) {
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
   const { render } = VueRuntime;
+  if (typeof render !== "function") return false;
   // Keep cards as direct children so existing .saved-view-gallery grid rules continue to apply.
   render(null, container);
   container.innerHTML = String(cardsHtml || "");
@@ -243,90 +239,96 @@ function renderSavedViewsGalleryWithVue({
   return true;
 }
 
-/**
- * @param {{
- *   html?: string,
- *   empty?: boolean,
- *   container: HTMLElement | null,
- * }} params
- */
 function renderSavedViewsComparisonWithVue({
   html = "",
   empty = false,
   container,
+  vueRuntime = globalThis.Vue,
 }) {
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
   const { h, render } = VueRuntime;
+  if (typeof h !== "function" || typeof render !== "function") return false;
   container.classList.toggle("empty", Boolean(empty));
   render(h("div", { class: "saved-views-compare-vue", innerHTML: String(html || "") }), container);
   return true;
 }
 
-function mountSearchSavedBridge() {
-  if (resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved)) return;
+export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
+  if (!globalScope) return;
+  const existingBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope });
+  const shouldReplaceExistingBridge = Boolean(
+    existingBridge
+      && existingBridge.__waanVueSearchBridge === true
+      && existingBridge.__runtimeBoundToVue !== true,
+  );
+  if (existingBridge && !shouldReplaceExistingBridge) return;
+  const doc = globalScope.document ?? null;
+  const vueRuntime = globalScope.Vue;
+  const hasRenderableVueRuntime = Boolean(
+    vueRuntime
+      && typeof vueRuntime.h === "function"
+      && typeof vueRuntime.render === "function",
+  );
+  if (!hasRenderableVueRuntime) return;
+  const { dispatchPanelAction, setPanelActionHandlers } = createPanelActionDispatcher();
+
   registerVueBridge(VUE_BRIDGE_NAMES.searchSaved, {
-    /**
-     * @param {{ tone?: string, title?: string, message?: string, actions?: unknown[], onAction?: ((actionId: string) => void) | null }} payload
-     */
+    __waanVueSearchBridge: true,
+    __runtimeBoundToVue: true,
     renderSearchPanelState(payload = {}) {
-      const container = globalThis.document?.getElementById?.("search-results-list") ?? null;
+      const container = doc?.getElementById?.("search-results-list") ?? null;
       return renderPanelStateWithVue({
         ...payload,
+        dispatchAction: actionId => dispatchPanelAction(`search:${actionId}`),
         container,
+        vueRuntime,
       });
     },
-    /**
-     * @param {{ tone?: string, title?: string, message?: string, actions?: unknown[], onAction?: ((actionId: string) => void) | null }} payload
-     */
     renderSavedViewsPanelState(payload = {}) {
-      const container = globalThis.document?.getElementById?.("saved-view-gallery") ?? null;
+      const container = doc?.getElementById?.("saved-view-gallery") ?? null;
       return renderPanelStateWithVue({
         ...payload,
+        dispatchAction: actionId => dispatchPanelAction(`savedViews:${actionId}`),
         container,
+        vueRuntime,
       });
     },
-    /**
-     * @param {{ results?: unknown[], total?: number, lastRunFiltered?: boolean }} payload
-     */
     renderSearchResults(payload = {}) {
-      const container = globalThis.document?.getElementById?.("search-results-list") ?? null;
+      const container = doc?.getElementById?.("search-results-list") ?? null;
       return renderSearchResultsWithVue({
         ...payload,
         container,
+        vueRuntime,
       });
     },
-    /**
-     * @param {{ summary?: unknown, resultLimit?: number }} payload
-     */
     renderSearchInsights(payload = {}) {
-      const container = globalThis.document?.getElementById?.("search-insights") ?? null;
+      const container = doc?.getElementById?.("search-insights") ?? null;
       return renderSearchInsightsWithVue({
         ...payload,
         container,
+        vueRuntime,
       });
     },
-    /**
-     * @param {{ cardsHtml?: string, interactive?: boolean }} payload
-     */
     renderSavedViewsGallery(payload = {}) {
-      const container = globalThis.document?.getElementById?.("saved-view-gallery") ?? null;
+      const container = doc?.getElementById?.("saved-view-gallery") ?? null;
       return renderSavedViewsGalleryWithVue({
         ...payload,
         container,
+        vueRuntime,
       });
     },
-    /**
-     * @param {{ html?: string, empty?: boolean }} payload
-     */
     renderSavedViewsComparison(payload = {}) {
-      const container = globalThis.document?.getElementById?.("compare-summary") ?? null;
+      const container = doc?.getElementById?.("compare-summary") ?? null;
       return renderSavedViewsComparisonWithVue({
         ...payload,
         container,
+        vueRuntime,
       });
     },
+    setPanelActionHandlers,
   }, {
+    globalScope,
     legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.searchSaved],
   });
 }

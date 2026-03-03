@@ -1,5 +1,6 @@
 import { renderTimeOfDayPanel } from "../analytics/activity/timeOfDay.js";
 import { renderHourlyHeatmapSection, renderWeekdaySection } from "../analytics/activity.js";
+import { createParticipantsRoot } from "./dashboardParticipantsRoot.js";
 import {
   LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
@@ -27,14 +28,15 @@ function normalizeHighlightEntry(entry) {
   };
 }
 
-function mountDashboardPanelsIsland() {
-  const VueRuntime = globalThis.Vue;
-  if (!VueRuntime || typeof globalThis.document === "undefined") return;
-  if (resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels)) return;
+export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
+  const VueRuntime = globalScope?.Vue;
+  const doc = globalScope?.document;
+  if (!VueRuntime || !doc) return;
+  if (resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope })) return;
 
-  const mountEl = globalThis.document.getElementById("highlights-list");
-  const participantsMountEl = globalThis.document.querySelector("#top-senders tbody");
-  const timeOfDayMountEl = globalThis.document.getElementById("timeofday-chart");
+  const mountEl = doc.getElementById("highlights-list");
+  const participantsMountEl = doc.querySelector("#top-senders tbody");
+  const timeOfDayMountEl = doc.getElementById("timeofday-chart");
   if (!mountEl || mountEl.dataset.vueHighlightsMounted === "true") return;
 
   const { createApp, h, reactive } = VueRuntime;
@@ -44,6 +46,7 @@ function mountDashboardPanelsIsland() {
   const participantsState = reactive({
     rows: [],
     emptyMessage: "",
+    expandedByRowId: {},
   });
 
   const iconPath =
@@ -126,106 +129,7 @@ function mountDashboardPanelsIsland() {
   mountEl.dataset.vueHighlightsMounted = "true";
 
   if (participantsMountEl && participantsMountEl.dataset.vueParticipantsMounted !== "true") {
-    const ParticipantsRoot = {
-      name: "WaanParticipantsIsland",
-      setup() {
-        return () => {
-          if (participantsState.emptyMessage) {
-            return [
-              h("tr", {}, [
-                h(
-                  "td",
-                  {
-                    colspan: "5",
-                    class: "empty-state",
-                  },
-                  participantsState.emptyMessage,
-                ),
-              ]),
-            ];
-          }
-          const nodes = [];
-          participantsState.rows.forEach(row => {
-            nodes.push(
-              h(
-                "tr",
-                {
-                  class: "participant-row",
-                  "data-row-id": row.rowId,
-                },
-                [
-                  h("td", { "data-label": "Rank" }, String(row.rank)),
-                  h("td", { "data-label": "Participant" }, [
-                    h(
-                      "button",
-                      {
-                        type: "button",
-                        class: "participant-toggle",
-                        "aria-expanded": "false",
-                        "aria-controls": row.detailId,
-                        "aria-label": `Show details for ${row.senderLabel}`,
-                      },
-                      [
-                        h("span", { class: "toggle-icon" }, "▸"),
-                        h(
-                          "span",
-                          {
-                            class: "participant-name",
-                            title: row.senderLabel,
-                          },
-                          row.senderLabel,
-                        ),
-                      ],
-                    ),
-                  ]),
-                  h("td", { "data-label": "Messages" }, row.messageCount),
-                  h(
-                    "td",
-                    {
-                      "data-label": "Share",
-                      title: row.shareTitle,
-                    },
-                    [
-                      h("div", { class: "participant-share" }, [
-                        h("div", { class: "share-bar" }, [
-                          h("span", { class: "share-fill", style: { width: `${row.shareWidth}%` } }),
-                        ]),
-                        h("span", { class: "share-value" }, row.shareValue),
-                      ]),
-                    ],
-                  ),
-                  h(
-                    "td",
-                    {
-                      "data-label": "Avg Words",
-                      title: row.avgWordsTitle,
-                    },
-                    row.avgWordsDisplay,
-                  ),
-                ],
-              ),
-            );
-            nodes.push(
-              h(
-                "tr",
-                {
-                  class: "participant-detail-row hidden",
-                  id: row.detailId,
-                  "data-row-id": row.rowId,
-                },
-                [
-                  h("td", {
-                    colspan: "5",
-                    innerHTML: row.detailHtml,
-                  }),
-                ],
-              ),
-            );
-          });
-          return nodes;
-        };
-      },
-    };
+    const ParticipantsRoot = createParticipantsRoot(h, participantsState);
     createApp(ParticipantsRoot).mount(participantsMountEl);
     participantsMountEl.dataset.vueParticipantsMounted = "true";
   }
@@ -275,6 +179,7 @@ function mountDashboardPanelsIsland() {
       if (!participantsMountEl) return false;
       participantsState.emptyMessage = "";
       participantsState.rows = Array.isArray(rows) ? rows : [];
+      participantsState.expandedByRowId = {};
       return true;
     },
     /**
@@ -285,6 +190,7 @@ function mountDashboardPanelsIsland() {
       if (!participantsMountEl) return false;
       participantsState.rows = [];
       participantsState.emptyMessage = String(message || "");
+      participantsState.expandedByRowId = {};
       return true;
     },
     /**
@@ -293,7 +199,6 @@ function mountDashboardPanelsIsland() {
      */
     renderTimeOfDay(analytics) {
       if (!timeOfDayMountEl) return false;
-      const doc = globalThis.document;
       if (!doc) return false;
       const sparklineEl = doc.getElementById("timeofday-sparkline");
       const bandsEl = doc.getElementById("timeofday-bands");
@@ -328,7 +233,9 @@ function mountDashboardPanelsIsland() {
       renderWeekdaySection(options);
       return true;
     },
+    ownsParticipantInteractions: true,
   }, {
+    globalScope,
     legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.dashboardPanels],
   });
 }

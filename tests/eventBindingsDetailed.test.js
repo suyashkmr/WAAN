@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createEventBindingsController } from "../js/appShell/eventBindings.js";
+import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
 function createHandlers() {
   return {
@@ -48,6 +49,7 @@ describe("event bindings detailed", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
   });
 
   it("wires export/download/participant actions", () => {
@@ -311,5 +313,32 @@ describe("event bindings detailed", () => {
     timeOfDayWeekendToggle.dispatchEvent(new Event("change"));
 
     expect(deps.updateHourlyState).toHaveBeenCalledTimes(2);
+  });
+
+  it("skips legacy participantsBody click binding when Vue dashboard bridge owns participant interactions", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const participantsBody = document.createElement("tbody");
+    const participantToggle = document.createElement("button");
+    participantToggle.className = "participant-toggle";
+    participantsBody.appendChild(participantToggle);
+
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
+        },
+      },
+    };
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: { participantsBody },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+    participantToggle.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(handlers.handleParticipantRowToggle).not.toHaveBeenCalled();
   });
 });

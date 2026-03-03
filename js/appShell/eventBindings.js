@@ -1,4 +1,5 @@
 // @ts-check
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -178,7 +179,9 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         button.addEventListener("click", handleParticipantPresetClick);
       });
     }
-    if (participantsBody) {
+    const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
+    const vueOwnsParticipantInteractions = Boolean(dashboardPanelsBridge?.ownsParticipantInteractions);
+    if (participantsBody && !vueOwnsParticipantInteractions) {
       participantsBody.addEventListener("click", handleParticipantRowToggle);
     }
 

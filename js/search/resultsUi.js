@@ -39,8 +39,17 @@ export function createSearchResultsUiController({
      *     summary?: unknown,
      *     resultLimit?: number,
      *   }) => boolean,
+     *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string) => void>) => boolean,
      * } | null} */
     return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+  }
+
+  function registerPanelActionHandlers(searchSavedBridge) {
+    if (!searchSavedBridge?.setPanelActionHandlers || typeof handleStateAction !== "function") return;
+    searchSavedBridge.setPanelActionHandlers({
+      "search:retry-search": () => handleStateAction("retry-search"),
+      "search:clear-search-filters": () => handleStateAction("clear-search-filters"),
+    });
   }
 
   function cancelPendingRender() {
@@ -56,9 +65,63 @@ export function createSearchResultsUiController({
     }
   }
 
+  function renderResultsLegacy({
+    results,
+    total,
+    summary,
+    lastRunFiltered,
+    activeRenderToken,
+    onComplete,
+  }) {
+    if (results.length <= 120) {
+      const fragment = document.createDocumentFragment();
+      results.forEach(result => {
+        fragment.appendChild(buildSearchResultItem(result));
+      });
+      if (activeRenderToken !== renderToken) return;
+      resultsListEl.appendChild(fragment);
+      appendNoticeIfNeeded({
+        resultsListEl,
+        lastRunFiltered,
+        total,
+        renderedCount: results.length,
+      });
+      renderSearchInsights({ insightsEl, summary, resultLimit });
+      if (typeof onComplete === "function") onComplete();
+      return;
+    }
+
+    const batchSize = 40;
+    let index = 0;
+    const renderBatch = () => {
+      if (activeRenderToken !== renderToken) return;
+      const fragment = document.createDocumentFragment();
+      const end = Math.min(index + batchSize, results.length);
+      for (let cursor = index; cursor < end; cursor += 1) {
+        fragment.appendChild(buildSearchResultItem(results[cursor]));
+      }
+      resultsListEl.appendChild(fragment);
+      index = end;
+      if (index < results.length) {
+        setTimeout(renderBatch, 0);
+        return;
+      }
+      appendNoticeIfNeeded({
+        resultsListEl,
+        lastRunFiltered,
+        total,
+        renderedCount: results.length,
+      });
+      renderSearchInsights({ insightsEl, summary, resultLimit });
+      if (typeof onComplete === "function") onComplete();
+    };
+    renderBatch();
+  }
+
   function renderResultsState({ tone = "empty", title = "", message = "", actions = [] } = {}) {
     cancelPendingRender();
     const searchSavedBridge = getSearchSavedBridge();
+    registerPanelActionHandlers(searchSavedBridge);
     if (insightsEl) {
       const handledInsights = Boolean(
         searchSavedBridge?.renderSearchInsights?.({
@@ -76,9 +139,6 @@ export function createSearchResultsUiController({
         title,
         message,
         actions,
-        onAction: actionId => {
-          if (typeof handleStateAction === "function") handleStateAction(actionId);
-        },
       });
       if (handled) return;
     }
@@ -166,69 +226,47 @@ export function createSearchResultsUiController({
     }
 
     if (searchSavedBridge?.renderSearchResults) {
-      const handledResults = searchSavedBridge.renderSearchResults({
-        results,
-        total,
-        lastRunFiltered,
-      });
+      let handledResults = false;
+      try {
+        handledResults = Boolean(searchSavedBridge.renderSearchResults({
+          results,
+          total,
+          lastRunFiltered,
+        }));
+      } catch {
+        handledResults = false;
+      }
       if (handledResults) {
-        const handledInsights = Boolean(
-          searchSavedBridge?.renderSearchInsights?.({
-            summary,
-            resultLimit,
-          }),
-        );
-        if (!handledInsights) {
-          renderSearchInsights({ insightsEl, summary, resultLimit });
+        const shouldVerifyDomRender = searchSavedBridge?.__waanVueSearchBridge === true;
+        const renderedItems = shouldVerifyDomRender
+          ? resultsListEl.querySelectorAll(".search-result").length
+          : results.length;
+        if (!results.length || renderedItems > 0) {
+          const handledInsights = Boolean(
+            searchSavedBridge?.renderSearchInsights?.({
+              summary,
+              resultLimit,
+            }),
+          );
+          if (!handledInsights) {
+            renderSearchInsights({ insightsEl, summary, resultLimit });
+          }
+          resultsRenderCacheKey = nextRenderCacheKey;
+          return;
         }
+      }
+    }
+
+    renderResultsLegacy({
+      results,
+      total,
+      summary,
+      lastRunFiltered,
+      activeRenderToken,
+      onComplete: () => {
         resultsRenderCacheKey = nextRenderCacheKey;
-        return;
-      }
-    }
-
-    if (results.length <= 120) {
-      const fragment = document.createDocumentFragment();
-      results.forEach(result => {
-        fragment.appendChild(buildSearchResultItem(result));
-      });
-      if (activeRenderToken !== renderToken) return;
-      resultsListEl.appendChild(fragment);
-      appendNoticeIfNeeded({
-        resultsListEl,
-        lastRunFiltered,
-        total,
-        renderedCount: results.length,
-      });
-      renderSearchInsights({ insightsEl, summary, resultLimit });
-      resultsRenderCacheKey = nextRenderCacheKey;
-      return;
-    }
-
-    const batchSize = 40;
-    let index = 0;
-    const renderBatch = () => {
-      if (activeRenderToken !== renderToken) return;
-      const fragment = document.createDocumentFragment();
-      const end = Math.min(index + batchSize, results.length);
-      for (let cursor = index; cursor < end; cursor += 1) {
-        fragment.appendChild(buildSearchResultItem(results[cursor]));
-      }
-      resultsListEl.appendChild(fragment);
-      index = end;
-      if (index < results.length) {
-        setTimeout(renderBatch, 0);
-        return;
-      }
-      appendNoticeIfNeeded({
-        resultsListEl,
-        lastRunFiltered,
-        total,
-        renderedCount: results.length,
-      });
-      renderSearchInsights({ insightsEl, summary, resultLimit });
-      resultsRenderCacheKey = nextRenderCacheKey;
-    };
-    renderBatch();
+      },
+    });
   }
 
   function resetResultsRenderCache() {

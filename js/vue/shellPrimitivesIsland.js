@@ -14,46 +14,51 @@ import {
 /**
  * @param {string} actionId
  * @param {any} [payload]
+ * @param {any} [globalScope]
  */
-function dispatchShellAction(actionId, payload = null) {
-  const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+function dispatchShellAction(actionId, payload = null, globalScope = globalThis) {
+  const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
   if (shellBridge?.dispatchRelayAction) {
     shellBridge.dispatchRelayAction(actionId, payload);
   }
 }
 
-function mountRelayBannerPrimitive() {
-  const VueRuntime = globalThis.Vue;
-  const bannerEl = globalThis.document?.getElementById?.("relay-status-banner");
+function mountRelayBannerPrimitive(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const bannerEl = globalScope?.document?.getElementById?.("relay-status-banner");
   if (!VueRuntime || !bannerEl) return;
   if (bannerEl.dataset.vuePrimitiveMounted === "true") return;
 
   const { createApp, h } = VueRuntime;
   bannerEl.dataset.vueManaged = "true";
-  const RelayBannerRoot = createRelayBannerRoot(h, dispatchShellAction);
+  const RelayBannerRoot = createRelayBannerRoot(h, (actionId, payload = null) =>
+    dispatchShellAction(actionId, payload, globalScope),
+  );
 
   const app = createApp(RelayBannerRoot);
   app.mount(bannerEl);
   bannerEl.dataset.vuePrimitiveMounted = "true";
 }
 
-function mountActionsToolbarPrimitive() {
-  const VueRuntime = globalThis.Vue;
-  const toolbarEl = globalThis.document?.getElementById?.("actions-toolbar");
+function mountActionsToolbarPrimitive(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const toolbarEl = globalScope?.document?.getElementById?.("actions-toolbar");
   if (!VueRuntime || !toolbarEl) return;
   if (toolbarEl.dataset.vuePrimitiveMounted === "true") return;
   const { createApp, h } = VueRuntime;
   toolbarEl.dataset.vueManaged = "true";
-  const ActionsToolbarRoot = createActionsToolbarRoot(h, dispatchShellAction);
+  const ActionsToolbarRoot = createActionsToolbarRoot(h, (actionId, payload = null) =>
+    dispatchShellAction(actionId, payload, globalScope),
+  );
 
   const app = createApp(ActionsToolbarRoot);
   app.mount(toolbarEl);
   toolbarEl.dataset.vuePrimitiveMounted = "true";
 }
 
-function mountOnboardingDialogPrimitive() {
-  const VueRuntime = globalThis.Vue;
-  const onboardingEl = globalThis.document?.getElementById?.("onboarding-overlay");
+function mountOnboardingDialogPrimitive(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const onboardingEl = globalScope?.document?.getElementById?.("onboarding-overlay");
   if (!VueRuntime || !onboardingEl) return;
   if (onboardingEl.dataset.vuePrimitiveMounted === "true") return;
   const { createApp, h } = VueRuntime;
@@ -65,36 +70,27 @@ function mountOnboardingDialogPrimitive() {
   onboardingEl.dataset.vuePrimitiveMounted = "true";
 }
 
-function mountDashboardCardShellPrimitives() {
-  const VueRuntime = globalThis.Vue;
-  if (!VueRuntime || typeof globalThis.document === "undefined") return;
-  const { createApp } = VueRuntime;
-  const cardMountEls = globalThis.document.querySelectorAll('section[data-vue-shell-mount="card-shell"]');
+function mountDashboardCardShellPrimitives(globalScope = globalThis) {
+  if (typeof globalScope?.document === "undefined") return;
+  const cardMountEls = globalScope.document.querySelectorAll('section[data-vue-shell-mount="card-shell"]');
 
   cardMountEls.forEach(existing => {
     if (!existing) return;
     if (existing.dataset.vuePrimitiveMounted === "true") return;
     const tagName = existing.tagName.toLowerCase();
     if (tagName !== "section") return;
-
-    const template = existing.innerHTML;
-    existing.dataset.vueManaged = "true";
     existing.dataset.vuePrimitiveMounted = "true";
-    const cardId = existing.id || "unknown";
-
-    createApp({
-      name: `CardShellPrimitive-${cardId}`,
-      template,
-    }).mount(existing);
+    // Keep legacy nodes/listeners stable while shell migration is in-flight.
+    existing.dataset.vueManaged = "card-shell";
   });
 }
 
-function mountFeedbackPrimitiveBridge() {
-  const VueRuntime = globalThis.Vue;
-  const statusEl = globalThis.document?.getElementById?.("data-status");
-  const toastContainerEl = globalThis.document?.getElementById?.("toast-container");
+function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
+  const VueRuntime = globalScope?.Vue;
+  const statusEl = globalScope?.document?.getElementById?.("data-status");
+  const toastContainerEl = globalScope?.document?.getElementById?.("toast-container");
   if (!VueRuntime || !statusEl || !toastContainerEl) return;
-  if (resolveVueBridge(VUE_BRIDGE_NAMES.shell)) return;
+  if (resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })) return;
 
   const { createApp, h, reactive } = VueRuntime;
   const statusState = reactive({ message: "" });
@@ -102,6 +98,10 @@ function mountFeedbackPrimitiveBridge() {
   let statusHideTimer = null;
   let statusExitTimer = null;
   let nextToastId = 1;
+  const setTimer = globalScope?.setTimeout ? globalScope.setTimeout.bind(globalScope) : globalThis.setTimeout.bind(globalThis);
+  const raf = globalScope?.requestAnimationFrame
+    ? globalScope.requestAnimationFrame.bind(globalScope)
+    : globalThis.requestAnimationFrame?.bind(globalThis);
 
   function clearStatusClasses() {
     statusEl.classList.remove("is-active", "is-exiting", "success", "warning", "error");
@@ -117,7 +117,7 @@ function mountFeedbackPrimitiveBridge() {
     if (statusExitTimer) {
       clearTimeout(statusExitTimer);
     }
-    statusExitTimer = globalThis.setTimeout(() => finalizeStatusExit(), exitDurationMs);
+    statusExitTimer = setTimer(() => finalizeStatusExit(), exitDurationMs);
   }
 
   function showStatusMessage(message, tone = "info", { autoHideDelayMs = 5000, exitDurationMs = 300 } = {}) {
@@ -132,10 +132,10 @@ function mountFeedbackPrimitiveBridge() {
       clearTimeout(statusExitTimer);
       statusExitTimer = null;
     }
-    globalThis.requestAnimationFrame?.(() => {
+    raf?.(() => {
       statusEl.classList.add("is-active");
     });
-    statusHideTimer = globalThis.setTimeout(() => beginStatusExit(exitDurationMs), autoHideDelayMs);
+    statusHideTimer = setTimer(() => beginStatusExit(exitDurationMs), autoHideDelayMs);
   }
 
   function dismissToast(toastOrId) {
@@ -143,7 +143,7 @@ function mountFeedbackPrimitiveBridge() {
     const index = toastState.items.findIndex(item => item.id === toastId);
     if (index === -1) return;
     toastState.items[index].dismissing = true;
-    globalThis.setTimeout(() => {
+    setTimer(() => {
       const nextIndex = toastState.items.findIndex(item => item.id === toastId);
       if (nextIndex >= 0) toastState.items.splice(nextIndex, 1);
     }, 150);
@@ -160,11 +160,11 @@ function mountFeedbackPrimitiveBridge() {
     while (toastState.items.length > maxToasts) {
       toastState.items.shift();
     }
-    globalThis.setTimeout(() => dismissToast(id), duration);
+    setTimer(() => dismissToast(id), duration);
   }
 
   const { updateRelayRecoveryActions, updateRelayControlButtons } = createRelayControlsBridgeMethods({
-    documentRef: globalThis.document ?? null,
+    documentRef: globalScope.document ?? null,
   });
   /** @type {Record<string, (...args: any[]) => any>} */
   const relayActionHandlers = {};
@@ -242,18 +242,22 @@ function mountFeedbackPrimitiveBridge() {
     setRelayActionHandlers,
     dispatchRelayAction,
   }, {
+    globalScope,
     legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.shell],
   });
 }
 
+export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
+  if (typeof globalScope?.document === "undefined") return;
+  mountRelayBannerPrimitive(globalScope);
+  mountActionsToolbarPrimitive(globalScope);
+  mountOnboardingDialogPrimitive(globalScope);
+  mountDashboardCardShellPrimitives(globalScope);
+  mountFeedbackPrimitiveBridge(globalScope);
+}
+
 try {
-  if (typeof globalThis.document !== "undefined") {
-    mountRelayBannerPrimitive();
-    mountActionsToolbarPrimitive();
-    mountOnboardingDialogPrimitive();
-    mountDashboardCardShellPrimitives();
-    mountFeedbackPrimitiveBridge();
-  }
+  mountShellPrimitivesIsland();
 } catch (error) {
   globalThis.console?.warn?.("Vue shell primitives unavailable; using legacy DOM primitives.", error);
 }

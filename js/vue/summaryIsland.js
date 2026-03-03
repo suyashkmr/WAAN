@@ -13,12 +13,10 @@ function normalizeCards(cards) {
   }));
 }
 
-function createSummaryRoot(state) {
+function createSummaryRoot(state, { h, Card }) {
   return {
     name: "WaanSummaryIsland",
     render() {
-      const { h } = window.Vue;
-      const Card = (window.PrimeVue || window.primevue)?.Card;
       return state.cards.map(card =>
         h(
           Card,
@@ -39,24 +37,24 @@ function createSummaryRoot(state) {
   };
 }
 
-function mountSummaryIsland() {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
-  const VueRuntime = window.Vue;
-  const PrimeVueRuntime = window.PrimeVue || window.primevue;
+export function mountSummaryIsland({ globalScope = globalThis } = {}) {
+  if (!globalScope || typeof globalScope.document === "undefined") return;
+  const VueRuntime = globalScope.Vue;
+  const PrimeVueRuntime = globalScope.PrimeVue || globalScope.primevue;
   const PrimeVueConfig = PrimeVueRuntime?.Config;
   const PrimeVueCard = PrimeVueRuntime?.Card;
   if (!VueRuntime || !PrimeVueConfig || !PrimeVueCard) return;
 
-  const mountEl = document.getElementById("summary");
+  const mountEl = globalScope.document.getElementById("summary");
   if (!mountEl) return;
   if (mountEl.dataset.vueSummaryMounted === "true") return;
 
-  const { createApp, reactive } = VueRuntime;
+  const { createApp, reactive, h } = VueRuntime;
   const state = reactive({
     cards: [],
   });
 
-  const app = createApp(createSummaryRoot(state));
+  const app = createApp(createSummaryRoot(state, { h, Card: PrimeVueCard }));
   app.use(PrimeVueConfig, { unstyled: true });
   app.component("Card", PrimeVueCard);
   app.mount(mountEl);
@@ -68,7 +66,7 @@ function mountSummaryIsland() {
       return true;
     },
   }, {
-    globalScope: window,
+    globalScope,
     legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.summary],
   });
 }

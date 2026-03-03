@@ -64,6 +64,49 @@ describe("search results ui controller", () => {
     expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
   });
 
+  it("rerenders after interrupted batched legacy render with same cache key", () => {
+    const resultsSummaryEl = document.createElement("div");
+    const resultsListEl = document.createElement("div");
+    const insightsEl = document.createElement("div");
+    let state = {
+      query: { text: "hello", participant: "", start: "", end: "" },
+      results: Array.from({ length: 160 }, (_, index) => buildResult(index + 1)),
+      total: 160,
+      summary: { total: 160 },
+      lastRun: Date.now(),
+      lastRunHasFilters: true,
+    };
+
+    const controller = createSearchResultsUiController({
+      resultsSummaryEl,
+      resultsListEl,
+      insightsEl,
+      resultLimit: 200,
+      getSearchState: () => state,
+      getDatasetFingerprint: () => "fp-interrupt",
+      buildSearchRenderCacheKey: payload => JSON.stringify(payload),
+      hasSearchFilters: query => Boolean(query?.text),
+      buildResultsSummaryText: () => "summary",
+      buildSearchResultItem: result => {
+        const el = document.createElement("div");
+        el.className = "search-result";
+        el.textContent = result.message;
+        return el;
+      },
+      renderSearchInsights: () => {},
+      handleStateAction: () => {},
+    });
+
+    controller.renderResults();
+    expect(resultsListEl.querySelectorAll(".search-result").length).toBe(40);
+
+    controller.renderLoadingState("Scanning...");
+    expect(resultsListEl.querySelector(".panel-state--loading")).toBeTruthy();
+
+    controller.renderResults();
+    expect(resultsListEl.querySelectorAll(".search-result").length).toBe(40);
+  });
+
   it("clears insights when error state is shown", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");

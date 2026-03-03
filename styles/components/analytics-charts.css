@@ -526,16 +526,22 @@
 
 .calendar-weekdays {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(2.2rem, 1fr));
     gap: 0.25rem;
     font-size: 0.7rem;
     color: var(--muted);
-    text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+    justify-items: center;
 }
 
 .calendar-weekdays span {
+    display: block;
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
     padding: 0.15rem 0;
 }
 

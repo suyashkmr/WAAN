@@ -60,8 +60,17 @@ export function createSavedViewsUiController({
      *     html?: string,
      *     empty?: boolean,
      *   }) => boolean,
+     *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string) => void>) => boolean,
      * } | null} */
     return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
+  }
+
+  function registerPanelActionHandlers(searchSavedBridge) {
+    if (!searchSavedBridge?.setPanelActionHandlers || typeof onPanelAction !== "function") return;
+    searchSavedBridge.setPanelActionHandlers({
+      "savedViews:save-view": () => onPanelAction("save-view"),
+      "savedViews:focus-range": () => onPanelAction("focus-range"),
+    });
   }
 
   function formatSavedViewTopHour(snapshot) {
@@ -177,6 +186,7 @@ export function createSavedViewsUiController({
       ? deps.getActiveViewContext()
       : {};
     const searchSavedBridge = getSearchSavedBridge();
+    registerPanelActionHandlers(searchSavedBridge);
     if (!list.length) {
       const tone = dataAvailableGetter() ? "empty" : "loading";
       const title = dataAvailableGetter() ? "No saved views yet" : "Load a chat to use saved views";
@@ -195,9 +205,6 @@ export function createSavedViewsUiController({
           title,
           message,
           actions,
-          onAction: actionId => {
-            if (typeof onPanelAction === "function") onPanelAction(actionId);
-          },
         });
         if (handled) {
           gallery.dataset.interactive = "false";
