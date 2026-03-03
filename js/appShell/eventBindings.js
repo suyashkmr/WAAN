@@ -84,6 +84,18 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   const documentRef = globalThis.document ?? null;
 
   function initEventHandlers() {
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const supportsShellActionDispatch =
+      typeof shellBridge?.setShellActionHandlers === "function" &&
+      typeof shellBridge?.dispatchShellAction === "function";
+    if (supportsShellActionDispatch) {
+      shellBridge.setShellActionHandlers({
+        "export.pdf": handleDownloadPdfReport,
+        "export.markdown": handleDownloadMarkdownReport,
+        "export.slides": handleDownloadSlidesReport,
+      });
+    }
+
     if (chatSelector) {
       chatSelector.addEventListener("change", handleChatSelectionChange);
       chatSelector.addEventListener("dblclick", () => {
@@ -152,16 +164,16 @@ export function createEventBindingsController({ elements, handlers, deps }) {
       });
     }
 
-    if (downloadMarkdownButton) {
+    if (downloadMarkdownButton && !supportsShellActionDispatch) {
       downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
     }
-    if (downloadSlidesButton) {
+    if (downloadSlidesButton && !supportsShellActionDispatch) {
       downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
     }
     if (downloadSearchButton) {
       downloadSearchButton.addEventListener("click", exportSearchResults);
     }
-    if (downloadPdfButton) {
+    if (downloadPdfButton && !supportsShellActionDispatch) {
       downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
     }
 

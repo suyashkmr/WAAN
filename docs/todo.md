@@ -511,6 +511,11 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added/retained bridge coverage for search/saved panel-state rendering contracts (`tests/searchResultsUi.test.js`, `tests/savedViews.test.js`, `tests/vueBridgeIslandsIntegration.test.js`).
     - [x] Dashboard participants slice: moved row expand/collapse behavior into Vue participants island state and skipped legacy `participantsBody` click binding when Vue dashboard bridge owns interactions (`js/vue/dashboardPanelsIsland.js`, `js/appShell/eventBindings.js`).
     - [x] Added event-binding regression coverage for Vue-owned participant interaction path (`tests/eventBindingsDetailed.test.js`).
+    - [x] Onboarding slice: routed onboarding dialog Skip/Next through Vue shell action dispatcher (`onboarding.*`) with fallback DOM listeners only when dispatcher is unavailable (`js/vue/shellPrimitiveViews.js`, `js/vue/shellPrimitivesIsland.js`, `js/appShell/bootstrap.js`).
+    - [x] Added bootstrap regression coverage for shell-dispatched onboarding actions (`tests/bootstrapKeyboardSharedRuntime.test.js`).
+    - [x] Toolbar export slice: routed Vue toolbar export buttons (`export.pdf|markdown|slides`) through shell action dispatcher with fallback DOM listeners when dispatcher is unavailable (`js/vue/shellPrimitiveViews.js`, `js/appShell/eventBindings.js`).
+    - [x] Added event-binding regression coverage for shell-dispatched toolbar exports (`tests/eventBindingsDetailed.test.js`).
+    - [x] Preferences toolbar slice: routed Vue toolbar compact/motion/contrast controls through shell action dispatcher (`ui.compact.toggle`, `ui.motion.cycle`, `ui.contrast.toggle`) and disabled duplicate DOM listener binding when dispatcher is active (`js/vue/shellPrimitiveViews.js`, `js/appShell/bootstrap.js`, `js/appShell/runtimeBootstrap.js`, `js/ui/preferences.js`).
   - [x] Introduce a root Vue app shell entry that owns mount lifecycle and route-level section visibility.
     - [x] Added centralized Vue app-shell lifecycle orchestrator and root mount state marker (`js/vue/appShellRoot.js`) and switched `js/main.js` to mount through this root entry.
     - [x] Added regression coverage for root lifecycle idempotence (`tests/vueAppShellRoot.test.js`).

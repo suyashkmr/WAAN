@@ -7,6 +7,7 @@ import {
   stripRelaySuffix,
   formatRelayAccount,
 } from "../js/appShell/sharedRuntime.js";
+import { VUE_RUNTIME_REGISTRY_KEY, VUE_BRIDGE_NAMES } from "../js/vue/bridgeRegistry.js";
 
 function makeBootstrapDeps(overrides = {}) {
   return {
@@ -15,6 +16,9 @@ function makeBootstrapDeps(overrides = {}) {
     initThemeControls: vi.fn(),
     initCompactMode: vi.fn(),
     initAccessibilityControls: vi.fn(),
+    toggleCompactMode: vi.fn(),
+    cycleReduceMotionPreference: vi.fn(),
+    toggleHighContrastPreference: vi.fn(),
     setDataAvailabilityState: vi.fn(),
     onboardingController: {
       start: vi.fn(),
@@ -54,6 +58,7 @@ describe("bootstrap controller", () => {
     timeoutSpy.mockRestore();
     vi.restoreAllMocks();
     delete window.electronAPI;
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
   });
 
   it("initializes startup flows and wires relay bridge", () => {
@@ -116,6 +121,49 @@ describe("bootstrap controller", () => {
 
     toggle.click();
     expect(card.classList.contains("collapsed")).toBe(true);
+  });
+
+  it("registers onboarding actions with shell dispatcher when available", () => {
+    const onboardingSkipButton = document.createElement("button");
+    const onboardingNextButton = document.createElement("button");
+    const setShellActionHandlers = vi.fn();
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers,
+          dispatchShellAction: vi.fn(),
+        },
+      },
+    };
+
+    const deps = makeBootstrapDeps();
+    const { initAppBootstrap } = createBootstrapController({
+      elements: { onboardingSkipButton, onboardingNextButton },
+      deps,
+    });
+
+    initAppBootstrap();
+
+    expect(setShellActionHandlers).toHaveBeenCalledTimes(1);
+    const handlers = setShellActionHandlers.mock.calls[0][0];
+    expect(typeof handlers["onboarding.skip"]).toBe("function");
+    expect(typeof handlers["onboarding.next"]).toBe("function");
+    expect(typeof handlers["ui.compact.toggle"]).toBe("function");
+    expect(typeof handlers["ui.motion.cycle"]).toBe("function");
+    expect(typeof handlers["ui.contrast.toggle"]).toBe("function");
+
+    handlers["onboarding.skip"]();
+    handlers["onboarding.next"]();
+    handlers["ui.compact.toggle"]();
+    handlers["ui.motion.cycle"]();
+    handlers["ui.contrast.toggle"]();
+    expect(deps.onboardingController.skip).toHaveBeenCalledTimes(1);
+    expect(deps.onboardingController.advance).toHaveBeenCalledTimes(1);
+    expect(deps.toggleCompactMode).toHaveBeenCalledTimes(1);
+    expect(deps.cycleReduceMotionPreference).toHaveBeenCalledTimes(1);
+    expect(deps.toggleHighContrastPreference).toHaveBeenCalledTimes(1);
+    expect(deps.initCompactMode).toHaveBeenCalledWith({ bindToggleListener: false });
+    expect(deps.initAccessibilityControls).toHaveBeenCalledWith({ bindToggleListeners: false });
   });
 });
 

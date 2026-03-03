@@ -18,6 +18,10 @@ import {
  */
 function dispatchShellAction(actionId, payload = null, globalScope = globalThis) {
   const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
+  if (shellBridge?.dispatchShellAction) {
+    shellBridge.dispatchShellAction(actionId, payload);
+    return;
+  }
   if (shellBridge?.dispatchRelayAction) {
     shellBridge.dispatchRelayAction(actionId, payload);
   }
@@ -63,7 +67,9 @@ function mountOnboardingDialogPrimitive(globalScope = globalThis) {
   if (onboardingEl.dataset.vuePrimitiveMounted === "true") return;
   const { createApp, h } = VueRuntime;
   onboardingEl.dataset.vueManaged = "true";
-  const OnboardingDialogRoot = createOnboardingDialogRoot(h);
+  const OnboardingDialogRoot = createOnboardingDialogRoot(h, (actionId, payload = null) =>
+    dispatchShellAction(actionId, payload, globalScope),
+  );
 
   const app = createApp(OnboardingDialogRoot);
   app.mount(onboardingEl);
@@ -167,18 +173,18 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     documentRef: globalScope.document ?? null,
   });
   /** @type {Record<string, (...args: any[]) => any>} */
-  const relayActionHandlers = {};
+  const shellActionHandlers = {};
 
   /**
    * @param {Record<string, (...args: any[]) => any>} handlers
    */
-  function setRelayActionHandlers(handlers = {}) {
-    Object.keys(relayActionHandlers).forEach(key => {
-      delete relayActionHandlers[key];
-    });
+  function setShellActionHandlers(handlers = {}) {
     Object.entries(handlers).forEach(([actionId, handler]) => {
+      if (!actionId) return;
       if (typeof handler === "function") {
-        relayActionHandlers[actionId] = handler;
+        shellActionHandlers[actionId] = handler;
+      } else {
+        delete shellActionHandlers[actionId];
       }
     });
   }
@@ -187,11 +193,19 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
    * @param {string} actionId
    * @param {any} [payload]
    */
-  function dispatchRelayAction(actionId, payload = null) {
-    const handler = relayActionHandlers[actionId];
+  function dispatchShellActionBridge(actionId, payload = null) {
+    const handler = shellActionHandlers[actionId];
     if (typeof handler !== "function") return false;
     handler(payload);
     return true;
+  }
+
+  function setRelayActionHandlers(handlers = {}) {
+    setShellActionHandlers(handlers);
+  }
+
+  function dispatchRelayAction(actionId, payload = null) {
+    return dispatchShellActionBridge(actionId, payload);
   }
 
   const StatusRoot = {
@@ -239,6 +253,8 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     finalizeStatusExit,
     updateRelayRecoveryActions,
     updateRelayControlButtons,
+    setShellActionHandlers,
+    dispatchShellAction: dispatchShellActionBridge,
     setRelayActionHandlers,
     dispatchRelayAction,
   }, {

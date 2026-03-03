@@ -156,6 +156,52 @@ describe("event bindings detailed", () => {
     expect(handlers.handleParticipantRowToggle).toHaveBeenCalledTimes(1);
   });
 
+  it("registers toolbar export actions with shell dispatcher when available", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    /** @type {Record<string, Function>} */
+    let registeredHandlers = {};
+    const setShellActionHandlers = vi.fn(handlersMap => {
+      registeredHandlers = handlersMap;
+    });
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers,
+          dispatchShellAction: vi.fn(),
+        },
+      },
+    };
+
+    const downloadMarkdownButton = document.createElement("button");
+    const downloadSlidesButton = document.createElement("button");
+    const downloadPdfButton = document.createElement("button");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        downloadMarkdownButton,
+        downloadSlidesButton,
+        downloadPdfButton,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+
+    expect(setShellActionHandlers).toHaveBeenCalledTimes(1);
+    expect(typeof registeredHandlers["export.pdf"]).toBe("function");
+    expect(typeof registeredHandlers["export.markdown"]).toBe("function");
+    expect(typeof registeredHandlers["export.slides"]).toBe("function");
+
+    registeredHandlers["export.pdf"]();
+    registeredHandlers["export.markdown"]();
+    registeredHandlers["export.slides"]();
+    expect(handlers.handleDownloadPdfReport).toHaveBeenCalledTimes(1);
+    expect(handlers.handleDownloadMarkdownReport).toHaveBeenCalledTimes(1);
+    expect(handlers.handleDownloadSlidesReport).toHaveBeenCalledTimes(1);
+  });
+
   it("supports forced chat reselect via double-click and Enter", () => {
     const handlers = createHandlers();
     const deps = createDeps();

@@ -63,9 +63,36 @@ export function createActionsToolbarRoot(h, onAction) {
     render() {
       return [
         h("div", { class: "toolbar-group primary" }, [
-          h("button", { type: "button", class: "ghost-button", id: "download-pdf" }, "Save as PDF"),
-          h("button", { type: "button", class: "ghost-button", id: "download-markdown-report" }, "Save text report"),
-          h("button", { type: "button", class: "ghost-button", id: "download-slides-report" }, "Save slides (HTML)"),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "ghost-button",
+              id: "download-pdf",
+              onClick: () => onAction("export.pdf"),
+            },
+            "Save as PDF",
+          ),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "ghost-button",
+              id: "download-markdown-report",
+              onClick: () => onAction("export.markdown"),
+            },
+            "Save text report",
+          ),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "ghost-button",
+              id: "download-slides-report",
+              onClick: () => onAction("export.slides"),
+            },
+            "Save slides (HTML)",
+          ),
         ]),
         h("div", { class: "toolbar-group secondary" }, [
           h(
@@ -76,6 +103,7 @@ export function createActionsToolbarRoot(h, onAction) {
               id: "compact-toggle",
               "aria-pressed": "false",
               title: "Switch between compact and comfort layouts",
+              onClick: () => onAction("ui.compact.toggle"),
             },
             "Compact mode",
           ),
@@ -118,6 +146,7 @@ export function createActionsToolbarRoot(h, onAction) {
                 class: "ghost-button small",
                 id: "reduce-motion-toggle",
                 "aria-pressed": "mixed",
+                onClick: () => onAction("ui.motion.cycle"),
               },
               "Motion: Standard",
             ),
@@ -128,6 +157,7 @@ export function createActionsToolbarRoot(h, onAction) {
                 class: "ghost-button small",
                 id: "high-contrast-toggle",
                 "aria-pressed": "false",
+                onClick: () => onAction("ui.contrast.toggle"),
               },
               "Contrast: Standard",
             ),
@@ -150,8 +180,9 @@ export function createActionsToolbarRoot(h, onAction) {
 
 /**
  * @param {any} h
+ * @param {(actionId: string) => void} onAction
  */
-export function createOnboardingDialogRoot(h) {
+export function createOnboardingDialogRoot(h, onAction) {
   return {
     name: "OnboardingDialogPrimitive",
     render() {
@@ -160,8 +191,26 @@ export function createOnboardingDialogRoot(h) {
         h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
         h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
         h("div", { class: "onboarding-actions" }, [
-          h("button", { type: "button", class: "ghost-button", id: "onboarding-skip" }, "Skip"),
-          h("button", { type: "button", class: "ghost-button primary", id: "onboarding-next" }, "Next"),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "ghost-button",
+              id: "onboarding-skip",
+              onClick: () => onAction("onboarding.skip"),
+            },
+            "Skip",
+          ),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "ghost-button primary",
+              id: "onboarding-next",
+              onClick: () => onAction("onboarding.next"),
+            },
+            "Next",
+          ),
         ]),
       ]);
     },

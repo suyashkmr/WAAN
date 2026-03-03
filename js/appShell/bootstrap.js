@@ -1,6 +1,7 @@
 // @ts-check
 
 import { initAppShellPrimitives } from "../ui/appShellPrimitives.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -21,6 +22,9 @@ export function createBootstrapController({ elements, deps }) {
     initThemeControls,
     initCompactMode,
     initAccessibilityControls,
+    toggleCompactMode,
+    cycleReduceMotionPreference,
+    toggleHighContrastPreference,
     setDataAvailabilityState,
     onboardingController,
     startRelaySession,
@@ -114,15 +118,36 @@ export function createBootstrapController({ elements, deps }) {
 
   function initAppBootstrap() {
     initAppShellPrimitives({ documentRef: document });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const supportsShellActionDispatch =
+      typeof shellBridge?.setShellActionHandlers === "function" &&
+      typeof shellBridge?.dispatchShellAction === "function";
+    if (supportsShellActionDispatch) {
+      shellBridge.setShellActionHandlers({
+        "ui.compact.toggle": () => {
+          if (typeof toggleCompactMode === "function") toggleCompactMode();
+        },
+        "ui.motion.cycle": () => {
+          if (typeof cycleReduceMotionPreference === "function") cycleReduceMotionPreference();
+        },
+        "ui.contrast.toggle": () => {
+          if (typeof toggleHighContrastPreference === "function") toggleHighContrastPreference();
+        },
+        "onboarding.skip": onboardingController.skip,
+        "onboarding.next": onboardingController.advance,
+      });
+    }
+
     initEventHandlers();
     initRelayControls();
     initThemeControls();
-    initCompactMode();
-    initAccessibilityControls();
+    initCompactMode({ bindToggleListener: !supportsShellActionDispatch });
+    initAccessibilityControls({ bindToggleListeners: !supportsShellActionDispatch });
     setDataAvailabilityState(false);
-
-    onboardingSkipButton?.addEventListener("click", onboardingController.skip);
-    onboardingNextButton?.addEventListener("click", onboardingController.advance);
+    if (!supportsShellActionDispatch) {
+      onboardingSkipButton?.addEventListener("click", onboardingController.skip);
+      onboardingNextButton?.addEventListener("click", onboardingController.advance);
+    }
     setTimeout(() => onboardingController.start(), 500);
 
     initElectronRelayBridge();

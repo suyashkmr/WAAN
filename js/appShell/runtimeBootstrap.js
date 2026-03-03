@@ -50,7 +50,7 @@ export function bootstrapAppShellRuntime({
   });
   const { buildSectionNav, setupSectionNavTracking } = sectionNavController;
 
-  const { apply: applyCompactMode, init: initCompactMode } = createCompactModeManager(
+  const { apply: applyCompactMode, init: initCompactMode, toggleCompactMode } = createCompactModeManager(
     /** @type {any} */ ({
       toggle: compactConfig.toggle,
       storageKey: compactConfig.storageKey,
@@ -69,7 +69,11 @@ export function bootstrapAppShellRuntime({
       highContrastStorageKey: accessibilityConfig.highContrastStorageKey,
     }),
   );
-  const { initAccessibilityControls } = accessibilityController;
+  const {
+    initAccessibilityControls,
+    cycleReduceMotionPreference,
+    toggleHighContrastPreference,
+  } = accessibilityController;
 
   const onboardingController = createOnboardingController({
     overlayEl: onboardingConfig.overlayEl,
@@ -109,6 +113,9 @@ export function bootstrapAppShellRuntime({
         ...bootstrapDeps,
         initCompactMode,
         initAccessibilityControls,
+        toggleCompactMode,
+        cycleReduceMotionPreference,
+        toggleHighContrastPreference,
         onboardingController,
         buildSectionNav,
         setupSectionNavTracking,

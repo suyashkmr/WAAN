@@ -32,7 +32,16 @@ export function createCompactModeManager({
     }
   };
 
-  const init = () => {
+  const toggleCompactMode = ({ showUserToast = true } = {}) => {
+    const next = !(documentRef?.body?.dataset.compact === "true");
+    apply(next);
+    if (showUserToast && typeof showToast === "function") {
+      showToast(next ? "Compact mode enabled." : "Comfort mode enabled.", "info", { duration: 3000 });
+    }
+    return next;
+  };
+
+  const init = ({ bindToggleListener = true } = {}) => {
     let enabled = false;
     try {
       enabled = resolvedStorage?.getItem(storageKey) === "true";
@@ -40,16 +49,14 @@ export function createCompactModeManager({
       console.warn("Unable to read compact mode preference.", error);
     }
     apply(enabled);
-    toggle?.addEventListener("click", () => {
-      const next = !(documentRef?.body?.dataset.compact === "true");
-      apply(next);
-      if (typeof showToast === "function") {
-        showToast(next ? "Compact mode enabled." : "Comfort mode enabled.", "info", { duration: 3000 });
-      }
-    });
+    if (bindToggleListener) {
+      toggle?.addEventListener("click", () => {
+        toggleCompactMode();
+      });
+    }
   };
 
-  return { apply, init };
+  return { apply, init, toggleCompactMode };
 }
 
 export function createAccessibilityController({
@@ -161,7 +168,36 @@ export function createAccessibilityController({
     }
   }
 
-  const init = () => {
+  const cycleReduceMotionPreference = ({ showUserToast = true } = {}) => {
+    let nextPreference;
+    if (reduceMotionPreference === null) nextPreference = "reduce";
+    else if (reduceMotionPreference === "reduce") nextPreference = "standard";
+    else nextPreference = null;
+    applyReduceMotionPreference(nextPreference);
+    if (showUserToast && typeof showToast === "function") {
+      const toastMessage =
+        nextPreference === "reduce"
+          ? "Animations simplified."
+          : nextPreference === "standard"
+            ? "Full motion restored."
+            : "Following your system preference for motion.";
+      showToast(toastMessage, "info", { duration: 2500 });
+    }
+    return nextPreference;
+  };
+
+  const toggleHighContrastPreference = ({ showUserToast = true } = {}) => {
+    const next = !(documentRef?.body?.dataset.contrast === "high");
+    applyHighContrastPreference(next);
+    if (showUserToast && typeof showToast === "function") {
+      showToast(next ? "High-contrast mode on." : "Standard contrast mode.", next ? "success" : "info", {
+        duration: 2500,
+      });
+    }
+    return next;
+  };
+
+  const init = ({ bindToggleListeners = true } = {}) => {
     let savedMotion = null;
     try {
       savedMotion = resolvedStorage?.getItem(reduceMotionStorageKey);
@@ -170,22 +206,11 @@ export function createAccessibilityController({
     }
     const initialMotion = savedMotion === "reduce" || savedMotion === "standard" ? savedMotion : null;
     applyReduceMotionPreference(initialMotion, { persist: false });
-    reduceMotionToggle?.addEventListener("click", () => {
-      let nextPreference;
-      if (reduceMotionPreference === null) nextPreference = "reduce";
-      else if (reduceMotionPreference === "reduce") nextPreference = "standard";
-      else nextPreference = null;
-      applyReduceMotionPreference(nextPreference);
-      if (typeof showToast === "function") {
-        const toastMessage =
-          nextPreference === "reduce"
-            ? "Animations simplified."
-            : nextPreference === "standard"
-              ? "Full motion restored."
-              : "Following your system preference for motion.";
-        showToast(toastMessage, "info", { duration: 2500 });
-      }
-    });
+    if (bindToggleListeners) {
+      reduceMotionToggle?.addEventListener("click", () => {
+        cycleReduceMotionPreference();
+      });
+    }
 
     let contrastSaved = false;
     try {
@@ -194,15 +219,11 @@ export function createAccessibilityController({
       console.warn("Unable to read contrast preference.", error);
     }
     applyHighContrastPreference(contrastSaved, { persist: false });
-    highContrastToggle?.addEventListener("click", () => {
-      const next = !(documentRef?.body?.dataset.contrast === "high");
-      applyHighContrastPreference(next);
-      if (typeof showToast === "function") {
-        showToast(next ? "High-contrast mode on." : "Standard contrast mode.", next ? "success" : "info", {
-          duration: 2500,
-        });
-      }
-    });
+    if (bindToggleListeners) {
+      highContrastToggle?.addEventListener("click", () => {
+        toggleHighContrastPreference();
+      });
+    }
   };
 
   return {
@@ -212,5 +233,7 @@ export function createAccessibilityController({
     syncReduceMotionState,
     applyReduceMotionPreference,
     applyHighContrastPreference,
+    cycleReduceMotionPreference,
+    toggleHighContrastPreference,
   };
 }
