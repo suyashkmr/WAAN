@@ -78,7 +78,15 @@ export function buildSearchResultItem(result) {
 
   const messageEl = document.createElement("div");
   messageEl.className = "search-result-message";
-  if (result.messageHtml) {
+  if (Array.isArray(result.messageSegments) && result.messageSegments.length) {
+    result.messageSegments.forEach(segment => {
+      const text = String(segment?.text || "");
+      if (!text) return;
+      const node = document.createElement(segment?.highlighted ? "mark" : "span");
+      node.textContent = text;
+      messageEl.appendChild(node);
+    });
+  } else if (result.messageHtml) {
     messageEl.innerHTML = result.messageHtml;
   } else {
     messageEl.textContent = result.message || "";

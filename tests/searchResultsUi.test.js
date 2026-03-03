@@ -7,6 +7,10 @@ function buildResult(index) {
     timestamp: `2026-02-24T10:${String(index % 60).padStart(2, "0")}:00.000Z`,
     message: `Message ${index}`,
     messageHtml: `Message <mark>${index}</mark>`,
+    messageSegments: [
+      { text: "Message ", highlighted: false },
+      { text: String(index), highlighted: true },
+    ],
   };
 }
 

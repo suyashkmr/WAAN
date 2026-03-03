@@ -189,6 +189,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
             timestamp: result.timestamp,
             message: result.message ?? "",
             messageHtml: result.messageHtml,
+            messageSegments: Array.isArray(result.messageSegments) ? result.messageSegments : [],
           })),
           total,
           summary,

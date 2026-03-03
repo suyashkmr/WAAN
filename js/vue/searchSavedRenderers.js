@@ -1,13 +1,10 @@
 import { formatDisplayDate, formatNumber, formatTimestampDisplay } from "../utils.js";
 import { ensureSavedViewsGalleryActions } from "./searchSavedGalleryActions.js";
+import { renderSavedViewsComparisonWithVue } from "./searchSavedComparisonRenderer.js";
 
 function normalizeActions(value) {
   if (!Array.isArray(value)) return [];
-  return value.filter(Boolean).map(action => ({
-    id: String(action?.id || ""),
-    label: String(action?.label || "Action"),
-    disabled: Boolean(action?.disabled),
-  }));
+  return value.filter(Boolean).map(action => ({ id: String(action?.id || ""), label: String(action?.label || "Action"), disabled: Boolean(action?.disabled) }));
 }
 
 export function renderPanelStateWithVue({
@@ -60,7 +57,14 @@ function normalizeSearchResults(value) {
     sender: String(result?.sender || "[Unknown]"),
     timestamp: String(result?.timestamp || ""),
     message: String(result?.message || ""),
-    messageHtml: typeof result?.messageHtml === "string" ? result.messageHtml : "",
+    messageSegments: Array.isArray(result?.messageSegments)
+      ? result.messageSegments
+        .filter(Boolean)
+        .map(segment => ({
+          text: String(segment?.text || ""),
+          highlighted: Boolean(segment?.highlighted),
+        }))
+      : [],
   }));
 }
 
@@ -86,9 +90,15 @@ export function renderSearchResultsWithVue({
             h("span", { class: "search-result-sender" }, result.sender),
             h("span", null, formatTimestampDisplay(result.timestamp)),
           ]),
-          result.messageHtml
-            ? h("div", { class: "search-result-message", innerHTML: result.messageHtml })
-            : h("div", { class: "search-result-message" }, result.message),
+          h(
+            "div",
+            { class: "search-result-message" },
+            result.messageSegments.length
+              ? result.messageSegments
+                .filter(segment => String(segment?.text || ""))
+                .map(segment => h(segment.highlighted ? "mark" : "span", {}, String(segment.text)))
+              : [result.message],
+          ),
         ]),
       ),
       showNarrowNotice
@@ -199,27 +209,25 @@ export function renderSavedViewsGalleryWithVue({
   if (!VueRuntime || !container) return false;
   const { h, render } = VueRuntime;
   if (typeof h !== "function" || typeof render !== "function") return false;
-  const safeCards = Array.isArray(cards)
-    ? cards.filter(Boolean).map(card => ({
-      viewId: String(card?.viewId || ""),
-      viewName: String(card?.viewName || "Untitled view"),
-      rangeLabel: String(card?.rangeLabel || ""),
-      recencyHint: String(card?.recencyHint || ""),
-      createdAtLabel: String(card?.createdAtLabel || ""),
-      totalMessages: String(card?.totalMessages || "—"),
-      participants: String(card?.participants || "—"),
-      avgPerDay: String(card?.avgPerDay || "Not enough data"),
-      topSenderName: String(card?.topSenderName || "—"),
-      topSenderShare: String(card?.topSenderShare || ""),
-      peakHour: String(card?.peakHour || "No hourly data yet"),
-      peakHourCount: String(card?.peakHourCount || ""),
-      barWidth: Number.isFinite(Number(card?.barWidth)) ? Number(card.barWidth) : 8,
-      shareEmpty: Boolean(card?.shareEmpty),
-      interactive: Boolean(card?.interactive),
-      isActive: Boolean(card?.isActive),
-      isDirty: Boolean(card?.isDirty),
-    }))
-    : [];
+  const safeCards = Array.isArray(cards) ? cards.filter(Boolean).map(card => ({
+    viewId: String(card?.viewId || ""),
+    viewName: String(card?.viewName || "Untitled view"),
+    rangeLabel: String(card?.rangeLabel || ""),
+    recencyHint: String(card?.recencyHint || ""),
+    createdAtLabel: String(card?.createdAtLabel || ""),
+    totalMessages: String(card?.totalMessages || "—"),
+    participants: String(card?.participants || "—"),
+    avgPerDay: String(card?.avgPerDay || "Not enough data"),
+    topSenderName: String(card?.topSenderName || "—"),
+    topSenderShare: String(card?.topSenderShare || ""),
+    peakHour: String(card?.peakHour || "No hourly data yet"),
+    peakHourCount: String(card?.peakHourCount || ""),
+    barWidth: Number.isFinite(Number(card?.barWidth)) ? Number(card.barWidth) : 8,
+    shareEmpty: Boolean(card?.shareEmpty),
+    interactive: Boolean(card?.interactive),
+    isActive: Boolean(card?.isActive),
+    isDirty: Boolean(card?.isDirty),
+  })) : [];
   render(h(
     "div",
     { class: "saved-view-gallery-vue-root" },
@@ -288,59 +296,4 @@ export function renderSavedViewsGalleryWithVue({
   return true;
 }
 
-export function renderSavedViewsComparisonWithVue({
-  empty = false,
-  message = "",
-  columns = [],
-  container,
-  vueRuntime = globalThis.Vue,
-}) {
-  const VueRuntime = vueRuntime;
-  if (!VueRuntime || !container) return false;
-  const { h, render } = VueRuntime;
-  if (typeof h !== "function" || typeof render !== "function") return false;
-  const safeColumns = Array.isArray(columns)
-    ? columns.filter(Boolean).map(column => ({
-      heading: String(column?.heading || ""),
-      metrics: Array.isArray(column?.metrics)
-        ? column.metrics.filter(Boolean).map(metric => ({
-          label: String(metric?.label || ""),
-          value: String(metric?.value || "—"),
-          tone: String(metric?.tone || "neutral"),
-        }))
-        : [],
-    }))
-    : [];
-  container.classList.toggle("empty", Boolean(empty));
-  if (empty) {
-    render(h("div", { class: "saved-views-compare-vue" }, [
-      h("p", null, String(message || "Pick two saved views to compare their activity side-by-side.")),
-    ]), container);
-    return true;
-  }
-  render(h("div", { class: "saved-views-compare-vue" }, [
-    h("div", { class: "compare-summary-grid" }, safeColumns.map(column =>
-      h("div", { class: "compare-column" }, [
-        h("h3", null, column.heading),
-        h("ul", { class: "compare-metrics" }, column.metrics.map(metric =>
-          h("li", null, [
-            h("span", { class: "compare-label" }, metric.label),
-            h(
-              "span",
-              {
-                class: [
-                  "compare-value",
-                  metric.tone !== "neutral" ? "compare-diff" : "",
-                  metric.tone === "positive" ? "positive" : "",
-                  metric.tone === "negative" ? "negative" : "",
-                ],
-              },
-              metric.value,
-            ),
-          ]),
-        )),
-      ]),
-    )),
-  ]), container);
-  return true;
-}
+export { renderSavedViewsComparisonWithVue };

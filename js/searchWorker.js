@@ -104,6 +104,7 @@ function runSearch({ jobId, entries, query, resultLimit, startMs, endMs, dataset
         timestamp: record.timestampIso,
         message: record.message,
         messageHtml: highlightMessage(record.message, tokens),
+        messageSegments: highlightMessageSegments(record.message, tokens),
       });
     }
   }
@@ -138,6 +139,41 @@ function highlightMessage(text, tokens) {
     const regex = new RegExp(`(${escaped})`, "gi");
     return output.replace(regex, "<mark>$1</mark>");
   }, safe);
+}
+
+function highlightMessageSegments(text, tokens) {
+  const source = String(text || "");
+  if (!source) return [];
+  if (!tokens || !tokens.length) {
+    return [{ text: source, highlighted: false }];
+  }
+  const escapedTokens = tokens
+    .filter(Boolean)
+    .map(token => String(token))
+    .filter(Boolean)
+    .map(token => token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!escapedTokens.length) {
+    return [{ text: source, highlighted: false }];
+  }
+  const regex = new RegExp(`(${escapedTokens.join("|")})`, "gi");
+  const parts = [];
+  let cursor = 0;
+  let match = regex.exec(source);
+  while (match) {
+    const [matchedText] = match;
+    const start = match.index;
+    const end = start + matchedText.length;
+    if (start > cursor) {
+      parts.push({ text: source.slice(cursor, start), highlighted: false });
+    }
+    parts.push({ text: matchedText, highlighted: true });
+    cursor = end;
+    match = regex.exec(source);
+  }
+  if (cursor < source.length) {
+    parts.push({ text: source.slice(cursor), highlighted: false });
+  }
+  return parts.filter(part => part.text);
 }
 
 function describeSearchFilters(query) {

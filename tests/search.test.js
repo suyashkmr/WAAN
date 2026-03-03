@@ -84,6 +84,10 @@ describe("search controller", () => {
                 timestamp: "2025-01-02T10:00:00.000Z",
                 message: "hello world",
                 messageHtml: "hello <mark>world</mark>",
+                messageSegments: [
+                  { text: "hello ", highlighted: false },
+                  { text: "world", highlighted: true },
+                ],
               },
             ],
             total: 1,

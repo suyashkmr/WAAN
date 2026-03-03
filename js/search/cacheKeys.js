@@ -28,6 +28,12 @@ function buildResultsCacheKey(results) {
       timestamp: item?.timestamp || "",
       message: item?.message || "",
       messageHtml: item?.messageHtml || "",
+      messageSegments: Array.isArray(item?.messageSegments)
+        ? item.messageSegments.map(segment => ({
+            text: String(segment?.text || ""),
+            highlighted: Boolean(segment?.highlighted),
+          }))
+        : [],
     })),
   );
 }
