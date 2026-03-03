@@ -1,6 +1,6 @@
 {
   "name": "electron",
-  "version": "2.4.6",
+  "version": "2.4.7",
   "description": "",
   "main": "main.js",
   "scripts": {
