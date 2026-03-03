@@ -1,13 +1,13 @@
 // @ts-check
 
 import { renderSummaryCards as renderSummarySection } from "../analytics/summary.js";
-import { renderTimeOfDayPanel } from "../analytics/activity.js";
 import { renderSentimentSection } from "../analytics/sentiment.js";
 import { renderMessageTypesSection } from "../analytics/messageTypes.js";
 import { renderPollsSection } from "../analytics/polls.js";
 import { createDeferredRenderScheduler } from "../ui.js";
 import { createActivityPanelsController } from "./dashboardRender/activityPanels.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
 import {
   createParticipantsPanelController,
   applyParticipantTopChange,
@@ -40,10 +40,6 @@ export function createDashboardRenderController({ elements, deps }) {
     pollsTotalEl,
     pollsCreatorsEl,
     pollsNote,
-    timeOfDayChartContainer,
-    timeOfDaySparklineEl,
-    timeOfDayBandsEl,
-    timeOfDayCalloutsEl,
   } = elements;
 
   const {
@@ -147,18 +143,11 @@ export function createDashboardRenderController({ elements, deps }) {
    * @param {AnyRecord} analytics
    */
   function renderTimeOfDayPanelWithBridge(analytics) {
+    mountDashboardPanelsIsland();
     /** @type {{ renderTimeOfDay?: (analytics: unknown) => boolean } | null} */
     const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
-    if (dashboardPanelsBridge?.renderTimeOfDay) {
-      const handledByVue = dashboardPanelsBridge.renderTimeOfDay(analytics);
-      if (handledByVue) return;
-    }
-    renderTimeOfDayPanel(analytics, {
-      container: timeOfDayChartContainer,
-      sparklineEl: timeOfDaySparklineEl,
-      bandsEl: timeOfDayBandsEl,
-      calloutsEl: timeOfDayCalloutsEl,
-    });
+    if (!dashboardPanelsBridge?.renderTimeOfDay) return;
+    dashboardPanelsBridge.renderTimeOfDay(analytics);
   }
 
   /**

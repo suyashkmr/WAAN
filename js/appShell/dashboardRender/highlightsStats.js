@@ -1,5 +1,6 @@
 // @ts-check
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
+import { mountDashboardPanelsIsland } from "../../vue/dashboardPanelsIsland.js";
 
 /**
  * @typedef {Object} HighlightItem
@@ -27,7 +28,6 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js"
 
 /**
  * @typedef {Object} HighlightsStatsDeps
- * @property {(value: string) => string} sanitizeText
  * @property {(value?: number | null) => string} formatNumber
  * @property {(value?: number | null, digits?: number) => string} formatFloat
  */
@@ -63,7 +63,7 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js"
  */
 export function createHighlightsStatsController({ elements, deps }) {
   const { highlightList } = elements;
-  const { sanitizeText, formatNumber, formatFloat } = deps;
+  const { formatNumber, formatFloat } = deps;
 
   /**
    * @param {number} value
@@ -84,114 +84,10 @@ export function createHighlightsStatsController({ elements, deps }) {
    */
   function renderHighlights(highlights) {
     if (!highlightList) return;
+    mountDashboardPanelsIsland();
     /** @type {{ renderHighlights?: (highlights: unknown) => boolean } | null} */
     const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
-    if (dashboardPanelsBridge?.renderHighlights) {
-      const handledByVue = dashboardPanelsBridge.renderHighlights(highlights);
-      if (handledByVue) return;
-    }
-    highlightList.innerHTML = "";
-
-    if (!Array.isArray(highlights) || !highlights.length) {
-      const empty = document.createElement("p");
-      empty.className = "search-results-empty";
-      empty.textContent = "Highlights will show up after the chat loads.";
-      highlightList.appendChild(empty);
-      return;
-    }
-
-    highlights.forEach((highlight, index) => {
-      const card = document.createElement("div");
-      card.className = `highlight-card ${sanitizeText(highlight.type || "")}`;
-
-      const labelRow = document.createElement("div");
-      labelRow.className = "highlight-label-row";
-      const label = document.createElement("span");
-      label.className = "highlight-label";
-      label.textContent = highlight.label || "Highlight";
-      labelRow.appendChild(label);
-      if (highlight.tooltip) {
-        const tooltipButton = document.createElement("button");
-        tooltipButton.type = "button";
-        tooltipButton.className = "info-note-button info-note-inline";
-        const tooltipId = `highlight-note-${index}`;
-        tooltipButton.setAttribute("aria-label", highlight.tooltip);
-        tooltipButton.setAttribute("aria-describedby", tooltipId);
-        tooltipButton.setAttribute("title", highlight.tooltip);
-
-        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        icon.setAttribute("viewBox", "0 0 24 24");
-        icon.setAttribute("aria-hidden", "true");
-        const iconPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        iconPath.setAttribute(
-          "d",
-          "M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z",
-        );
-        icon.appendChild(iconPath);
-        tooltipButton.appendChild(icon);
-
-        const tooltipText = document.createElement("span");
-        tooltipText.className = "info-tooltip";
-        tooltipText.id = tooltipId;
-        tooltipText.setAttribute("role", "tooltip");
-        tooltipText.textContent = highlight.tooltip;
-        tooltipButton.appendChild(tooltipText);
-        labelRow.appendChild(tooltipButton);
-      }
-      card.appendChild(labelRow);
-
-      if (highlight.headline) {
-        const headline = document.createElement("p");
-        headline.className = "highlight-headline";
-        headline.textContent = highlight.headline;
-        card.appendChild(headline);
-      }
-
-      const value = document.createElement("span");
-      value.className = "highlight-value";
-      value.textContent = highlight.value || "-";
-      card.appendChild(value);
-
-      if (highlight.descriptor) {
-        const descriptor = document.createElement("span");
-        descriptor.className = "highlight-descriptor";
-        descriptor.textContent = highlight.descriptor;
-        card.appendChild(descriptor);
-      }
-
-      if (Array.isArray(highlight.items) && highlight.items.length) {
-        const list = document.createElement("ol");
-        list.className = "highlight-items";
-        highlight.items.forEach(item => {
-          const li = document.createElement("li");
-          const itemLabel = document.createElement("span");
-          itemLabel.className = "item-label";
-          itemLabel.textContent = item.label || "";
-          li.appendChild(itemLabel);
-          if (item.value) {
-            const itemValue = document.createElement("span");
-            itemValue.className = "item-value";
-            itemValue.textContent = item.value;
-            li.appendChild(itemValue);
-          }
-          list.appendChild(li);
-        });
-        card.appendChild(list);
-      }
-
-      if (highlight.theme || highlight.type) {
-        card.dataset.accent = highlight.theme || highlight.type;
-      }
-
-      if (highlight.meta) {
-        const meta = document.createElement("span");
-        meta.className = "highlight-meta";
-        meta.textContent = highlight.meta;
-        card.appendChild(meta);
-      }
-
-      highlightList.appendChild(card);
-    });
+    dashboardPanelsBridge?.renderHighlights?.(highlights);
   }
 
   /**

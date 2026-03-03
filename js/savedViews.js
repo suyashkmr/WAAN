@@ -294,30 +294,10 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     if (listSelect) listSelect.value = viewId;
   }
 
-  async function handleSavedViewGalleryClick(event) {
-    if (gallery?.dataset.galleryActionsBound === "true") return;
-    const card = event.target.closest(".saved-view-card");
-    if (!card) return;
-    await applySavedViewById(card.dataset.viewId);
-  }
-
-  async function handleSavedViewGalleryKeydown(event) {
-    if (gallery?.dataset.galleryActionsBound === "true") return;
-    if (event.key !== "Enter" && event.key !== " ") return;
-    const card = event.target.closest(".saved-view-card");
-    if (!card) return;
-    event.preventDefault();
-    await applySavedViewById(card.dataset.viewId);
-  }
-
   function attachEvents() {
     if (saveButton) saveButton.addEventListener("click", handleSaveView);
     if (applyButton) applyButton.addEventListener("click", handleApplySavedView);
     if (deleteButton) deleteButton.addEventListener("click", handleDeleteSavedView);
-    if (gallery) {
-      gallery.addEventListener("click", handleSavedViewGalleryClick);
-      gallery.addEventListener("keydown", handleSavedViewGalleryKeydown);
-    }
     if (compareButton) compareButton.addEventListener("click", handleCompareViews);
 
     const refreshOnStateChange = () => activeViewId && refreshUI();

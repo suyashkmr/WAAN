@@ -11,8 +11,6 @@ export function createSearchResultsUiController({
   buildSearchRenderCacheKey,
   hasSearchFilters,
   buildResultsSummaryText,
-  buildSearchResultItem,
-  renderSearchInsights,
   handleStateAction,
 }) {
   let resultsRenderCacheKey = "";
@@ -125,8 +123,6 @@ export function createSearchResultsUiController({
 
     const hasFilters = hasSearchFilters(query);
     cancelPendingRender();
-    void buildSearchResultItem;
-    void renderSearchInsights;
     const searchSavedBridge = getSearchSavedBridge();
     if (!searchSavedBridge) return;
     registerPanelActionHandlers(searchSavedBridge);

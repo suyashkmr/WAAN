@@ -4,7 +4,6 @@ import { createRangeFiltersController } from "../js/appShell/rangeFilters.js";
 
 const mocked = vi.hoisted(() => ({
   renderSummarySection: vi.fn(),
-  renderTimeOfDayPanel: vi.fn(),
   renderSentimentSection: vi.fn(),
   renderMessageTypesSection: vi.fn(),
   renderPollsSection: vi.fn(),
@@ -28,11 +27,6 @@ const mocked = vi.hoisted(() => ({
 
 vi.mock("../js/analytics/summary.js", () => ({
   renderSummaryCards: mocked.renderSummarySection,
-}));
-
-vi.mock("../js/analytics/activity.js", () => ({
-  renderTimeOfDayPanel: mocked.renderTimeOfDayPanel,
-  formatHourLabel: vi.fn(hour => `${hour}:00`),
 }));
 
 vi.mock("../js/analytics/sentiment.js", () => ({
@@ -170,10 +164,6 @@ describe("dashboard render controller", () => {
         pollsTotalEl: document.createElement("div"),
         pollsCreatorsEl: document.createElement("div"),
         pollsNote: document.createElement("div"),
-        timeOfDayChartContainer: document.createElement("div"),
-        timeOfDaySparklineEl: document.createElement("div"),
-        timeOfDayBandsEl: document.createElement("div"),
-        timeOfDayCalloutsEl: document.createElement("div"),
       },
       deps: {
         getDatasetLabel: () => "Demo",
@@ -215,7 +205,6 @@ describe("dashboard render controller", () => {
     expect(mocked.renderWeeklyPanel).toHaveBeenCalledWith(analytics);
     expect(mocked.renderWeekdayPanel).toHaveBeenCalledWith(analytics);
     expect(mocked.renderSentimentSection).toHaveBeenCalled();
-    expect(mocked.renderTimeOfDayPanel).toHaveBeenCalled();
     expect(mocked.renderMessageTypesSection).toHaveBeenCalled();
     expect(mocked.renderPollsSection).toHaveBeenCalled();
     expect(mocked.renderStatistics).toHaveBeenCalledWith(analytics);
@@ -242,10 +231,6 @@ describe("dashboard render controller", () => {
         pollsTotalEl: document.createElement("div"),
         pollsCreatorsEl: document.createElement("div"),
         pollsNote: document.createElement("div"),
-        timeOfDayChartContainer: document.createElement("div"),
-        timeOfDaySparklineEl: document.createElement("div"),
-        timeOfDayBandsEl: document.createElement("div"),
-        timeOfDayCalloutsEl: document.createElement("div"),
       },
       deps: {
         getDatasetLabel: () => "Demo",
@@ -279,7 +264,6 @@ describe("dashboard render controller", () => {
     });
 
     expect(renderTimeOfDay).toHaveBeenCalledTimes(1);
-    expect(mocked.renderTimeOfDayPanel).not.toHaveBeenCalled();
   });
 });
 

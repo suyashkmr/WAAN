@@ -25,8 +25,6 @@ import { createSearchProgressUi } from "./search/progressUi.js";
 import { createSearchResultsUiController } from "./search/resultsUi.js";
 import { createSearchWorkerClient } from "./search/workerClient.js";
 import {
-  renderSearchInsights,
-  buildSearchResultItem,
   buildResultsSummaryText,
 } from "./search/renderUtils.js";
 import { logPerfDuration } from "./perf.js";
@@ -98,8 +96,6 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     buildSearchRenderCacheKey,
     hasSearchFilters,
     buildResultsSummaryText,
-    buildSearchResultItem,
-    renderSearchInsights,
     handleStateAction: actionId => {
       if (actionId === "clear-search-filters") {
         resetFilters(false);

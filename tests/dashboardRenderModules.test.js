@@ -11,47 +11,18 @@ import {
 } from "../js/appShell/dashboardRender/participantsPanel.js";
 
 describe("dashboardRender modules", () => {
-  it("highlightsStats renders empty and populated highlights", () => {
+  it("highlightsStats skips DOM fallback rendering when dashboard bridge is unavailable", () => {
     const highlightList = document.createElement("div");
     const controller = createHighlightsStatsController({
       elements: { highlightList },
       deps: {
-        sanitizeText: value => String(value || "").replace(/[^\w-]+/g, ""),
         formatNumber: value => String(value ?? ""),
         formatFloat: (value, digits = 1) => Number(value || 0).toFixed(digits),
       },
     });
 
     controller.renderHighlights([]);
-    expect(highlightList.textContent).toContain("Highlights will show up after the chat loads.");
-
-    controller.renderHighlights([
-      {
-        type: "velocity",
-        label: "Message pace",
-        tooltip: "How fast messages are coming in",
-        headline: "Fast period",
-        value: "120/day",
-        descriptor: "Compared to baseline",
-        items: [
-          { label: "Morning", value: "40" },
-          { label: "Evening", value: "80" },
-        ],
-        theme: "warm",
-        meta: "Dataset ending Jan 8",
-      },
-    ]);
-
-    const cards = highlightList.querySelectorAll(".highlight-card");
-    expect(cards.length).toBe(1);
-    expect(cards[0].dataset.accent).toBe("warm");
-    expect(cards[0].textContent).toContain("Message pace");
-    expect(cards[0].textContent).toContain("Fast period");
-    expect(cards[0].textContent).toContain("120/day");
-    expect(cards[0].textContent).toContain("Morning");
-    expect(cards[0].textContent).toContain("Dataset ending Jan 8");
-    const tooltip = cards[0].querySelector(".info-note-inline .info-tooltip");
-    expect(tooltip?.textContent).toContain("How fast messages are coming in");
+    expect(highlightList.children.length).toBe(0);
   });
 
   it("highlightsStats delegates to Vue dashboard panels bridge when available", () => {
@@ -67,7 +38,6 @@ describe("dashboardRender modules", () => {
       const controller = createHighlightsStatsController({
         elements: { highlightList },
         deps: {
-          sanitizeText: value => String(value || "").replace(/[^\w-]+/g, ""),
           formatNumber: value => String(value ?? ""),
           formatFloat: (value, digits = 1) => Number(value || 0).toFixed(digits),
         },
@@ -107,7 +77,6 @@ describe("dashboardRender modules", () => {
     const controller = createHighlightsStatsController({
       elements: { highlightList: document.createElement("div") },
       deps: {
-        sanitizeText: value => String(value),
         formatNumber: value => String(value),
         formatFloat: (value, digits = 1) => Number(value || 0).toFixed(digits),
       },

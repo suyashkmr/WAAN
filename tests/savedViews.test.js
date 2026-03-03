@@ -313,7 +313,7 @@ describe("savedViews controller", () => {
     expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Dispatcher View".', "success");
   });
 
-  it("does not fallback to legacy gallery interactions when Vue gallery renderer is unavailable", async () => {
+  it("does not attach legacy gallery interaction fallback when Vue gallery renderer is unavailable", async () => {
     const elements = buildElements();
     const dependencies = buildDependencies();
     elements.gallery.dataset.galleryActionsBound = "true";
