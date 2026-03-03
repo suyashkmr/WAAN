@@ -101,6 +101,7 @@ export function renderHourlyFromPayload(payload, stateRef) {
   }
   if (!activeHeatmap || !activeHeatmap.length) {
     stateRef.model = { mode: "empty", message: "No data available." };
+    stateRef.anomalyBadges = [];
     if (options.filterNoteEl) options.filterNoteEl.textContent = buildFilterNote(state);
     if (options.brushSummaryEl) options.brushSummaryEl.textContent = "No hourly data for this range.";
     if (options.anomaliesEl) options.anomaliesEl.textContent = "No hourly surprises detected.";
