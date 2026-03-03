@@ -1,13 +1,11 @@
 // @ts-check
 
 import {
-  renderTimeOfDayPanel,
-  renderHourlyHeatmapSection,
   renderDailySection,
   renderWeeklySection,
-  renderWeekdaySection,
 } from "../../analytics/activity.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
+import { mountDashboardPanelsIsland } from "../../vue/dashboardPanelsIsland.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
 
@@ -49,10 +47,6 @@ export function createActivityPanelsController({ elements, deps }) {
     timeOfDayHourEndInput,
     timeOfDayHourStartLabel,
     timeOfDayHourEndLabel,
-    timeOfDayChartContainer,
-    timeOfDaySparklineEl,
-    timeOfDayBandsEl,
-    timeOfDayCalloutsEl,
     rangeSelect,
   } = elements;
 
@@ -74,6 +68,7 @@ export function createActivityPanelsController({ elements, deps }) {
   const hasStateSubscription = typeof subscribeAppShellUiState === "function";
 
   function renderWithDashboardPanelsBridge(/** @type {string} */ method, /** @type {any} */ payload) {
+    mountDashboardPanelsIsland();
     const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
     /** @type {any} */
     const handler = bridge?.[method];
@@ -127,8 +122,7 @@ export function createActivityPanelsController({ elements, deps }) {
       anomaliesEl: hourlyAnomaliesEl,
       renderSummary: renderHourlySummary,
     };
-    const handled = renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options });
-    if (!handled) renderHourlyHeatmapSection(data, options);
+    renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options });
     if (!hourlyControlsInitialised) {
       initHourlyControls();
       hourlyControlsInitialised = true;
@@ -228,18 +222,10 @@ export function createActivityPanelsController({ elements, deps }) {
       anomaliesEl: hourlyAnomaliesEl,
       renderSummary: renderHourlySummary,
     };
-    const handledHourly = renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data: null, options });
-    if (!handledHourly) renderHourlyHeatmapSection(null, options);
+    renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data: null, options });
     const analytics = getDatasetAnalytics();
     if (analytics) {
-      const options = {
-        container: timeOfDayChartContainer,
-        sparklineEl: timeOfDaySparklineEl,
-        bandsEl: timeOfDayBandsEl,
-        calloutsEl: timeOfDayCalloutsEl,
-      };
-      const handledTimeOfDay = renderWithDashboardPanelsBridge("renderTimeOfDay", analytics);
-      if (!handledTimeOfDay) renderTimeOfDayPanel(analytics, options);
+      renderWithDashboardPanelsBridge("renderTimeOfDay", analytics);
     }
   }
 
@@ -248,8 +234,7 @@ export function createActivityPanelsController({ elements, deps }) {
       container: weekdayChartEl,
       filterNoteEl: weekdayFilterNote,
     };
-    const handledWeekday = renderWithDashboardPanelsBridge("renderWeekdayChart", options);
-    if (!handledWeekday) renderWeekdaySection(options);
+    renderWithDashboardPanelsBridge("renderWeekdayChart", options);
   }
 
   function initHourlyControls() {

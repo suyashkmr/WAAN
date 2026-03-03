@@ -51,9 +51,6 @@ export function createStatusUiController({
   function dismissToast(toast) {
     const bridge = resolveShellBridge();
     bridge?.dismissToast?.(toast);
-    if (!bridge?.dismissToast && toast?.isConnected) {
-      toast.remove();
-    }
   }
 
   /**

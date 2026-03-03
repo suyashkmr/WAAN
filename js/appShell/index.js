@@ -23,4 +23,3 @@ export { setupAppBootstrap } from "./bootstrapApp.js";
 export { createExportRuntime, createExportFilterSummary } from "./exportRuntime.js";
 export { createRelayRuntime } from "./relayRuntime.js";
 export { createDashboardRuntime, createDatasetLifecycleRuntime } from "./compositionRuntime.js";
-export { createVueFrontendAdapterLayer, VUE_FRONTEND_ADAPTER_KEY } from "./vueFrontendAdapterLayer.js";

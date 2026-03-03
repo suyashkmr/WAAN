@@ -1,19 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../js/analytics/activity.js", () => ({
-  renderTimeOfDayPanel: vi.fn(),
-  renderHourlyHeatmapSection: vi.fn(),
   renderDailySection: vi.fn(),
   renderWeeklySection: vi.fn(),
-  renderWeekdaySection: vi.fn(),
 }));
 
 import { createActivityPanelsController } from "../js/appShell/dashboardRender/activityPanels.js";
 import {
-  renderTimeOfDayPanel,
-  renderHourlyHeatmapSection,
   renderWeeklySection,
-  renderWeekdaySection,
 } from "../js/analytics/activity.js";
 
 function createRangeSelect() {
@@ -229,7 +223,7 @@ describe("activityPanels controller", () => {
     expect(rangeSelect.value).toBe("custom");
   });
 
-  it("falls back to legacy activity renderers when dashboard bridge is unavailable", () => {
+  it("no-ops panel rerenders when dashboard bridge is unavailable", () => {
     const controller = createActivityPanelsController({
       elements: {
         hourlyChartEl: document.createElement("div"),
@@ -284,9 +278,5 @@ describe("activityPanels controller", () => {
     });
     controller.rerenderWeekdayFromState();
     controller.rerenderHourlyFromState();
-
-    expect(renderHourlyHeatmapSection).toHaveBeenCalled();
-    expect(renderWeekdaySection).toHaveBeenCalled();
-    expect(renderTimeOfDayPanel).toHaveBeenCalled();
   });
 });

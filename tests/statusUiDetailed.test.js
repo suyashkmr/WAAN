@@ -23,6 +23,16 @@ describe("statusUi detailed", () => {
     expect(() => controller.dismissToast(detachedToast)).not.toThrow();
   });
 
+  it("does not mutate toast DOM directly when bridge is unavailable", () => {
+    const controller = createStatusUiController({});
+    const connectedToast = document.createElement("div");
+    document.body.appendChild(connectedToast);
+
+    controller.dismissToast(connectedToast);
+
+    expect(document.body.contains(connectedToast)).toBe(true);
+  });
+
   it("delegates toast/status calls to Vue shell bridge when present", () => {
     const showToast = vi.fn();
     const dismissToast = vi.fn();

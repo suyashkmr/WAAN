@@ -6,7 +6,6 @@ import {
 import * as appState from "./state.js";
 import {
   API_BASE,
-  RELAY_BASE,
   BRAND_NAME,
   RELAY_SERVICE_NAME,
   STATUS_AUTO_HIDE_DELAY_MS,
@@ -28,10 +27,6 @@ import { createAppCompositionAssembly } from "./appShell/compositionAssembly.js"
 import { createAppDomRefGroups } from "./appShell/domRefGroups.js";
 import { createRuntimeBootstrapConfig } from "./appShell/runtimeBootstrapConfig.js";
 import { buildControllerWiringArgs, buildCompositionAssemblyArgs } from "./appShell/entryConfig.js";
-import {
-  createVueFrontendAdapterLayer,
-  installVueFrontendAdapterLayer,
-} from "./appShell/vueFrontendAdapterLayer.js";
 import {
   createCompositionAssemblyWiring,
   createRuntimeHandlers,
@@ -119,17 +114,6 @@ const runtimeHandlers = createRuntimeHandlers({
 const runtimeDeps = createRuntimeDeps({
   controllerWiring,
   stateStore: appState,
-});
-
-installVueFrontendAdapterLayer({
-  adapter: createVueFrontendAdapterLayer({
-    stateStore: appState,
-    apiBase: API_BASE,
-    relayBase: RELAY_BASE,
-    brandName: BRAND_NAME,
-    relayServiceName: RELAY_SERVICE_NAME,
-  }),
-  globalScope: window,
 });
 
 bootstrapAppShellRuntime(

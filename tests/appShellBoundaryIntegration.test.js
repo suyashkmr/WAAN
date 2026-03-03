@@ -109,7 +109,6 @@ function seedMinimumDom() {
 describe("appShell boundary integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete window.__WAAN_VUE_FRONTEND_ADAPTER__;
   });
 
   it("invokes extracted wiring boundaries during appShell bootstrap", async () => {
@@ -134,18 +133,5 @@ describe("appShell boundary integration", () => {
 
     const runtimeArgs = h.bootstrapAppShellRuntime.mock.calls[0][0];
     expect(runtimeArgs.eventBindings.handlers.handleChatSelectionChange).toBe(h.handleChatSelectionChange);
-
-    const frontendAdapter = window.__WAAN_VUE_FRONTEND_ADAPTER__;
-    expect(frontendAdapter).toBeTruthy();
-    expect(frontendAdapter.relayEndpoints).toEqual(
-      expect.objectContaining({
-        chats: expect.stringMatching(/\/api\/chats$/),
-        relayStart: expect.stringMatching(/\/relay\/start$/),
-        relayStop: expect.stringMatching(/\/relay\/stop$/),
-        relayStatus: expect.stringMatching(/\/relay\/status$/),
-        relaySync: expect.stringMatching(/\/relay\/sync$/),
-        relayLogout: expect.stringMatching(/\/relay\/logout$/),
-      }),
-    );
   }, 15_000);
 });
