@@ -19,7 +19,7 @@ describe("search results ui controller", () => {
     delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
   });
 
-  it("does not cache empty state when bridge is unavailable", () => {
+  it("renders fallback empty state and still retries when bridge becomes available", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
@@ -48,7 +48,7 @@ describe("search results ui controller", () => {
     });
 
     controller.renderResults();
-    expect(resultsListEl.children.length).toBe(0);
+    expect(resultsListEl.querySelectorAll(".panel-state")).toHaveLength(1);
 
     globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
       renderSearchPanelState() {
@@ -243,7 +243,7 @@ describe("search results ui controller", () => {
     expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
   });
 
-  it("does not commit cache key when bridge returns handled but renders no rows", () => {
+  it("falls back to legacy rows when bridge reports handled but renders no rows", () => {
     const resultsSummaryEl = document.createElement("div");
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
@@ -294,7 +294,7 @@ describe("search results ui controller", () => {
 
     controller.renderResults();
     expect(renderSearchResults).toHaveBeenCalledTimes(1);
-    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(0);
+    expect(resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
 
     controller.renderResults();
     expect(renderSearchResults).toHaveBeenCalledTimes(2);
