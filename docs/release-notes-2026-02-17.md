@@ -32,9 +32,19 @@
 - `npm run test:visual`: PASS (after baseline update for intentional UI changes)
 - `docs/release-smoke-checklist.md`: PASS (latest sign-off on 2026-02-17)
 
-## Branch + Merge Readiness
+## Branch Context (Historical Snapshot)
 
-- Current working branch: `livemac`
-- Sync with remote branch: `origin/livemac...livemac = 0/0` (in sync)
-- Sync with mainline: `origin/main...livemac = 0/16` (`livemac` ahead by 16 commits)
-- Release cut recommendation: merge `livemac` -> `main` after final commit and PR review.
+This note captures repository state observed on **2026-02-17** only.
+Branch divergence counts and ahead/behind values change over time and are not
+maintained in this document.
+
+- Working branch during this release pass: `livemac`
+- Recommendation at that time: merge `livemac` -> `main` after final commit and PR review.
+
+For current branch readiness, use live git status instead of this file:
+
+```bash
+git fetch origin --prune
+git status -sb
+git rev-list --left-right --count origin/main...HEAD
+```
