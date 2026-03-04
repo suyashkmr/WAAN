@@ -3,10 +3,12 @@ import { createDatasetLifecycleController } from "../js/appShell/datasetLifecycl
 import { createRelayBootstrapController } from "../js/appShell/relayBootstrap.js";
 import { createEventBindingsController } from "../js/appShell/eventBindings.js";
 import { createDataStatusController } from "../js/appShell/dataStatus.js";
+import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
 describe("appShell controllers", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
   });
 
   it("datasetLifecycle applyEntriesToApp resets state without local dataset persistence", async () => {
@@ -77,11 +79,20 @@ describe("appShell controllers", () => {
   });
 
   it("relayBootstrap wires controls and starts polling", async () => {
+    const liveActionsContainer = document.createElement("div");
+    liveActionsContainer.className = "live-actions";
+    liveActionsContainer.dataset.vuePrimitiveMounted = "true";
     const relayStartButton = document.createElement("button");
     const relayStopButton = document.createElement("button");
     const relayLogoutButton = document.createElement("button");
+    liveActionsContainer.append(relayStartButton, relayStopButton, relayLogoutButton);
+    const headerActionsContainer = document.createElement("div");
+    headerActionsContainer.className = "card-header-actions";
+    headerActionsContainer.dataset.vuePrimitiveMounted = "true";
     const relayReloadAllButton = document.createElement("button");
     const relayClearStorageButton = document.createElement("button");
+    headerActionsContainer.append(relayReloadAllButton, relayClearStorageButton);
+    document.body.append(liveActionsContainer, headerActionsContainer);
     const logDrawerToggleButton = document.createElement("button");
     const logDrawerCloseButton = document.createElement("button");
     const logDrawerExportButton = document.createElement("button");
@@ -113,6 +124,18 @@ describe("appShell controllers", () => {
       refreshChatSelector: vi.fn(async () => {}),
       updateStatus: vi.fn(),
     };
+    /** @type {Record<string, Function>} */
+    let relayActionHandlers = {};
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setRelayActionHandlers: handlersMap => {
+            relayActionHandlers = handlersMap;
+          },
+          dispatchRelayAction: vi.fn(),
+        },
+      },
+    };
 
     const { initRelayControls, handleClearStorageClick } = createRelayBootstrapController({
       elements: {
@@ -133,11 +156,11 @@ describe("appShell controllers", () => {
     });
 
     initRelayControls();
-    relayStartButton.click();
-    relayStopButton.click();
-    relayLogoutButton.click();
-    relayReloadAllButton.click();
-    logDrawerToggleButton.click();
+    relayActionHandlers["relay.primaryAction"]?.();
+    relayActionHandlers["relay.stop"]?.();
+    relayActionHandlers["relay.logout"]?.();
+    relayActionHandlers["relay.reloadAll"]?.();
+    relayActionHandlers["relay.logDrawerOpen"]?.();
     logDrawerCloseButton.click();
     logDrawerExportButton.click();
     logDrawerReportButton.click();
@@ -162,6 +185,7 @@ describe("appShell controllers", () => {
       configurable: true,
       value: vi.fn(() => true),
     });
+    await relayActionHandlers["relay.clearStorage"]?.();
     await handleClearStorageClick();
     expect(deps.fetchJson).toHaveBeenCalledWith("http://127.0.0.1:3334/chats/clear", { method: "POST" });
     expect(deps.setRemoteChatList).toHaveBeenCalledWith([]);
@@ -211,6 +235,17 @@ describe("appShell controllers", () => {
       ensureDayFilters: vi.fn(),
       syncHourlyControlsWithState: vi.fn(),
       rerenderHourlyFromState: vi.fn(),
+    };
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(),
+          dispatchShellAction: vi.fn(),
+        },
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
+        },
+      },
     };
 
     const { initEventHandlers } = createEventBindingsController({

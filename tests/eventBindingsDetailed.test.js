@@ -43,8 +43,25 @@ function createDeps(overrides = {}) {
 }
 
 describe("event bindings detailed", () => {
+  /** @type {Record<string, Function>} */
+  let shellActionHandlers;
+
   beforeEach(() => {
     document.body.innerHTML = "";
+    shellActionHandlers = {};
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: handlersMap => {
+            shellActionHandlers = handlersMap;
+          },
+          dispatchShellAction: vi.fn(),
+        },
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
+        },
+      },
+    };
   });
 
   afterEach(() => {
@@ -122,17 +139,16 @@ describe("event bindings detailed", () => {
     downloadMessageTypesButton.click();
     downloadChatJsonButton.click();
     downloadSentimentButton.click();
-    downloadMarkdownButton.click();
-    downloadSlidesButton.click();
     downloadSearchButton.click();
-    downloadPdfButton.click();
+    shellActionHandlers["export.markdown"]?.();
+    shellActionHandlers["export.slides"]?.();
+    shellActionHandlers["export.pdf"]?.();
     statA.click();
     statB.click();
     participantsTopSelect.dispatchEvent(new Event("change"));
     participantsSortSelect.dispatchEvent(new Event("change"));
     participantsTimeframeSelect.dispatchEvent(new Event("change"));
     presetA.click();
-    participantsBody.dispatchEvent(new Event("click"));
 
     expect(handlers.exportParticipants).toHaveBeenCalledTimes(1);
     expect(handlers.exportHourly).toHaveBeenCalledTimes(1);
@@ -153,7 +169,6 @@ describe("event bindings detailed", () => {
     expect(handlers.handleParticipantsSortChange).toHaveBeenCalledTimes(1);
     expect(handlers.handleParticipantsTimeframeChange).toHaveBeenCalledTimes(1);
     expect(handlers.handleParticipantPresetClick).toHaveBeenCalledTimes(1);
-    expect(handlers.handleParticipantRowToggle).toHaveBeenCalledTimes(1);
   });
 
   it("registers toolbar export actions with shell dispatcher when available", () => {
@@ -169,6 +184,9 @@ describe("event bindings detailed", () => {
         [VUE_BRIDGE_NAMES.shell]: {
           setShellActionHandlers,
           dispatchShellAction: vi.fn(),
+        },
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
         },
       },
     };
@@ -371,6 +389,10 @@ describe("event bindings detailed", () => {
 
     globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
       bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(),
+          dispatchShellAction: vi.fn(),
+        },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
         },

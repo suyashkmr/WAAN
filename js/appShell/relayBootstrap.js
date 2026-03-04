@@ -61,7 +61,6 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     refreshChatSelector,
     updateStatus,
   } = deps;
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
 
   async function clearStoredChatsOnServer() {
     return fetchJson(`${apiBase}/chats/clear`, { method: "POST" });
@@ -124,57 +123,43 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     const supportsRelayActionDispatch =
       typeof shellBridge?.setRelayActionHandlers === "function" &&
       typeof shellBridge?.dispatchRelayAction === "function";
-    if (!supportsRelayActionDispatch && !isVitestRuntime) {
+    if (!supportsRelayActionDispatch) {
       throw new Error("Shell relay dispatch contracts are required for relay controls.");
     }
-    if (supportsRelayActionDispatch) {
-      shellBridge.setRelayActionHandlers({
-        "relay.primaryAction": /** @param {any} payload */ payload => dispatchRelayPrimaryAction(payload),
-        "relay.stop": stopRelaySession,
-        "relay.logout": logoutRelaySession,
-        "relay.reloadAll": handleReloadAllChats,
-        "relay.clearStorage": /** @param {any} payload */ payload => handleClearStorageClick(payload),
-        "relay.logDrawerOpen": openLogDrawer,
-        "relay.firstRunOpenRelay": handleFirstRunOpenRelay,
-        "relay.firstRunPrimaryAction": handleFirstRunPrimaryAction,
-        "relay.recoveryReconnect": handleRecoveryReconnect,
-        "relay.recoveryResync": handleRecoveryResync,
-        "relay.recoveryExportDiagnostics": handleRecoveryExportDiagnostics,
-      });
-    }
+    shellBridge.setRelayActionHandlers({
+      "relay.primaryAction": /** @param {any} payload */ payload => dispatchRelayPrimaryAction(payload),
+      "relay.stop": stopRelaySession,
+      "relay.logout": logoutRelaySession,
+      "relay.reloadAll": handleReloadAllChats,
+      "relay.clearStorage": /** @param {any} payload */ payload => handleClearStorageClick(payload),
+      "relay.logDrawerOpen": openLogDrawer,
+      "relay.firstRunOpenRelay": handleFirstRunOpenRelay,
+      "relay.firstRunPrimaryAction": handleFirstRunPrimaryAction,
+      "relay.recoveryReconnect": handleRecoveryReconnect,
+      "relay.recoveryResync": handleRecoveryResync,
+      "relay.recoveryExportDiagnostics": handleRecoveryExportDiagnostics,
+    });
 
     const liveActionsVueManaged =
       relayStartButton?.closest?.(".live-actions")?.dataset?.vuePrimitiveMounted === "true";
     const headerActionsVueManaged =
       relayReloadAllButton?.closest?.(".card-header-actions")?.dataset?.vuePrimitiveMounted === "true";
-    if ((!liveActionsVueManaged || !headerActionsVueManaged) && !isVitestRuntime) {
+    if (!liveActionsVueManaged || !headerActionsVueManaged) {
       throw new Error("Relay action groups must be Vue-managed before relay controls initialize.");
     }
-    if ((!supportsRelayActionDispatch && isVitestRuntime) || !liveActionsVueManaged) {
-      relayStartButton.addEventListener("click", handleRelayPrimaryActionClick);
-      relayStopButton?.addEventListener("click", stopRelaySession);
-      relayLogoutButton?.addEventListener("click", logoutRelaySession);
-    }
-    if ((!supportsRelayActionDispatch && isVitestRuntime) || !headerActionsVueManaged) {
-      relayReloadAllButton?.addEventListener("click", handleReloadAllChats);
-      relayClearStorageButton?.addEventListener("click", handleClearStorageClick);
-    }
-    if (!supportsRelayActionDispatch && isVitestRuntime) {
-      logDrawerToggleButton?.addEventListener("click", openLogDrawer);
-    }
+    void relayStopButton;
+    void relayLogoutButton;
+    void relayClearStorageButton;
+    void logDrawerToggleButton;
     logDrawerCloseButton?.addEventListener("click", closeLogDrawer);
     logDrawerExportButton?.addEventListener("click", handleExportDiagnostics);
     logDrawerReportButton?.addEventListener("click", handleReportIssue);
     logDrawerClearButton?.addEventListener("click", handleLogClear);
-    if (!supportsRelayActionDispatch && isVitestRuntime) {
-      firstRunOpenRelayButton?.addEventListener("click", handleFirstRunOpenRelay);
-      firstRunPrimaryActionButton?.addEventListener("click", handleFirstRunPrimaryAction);
-    }
-    if (!supportsRelayActionDispatch && isVitestRuntime) {
-      relayRecoveryReconnectButton?.addEventListener("click", handleRecoveryReconnect);
-      relayRecoveryResyncButton?.addEventListener("click", handleRecoveryResync);
-      relayRecoveryExportButton?.addEventListener("click", handleRecoveryExportDiagnostics);
-    }
+    void firstRunOpenRelayButton;
+    void firstRunPrimaryActionButton;
+    void relayRecoveryReconnectButton;
+    void relayRecoveryResyncButton;
+    void relayRecoveryExportButton;
 
     document.addEventListener("click", handleLogDrawerDocumentClick);
     document.addEventListener("keydown", handleLogDrawerKeydown);

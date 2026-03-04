@@ -36,24 +36,16 @@ function makeBootstrapDeps(overrides = {}) {
 }
 
 describe("bootstrap bridge readiness sequencing", () => {
-  const originalVitestEnv = process.env.VITEST;
-
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.resetModules();
-    delete process.env.VITEST;
   });
 
   afterEach(() => {
-    if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
-    else delete process.env.VITEST;
     vi.restoreAllMocks();
   });
 
-  it("fails fast when root mount is not ready before bootstrap init", async () => {
-    vi.doMock("../js/vue/appShellRoot.js", () => ({
-      mountVueAppShellRoot: vi.fn(() => ({ mounted: false })),
-    }));
+  it("fails fast when search bridge contracts are missing", async () => {
     vi.doMock("../js/vue/bridgeRegistry.js", () => ({
       VUE_BRIDGE_NAMES: { shell: "shell", searchSaved: "searchSaved" },
       resolveVueBridge: vi.fn(() => null),
@@ -65,19 +57,26 @@ describe("bootstrap bridge readiness sequencing", () => {
       deps: makeBootstrapDeps(),
     });
 
-    expect(() => controller.initAppBootstrap()).toThrow(
-      "Vue app-shell root did not mount before search bootstrap.",
-    );
+    expect(() => controller.initAppBootstrap()).toThrow("SearchSaved bridge is not ready with required contracts.");
   });
 
-  it("fails fast when search bridge contracts are missing", async () => {
-    vi.doMock("../js/vue/appShellRoot.js", () => ({
-      mountVueAppShellRoot: vi.fn(() => ({ mounted: true })),
-    }));
+  it("fails fast when shell bridge dispatch contracts are missing", async () => {
     vi.doMock("../js/vue/bridgeRegistry.js", () => ({
       VUE_BRIDGE_NAMES: { shell: "shell", searchSaved: "searchSaved" },
       resolveVueBridge: vi.fn(name => {
-        if (name === "searchSaved") return { renderSearchPanelState: () => true };
+        if (name === "searchSaved") {
+          return {
+            renderSearchPanelState: () => true,
+            renderSearchResults: () => true,
+            renderSearchInsights: () => true,
+            setPanelActionHandlers: () => {},
+          };
+        }
+        if (name === "shell") {
+          return {
+            setShellActionHandlers: () => {},
+          };
+        }
         return null;
       }),
     }));
@@ -88,8 +87,6 @@ describe("bootstrap bridge readiness sequencing", () => {
       deps: makeBootstrapDeps(),
     });
 
-    expect(() => controller.initAppBootstrap()).toThrow(
-      "SearchSaved bridge is not ready with required contracts.",
-    );
+    expect(() => controller.initAppBootstrap()).toThrow("Shell bridge is not ready with required dispatch contracts.");
   });
 });

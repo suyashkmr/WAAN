@@ -83,6 +83,21 @@ describe("bootstrap controller", () => {
       }),
     };
 
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(),
+          dispatchShellAction: vi.fn(),
+        },
+        [VUE_BRIDGE_NAMES.searchSaved]: {
+          renderSearchPanelState: vi.fn(),
+          renderSearchResults: vi.fn(),
+          renderSearchInsights: vi.fn(),
+          setPanelActionHandlers: vi.fn(),
+        },
+      },
+    };
+
     const deps = makeBootstrapDeps();
     const { initAppBootstrap } = createBootstrapController({
       elements: { onboardingSkipButton, onboardingNextButton },
@@ -93,15 +108,15 @@ describe("bootstrap controller", () => {
 
     expect(deps.initEventHandlers).toHaveBeenCalledTimes(1);
     expect(deps.initRelayControls).toHaveBeenCalledTimes(1);
-    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: true });
+    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: false });
     expect(deps.initCompactMode).toHaveBeenCalledTimes(1);
     expect(deps.initAccessibilityControls).toHaveBeenCalledTimes(1);
     expect(deps.setDataAvailabilityState).toHaveBeenCalledWith(false);
 
     onboardingSkipButton.click();
     onboardingNextButton.click();
-    expect(deps.onboardingController.skip).toHaveBeenCalledTimes(1);
-    expect(deps.onboardingController.advance).toHaveBeenCalledTimes(1);
+    expect(deps.onboardingController.skip).toHaveBeenCalledTimes(0);
+    expect(deps.onboardingController.advance).toHaveBeenCalledTimes(0);
     expect(deps.onboardingController.start).toHaveBeenCalledTimes(1);
 
     expect(deps.buildSectionNav).toHaveBeenCalledTimes(1);
@@ -133,6 +148,12 @@ describe("bootstrap controller", () => {
         [VUE_BRIDGE_NAMES.shell]: {
           setShellActionHandlers,
           dispatchShellAction: vi.fn(),
+        },
+        [VUE_BRIDGE_NAMES.searchSaved]: {
+          renderSearchPanelState: vi.fn(),
+          renderSearchResults: vi.fn(),
+          renderSearchInsights: vi.fn(),
+          setPanelActionHandlers: vi.fn(),
         },
       },
     };

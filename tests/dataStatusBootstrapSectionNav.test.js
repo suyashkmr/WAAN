@@ -3,6 +3,7 @@ import { Fragment, h, render } from "vue";
 import { createDataStatusController } from "../js/appShell/dataStatus.js";
 import { createBootstrapController } from "../js/appShell/bootstrap.js";
 import { createSectionNavController } from "../js/appShell/sectionNav.js";
+import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
 describe("dataStatus controller details", () => {
   it("handles availability and all hero relay status states", () => {
@@ -185,6 +186,7 @@ describe("bootstrap controller transitions", () => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
     delete window.electronAPI;
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
   });
 
   it("animates expand/collapse when reduced motion is disabled", () => {
@@ -230,6 +232,20 @@ describe("bootstrap controller transitions", () => {
       },
       deps,
     });
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(),
+          dispatchShellAction: vi.fn(),
+        },
+        [VUE_BRIDGE_NAMES.searchSaved]: {
+          renderSearchPanelState: vi.fn(),
+          renderSearchResults: vi.fn(),
+          renderSearchInsights: vi.fn(),
+          setPanelActionHandlers: vi.fn(),
+        },
+      },
+    };
 
     controller.initAppBootstrap();
 

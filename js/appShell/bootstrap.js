@@ -2,7 +2,6 @@
 
 import { initAppShellPrimitives } from "../ui/appShellRuntimeDecorators.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
-import { mountVueAppShellRoot } from "../vue/appShellRoot.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -119,12 +118,6 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function assertSearchSavedBridgeReady() {
-    const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
-    if (isVitestRuntime) return;
-    const rootState = mountVueAppShellRoot();
-    if (!rootState?.mounted) {
-      throw new Error("Vue app-shell root did not mount before search bootstrap.");
-    }
     const searchSavedBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
     const hasSearchContracts = Boolean(
       searchSavedBridge
@@ -139,8 +132,6 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function assertShellBridgeReady() {
-    const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
-    if (isVitestRuntime) return;
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     const hasShellContracts = Boolean(
       shellBridge
@@ -157,40 +148,33 @@ export function createBootstrapController({ elements, deps }) {
     assertShellBridgeReady();
     initAppShellPrimitives({ documentRef: document });
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
-    const supportsShellActionDispatch =
-      typeof shellBridge?.setShellActionHandlers === "function" &&
-      typeof shellBridge?.dispatchShellAction === "function";
-    if (supportsShellActionDispatch) {
-      shellBridge.setShellActionHandlers({
-        "ui.compact.toggle": () => {
-          if (typeof toggleCompactMode === "function") toggleCompactMode();
-        },
-        "ui.motion.cycle": () => {
-          if (typeof cycleReduceMotionPreference === "function") cycleReduceMotionPreference();
-        },
-        "ui.contrast.toggle": () => {
-          if (typeof toggleHighContrastPreference === "function") toggleHighContrastPreference();
-        },
-        "ui.theme.set": /** @param {any} payload */ payload => {
-          if (typeof setThemePreference === "function") {
-            setThemePreference(payload?.preference);
-          }
-        },
-        "onboarding.skip": onboardingController.skip,
-        "onboarding.next": onboardingController.advance,
-      });
-    }
+    shellBridge.setShellActionHandlers({
+      "ui.compact.toggle": () => {
+        if (typeof toggleCompactMode === "function") toggleCompactMode();
+      },
+      "ui.motion.cycle": () => {
+        if (typeof cycleReduceMotionPreference === "function") cycleReduceMotionPreference();
+      },
+      "ui.contrast.toggle": () => {
+        if (typeof toggleHighContrastPreference === "function") toggleHighContrastPreference();
+      },
+      "ui.theme.set": /** @param {any} payload */ payload => {
+        if (typeof setThemePreference === "function") {
+          setThemePreference(payload?.preference);
+        }
+      },
+      "onboarding.skip": onboardingController.skip,
+      "onboarding.next": onboardingController.advance,
+    });
 
     initEventHandlers();
     initRelayControls();
-    initThemeControls({ bindInputListeners: !supportsShellActionDispatch });
-    initCompactMode({ bindToggleListener: !supportsShellActionDispatch });
-    initAccessibilityControls({ bindToggleListeners: !supportsShellActionDispatch });
+    initThemeControls({ bindInputListeners: false });
+    initCompactMode({ bindToggleListener: false });
+    initAccessibilityControls({ bindToggleListeners: false });
     setDataAvailabilityState(false);
-    if (!supportsShellActionDispatch) {
-      onboardingSkipButton?.addEventListener("click", onboardingController.skip);
-      onboardingNextButton?.addEventListener("click", onboardingController.advance);
-    }
+    void onboardingSkipButton;
+    void onboardingNextButton;
     setTimeout(() => onboardingController.start(), 500);
 
     initElectronRelayBridge();

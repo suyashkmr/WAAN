@@ -642,9 +642,9 @@ Completed work is archived in git history and was removed from this file for cla
         - [x] `js/appShell/chatSelection.js`
         - [x] `js/appShell/sectionNav.js`
         - [x] `js/relayControls/logStream.js`
-        - [ ] `js/appShell/eventBindings.js`
-        - [ ] `js/appShell/relayBootstrap.js`
-        - [ ] `js/appShell/bootstrap.js`
+        - [x] `js/appShell/eventBindings.js`
+        - [x] `js/appShell/relayBootstrap.js`
+        - [x] `js/appShell/bootstrap.js`
       - [ ] Remove stale fallback semantics/labels that no longer match runtime architecture:
         - [x] `js/search/resultsUi.js` (bridge/fallback return type/doc wording)
         - [x] Vue island/root warning strings that still state legacy fallback retention.

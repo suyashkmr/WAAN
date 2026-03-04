@@ -3,6 +3,33 @@ import { createRelayBootstrapController } from "../js/appShell/relayBootstrap.js
 import { createDataStatusController } from "../js/appShell/dataStatus.js";
 import { VUE_RUNTIME_REGISTRY_KEY, VUE_BRIDGE_NAMES } from "../js/vue/bridgeRegistry.js";
 
+function createVueManagedRelayActionElements() {
+  const liveActionsContainer = document.createElement("div");
+  liveActionsContainer.className = "live-actions";
+  liveActionsContainer.dataset.vuePrimitiveMounted = "true";
+  const headerActionsContainer = document.createElement("div");
+  headerActionsContainer.className = "card-header-actions";
+  headerActionsContainer.dataset.vuePrimitiveMounted = "true";
+  document.body.append(liveActionsContainer, headerActionsContainer);
+
+  const relayStartButton = document.createElement("button");
+  const relayStopButton = document.createElement("button");
+  const relayLogoutButton = document.createElement("button");
+  liveActionsContainer.append(relayStartButton, relayStopButton, relayLogoutButton);
+
+  const relayReloadAllButton = document.createElement("button");
+  const relayClearStorageButton = document.createElement("button");
+  headerActionsContainer.append(relayReloadAllButton, relayClearStorageButton);
+
+  return {
+    relayStartButton,
+    relayStopButton,
+    relayLogoutButton,
+    relayReloadAllButton,
+    relayClearStorageButton,
+  };
+}
+
 describe("relay integration", () => {
   afterEach(() => {
     document.body.innerHTML = "";
@@ -11,11 +38,13 @@ describe("relay integration", () => {
   });
 
   it("wires relay bootstrap controls and clear-storage flow, then updates hero status", async () => {
-    const relayStartButton = document.createElement("button");
-    const relayStopButton = document.createElement("button");
-    const relayLogoutButton = document.createElement("button");
-    const relayReloadAllButton = document.createElement("button");
-    const relayClearStorageButton = document.createElement("button");
+    const {
+      relayStartButton,
+      relayStopButton,
+      relayLogoutButton,
+      relayReloadAllButton,
+      relayClearStorageButton,
+    } = createVueManagedRelayActionElements();
     const logDrawerToggleButton = document.createElement("button");
     const logDrawerCloseButton = document.createElement("button");
     const logDrawerExportButton = document.createElement("button");
@@ -77,6 +106,18 @@ describe("relay integration", () => {
       refreshChatSelector: vi.fn(async () => {}),
       updateStatus: vi.fn(),
     };
+    /** @type {Record<string, Function>} */
+    let registeredHandlers = {};
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setRelayActionHandlers: handlersMap => {
+            registeredHandlers = handlersMap;
+          },
+          dispatchRelayAction: vi.fn(),
+        },
+      },
+    };
 
     const { initRelayControls } = createRelayBootstrapController({
       elements: {
@@ -108,11 +149,11 @@ describe("relay integration", () => {
 
     initRelayControls();
 
-    relayStartButton.click();
-    relayStopButton.click();
-    relayLogoutButton.click();
-    relayReloadAllButton.click();
-    logDrawerToggleButton.click();
+    registeredHandlers["relay.primaryAction"]?.();
+    registeredHandlers["relay.stop"]?.();
+    registeredHandlers["relay.logout"]?.();
+    registeredHandlers["relay.reloadAll"]?.();
+    registeredHandlers["relay.logDrawerOpen"]?.();
     logDrawerCloseButton.click();
     logDrawerExportButton.click();
     logDrawerReportButton.click();
@@ -120,8 +161,7 @@ describe("relay integration", () => {
     document.dispatchEvent(new Event("click"));
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "x" }));
 
-    relayClearStorageButton.click();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await registeredHandlers["relay.clearStorage"]?.();
 
     expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledTimes(1);
     expect(handlers.stopRelaySession).toHaveBeenCalledTimes(1);
@@ -153,9 +193,12 @@ describe("relay integration", () => {
   });
 
   it("registers relay action handlers with Vue shell bridge dispatcher when available", async () => {
-    const relayStartButton = document.createElement("button");
+    const {
+      relayStartButton,
+      relayReloadAllButton,
+      relayClearStorageButton,
+    } = createVueManagedRelayActionElements();
     const relayStatusEl = document.createElement("div");
-    const logDrawerToggleButton = document.createElement("button");
     const relayRecoveryReconnectButton = document.createElement("button");
     const relayRecoveryResyncButton = document.createElement("button");
     const relayRecoveryExportButton = document.createElement("button");
@@ -208,7 +251,8 @@ describe("relay integration", () => {
       elements: {
         relayStartButton,
         relayStatusEl,
-        logDrawerToggleButton,
+        relayReloadAllButton,
+        relayClearStorageButton,
         relayRecoveryReconnectButton,
         relayRecoveryResyncButton,
         relayRecoveryExportButton,
@@ -262,7 +306,10 @@ describe("relay integration", () => {
   });
 
   it("disables live clear-storage button for dispatcher action even when cached ref is stale", async () => {
-    const relayStartButton = document.createElement("button");
+    const {
+      relayStartButton,
+      relayReloadAllButton,
+    } = createVueManagedRelayActionElements();
     const relayStatusEl = document.createElement("div");
     const staleClearStorageButton = document.createElement("button");
     const liveClearStorageButton = document.createElement("button");
@@ -325,6 +372,7 @@ describe("relay integration", () => {
       elements: {
         relayStartButton,
         relayStatusEl,
+        relayReloadAllButton,
         relayClearStorageButton: staleClearStorageButton,
       },
       handlers,
@@ -348,7 +396,7 @@ describe("relay integration", () => {
     expect(liveClearStorageButton.disabled).toBe(false);
   });
 
-  it("does not attach legacy live-action listeners when only live actions are Vue-managed", () => {
+  it("fails fast when relay action groups are not fully Vue-managed", () => {
     const liveActionsContainer = document.createElement("div");
     liveActionsContainer.className = "live-actions";
     liveActionsContainer.dataset.vuePrimitiveMounted = "true";
@@ -407,12 +455,8 @@ describe("relay integration", () => {
       handlers,
       deps,
     });
-    initRelayControls();
-
-    relayStartButton.click();
-    expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledTimes(0);
-
-    registeredHandlers["relay.primaryAction"]?.();
-    expect(handlers.handleRelayPrimaryActionClick).toHaveBeenCalledTimes(1);
+    expect(() => initRelayControls()).toThrow(
+      "Relay action groups must be Vue-managed before relay controls initialize.",
+    );
   });
 });
