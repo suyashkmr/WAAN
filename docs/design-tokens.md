@@ -2,6 +2,12 @@
 
 The WAAN desktop dashboard now relies on a lightweight token system so UI layers stay cohesive across phases and themes. These tokens live in `styles.base.css` under the `:root` block, with light and dark overrides via `data-color-scheme`.
 
+## Phase 10 Architecture Note
+
+- Tokenized styling is consumed by Vue-owned UI surfaces (search/saved/dashboard/status) as the default runtime path.
+- Legacy DOM fallback branches are no longer the active rendering contract for migrated surfaces.
+- Tailwind remains a token bridge and layout utility layer; component behavior contracts are owned by Vue/PrimeVue runtime modules.
+
 ## Color & Surface Tokens
 
 | Token | Purpose |

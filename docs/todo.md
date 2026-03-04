@@ -596,14 +596,30 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Verified on 2026-03-04 with `npm run ci:verify` green (69 files / 265 tests) and no legacy bridge-global runtime contract wiring.
 
 - [ ] Phase 10 (3-5 days): Final hardening and release cut for full Vue frontend.
-  - [ ] Run and record full release gates: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
-  - [ ] Update docs to reflect final architecture:
-    - [ ] `docs/ui-primitives.md`
-    - [ ] `docs/ui-overhaul-spec.md`
-    - [ ] `docs/design-tokens.md`
-    - [ ] `README.md` / `FAQ.md` (architecture + support notes)
-  - [ ] Add rollback notes for first release after full Vue cutover.
-  - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths.
+  - [x] Run and record full release gates: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
+    - [x] Verified on 2026-03-04. All gates passed; `test:accessibility-smoke` was re-run standalone after resolving temporary port contention with an in-flight visual run.
+  - [x] Update docs to reflect final architecture:
+    - [x] `docs/ui-primitives.md`
+    - [x] `docs/ui-overhaul-spec.md`
+    - [x] `docs/design-tokens.md`
+    - [x] `README.md` + in-app FAQ (`index.html`) architecture/support notes
+  - [x] Add rollback notes for first release after full Vue cutover.
+    - [x] Added rollback runbook section to `docs/release-smoke-checklist.md`.
+  - [ ] Purist frontend completion: remove remaining vanilla DOM render/control modules from runtime paths.
+    - [ ] Migrate remaining analytics DOM renderers to Vue components/islands:
+      - [ ] `js/analytics/activity/daily.js`
+      - [ ] `js/analytics/activity/weekly.js`
+      - [ ] `js/analytics/sentiment.js`
+      - [ ] `js/analytics/messageTypes.js`
+    - [ ] Migrate remaining app-shell DOM composition paths to Vue-owned component flows:
+      - [ ] `js/appShell/chatSelection.js`
+      - [ ] `js/appShell/sectionNav.js`
+      - [ ] `js/relayControls/logStream.js`
+    - [ ] Remove runtime dependence on direct `createElement` / `innerHTML` / manual node construction in migrated frontend surfaces.
+    - [ ] Keep only test-harness compatibility branches under Vitest; no production fallback branches.
+  - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths and no vanilla DOM renderer remnants.
+    - [x] Enforced non-Vitest fail-fast contracts for shell/search-saved/dashboard relay dispatch paths so production runtime no longer attaches legacy event-listener fallbacks (`js/appShell/bootstrap.js`, `js/appShell/eventBindings.js`, `js/appShell/relayBootstrap.js`).
+    - [x] Re-validated release gates on 2026-03-04 after contract hardening: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
 
 - [ ] Phase 11 (4-7 days): PrimeVue core-component standardization.
   - [ ] Replace bespoke/native controls with PrimeVue components for core UI surfaces.

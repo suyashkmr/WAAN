@@ -4,6 +4,13 @@
 
 Reframe WAAN from a utility dashboard into a conversation command center that feels social, alive, and action-oriented.
 
+## Current Architecture Status (Phase 10)
+
+- Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.
+- Search/saved/dashboard/status surfaces are Vue-owned and verified by integration tests.
+- Legacy bridge-global wiring and lazy remount adapter glue are removed from active runtime paths.
+- Final release readiness is validated through `ci:verify`, visual regression, accessibility smoke, and perf budgets.
+
 ## Design Principles
 
 - Build for momentum: every screen should answer "what happened" and "what should I do next".

@@ -106,6 +106,25 @@ If any step fails, capture:
 
 Then follow `docs/relay-troubleshooting.md`.
 
+## Rollback Notes: First Full-Vue Frontend Release
+
+Use this only for the first release where frontend runtime ownership is fully Vue-native.
+
+1. Trigger conditions
+   - Critical search/saved/dashboard UI regression in production.
+   - Visual/accessibility/perf gate escape that impacts core flows.
+2. Rollback action
+   - Re-point distribution to previous stable tag/release artifact.
+   - Publish a follow-up patch tag only after gate repro + fix on the release branch.
+3. Validation before re-cut
+   - Re-run `npm run ci:verify`.
+   - Re-run `npm run test:visual`.
+   - Re-run `npm run test:accessibility-smoke`.
+   - Re-run `npm run check:perf-budgets`.
+4. Communication
+   - Note rollback reason in release notes.
+   - Include impacted surfaces and recovery status in sign-off notes.
+
 ## Latest Sign-off
 
 - Date: 2026-03-04

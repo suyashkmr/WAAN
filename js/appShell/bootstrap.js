@@ -138,8 +138,23 @@ export function createBootstrapController({ elements, deps }) {
     }
   }
 
+  function assertShellBridgeReady() {
+    const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
+    if (isVitestRuntime) return;
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const hasShellContracts = Boolean(
+      shellBridge
+        && typeof shellBridge.setShellActionHandlers === "function"
+        && typeof shellBridge.dispatchShellAction === "function",
+    );
+    if (!hasShellContracts) {
+      throw new Error("Shell bridge is not ready with required dispatch contracts.");
+    }
+  }
+
   function initAppBootstrap() {
     assertSearchSavedBridgeReady();
+    assertShellBridgeReady();
     initAppShellPrimitives({ documentRef: document });
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     const supportsShellActionDispatch =

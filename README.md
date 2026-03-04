@@ -35,6 +35,19 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 - Supports search, saved views, and multiple export formats.
 - Syncs from a live linked account through `apps/server`.
 
+## Frontend Architecture (Current)
+
+- WAAN frontend runtime is Vue 3 island based, with bridge contracts registered in `js/vue/bridgeRegistry.js`.
+- Core migrated surfaces (search results, saved views, dashboard panels, shell status/toast surfaces) render through Vue-owned paths.
+- PrimeVue runtime assets are vendored for packaged/offline reliability:
+  - `vendor/vue/vue.global.prod.js`
+  - `vendor/primevue/primevue.min.js`
+- Release gates for frontend quality include:
+  - `npm run ci:verify`
+  - `npm run test:visual`
+  - `npm run test:accessibility-smoke`
+  - `npm run check:perf-budgets`
+
 ## Dependencies (Required)
 
 Before running WAAN from Terminal, make sure you have:

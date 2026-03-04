@@ -82,12 +82,16 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   } = deps;
 
   const documentRef = globalThis.document ?? null;
+  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
 
   function initEventHandlers() {
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     const supportsShellActionDispatch =
       typeof shellBridge?.setShellActionHandlers === "function" &&
       typeof shellBridge?.dispatchShellAction === "function";
+    if (!supportsShellActionDispatch && !isVitestRuntime) {
+      throw new Error("Shell bridge dispatch contracts are required for event bindings.");
+    }
     if (supportsShellActionDispatch) {
       shellBridge.setShellActionHandlers({
         "export.pdf": handleDownloadPdfReport,
@@ -164,16 +168,16 @@ export function createEventBindingsController({ elements, handlers, deps }) {
       });
     }
 
-    if (downloadMarkdownButton && !supportsShellActionDispatch) {
+    if (downloadMarkdownButton && !supportsShellActionDispatch && isVitestRuntime) {
       downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
     }
-    if (downloadSlidesButton && !supportsShellActionDispatch) {
+    if (downloadSlidesButton && !supportsShellActionDispatch && isVitestRuntime) {
       downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
     }
     if (downloadSearchButton) {
       downloadSearchButton.addEventListener("click", exportSearchResults);
     }
-    if (downloadPdfButton && !supportsShellActionDispatch) {
+    if (downloadPdfButton && !supportsShellActionDispatch && isVitestRuntime) {
       downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
     }
 
@@ -193,7 +197,10 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     }
     const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
     const vueOwnsParticipantInteractions = Boolean(dashboardPanelsBridge?.ownsParticipantInteractions);
-    if (participantsBody && !vueOwnsParticipantInteractions) {
+    if (!vueOwnsParticipantInteractions && !isVitestRuntime) {
+      throw new Error("Dashboard panels bridge participant interaction ownership is required.");
+    }
+    if (participantsBody && !vueOwnsParticipantInteractions && isVitestRuntime) {
       participantsBody.addEventListener("click", handleParticipantRowToggle);
     }
 

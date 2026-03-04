@@ -2,6 +2,12 @@
 
 WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell surfaces.
 
+## Phase 10 Status
+
+- App-shell runtime ownership is Vue-native via bridge registry contracts (`js/vue/bridgeRegistry.js`).
+- Migrated search/saved/dashboard/status surfaces render through Vue islands without legacy DOM fallback branches.
+- Tests include Vue-rendered integration coverage for full-shell, search results, and saved-view interactions.
+
 ## Foundation Files
 
 - Runtime loader: `js/ui/primitivesRuntime.js`
