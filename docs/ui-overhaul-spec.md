@@ -9,6 +9,7 @@ Reframe WAAN from a utility dashboard into a conversation command center that fe
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.
 - Search/saved/dashboard/status surfaces are Vue-owned and verified by integration tests.
 - Legacy bridge-global wiring and lazy remount adapter glue are removed from active runtime paths.
+- Some isolated compatibility helpers may remain in the repo for test/harness support, but they are outside active production render/event pipelines.
 - Final release readiness is validated through `ci:verify`, visual regression, accessibility smoke, and perf budgets.
 
 ## Design Principles

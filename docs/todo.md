@@ -1,6 +1,7 @@
 # Active Todo
 
-Completed work is archived in git history and was removed from this file for clarity.
+This file currently contains both active backlog and completed historical roadmap context.
+Active open items are the unchecked tasks (currently Phase 11-13 + process guardrails).
 
 ## Completion Policy
 
@@ -595,7 +596,7 @@ Completed work is archived in git history and was removed from this file for cla
   - [x] Acceptance: frontend tests and runtime architecture are Vue-native without bridge-specific contracts.
     - [x] Verified on 2026-03-04 with `npm run ci:verify` green (69 files / 265 tests) and no legacy bridge-global runtime contract wiring.
 
-- [ ] Phase 10 (3-5 days): Final hardening and release cut for full Vue frontend.
+- [x] Phase 10 (3-5 days): Final hardening and release cut for full Vue frontend.
   - [x] Run and record full release gates: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
     - [x] Verified on 2026-03-04. All gates passed; `test:accessibility-smoke` was re-run standalone after resolving temporary port contention with an in-flight visual run.
   - [x] Update docs to reflect final architecture:
@@ -660,9 +661,10 @@ Completed work is archived in git history and was removed from this file for cla
           - [x] Browser download/print helpers (`js/exporters/io.js`, `js/exporters/createExporters.js`, `js/relayControls/logStream.js`, `js/appShell/pdfPreview.js`).
           - [x] Isolated legacy primitive builders outside production runtime paths (`js/ui/primitives.js`, `js/ui/appShellPrimitives.js`).
         - [x] Remaining `fallback` keyword matches are domain sync-mode semantics (`syncPath: fallback`) and not legacy UI fallback rendering (`js/state/appShellUiState.js`, `js/relayControls/statusView.js`, `js/relayControls/statusApply.js`, `js/relayControls/syncProgress.js`).
-  - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths and no vanilla DOM renderer remnants.
+  - [x] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths and no vanilla DOM renderer remnants.
     - [x] Enforced non-Vitest fail-fast contracts for shell/search-saved/dashboard relay dispatch paths so production runtime no longer attaches legacy event-listener fallbacks (`js/appShell/bootstrap.js`, `js/appShell/eventBindings.js`, `js/appShell/relayBootstrap.js`).
     - [x] Re-validated release gates on 2026-03-04 after contract hardening: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
+    - [x] Re-validated release gates again on 2026-03-04 after residual-audit closure: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
 
 - [ ] Phase 11 (4-7 days): PrimeVue core-component standardization.
   - [ ] Replace bespoke/native controls with PrimeVue components for core UI surfaces.

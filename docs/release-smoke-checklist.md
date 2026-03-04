@@ -131,8 +131,8 @@ Use this only for the first release where frontend runtime ownership is fully Vu
 - Status: PRE-RELEASE GATES PASS
 - Verified by: automated release gates pass (`ci:verify`, `test:visual`, accessibility smoke, `check:perf-budgets` with `WAAN_PERF_BUDGET_PROFILE=release-ci`, release-notes validation)
 - Recovery checks:
-  - Packaged `WAAN.app` manual relay + recovery smoke: PENDING (run against `v2.4.7` artifact once release workflow publishes assets)
-- Notes: Release notes for `v2.4.7` are present and validator-compliant; tagged-release prerequisite gates are green.
+  - Packaged `WAAN.app` manual relay + recovery smoke: latest confirmed PASS is 2026-03-02; re-run required for each new release candidate/tag.
+- Notes: Release notes and prerequisite tagged-release gates are green; packaged-app smoke must be refreshed per candidate before final sign-off.
 
 - Date: 2026-03-02
 - Status: PASS
