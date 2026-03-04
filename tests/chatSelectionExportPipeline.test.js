@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { h, render } from "vue";
 import { createChatSelectionController } from "../js/appShell/chatSelection.js";
 import { createExportPipeline } from "../js/appShell/exportPipeline.js";
 
@@ -25,7 +26,12 @@ function createChatSelection(options = {}) {
 }
 
 describe("chat selection controller", () => {
+  const originalVitestEnv = process.env.VITEST;
+
   afterEach(() => {
+    if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
+    else delete process.env.VITEST;
+    delete globalThis.Vue;
     vi.restoreAllMocks();
   });
 
@@ -133,6 +139,28 @@ describe("chat selection controller", () => {
       "warning",
     );
     expect(target.disabled).toBe(false);
+  });
+
+  it("renders selector options through Vue runtime", async () => {
+    globalThis.Vue = { h, render };
+    const { controller, chatSelector } = createChatSelection();
+    chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
+    controller.setRemoteChatList([{ id: "chat-22", name: "Launch Team", messageCount: 4 }]);
+
+    await controller.refreshChatSelector();
+
+    expect(chatSelector.querySelectorAll("optgroup").length).toBe(1);
+    expect(chatSelector.options.length).toBe(1);
+    expect(chatSelector.options[0].value).toBe("remote:chat-22");
+    expect(chatSelector.textContent).toContain("Launch Team");
+  });
+
+  it("fails fast without Vue runtime outside Vitest fallback mode", async () => {
+    delete process.env.VITEST;
+    const { controller } = createChatSelection();
+    await expect(controller.refreshChatSelector()).rejects.toThrow(
+      "Vue runtime is required for chat selector rendering.",
+    );
   });
 });
 

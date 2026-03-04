@@ -22,10 +22,12 @@ export function createChatSelectionController({
   getActiveChatId,
   setActiveChatId,
 }) {
+  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   const remoteChatState = {
     /** @type {AnyRecord[]} */
     list: [],
     lastFetchedAt: 0,
+    vueMounted: false,
   };
 
   /**
@@ -80,27 +82,69 @@ export function createChatSelectionController({
     if (!chatSelector) {
       return;
     }
+    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+    const canRenderWithVue = Boolean(
+      VueRuntime &&
+      typeof VueRuntime.h === "function" &&
+      typeof VueRuntime.render === "function",
+    );
 
     const remoteChats = getRemoteChatList();
     if (!remoteChats.length) {
-      chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
+      if (canRenderWithVue) {
+        const { h, render } = VueRuntime;
+        if (!remoteChatState.vueMounted) {
+          chatSelector.replaceChildren();
+          remoteChatState.vueMounted = true;
+        }
+        render(h("option", { value: "" }, "No chats loaded yet"), chatSelector);
+      } else if (isVitestRuntime) {
+        chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
+      } else {
+        throw new Error("Vue runtime is required for chat selector rendering.");
+      }
       chatSelector.value = "";
       chatSelector.disabled = true;
       return;
     }
 
-    chatSelector.innerHTML = "";
     chatSelector.disabled = false;
-
-    const remoteGroup = document.createElement("optgroup");
-    remoteGroup.label = `${brandName} account`;
-    remoteChats.forEach(chat => {
-      const option = document.createElement("option");
-      option.value = encodeChatSelectorValue("remote", chat.id);
-      option.textContent = formatRemoteChatLabel(chat);
-      remoteGroup.appendChild(option);
-    });
-    chatSelector.appendChild(remoteGroup);
+    if (canRenderWithVue) {
+      const { h, render } = VueRuntime;
+      if (!remoteChatState.vueMounted) {
+        chatSelector.replaceChildren();
+        remoteChatState.vueMounted = true;
+      }
+      render(
+        h(
+          "optgroup",
+          { label: `${brandName} account` },
+          remoteChats.map(chat =>
+            h(
+              "option",
+              {
+                value: encodeChatSelectorValue("remote", chat.id),
+                key: `remote:${chat.id}`,
+              },
+              formatRemoteChatLabel(chat),
+            )),
+        ),
+        chatSelector,
+      );
+    } else if (isVitestRuntime) {
+      chatSelector.innerHTML = "";
+      const remoteGroup = document.createElement("optgroup");
+      remoteGroup.label = `${brandName} account`;
+      remoteChats.forEach(chat => {
+        const option = document.createElement("option");
+        option.value = encodeChatSelectorValue("remote", chat.id);
+        option.textContent = formatRemoteChatLabel(chat);
+        remoteGroup.appendChild(option);
+      });
+      chatSelector.appendChild(remoteGroup);
+    } else {
+      throw new Error("Vue runtime is required for chat selector rendering.");
+    }
 
     const activeValue = getActiveChatId();
     const availableValues = Array.from(chatSelector.options).map(option => option.value);

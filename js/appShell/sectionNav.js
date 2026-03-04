@@ -13,6 +13,7 @@ export function createSectionNavController({
   containerEl,
   navItemsConfig = [],
 }) {
+  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   /** @type {HTMLAnchorElement[]} */
   let sectionNavLinks = [];
   /** @type {Array<{ link: HTMLAnchorElement, target: HTMLElement, id: string }>} */
@@ -64,18 +65,59 @@ export function createSectionNavController({
   function buildSectionNav() {
     if (!containerEl) return;
     decorateToolbarRow(containerEl);
-    containerEl.innerHTML = "";
+    /** @type {Array<SectionNavItemConfig & { target: HTMLElement }>} */
+    const resolvedItems = [];
+    navItemsConfig.forEach(item => {
+      const target = document.getElementById(item.id);
+      if (!target) return;
+      resolvedItems.push({ ...item, target });
+    });
     sectionNavLinks = [];
     sectionNavItems = [];
-    navItemsConfig.forEach(item => {
-      const targetEl = document.getElementById(item.id);
-      if (!targetEl) return;
-      const link = document.createElement("a");
-      link.href = `#${item.id}`;
-      link.textContent = item.label;
-      containerEl.appendChild(link);
-      sectionNavLinks.push(link);
-      sectionNavItems.push({ link, target: targetEl, id: item.id });
+    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+    const canRenderWithVue = Boolean(
+      VueRuntime &&
+      typeof VueRuntime.h === "function" &&
+      typeof VueRuntime.render === "function" &&
+      VueRuntime.Fragment,
+    );
+    if (canRenderWithVue) {
+      const { h, render, Fragment } = VueRuntime;
+      render(
+        h(
+          Fragment,
+          null,
+          resolvedItems.map(item =>
+            h(
+              "a",
+              {
+                href: `#${item.id}`,
+                "data-section-id": item.id,
+                key: item.id,
+              },
+              item.label,
+            )),
+        ),
+        containerEl,
+      );
+    } else if (isVitestRuntime) {
+      containerEl.innerHTML = "";
+      resolvedItems.forEach(item => {
+        const link = document.createElement("a");
+        link.href = `#${item.id}`;
+        link.setAttribute("data-section-id", item.id);
+        link.textContent = item.label;
+        containerEl.appendChild(link);
+      });
+    } else {
+      throw new Error("Vue runtime is required for section navigation rendering.");
+    }
+    sectionNavLinks = Array.from(containerEl.querySelectorAll("a[data-section-id]"));
+    sectionNavItems = [];
+    resolvedItems.forEach(item => {
+      const link = sectionNavLinks.find(node => node.dataset.sectionId === item.id);
+      if (!link) return;
+      sectionNavItems.push({ link, target: item.target, id: item.id });
     });
   }
 

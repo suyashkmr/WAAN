@@ -611,12 +611,49 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] `js/analytics/activity/weekly.js`
       - [x] `js/analytics/sentiment.js`
       - [x] `js/analytics/messageTypes.js`
-    - [ ] Migrate remaining app-shell DOM composition paths to Vue-owned component flows:
-      - [ ] `js/appShell/chatSelection.js`
-      - [ ] `js/appShell/sectionNav.js`
-      - [ ] `js/relayControls/logStream.js`
+    - [x] Migrate remaining app-shell DOM composition paths to Vue-owned component flows:
+      - [x] `js/appShell/chatSelection.js`
+      - [x] `js/appShell/sectionNav.js`
+      - [x] `js/relayControls/logStream.js`
     - [ ] Remove runtime dependence on direct `createElement` / `innerHTML` / manual node construction in migrated frontend surfaces.
+      - [ ] Migrate remaining runtime list/select renderers still using manual DOM APIs:
+        - [ ] `js/analytics/polls.js`
+        - [ ] `js/search/participantUi.js`
+        - [ ] `js/savedViewsUi.js` (remaining compare-select option construction)
+        - [ ] `js/vue/dashboardPanelsIsland.js` (hourly anomaly badge node construction)
+      - [ ] Remove remaining direct DOM ref fallback access in relay control state paths:
+        - [ ] `js/relayControls/statusApply.js` (`resolveRelayButton` -> `documentRef.getElementById` fallback)
+        - [ ] `js/appShell/relayBootstrap.js` (`resolveRelayButton` fallback resolution)
+      - [ ] Retire or isolate legacy DOM primitive builders from production runtime paths:
+        - [ ] `js/ui/primitives.js`
+        - [ ] `js/ui/appShellPrimitives.js`
+      - [ ] Audit and explicitly classify non-render DOM utility modules (keep or migrate):
+        - [ ] `js/exporters/createExporters.js` (download anchor creation)
+        - [ ] `js/exporters/io.js` (download anchor creation)
+        - [ ] `js/appShell/pdfPreview.js` (iframe preview mount)
     - [ ] Keep only test-harness compatibility branches under Vitest; no production fallback branches.
+      - [ ] Remove/replace legacy-fallback warning and fallback-retention paths in Vue islands/root:
+        - [ ] `js/vue/searchSavedIsland.js`
+        - [ ] `js/vue/dashboardPanelsIsland.js`
+        - [ ] `js/vue/shellPrimitivesIsland.js`
+        - [ ] `js/vue/summaryIsland.js`
+        - [ ] `js/vue/appShellRoot.js`
+      - [ ] Consolidate remaining Vitest-only compatibility branches and prove production path has zero fallback behavior:
+        - [ ] `js/appShell/chatSelection.js`
+        - [ ] `js/appShell/sectionNav.js`
+        - [ ] `js/relayControls/logStream.js`
+        - [ ] `js/appShell/eventBindings.js`
+        - [ ] `js/appShell/relayBootstrap.js`
+        - [ ] `js/appShell/bootstrap.js`
+      - [ ] Remove stale fallback semantics/labels that no longer match runtime architecture:
+        - [ ] `js/search/resultsUi.js` (bridge/fallback return type/doc wording)
+        - [ ] Vue island/root warning strings that still state legacy fallback retention.
+    - [ ] Residual-audit closure checklist (must be zero before Phase 10 closure):
+      - [ ] Run `rg -n "innerHTML\\s*=|createElement\\(|createDocumentFragment\\(|insertAdjacentHTML\\(|replaceChildren\\(|outerHTML\\s*=|appendChild\\(|removeChild\\(" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
+      - [ ] Run `rg -n "legacy|fallback|process\\.env\\.VITEST|isVitestRuntime|retaining fallback|keeping legacy|using legacy" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
+      - [ ] For any matches, either:
+        - [ ] Migrate/remove from production runtime paths, or
+        - [ ] Document explicit rationale as non-UI utility/test-only and link the owning task.
   - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths and no vanilla DOM renderer remnants.
     - [x] Enforced non-Vitest fail-fast contracts for shell/search-saved/dashboard relay dispatch paths so production runtime no longer attaches legacy event-listener fallbacks (`js/appShell/bootstrap.js`, `js/appShell/eventBindings.js`, `js/appShell/relayBootstrap.js`).
     - [x] Re-validated release gates on 2026-03-04 after contract hardening: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.

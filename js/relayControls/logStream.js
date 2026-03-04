@@ -28,6 +28,7 @@ export function createRelayLogController({
   fetchJson,
   updateStatus,
 }) {
+  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   const relayLogState = {
     /** @type {string[]} */
     entries: [],
@@ -36,6 +37,7 @@ export function createRelayLogController({
     /** @type {ReturnType<typeof setTimeout> | null} */
     reconnectTimer: null,
     drawerOpen: false,
+    vueMounted: false,
   };
 
   /**
@@ -49,42 +51,65 @@ export function createRelayLogController({
 
   function renderRelayLogs() {
     if (!logDrawerList) return;
-    if (!relayLogState.entries.length) {
-      logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
+    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+    const canRenderWithVue = Boolean(
+      VueRuntime &&
+      typeof VueRuntime.h === "function" &&
+      typeof VueRuntime.render === "function" &&
+      VueRuntime.Fragment,
+    );
+    if (!canRenderWithVue) {
+      if (!isVitestRuntime) {
+        throw new Error("Vue runtime is required for relay log rendering.");
+      }
+      if (!relayLogState.entries.length) {
+        logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      relayLogState.entries.forEach(line => {
+        const li = document.createElement("p");
+        li.classList.add("relay-log-entry");
+        li.textContent = line;
+        fragment.appendChild(li);
+      });
+      logDrawerList.innerHTML = "";
+      logDrawerList.appendChild(fragment);
+      if (relayLogState.drawerOpen) {
+        logDrawerList.scrollTop = logDrawerList.scrollHeight;
+      }
       return;
     }
-    const fragment = document.createDocumentFragment();
-    relayLogState.entries.forEach(line => {
-      const li = document.createElement("p");
-      li.classList.add("relay-log-entry");
-      li.textContent = line;
-      fragment.appendChild(li);
-    });
-    logDrawerList.innerHTML = "";
-    logDrawerList.appendChild(fragment);
+    const { h, render, Fragment } = VueRuntime;
+    if (!relayLogState.vueMounted) {
+      logDrawerList.replaceChildren();
+      relayLogState.vueMounted = true;
+    }
+    if (!relayLogState.entries.length) {
+      render(h("p", { class: "relay-log-empty" }, "No relay logs yet."), logDrawerList);
+      return;
+    }
+    render(
+      h(
+        Fragment,
+        null,
+        relayLogState.entries.map((line, index) =>
+          h("p", { class: "relay-log-entry", key: `${index}-${line}` }, line)),
+      ),
+      logDrawerList,
+    );
     if (relayLogState.drawerOpen) {
       logDrawerList.scrollTop = logDrawerList.scrollHeight;
     }
   }
 
   /**
-   * @param {string} entry
+   * @param {string} _entry
    */
-  function appendRelayLog(entry) {
+  function appendRelayLog(/** @type {string} */ _entry) {
     if (!logDrawerList) return;
-    if (logDrawerList.firstChild?.classList?.contains?.("relay-log-empty")) {
-      logDrawerList.innerHTML = "";
-    }
-    const p = document.createElement("p");
-    p.classList.add("relay-log-entry");
-    p.textContent = entry;
-    logDrawerList.appendChild(p);
-    while (logDrawerList.children.length > MAX_LOG_ENTRIES) {
-      logDrawerList.removeChild(logDrawerList.firstChild);
-    }
-    if (relayLogState.drawerOpen) {
-      logDrawerList.scrollTop = logDrawerList.scrollHeight;
-    }
+    void _entry;
+    renderRelayLogs();
   }
 
   function openLogDrawer() {
