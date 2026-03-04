@@ -669,6 +669,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
 - [ ] Phase 11 (4-7 days): PrimeVue core-component standardization.
   - [ ] Replace bespoke/native controls with PrimeVue components for core UI surfaces.
     - [ ] Buttons and icon actions -> PrimeVue button primitives across shell/search/saved/dashboard.
+      - [x] Migrated Vue-owned shell action buttons (relay banner/actions, toolbar actions, onboarding, first-run, relay header/live controls) and search action-row controls to shared PrimeVue `Button` renderer with native fallback for partial test runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/shellRelayActionViews.js`, `js/vue/searchSavedActionPrimitives.js`, `js/vue/primevueRenderPrimitives.js`).
+      - [x] Added regression coverage for PrimeVue button renderer contract (`tests/primevueRenderPrimitives.test.js`).
     - [ ] Inputs/selects/date fields -> PrimeVue form components with consistent validation/disabled states.
     - [ ] Dialogs/overlays/tooltips -> PrimeVue dialog/overlay primitives with unified focus handling.
     - [ ] Core tabular/data-list surfaces -> PrimeVue data table/list primitives where applicable.

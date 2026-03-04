@@ -1,3 +1,5 @@
+import { renderActionButton } from "./primevueRenderPrimitives.js";
+
 /**
  * @param {any} h
  * @param {(actionId: string, payload?: any) => void} onAction
@@ -7,34 +9,28 @@ export function createRelayHeaderActionsRoot(h, onAction) {
     name: "RelayHeaderActionsPrimitive",
     render() {
       return [
-        h(
-          "button",
-          {
-            type: "button",
-            class: "ghost-button small",
-            id: "relay-reload-all",
-            disabled: true,
-            onClick: event => onAction("relay.reloadAll", {
-              currentTarget: event?.currentTarget ?? null,
-              target: event?.target ?? null,
-            }),
-          },
-          "Reload All Chats",
-        ),
-        h(
-          "button",
-          {
-            type: "button",
-            class: "ghost-button small danger",
-            id: "relay-clear-storage",
-            disabled: true,
-            onClick: event => onAction("relay.clearStorage", {
-              currentTarget: event?.currentTarget ?? null,
-              target: event?.target ?? null,
-            }),
-          },
-          "Clear Cached Chats",
-        ),
+        renderActionButton(h, {
+          type: "button",
+          className: "ghost-button small",
+          id: "relay-reload-all",
+          text: "Reload All Chats",
+          disabled: true,
+          onClick: event => onAction("relay.reloadAll", {
+            currentTarget: event?.currentTarget ?? null,
+            target: event?.target ?? null,
+          }),
+        }),
+        renderActionButton(h, {
+          type: "button",
+          className: "ghost-button small danger",
+          id: "relay-clear-storage",
+          text: "Clear Cached Chats",
+          disabled: true,
+          onClick: event => onAction("relay.clearStorage", {
+            currentTarget: event?.currentTarget ?? null,
+            target: event?.target ?? null,
+          }),
+        }),
       ];
     },
   };
@@ -49,42 +45,33 @@ export function createRelayLiveActionsRoot(h, onAction) {
     name: "RelayLiveActionsPrimitive",
     render() {
       return [
-        h(
-          "button",
-          {
-            type: "button",
-            class: "ghost-button",
-            id: "relay-start",
-            onClick: event => onAction("relay.primaryAction", {
-              currentTarget: event?.currentTarget ?? null,
-              target: event?.target ?? null,
-            }),
-          },
-          "Connect Relay",
-        ),
+        renderActionButton(h, {
+          type: "button",
+          className: "ghost-button",
+          id: "relay-start",
+          text: "Connect Relay",
+          onClick: event => onAction("relay.primaryAction", {
+            currentTarget: event?.currentTarget ?? null,
+            target: event?.target ?? null,
+          }),
+        }),
         h("div", { class: "live-button-group" }, [
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "relay-stop",
-              disabled: true,
-              onClick: () => onAction("relay.stop"),
-            },
-            "Pause Relay",
-          ),
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button danger",
-              id: "relay-logout",
-              disabled: true,
-              onClick: () => onAction("relay.logout"),
-            },
-            "Log Out & Unlink",
-          ),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "relay-stop",
+            text: "Pause Relay",
+            disabled: true,
+            onClick: () => onAction("relay.stop"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button danger",
+            id: "relay-logout",
+            text: "Log Out & Unlink",
+            disabled: true,
+            onClick: () => onAction("relay.logout"),
+          }),
         ]),
       ];
     },

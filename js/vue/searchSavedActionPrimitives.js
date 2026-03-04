@@ -1,3 +1,5 @@
+import { renderActionButton } from "./primevueRenderPrimitives.js";
+
 /**
  * @param {{
  *   globalScope?: any,
@@ -15,29 +17,23 @@ export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatch
     name: "SearchActionsPrimitive",
     render() {
       return [
-        h(
-          "button",
-          {
-            type: "submit",
-            class: "ghost-button",
-            id: "run-search",
-            onClick: event => {
-              event?.preventDefault?.();
-              dispatchPanelAction("search:run-search");
-            },
+        renderActionButton(h, {
+          type: "submit",
+          className: "ghost-button",
+          id: "run-search",
+          text: "Search messages",
+          onClick: event => {
+            event?.preventDefault?.();
+            dispatchPanelAction("search:run-search");
           },
-          "Search messages",
-        ),
-        h(
-          "button",
-          {
-            type: "button",
-            class: "ghost-button",
-            id: "reset-search",
-            onClick: () => dispatchPanelAction("search:clear-search-filters"),
-          },
-          "Clear filters",
-        ),
+        }, globalScope),
+        renderActionButton(h, {
+          type: "button",
+          className: "ghost-button",
+          id: "reset-search",
+          text: "Clear filters",
+          onClick: () => dispatchPanelAction("search:clear-search-filters"),
+        }, globalScope),
       ];
     },
   };

@@ -1,3 +1,5 @@
+import { renderActionButton } from "./primevueRenderPrimitives.js";
+
 export {
   createRelayHeaderActionsRoot,
   createRelayLiveActionsRoot,
@@ -22,36 +24,27 @@ export function createRelayBannerRoot(h, onAction) {
           ),
         ]),
         h("div", { class: "relay-banner-actions", id: "relay-status-actions", hidden: true }, [
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button small",
-              id: "relay-recovery-reconnect",
-              onClick: () => onAction("relay.recoveryReconnect"),
-            },
-            "Reconnect",
-          ),
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button small",
-              id: "relay-recovery-resync",
-              onClick: () => onAction("relay.recoveryResync"),
-            },
-            "Resync",
-          ),
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button small",
-              id: "relay-recovery-export",
-              onClick: () => onAction("relay.recoveryExportDiagnostics"),
-            },
-            "Export diagnostics",
-          ),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button small",
+            id: "relay-recovery-reconnect",
+            text: "Reconnect",
+            onClick: () => onAction("relay.recoveryReconnect"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button small",
+            id: "relay-recovery-resync",
+            text: "Resync",
+            onClick: () => onAction("relay.recoveryResync"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button small",
+            id: "relay-recovery-export",
+            text: "Export diagnostics",
+            onClick: () => onAction("relay.recoveryExportDiagnostics"),
+          }),
         ]),
       ];
     },
@@ -68,50 +61,40 @@ export function createActionsToolbarRoot(h, onAction) {
     render() {
       return [
         h("div", { class: "toolbar-group primary" }, [
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "download-pdf",
-              onClick: () => onAction("export.pdf"),
-            },
-            "Save as PDF",
-          ),
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "download-markdown-report",
-              onClick: () => onAction("export.markdown"),
-            },
-            "Save text report",
-          ),
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "download-slides-report",
-              onClick: () => onAction("export.slides"),
-            },
-            "Save slides (HTML)",
-          ),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "download-pdf",
+            text: "Save as PDF",
+            onClick: () => onAction("export.pdf"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "download-markdown-report",
+            text: "Save text report",
+            onClick: () => onAction("export.markdown"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "download-slides-report",
+            text: "Save slides (HTML)",
+            onClick: () => onAction("export.slides"),
+          }),
         ]),
         h("div", { class: "toolbar-group secondary" }, [
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "compact-toggle",
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "compact-toggle",
+            text: "Compact mode",
+            attrs: {
               "aria-pressed": "false",
               title: "Switch between compact and comfort layouts",
-              onClick: () => onAction("ui.compact.toggle"),
             },
-            "Compact mode",
-          ),
+            onClick: () => onAction("ui.compact.toggle"),
+          }),
           h("div", { class: "theme-toggle" }, [
             h("span", "Theme"),
             h("div", { class: "segmented-option" }, [
@@ -162,39 +145,34 @@ export function createActionsToolbarRoot(h, onAction) {
             ]),
           ]),
           h("div", { class: "a11y-controls", "aria-label": "Accessibility options" }, [
-            h(
-              "button",
-              {
-                type: "button",
-                class: "ghost-button small",
-                id: "reduce-motion-toggle",
-                "aria-pressed": "mixed",
-                onClick: () => onAction("ui.motion.cycle"),
-              },
-              "Motion: Standard",
-            ),
-            h(
-              "button",
-              {
-                type: "button",
-                class: "ghost-button small",
-                id: "high-contrast-toggle",
-                "aria-pressed": "false",
-                onClick: () => onAction("ui.contrast.toggle"),
-              },
-              "Contrast: Standard",
-            ),
-          ]),
-          h(
-            "button",
-            {
+            renderActionButton(h, {
               type: "button",
-              class: "ghost-button",
-              id: "log-drawer-toggle",
-              onClick: () => onAction("relay.logDrawerOpen"),
-            },
-            "View Relay Logs",
-          ),
+              className: "ghost-button small",
+              id: "reduce-motion-toggle",
+              text: "Motion: Standard",
+              attrs: {
+                "aria-pressed": "mixed",
+              },
+              onClick: () => onAction("ui.motion.cycle"),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button small",
+              id: "high-contrast-toggle",
+              text: "Contrast: Standard",
+              attrs: {
+                "aria-pressed": "false",
+              },
+              onClick: () => onAction("ui.contrast.toggle"),
+            }),
+          ]),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "log-drawer-toggle",
+            text: "View Relay Logs",
+            onClick: () => onAction("relay.logDrawerOpen"),
+          }),
         ]),
       ];
     },
@@ -214,26 +192,20 @@ export function createOnboardingDialogRoot(h, onAction) {
         h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
         h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
         h("div", { class: "onboarding-actions" }, [
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button",
-              id: "onboarding-skip",
-              onClick: () => onAction("onboarding.skip"),
-            },
-            "Skip",
-          ),
-          h(
-            "button",
-            {
-              type: "button",
-              class: "ghost-button primary",
-              id: "onboarding-next",
-              onClick: () => onAction("onboarding.next"),
-            },
-            "Next",
-          ),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "onboarding-skip",
+            text: "Skip",
+            onClick: () => onAction("onboarding.skip"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button primary",
+            id: "onboarding-next",
+            text: "Next",
+            onClick: () => onAction("onboarding.next"),
+          }),
         ]),
       ]);
     },
@@ -249,26 +221,20 @@ export function createFirstRunActionsRoot(h, onAction) {
     name: "FirstRunActionsPrimitive",
     render() {
       return [
-        h(
-          "button",
-          {
-            type: "button",
-            class: "ghost-button tiny",
-            id: "first-run-open-relay",
-            onClick: () => onAction("relay.firstRunOpenRelay"),
-          },
-          "Open Relay Controls",
-        ),
-        h(
-          "button",
-          {
-            type: "button",
-            class: "ghost-button tiny primary",
-            id: "first-run-primary-action",
-            onClick: () => onAction("relay.firstRunPrimaryAction"),
-          },
-          "Connect Relay",
-        ),
+        renderActionButton(h, {
+          type: "button",
+          className: "ghost-button tiny",
+          id: "first-run-open-relay",
+          text: "Open Relay Controls",
+          onClick: () => onAction("relay.firstRunOpenRelay"),
+        }),
+        renderActionButton(h, {
+          type: "button",
+          className: "ghost-button tiny primary",
+          id: "first-run-primary-action",
+          text: "Connect Relay",
+          onClick: () => onAction("relay.firstRunPrimaryAction"),
+        }),
         h(
           "a",
           {
