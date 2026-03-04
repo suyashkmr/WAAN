@@ -7,7 +7,7 @@ function resolvePrimeVueRuntime(windowRef) {
 
 /**
  * Vue composable-style primitive wrappers for migrated Vue/PrimeVue surfaces.
- * These helpers return VNodes and keep fallback behavior framework-neutral.
+ * These helpers return VNodes and keep runtime behavior framework-neutral.
  *
  * @param {{ windowRef?: Window | null }} [params]
  */

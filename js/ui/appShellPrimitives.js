@@ -1,5 +1,7 @@
 import { decorateToolbarRow, initAppShellPrimitives } from "./appShellRuntimeDecorators.js";
 
+// Legacy compatibility primitive builders retained for isolated test/tooling usage.
+// Production runtime paths are isolated to Vue-owned surfaces.
 function resolveDocument(documentRef) {
   if (documentRef) return documentRef;
   if (typeof document !== "undefined") return document;

@@ -1,5 +1,7 @@
 import { applyUiRuntimeState } from "./runtimeStateSync.js";
 
+// Legacy compatibility primitive builders retained for isolated test/tooling usage.
+// Production runtime paths are isolated to Vue-owned surfaces.
 const defaultDocument = typeof document !== "undefined" ? document : null;
 
 function setBooleanAttr(el, key, value) {

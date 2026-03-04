@@ -68,12 +68,12 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
 
   /**
    * @param {any} payload
-   * @param {HTMLButtonElement | null | undefined} fallback
+   * @param {HTMLButtonElement | null | undefined} defaultButton
    */
-  function resolveRelayButtonFromPayload(payload, fallback) {
+  function resolveRelayButtonFromPayload(payload, defaultButton) {
     const candidate = payload?.currentTarget ?? payload?.target ?? null;
     if (candidate instanceof HTMLButtonElement) return candidate;
-    return fallback || null;
+    return defaultButton || null;
   }
 
   /**

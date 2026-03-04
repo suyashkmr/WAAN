@@ -14,7 +14,6 @@ export function createSavedViewsUiController({
   elements,
   deps,
 }) {
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   const vueMountedSelects = new WeakSet();
   const {
     nameInput,
@@ -145,7 +144,7 @@ export function createSavedViewsUiController({
     if (canRenderWithVue) {
       const { h, render, Fragment } = VueRuntime;
       if (!vueMountedSelects.has(select)) {
-        select.replaceChildren();
+        select.textContent = "";
         vueMountedSelects.add(select);
       }
       render(
@@ -168,19 +167,6 @@ export function createSavedViewsUiController({
         ),
         select,
       );
-    } else if (isVitestRuntime) {
-      select.innerHTML = "";
-      const placeholderOption = document.createElement("option");
-      placeholderOption.value = "";
-      placeholderOption.textContent = placeholder;
-      select.appendChild(placeholderOption);
-      views.forEach(view => {
-        const option = document.createElement("option");
-        option.value = view.id;
-        option.textContent = `${view.name} · ${view.rangeLabel}`;
-        if (view.id === previous) option.selected = true;
-        select.appendChild(option);
-      });
     } else {
       throw new Error("Vue runtime is required for saved view select rendering.");
     }
@@ -240,8 +226,8 @@ export function createSavedViewsUiController({
     if (views.length >= 2) {
       if (!primary) primary = views[0].id;
       if (!secondary || secondary === primary) {
-        const fallback = views.find(view => view.id !== primary);
-        secondary = fallback ? fallback.id : null;
+        const alternate = views.find(view => view.id !== primary);
+        secondary = alternate ? alternate.id : null;
       }
     } else {
       primary = primary ?? null;

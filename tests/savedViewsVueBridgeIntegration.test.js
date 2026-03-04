@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { h, render } from "vue";
+import { Fragment, h, render } from "vue";
 import { createSavedViewsController } from "../js/savedViews.js";
 import { mountSearchSavedBridge } from "../js/vue/searchSavedIsland.js";
 import { clearVueBridgeRuntime } from "./vueBridgeTestUtils.js";
@@ -127,7 +127,7 @@ describe("savedViews Vue bridge integration", () => {
   it("renders Vue empty-state actions and handles save via rendered panel action", () => {
     const elements = buildElements();
     const dependencies = buildDependencies();
-    globalThis.Vue = { h, render };
+    globalThis.Vue = { h, render, Fragment };
     mountSearchSavedBridge();
 
     const controller = createSavedViewsController({ elements, dependencies });
@@ -145,7 +145,7 @@ describe("savedViews Vue bridge integration", () => {
   it("renders Vue gallery cards and applies views from card click dispatch", async () => {
     const elements = buildElements();
     const dependencies = buildDependencies();
-    globalThis.Vue = { h, render };
+    globalThis.Vue = { h, render, Fragment };
     mountSearchSavedBridge();
 
     const controller = createSavedViewsController({ elements, dependencies });

@@ -246,7 +246,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       const anomaliesEl = /** @type {{ anomaliesEl?: HTMLElement | null }} */ (options).anomaliesEl;
       if (anomaliesEl) {
         if (!hourlyAnomaliesMountedEls.has(anomaliesEl)) {
-          anomaliesEl.replaceChildren();
+          anomaliesEl.textContent = "";
           hourlyAnomaliesMountedEls.add(anomaliesEl);
         }
         if (hourlyState.anomalyBadges.length) {

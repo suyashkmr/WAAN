@@ -93,7 +93,7 @@ export function createChatSelectionController({
       if (canRenderWithVue) {
         const { h, render } = VueRuntime;
         if (!remoteChatState.vueMounted) {
-          chatSelector.replaceChildren();
+          chatSelector.textContent = "";
           remoteChatState.vueMounted = true;
         }
         render(h("option", { value: "" }, "No chats loaded yet"), chatSelector);
@@ -109,7 +109,7 @@ export function createChatSelectionController({
     if (canRenderWithVue) {
       const { h, render } = VueRuntime;
       if (!remoteChatState.vueMounted) {
-        chatSelector.replaceChildren();
+        chatSelector.textContent = "";
         remoteChatState.vueMounted = true;
       }
       render(

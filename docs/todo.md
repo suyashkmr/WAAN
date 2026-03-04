@@ -605,8 +605,8 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] `README.md` + in-app FAQ (`index.html`) architecture/support notes
   - [x] Add rollback notes for first release after full Vue cutover.
     - [x] Added rollback runbook section to `docs/release-smoke-checklist.md`.
-  - [ ] Purist frontend completion: remove remaining vanilla DOM render/control modules from runtime paths.
-    - [ ] Migrate remaining analytics DOM renderers to Vue components/islands:
+  - [x] Purist frontend completion: remove remaining vanilla DOM render/control modules from runtime paths.
+    - [x] Migrate remaining analytics DOM renderers to Vue components/islands:
       - [x] `js/analytics/activity/daily.js`
       - [x] `js/analytics/activity/weekly.js`
       - [x] `js/analytics/sentiment.js`
@@ -615,45 +615,51 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] `js/appShell/chatSelection.js`
       - [x] `js/appShell/sectionNav.js`
       - [x] `js/relayControls/logStream.js`
-    - [ ] Remove runtime dependence on direct `createElement` / `innerHTML` / manual node construction in migrated frontend surfaces.
-      - [ ] Migrate remaining runtime list/select renderers still using manual DOM APIs:
+    - [x] Remove runtime dependence on direct `createElement` / `innerHTML` / manual node construction in migrated frontend surfaces.
+      - [x] Migrate remaining runtime list/select renderers still using manual DOM APIs:
         - [x] `js/analytics/polls.js`
         - [x] `js/search/participantUi.js`
         - [x] `js/savedViewsUi.js` (remaining compare-select option construction)
         - [x] `js/vue/dashboardPanelsIsland.js` (hourly anomaly badge node construction)
-      - [ ] Remove remaining direct DOM ref fallback access in relay control state paths:
+      - [x] Remove remaining direct DOM ref fallback access in relay control state paths:
         - [x] `js/relayControls/statusApply.js` (`resolveRelayButton` -> `documentRef.getElementById` fallback)
         - [x] `js/appShell/relayBootstrap.js` (`resolveRelayButton` fallback resolution)
-      - [ ] Retire or isolate legacy DOM primitive builders from production runtime paths:
+      - [x] Retire or isolate legacy DOM primitive builders from production runtime paths:
         - [x] `js/ui/primitives.js` (runtime sync isolated to `js/ui/runtimeStateSync.js`; no production import path)
         - [x] `js/ui/appShellPrimitives.js` (runtime decorators isolated to `js/ui/appShellRuntimeDecorators.js`; no production import path)
-      - [ ] Audit and explicitly classify non-render DOM utility modules (keep or migrate):
+      - [x] Audit and explicitly classify non-render DOM utility modules (keep or migrate):
         - [x] `js/exporters/createExporters.js` (keep: non-render browser download anchor utility; documented inline)
         - [x] `js/exporters/io.js` (keep: non-render browser download anchor utility; documented inline)
         - [x] `js/appShell/pdfPreview.js` (keep: non-render browser print/preview iframe utility; documented inline)
-    - [ ] Keep only test-harness compatibility branches under Vitest; no production fallback branches.
-      - [ ] Remove/replace legacy-fallback warning and fallback-retention paths in Vue islands/root:
+    - [x] Keep only test-harness compatibility branches under Vitest; no production fallback branches.
+      - [x] Remove/replace legacy-fallback warning and fallback-retention paths in Vue islands/root:
         - [x] `js/vue/searchSavedIsland.js`
         - [x] `js/vue/dashboardPanelsIsland.js`
         - [x] `js/vue/shellPrimitivesIsland.js`
         - [x] `js/vue/summaryIsland.js`
         - [x] `js/vue/appShellRoot.js`
-      - [ ] Consolidate remaining Vitest-only compatibility branches and prove production path has zero fallback behavior:
+      - [x] Consolidate remaining Vitest-only compatibility branches and prove production path has zero fallback behavior:
         - [x] `js/appShell/chatSelection.js`
         - [x] `js/appShell/sectionNav.js`
         - [x] `js/relayControls/logStream.js`
         - [x] `js/appShell/eventBindings.js`
         - [x] `js/appShell/relayBootstrap.js`
         - [x] `js/appShell/bootstrap.js`
-      - [ ] Remove stale fallback semantics/labels that no longer match runtime architecture:
+        - [x] `js/savedViewsUi.js` (removed `isVitestRuntime` option-render fallback path; Vue runtime required)
+        - [x] `js/search/participantUi.js` (removed `isVitestRuntime` participant-option fallback path; Vue runtime required)
+        - [x] `js/analytics/polls.js` (removed `isVitestRuntime` poll-list fallback path; Vue runtime required)
+      - [x] Remove stale fallback semantics/labels that no longer match runtime architecture:
         - [x] `js/search/resultsUi.js` (bridge/fallback return type/doc wording)
         - [x] Vue island/root warning strings that still state legacy fallback retention.
-    - [ ] Residual-audit closure checklist (must be zero before Phase 10 closure):
-      - [ ] Run `rg -n "innerHTML\\s*=|createElement\\(|createDocumentFragment\\(|insertAdjacentHTML\\(|replaceChildren\\(|outerHTML\\s*=|appendChild\\(|removeChild\\(" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
-      - [ ] Run `rg -n "legacy|fallback|process\\.env\\.VITEST|isVitestRuntime|retaining fallback|keeping legacy|using legacy" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
-      - [ ] For any matches, either:
-        - [ ] Migrate/remove from production runtime paths, or
-        - [ ] Document explicit rationale as non-UI utility/test-only and link the owning task.
+    - [x] Residual-audit closure checklist (must be zero before Phase 10 closure):
+      - [x] Run `rg -n "innerHTML\\s*=|createElement\\(|createDocumentFragment\\(|insertAdjacentHTML\\(|replaceChildren\\(|outerHTML\\s*=|appendChild\\(|removeChild\\(" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
+      - [x] Run `rg -n "legacy|fallback|process\\.env\\.VITEST|isVitestRuntime|retaining fallback|keeping legacy|using legacy" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
+      - [x] For matches found on 2026-03-04:
+        - [x] Migrated/removed production renderer fallback branches and Vitest compatibility guards (`js/appShell/*`, `js/search/participantUi.js`, `js/savedViewsUi.js`, `js/analytics/polls.js`).
+        - [x] Remaining DOM-construction matches are intentional non-render utilities or isolated compatibility builders:
+          - [x] Browser download/print helpers (`js/exporters/io.js`, `js/exporters/createExporters.js`, `js/relayControls/logStream.js`, `js/appShell/pdfPreview.js`).
+          - [x] Isolated legacy primitive builders outside production runtime paths (`js/ui/primitives.js`, `js/ui/appShellPrimitives.js`).
+        - [x] Remaining `fallback` keyword matches are domain sync-mode semantics (`syncPath: fallback`) and not legacy UI fallback rendering (`js/state/appShellUiState.js`, `js/relayControls/statusView.js`, `js/relayControls/statusApply.js`, `js/relayControls/syncProgress.js`).
   - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths and no vanilla DOM renderer remnants.
     - [x] Enforced non-Vitest fail-fast contracts for shell/search-saved/dashboard relay dispatch paths so production runtime no longer attaches legacy event-listener fallbacks (`js/appShell/bootstrap.js`, `js/appShell/eventBindings.js`, `js/appShell/relayBootstrap.js`).
     - [x] Re-validated release gates on 2026-03-04 after contract hardening: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.

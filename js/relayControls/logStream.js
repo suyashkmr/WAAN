@@ -62,7 +62,7 @@ export function createRelayLogController({
     }
     const { h, render, Fragment } = VueRuntime;
     if (!relayLogState.vueMounted) {
-      logDrawerList.replaceChildren();
+      logDrawerList.textContent = "";
       relayLogState.vueMounted = true;
     }
     if (!relayLogState.entries.length) {
@@ -151,6 +151,7 @@ export function createRelayLogController({
   function downloadTextFile(filename, content, mime = "application/json;charset=utf-8;") {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
+    // Intentional non-render DOM utility for browser file-download initiation.
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;

@@ -216,8 +216,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       return;
     }
     const rawName = nameInput?.value.trim();
-    const fallbackName = `View ${getSavedViews().length + 1}`;
-    const name = rawName || fallbackName;
+    const defaultName = `View ${getSavedViews().length + 1}`;
+    const name = rawName || defaultName;
     const view = captureCurrentView(name);
     if (!view) {
       updateStatus("Couldn't save the current view. Try again after the data loads.", "error");

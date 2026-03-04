@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Fragment, h, render } from "vue";
 import { createSavedViewsController } from "../js/savedViews.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
@@ -163,9 +164,14 @@ function installSavedViewsBridge(elements) {
 }
 
 describe("savedViews controller", () => {
+  beforeEach(() => {
+    globalThis.Vue = { h, render, Fragment };
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
     clearVueBridgeRuntime();
+    delete globalThis.Vue;
   });
 
   it("disables controls when no dataset is available", () => {

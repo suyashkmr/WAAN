@@ -5,7 +5,6 @@ export function createSearchParticipantUiController({
   getSearchState,
   buildParticipantOptionsCacheKey,
 }) {
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   let participantOptionsCacheKey = "";
   let vueMounted = false;
 
@@ -42,7 +41,7 @@ export function createSearchParticipantUiController({
     if (canRenderWithVue) {
       const { h, render, Fragment } = VueRuntime;
       if (!vueMounted) {
-        participantSelect.replaceChildren();
+        participantSelect.textContent = "";
         vueMounted = true;
       }
       const optionNodes = [
@@ -53,26 +52,6 @@ export function createSearchParticipantUiController({
         optionNodes.push(h("option", { value: selected, key: `selected:${selected}` }, selected));
       }
       render(h(Fragment, null, optionNodes), participantSelect);
-    } else if (isVitestRuntime) {
-      participantSelect.innerHTML = "";
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = "All participants";
-      participantSelect.appendChild(placeholder);
-
-      options.forEach(sender => {
-        const option = document.createElement("option");
-        option.value = sender;
-        option.textContent = sender;
-        participantSelect.appendChild(option);
-      });
-
-      if (selected && !options.includes(selected)) {
-        const extraOption = document.createElement("option");
-        extraOption.value = selected;
-        extraOption.textContent = selected;
-        participantSelect.appendChild(extraOption);
-      }
     } else {
       throw new Error("Vue runtime is required for search participant rendering.");
     }

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { Fragment, h, render } from "vue";
 import { createSearchController } from "../js/search.js";
 import {
   setDatasetEntries,
@@ -91,6 +92,7 @@ describe("search controller", () => {
   let statusEvents;
 
   beforeEach(() => {
+    globalThis.Vue = { h, render, Fragment };
     workerInstances = [];
     statusEvents = [];
     resetSearchState();
@@ -154,6 +156,7 @@ describe("search controller", () => {
 
   afterEach(() => {
     globalThis.Worker = OriginalWorker;
+    delete globalThis.Vue;
     vi.restoreAllMocks();
     clearVueBridgeRuntime();
   });

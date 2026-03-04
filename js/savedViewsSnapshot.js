@@ -92,8 +92,8 @@ async function computeSnapshotForViewAsync({
         return buildViewSnapshot(analytics);
       } catch (error) {
         console.error(error);
-        const fallbackAnalytics = computeAnalytics(subset);
-        return buildViewSnapshot(fallbackAnalytics);
+        const syncAnalytics = computeAnalytics(subset);
+        return buildViewSnapshot(syncAnalytics);
       }
     }
     const analytics = computeAnalytics(subset);

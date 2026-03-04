@@ -3,7 +3,6 @@ import { sanitizeText, formatNumber, formatDisplayDate } from "../utils.js";
 export function renderPollsSection({ data, elements = {} } = {}) {
   const { listEl, totalsEl, creatorsEl, noteEl } = elements;
   if (!listEl) return;
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
   const canRenderWithVue = Boolean(
     VueRuntime &&
@@ -26,8 +25,6 @@ export function renderPollsSection({ data, elements = {} } = {}) {
     if (canRenderWithVue) {
       const { h, render } = VueRuntime;
       render(h("li", { class: "empty-state" }, "No polls captured yet."), listEl);
-    } else if (isVitestRuntime) {
-      listEl.innerHTML = '<li class="empty-state">No polls captured yet.</li>';
     } else {
       throw new Error("Vue runtime is required for polls rendering.");
     }
@@ -70,28 +67,6 @@ export function renderPollsSection({ data, elements = {} } = {}) {
       ),
       listEl,
     );
-  } else if (isVitestRuntime) {
-    listEl.innerHTML = entries
-      .map(entry => {
-        const title = sanitizeText(entry.title || "Poll");
-        const sender = entry.sender || "Unknown";
-        const timeLabel = formatTimestamp(entry);
-        const metaParts = [sender ? `By ${sender}` : null, timeLabel || null].filter(Boolean);
-        const options = Array.isArray(entry.options) ? entry.options.slice(0, 6) : [];
-        const optionsMarkup = options.length
-          ? `<div class="poll-item-options">${options
-              .map(option => `<span>${sanitizeText(option)}</span>`)
-              .join("")}</div>`
-          : "";
-        return `
-          <li class="poll-item">
-            <div class="poll-item-title">${title}</div>
-            <div class="poll-item-meta">${metaParts.map(text => sanitizeText(text)).join(" · ")}</div>
-            ${optionsMarkup}
-          </li>
-        `;
-      })
-      .join("");
   } else {
     throw new Error("Vue runtime is required for polls rendering.");
   }
