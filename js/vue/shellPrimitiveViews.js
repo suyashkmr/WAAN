@@ -56,9 +56,24 @@ export function createRelayBannerRoot(h, onAction) {
  * @param {(actionId: string, payload?: any) => void} onAction
  */
 export function createActionsToolbarRoot(h, onAction) {
+  let themePreference = (() => {
+    const theme = globalThis?.document?.documentElement?.dataset?.theme;
+    if (theme === "dark" || theme === "light" || theme === "system") return theme;
+    return "system";
+  })();
+  /**
+   * @param {string} preference
+   */
+  const handleThemeSelection = preference => {
+    if (preference !== "dark" && preference !== "light" && preference !== "system") return;
+    themePreference = preference;
+    onAction("ui.theme.set", { preference });
+  };
+
   return {
     name: "ActionsToolbarPrimitive",
     render() {
+      const selectedTheme = themePreference || "system";
       return [
         h("div", { class: "toolbar-group primary" }, [
           renderActionButton(h, {
@@ -102,11 +117,11 @@ export function createActionsToolbarRoot(h, onAction) {
                 name: "theme-option",
                 id: "theme-system",
                 value: "system",
-                checked: true,
+                modelValue: selectedTheme,
                 onChange: event => {
                   const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
                   if (target?.checked) {
-                    onAction("ui.theme.set", { preference: "system" });
+                    handleThemeSelection("system");
                   }
                 },
               }),
@@ -117,10 +132,11 @@ export function createActionsToolbarRoot(h, onAction) {
                 name: "theme-option",
                 id: "theme-light",
                 value: "light",
+                modelValue: selectedTheme,
                 onChange: event => {
                   const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
                   if (target?.checked) {
-                    onAction("ui.theme.set", { preference: "light" });
+                    handleThemeSelection("light");
                   }
                 },
               }),
@@ -131,10 +147,11 @@ export function createActionsToolbarRoot(h, onAction) {
                 name: "theme-option",
                 id: "theme-dark",
                 value: "dark",
+                modelValue: selectedTheme,
                 onChange: event => {
                   const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
                   if (target?.checked) {
-                    onAction("ui.theme.set", { preference: "dark" });
+                    handleThemeSelection("dark");
                   }
                 },
               }),

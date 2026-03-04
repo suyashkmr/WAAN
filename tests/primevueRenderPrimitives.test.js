@@ -80,50 +80,45 @@ describe("primevue render primitives", () => {
     expect(vnode.props["data-action"]).toBe("relay.stop");
   });
 
-  it("renders PrimeVue RadioButton vnode when runtime component is available", () => {
+  it("renders native radio input even when PrimeVue runtime is available", () => {
     const PrimeRadioButton = { name: "PrimeRadioButtonStub" };
     const globalScope = { PrimeVue: { RadioButton: PrimeRadioButton } };
-    const onChange = () => {};
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderRadioInput(h, {
       id: "theme-system",
       name: "theme-option",
       value: "system",
       checked: true,
-      onChange,
+      onChange: () => {},
     }, globalScope);
 
-    expect(vnode.type).toBe(PrimeRadioButton);
-    expect(vnode.props.inputId).toBe("theme-system");
+    expect(vnode.type).toBe("input");
+    expect(vnode.props.type).toBe("radio");
+    expect(vnode.props.id).toBe("theme-system");
     expect(vnode.props.name).toBe("theme-option");
     expect(vnode.props.value).toBe("system");
-    expect(vnode.props.defaultValue).toBe("system");
-    expect(vnode.props.unstyled).toBe(true);
-    expect(vnode.props["data-ui-runtime"]).toBe("primevue");
-    expect(typeof vnode.props.onChange).toBe("function");
-    expect(vnode.props["onUpdate:modelValue"]).toBeUndefined();
+    expect(vnode.props.checked).toBe(true);
   });
 
-  it("uses only model updates in controlled PrimeVue radio mode", () => {
-    const PrimeRadioButton = { name: "PrimeRadioButtonStub" };
-    const globalScope = { PrimeVue: { RadioButton: PrimeRadioButton } };
-    const onChange = vi.fn();
+  it("derives checked state from modelValue in controlled mode", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
-    const vnode = renderRadioInput(h, {
-      id: "theme-light",
-      name: "theme-option",
-      value: "light",
-      modelValue: "system",
-      onChange,
-    }, globalScope);
+    const checkedNode = renderRadioInput(h, {
+      id: "numeric-one",
+      name: "numeric-option",
+      value: 1,
+      modelValue: 1,
+      onChange: vi.fn(),
+    }, { PrimeVue: { RadioButton: { name: "PrimeRadioButtonStub" } } });
+    const uncheckedNode = renderRadioInput(h, {
+      id: "numeric-two",
+      name: "numeric-option",
+      value: 2,
+      modelValue: 1,
+      onChange: vi.fn(),
+    }, { PrimeVue: { RadioButton: { name: "PrimeRadioButtonStub" } } });
 
-    expect(vnode.type).toBe(PrimeRadioButton);
-    expect(typeof vnode.props["onUpdate:modelValue"]).toBe("function");
-    expect(vnode.props.onChange).toBeUndefined();
-
-    vnode.props["onUpdate:modelValue"]("light");
-    expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({ target: { checked: true, value: "light" } });
+    expect(checkedNode.props.checked).toBe(true);
+    expect(uncheckedNode.props.checked).toBeUndefined();
   });
 
   it("falls back to native radio input when PrimeVue RadioButton is unavailable", () => {

@@ -52,48 +52,14 @@ export function renderRadioInput(h, options, globalScope = globalThis) {
     onChange,
     attrs = {},
   } = options;
-
-  const PrimeRadioButton = resolvePrimeVueComponent("RadioButton", globalScope);
-  if (PrimeRadioButton) {
-    const selectedValue = checked ? value : null;
-    const handleSelectionChange = nextValue => {
-      if (typeof onChange !== "function") return;
-      onChange({ target: { checked: nextValue === value, value } });
-    };
-    const resolvedModelValue =
-      typeof modelValue === "string" || modelValue === null
-        ? modelValue
-        : undefined;
-    const isControlled = resolvedModelValue !== undefined;
-
-    return h(PrimeRadioButton, {
-      inputId: id,
-      name,
-      value,
-      ...(isControlled ? { modelValue: resolvedModelValue } : {}),
-      defaultValue: selectedValue,
-      unstyled: true,
-      "data-ui-runtime": "primevue",
-      ...(isControlled
-        ? {
-          "onUpdate:modelValue": nextValue => handleSelectionChange(nextValue),
-        }
-        : {
-          onChange: event => {
-            const nextValue = event?.value ?? value;
-            handleSelectionChange(nextValue);
-          },
-        }),
-      ...attrs,
-    });
-  }
-
+  void globalScope;
+  const resolvedChecked = modelValue !== undefined ? Object.is(modelValue, value) : Boolean(checked);
   return h("input", {
     type: "radio",
     name,
     id,
     value,
-    ...(checked ? { checked: true } : {}),
+    ...(resolvedChecked ? { checked: true } : {}),
     ...(onChange ? { onChange } : {}),
     ...attrs,
   });
