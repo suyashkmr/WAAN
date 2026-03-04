@@ -117,9 +117,9 @@ describe("shell primitive views", () => {
       expect(lightInput).toBeTruthy();
       expect(darkInput).toBeTruthy();
 
-      systemInput.props["onUpdate:modelValue"]("system");
-      lightInput.props["onUpdate:modelValue"]("light");
-      darkInput.props["onUpdate:modelValue"]("dark");
+      systemInput.props.onChange({ value: "system" });
+      lightInput.props.onChange({ value: "light" });
+      darkInput.props.onChange({ value: "dark" });
 
       expect(onAction).toHaveBeenNthCalledWith(1, "ui.theme.set", { preference: "system" });
       expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "light" });
