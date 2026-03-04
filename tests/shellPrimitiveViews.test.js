@@ -127,9 +127,18 @@ describe("shell primitive views", () => {
     stopButton.props.onClick();
     logoutButton.props.onClick();
 
-    expect(onAction).toHaveBeenNthCalledWith(1, "relay.reloadAll");
-    expect(onAction).toHaveBeenNthCalledWith(2, "relay.clearStorage");
-    expect(onAction).toHaveBeenNthCalledWith(3, "relay.primaryAction");
+    expect(onAction).toHaveBeenNthCalledWith(1, "relay.reloadAll", {
+      currentTarget: null,
+      target: null,
+    });
+    expect(onAction).toHaveBeenNthCalledWith(2, "relay.clearStorage", {
+      currentTarget: null,
+      target: null,
+    });
+    expect(onAction).toHaveBeenNthCalledWith(3, "relay.primaryAction", {
+      currentTarget: null,
+      target: null,
+    });
     expect(onAction).toHaveBeenNthCalledWith(4, "relay.stop");
     expect(onAction).toHaveBeenNthCalledWith(5, "relay.logout");
   });

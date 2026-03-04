@@ -68,19 +68,20 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
   }
 
   /**
-   * @param {string} id
+   * @param {any} payload
    * @param {HTMLButtonElement | null | undefined} fallback
    */
-  function resolveRelayButton(id, fallback) {
-    const live = /** @type {HTMLButtonElement | null} */ (globalThis.document?.getElementById?.(id) ?? null);
-    return live || fallback || null;
+  function resolveRelayButtonFromPayload(payload, fallback) {
+    const candidate = payload?.currentTarget ?? payload?.target ?? null;
+    if (candidate instanceof HTMLButtonElement) return candidate;
+    return fallback || null;
   }
 
   /**
    * @param {any} [payload]
    */
   function dispatchRelayPrimaryAction(payload = null) {
-    const startButton = resolveRelayButton("relay-start", relayStartButton);
+    const startButton = resolveRelayButtonFromPayload(payload, relayStartButton);
     handleRelayPrimaryActionClick({
       ...(payload && typeof payload === "object" ? payload : {}),
       currentTarget: startButton,
@@ -88,7 +89,7 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     });
   }
 
-  async function handleClearStorageClick() {
+  async function handleClearStorageClick(payload = null) {
     if (typeof window !== "undefined" && window.confirm) {
       const confirmed = window.confirm(
         "Clear all cached WAAN chats on this machine? You'll need to refresh to download them again.",
@@ -96,7 +97,9 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       if (!confirmed) return;
     }
 
-    const clearStorageButton = resolveRelayButton("relay-clear-storage", relayClearStorageButton);
+    const clearStorageButton = resolveRelayButtonFromPayload(payload, relayClearStorageButton);
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    shellBridge?.updateRelayControlButtons?.({ clearStorageDisabled: true });
     if (clearStorageButton) clearStorageButton.disabled = true;
     try {
       await clearStoredChatsOnServer();
@@ -107,6 +110,7 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       console.error(error);
       updateStatus("We couldn't clear the cached chats.", "error");
     } finally {
+      shellBridge?.updateRelayControlButtons?.({ clearStorageDisabled: false });
       if (clearStorageButton) clearStorageButton.disabled = false;
     }
   }
@@ -129,7 +133,7 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
         "relay.stop": stopRelaySession,
         "relay.logout": logoutRelaySession,
         "relay.reloadAll": handleReloadAllChats,
-        "relay.clearStorage": handleClearStorageClick,
+        "relay.clearStorage": /** @param {any} payload */ payload => handleClearStorageClick(payload),
         "relay.logDrawerOpen": openLogDrawer,
         "relay.firstRunOpenRelay": handleFirstRunOpenRelay,
         "relay.firstRunPrimaryAction": handleFirstRunPrimaryAction,

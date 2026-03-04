@@ -1,6 +1,6 @@
 // @ts-check
 
-import { decorateToolbarRow } from "../ui/appShellPrimitives.js";
+import { decorateToolbarRow } from "../ui/appShellRuntimeDecorators.js";
 
 /**
  * @typedef {{ id: string, label: string }} SectionNavItemConfig

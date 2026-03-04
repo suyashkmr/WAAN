@@ -837,13 +837,9 @@ describe("relayControls", () => {
     );
   });
 
-  it("updates live relay control buttons when cached refs are stale after Vue action mounts", async () => {
+  it("updates live relay control buttons via shell bridge when cached refs are stale", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const elements = buildRelayElements();
-    const staleStopButton = elements.relayStopButton;
-    const staleLogoutButton = elements.relayLogoutButton;
-    const staleReloadButton = elements.relayReloadAllButton;
-    const staleClearButton = elements.relayClearStorageButton;
 
     const liveStopButton = document.createElement("button");
     liveStopButton.id = "relay-stop";
@@ -858,11 +854,16 @@ describe("relayControls", () => {
     liveClearButton.id = "relay-clear-storage";
     liveClearButton.disabled = true;
     document.body.append(liveStopButton, liveLogoutButton, liveReloadButton, liveClearButton);
-
-    elements.relayStopButton = staleStopButton;
-    elements.relayLogoutButton = staleLogoutButton;
-    elements.relayReloadAllButton = staleReloadButton;
-    elements.relayClearStorageButton = staleClearButton;
+    installShellVueBridge({
+      updateRelayControlButtons: payload => {
+        if (payload && typeof payload.stopDisabled === "boolean") liveStopButton.disabled = payload.stopDisabled;
+        if (payload && typeof payload.logoutDisabled === "boolean") liveLogoutButton.disabled = payload.logoutDisabled;
+        if (payload && typeof payload.reloadAllDisabled === "boolean") liveReloadButton.disabled = payload.reloadAllDisabled;
+        if (payload && typeof payload.clearStorageDisabled === "boolean") {
+          liveClearButton.disabled = payload.clearStorageDisabled;
+        }
+      },
+    });
 
     let statusCallCount = 0;
     const controller = createRelayController({

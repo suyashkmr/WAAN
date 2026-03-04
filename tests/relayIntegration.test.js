@@ -337,7 +337,10 @@ describe("relay integration", () => {
     });
     initRelayControls();
 
-    const pending = registeredHandlers["relay.clearStorage"]();
+    const pending = registeredHandlers["relay.clearStorage"]({
+      currentTarget: liveClearStorageButton,
+      target: liveClearStorageButton,
+    });
     await Promise.resolve();
     expect(liveClearStorageButton.disabled).toBe(true);
     resolveClear();

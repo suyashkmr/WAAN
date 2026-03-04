@@ -84,17 +84,6 @@ export function createRelayStatusApplyController({
     getDataAvailable,
   } = deps;
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
-  const documentRef = globalThis.document;
-
-  /**
-   * @param {string} id
-   * @param {HTMLButtonElement | null | undefined} fallback
-   */
-  function resolveRelayButton(id, fallback) {
-    return /** @type {HTMLButtonElement | null} */ (
-      documentRef?.getElementById?.(id) || fallback || null
-    );
-  }
 
   /**
    * @param {RelayStatus | null | undefined} status
@@ -198,12 +187,22 @@ export function createRelayStatusApplyController({
         relayHelpText.textContent =
           "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
       }
-      const stopButton = resolveRelayButton("relay-stop", relayStopButton);
-      const reloadAllButton = resolveRelayButton("relay-reload-all", relayReloadAllButton);
-      const clearStorageButton = resolveRelayButton("relay-clear-storage", relayClearStorageButton);
-      if (stopButton) stopButton.disabled = true;
-      if (reloadAllButton) reloadAllButton.disabled = true;
-      if (clearStorageButton) clearStorageButton.disabled = false;
+      /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
+      const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+      if (shellBridge?.updateRelayControlButtons) {
+        shellBridge.updateRelayControlButtons({
+          stopDisabled: true,
+          reloadAllDisabled: true,
+          clearStorageDisabled: false,
+        });
+      } else {
+        const stopButton = relayStopButton || null;
+        const reloadAllButton = relayReloadAllButton || null;
+        const clearStorageButton = relayClearStorageButton || null;
+        if (stopButton) stopButton.disabled = true;
+        if (reloadAllButton) reloadAllButton.disabled = true;
+        if (clearStorageButton) clearStorageButton.disabled = false;
+      }
       if (isStateTransition) {
         setRemoteChatList([]);
         relayUiState.lastStatusKind = "offline";
@@ -257,10 +256,10 @@ export function createRelayStatusApplyController({
         reloadAllDisabled,
       });
     } else {
-      const stopButton = resolveRelayButton("relay-stop", relayStopButton);
-      const clearStorageButton = resolveRelayButton("relay-clear-storage", relayClearStorageButton);
-      const logoutButton = resolveRelayButton("relay-logout", relayLogoutButton);
-      const reloadAllButton = resolveRelayButton("relay-reload-all", relayReloadAllButton);
+      const stopButton = relayStopButton || null;
+      const clearStorageButton = relayClearStorageButton || null;
+      const logoutButton = relayLogoutButton || null;
+      const reloadAllButton = relayReloadAllButton || null;
       if (stopButton) stopButton.disabled = stopDisabled;
       if (clearStorageButton) clearStorageButton.disabled = clearStorageDisabled;
       if (logoutButton) logoutButton.disabled = logoutDisabled;

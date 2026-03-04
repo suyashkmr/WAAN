@@ -622,22 +622,22 @@ Completed work is archived in git history and was removed from this file for cla
         - [x] `js/savedViewsUi.js` (remaining compare-select option construction)
         - [x] `js/vue/dashboardPanelsIsland.js` (hourly anomaly badge node construction)
       - [ ] Remove remaining direct DOM ref fallback access in relay control state paths:
-        - [ ] `js/relayControls/statusApply.js` (`resolveRelayButton` -> `documentRef.getElementById` fallback)
-        - [ ] `js/appShell/relayBootstrap.js` (`resolveRelayButton` fallback resolution)
+        - [x] `js/relayControls/statusApply.js` (`resolveRelayButton` -> `documentRef.getElementById` fallback)
+        - [x] `js/appShell/relayBootstrap.js` (`resolveRelayButton` fallback resolution)
       - [ ] Retire or isolate legacy DOM primitive builders from production runtime paths:
         - [x] `js/ui/primitives.js` (runtime sync isolated to `js/ui/runtimeStateSync.js`; no production import path)
-        - [ ] `js/ui/appShellPrimitives.js`
+        - [x] `js/ui/appShellPrimitives.js` (runtime decorators isolated to `js/ui/appShellRuntimeDecorators.js`; no production import path)
       - [ ] Audit and explicitly classify non-render DOM utility modules (keep or migrate):
         - [ ] `js/exporters/createExporters.js` (download anchor creation)
         - [ ] `js/exporters/io.js` (download anchor creation)
         - [ ] `js/appShell/pdfPreview.js` (iframe preview mount)
     - [ ] Keep only test-harness compatibility branches under Vitest; no production fallback branches.
       - [ ] Remove/replace legacy-fallback warning and fallback-retention paths in Vue islands/root:
-        - [ ] `js/vue/searchSavedIsland.js`
-        - [ ] `js/vue/dashboardPanelsIsland.js`
-        - [ ] `js/vue/shellPrimitivesIsland.js`
-        - [ ] `js/vue/summaryIsland.js`
-        - [ ] `js/vue/appShellRoot.js`
+        - [x] `js/vue/searchSavedIsland.js`
+        - [x] `js/vue/dashboardPanelsIsland.js`
+        - [x] `js/vue/shellPrimitivesIsland.js`
+        - [x] `js/vue/summaryIsland.js`
+        - [x] `js/vue/appShellRoot.js`
       - [ ] Consolidate remaining Vitest-only compatibility branches and prove production path has zero fallback behavior:
         - [ ] `js/appShell/chatSelection.js`
         - [ ] `js/appShell/sectionNav.js`

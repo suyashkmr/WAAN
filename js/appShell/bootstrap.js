@@ -1,6 +1,6 @@
 // @ts-check
 
-import { initAppShellPrimitives } from "../ui/appShellPrimitives.js";
+import { initAppShellPrimitives } from "../ui/appShellRuntimeDecorators.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountVueAppShellRoot } from "../vue/appShellRoot.js";
 
