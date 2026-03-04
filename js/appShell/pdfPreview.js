@@ -21,6 +21,8 @@ export function createPdfPreviewController({
     try {
       const blob = new Blob([html], { type: "text/html" });
       const url = URL.createObjectURL(blob);
+      // Intentional non-render DOM utility:
+      // hidden iframe is used to launch browser print/save flow for generated HTML.
       const iframe = document.createElement("iframe");
       iframe.style.position = "fixed";
       iframe.style.right = "0";

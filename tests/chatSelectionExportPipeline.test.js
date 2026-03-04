@@ -28,6 +28,10 @@ function createChatSelection(options = {}) {
 describe("chat selection controller", () => {
   const originalVitestEnv = process.env.VITEST;
 
+  beforeEach(() => {
+    globalThis.Vue = { h, render };
+  });
+
   afterEach(() => {
     if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
     else delete process.env.VITEST;
@@ -142,7 +146,6 @@ describe("chat selection controller", () => {
   });
 
   it("renders selector options through Vue runtime", async () => {
-    globalThis.Vue = { h, render };
     const { controller, chatSelector } = createChatSelection();
     chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
     controller.setRemoteChatList([{ id: "chat-22", name: "Launch Team", messageCount: 4 }]);
@@ -155,8 +158,9 @@ describe("chat selection controller", () => {
     expect(chatSelector.textContent).toContain("Launch Team");
   });
 
-  it("fails fast without Vue runtime outside Vitest fallback mode", async () => {
+  it("fails fast without Vue runtime", async () => {
     delete process.env.VITEST;
+    delete globalThis.Vue;
     const { controller } = createChatSelection();
     await expect(controller.refreshChatSelector()).rejects.toThrow(
       "Vue runtime is required for chat selector rendering.",

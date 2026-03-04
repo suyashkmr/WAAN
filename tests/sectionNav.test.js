@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Fragment, h, render } from "vue";
 import { createSectionNavController } from "../js/appShell/sectionNav.js";
 
 describe("sectionNav controller", () => {
@@ -7,10 +8,12 @@ describe("sectionNav controller", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     originalIntersectionObserver = globalThis.IntersectionObserver;
+    globalThis.Vue = { h, render, Fragment };
   });
 
   afterEach(() => {
     globalThis.IntersectionObserver = originalIntersectionObserver;
+    delete globalThis.Vue;
     vi.restoreAllMocks();
   });
 

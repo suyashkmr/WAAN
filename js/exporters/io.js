@@ -3,6 +3,8 @@ export function createExportFileHelpers({
   getCurrentRange,
   describeRange,
 }) {
+  // Intentional non-render DOM utility:
+  // export/download flows require a transient anchor click to trigger browser file saves.
   function buildFilename(suffix) {
     const label = (getDatasetLabel() || "relay-chat")
       .toLowerCase()

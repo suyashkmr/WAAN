@@ -628,9 +628,9 @@ Completed work is archived in git history and was removed from this file for cla
         - [x] `js/ui/primitives.js` (runtime sync isolated to `js/ui/runtimeStateSync.js`; no production import path)
         - [x] `js/ui/appShellPrimitives.js` (runtime decorators isolated to `js/ui/appShellRuntimeDecorators.js`; no production import path)
       - [ ] Audit and explicitly classify non-render DOM utility modules (keep or migrate):
-        - [ ] `js/exporters/createExporters.js` (download anchor creation)
-        - [ ] `js/exporters/io.js` (download anchor creation)
-        - [ ] `js/appShell/pdfPreview.js` (iframe preview mount)
+        - [x] `js/exporters/createExporters.js` (keep: non-render browser download anchor utility; documented inline)
+        - [x] `js/exporters/io.js` (keep: non-render browser download anchor utility; documented inline)
+        - [x] `js/appShell/pdfPreview.js` (keep: non-render browser print/preview iframe utility; documented inline)
     - [ ] Keep only test-harness compatibility branches under Vitest; no production fallback branches.
       - [ ] Remove/replace legacy-fallback warning and fallback-retention paths in Vue islands/root:
         - [x] `js/vue/searchSavedIsland.js`
@@ -639,9 +639,9 @@ Completed work is archived in git history and was removed from this file for cla
         - [x] `js/vue/summaryIsland.js`
         - [x] `js/vue/appShellRoot.js`
       - [ ] Consolidate remaining Vitest-only compatibility branches and prove production path has zero fallback behavior:
-        - [ ] `js/appShell/chatSelection.js`
-        - [ ] `js/appShell/sectionNav.js`
-        - [ ] `js/relayControls/logStream.js`
+        - [x] `js/appShell/chatSelection.js`
+        - [x] `js/appShell/sectionNav.js`
+        - [x] `js/relayControls/logStream.js`
         - [ ] `js/appShell/eventBindings.js`
         - [ ] `js/appShell/relayBootstrap.js`
         - [ ] `js/appShell/bootstrap.js`

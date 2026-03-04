@@ -22,7 +22,6 @@ export function createChatSelectionController({
   getActiveChatId,
   setActiveChatId,
 }) {
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   const remoteChatState = {
     /** @type {AnyRecord[]} */
     list: [],
@@ -98,8 +97,6 @@ export function createChatSelectionController({
           remoteChatState.vueMounted = true;
         }
         render(h("option", { value: "" }, "No chats loaded yet"), chatSelector);
-      } else if (isVitestRuntime) {
-        chatSelector.innerHTML = '<option value="">No chats loaded yet</option>';
       } else {
         throw new Error("Vue runtime is required for chat selector rendering.");
       }
@@ -131,17 +128,6 @@ export function createChatSelectionController({
         ),
         chatSelector,
       );
-    } else if (isVitestRuntime) {
-      chatSelector.innerHTML = "";
-      const remoteGroup = document.createElement("optgroup");
-      remoteGroup.label = `${brandName} account`;
-      remoteChats.forEach(chat => {
-        const option = document.createElement("option");
-        option.value = encodeChatSelectorValue("remote", chat.id);
-        option.textContent = formatRemoteChatLabel(chat);
-        remoteGroup.appendChild(option);
-      });
-      chatSelector.appendChild(remoteGroup);
     } else {
       throw new Error("Vue runtime is required for chat selector rendering.");
     }

@@ -28,7 +28,6 @@ export function createRelayLogController({
   fetchJson,
   updateStatus,
 }) {
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   const relayLogState = {
     /** @type {string[]} */
     entries: [],
@@ -59,26 +58,7 @@ export function createRelayLogController({
       VueRuntime.Fragment,
     );
     if (!canRenderWithVue) {
-      if (!isVitestRuntime) {
-        throw new Error("Vue runtime is required for relay log rendering.");
-      }
-      if (!relayLogState.entries.length) {
-        logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
-        return;
-      }
-      const fragment = document.createDocumentFragment();
-      relayLogState.entries.forEach(line => {
-        const li = document.createElement("p");
-        li.classList.add("relay-log-entry");
-        li.textContent = line;
-        fragment.appendChild(li);
-      });
-      logDrawerList.innerHTML = "";
-      logDrawerList.appendChild(fragment);
-      if (relayLogState.drawerOpen) {
-        logDrawerList.scrollTop = logDrawerList.scrollHeight;
-      }
-      return;
+      throw new Error("Vue runtime is required for relay log rendering.");
     }
     const { h, render, Fragment } = VueRuntime;
     if (!relayLogState.vueMounted) {

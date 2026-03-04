@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Fragment, h, render } from "vue";
 import { createDataStatusController } from "../js/appShell/dataStatus.js";
 import { createBootstrapController } from "../js/appShell/bootstrap.js";
 import { createSectionNavController } from "../js/appShell/sectionNav.js";
@@ -252,11 +253,13 @@ describe("sectionNav controller edge behavior", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     originalIntersectionObserver = globalThis.IntersectionObserver;
+    globalThis.Vue = { h, render, Fragment };
   });
 
   afterEach(() => {
     globalThis.IntersectionObserver = originalIntersectionObserver;
     window.IntersectionObserver = originalIntersectionObserver;
+    delete globalThis.Vue;
     vi.restoreAllMocks();
   });
 

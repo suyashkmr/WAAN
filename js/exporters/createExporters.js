@@ -270,6 +270,7 @@ export function createExporters({
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
+    // Intentional non-render DOM utility for browser download initiation.
     const link = document.createElement("a");
     link.href = url;
     link.download = buildFilename("chat-summary").replace(/\.csv$/, ".json");

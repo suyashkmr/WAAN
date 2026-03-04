@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { Fragment, h, render } from "vue";
 import { createRelayController } from "../js/relayControls.js";
 import { clearVueBridgeRuntime, installShellVueBridge } from "./vueBridgeTestUtils.js";
 
@@ -127,8 +128,13 @@ function createController(overrides = {}) {
 }
 
 describe("relayControls", () => {
+  beforeEach(() => {
+    globalThis.Vue = { h, render, Fragment };
+  });
+
   afterEach(() => {
     clearVueBridgeRuntime();
+    delete globalThis.Vue;
     vi.restoreAllMocks();
     vi.useRealTimers();
   });

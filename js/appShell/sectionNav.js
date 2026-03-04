@@ -13,7 +13,6 @@ export function createSectionNavController({
   containerEl,
   navItemsConfig = [],
 }) {
-  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
   /** @type {HTMLAnchorElement[]} */
   let sectionNavLinks = [];
   /** @type {Array<{ link: HTMLAnchorElement, target: HTMLElement, id: string }>} */
@@ -100,15 +99,6 @@ export function createSectionNavController({
         ),
         containerEl,
       );
-    } else if (isVitestRuntime) {
-      containerEl.innerHTML = "";
-      resolvedItems.forEach(item => {
-        const link = document.createElement("a");
-        link.href = `#${item.id}`;
-        link.setAttribute("data-section-id", item.id);
-        link.textContent = item.label;
-        containerEl.appendChild(link);
-      });
     } else {
       throw new Error("Vue runtime is required for section navigation rendering.");
     }

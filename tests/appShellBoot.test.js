@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { Fragment, h, render } from "vue";
 
 function seedMinimumDom() {
   document.body.innerHTML = `
@@ -11,8 +12,13 @@ function seedMinimumDom() {
 }
 
 describe("appShell boot", () => {
+  afterEach(() => {
+    delete globalThis.Vue;
+  });
+
   it("imports and bootstraps without startup errors", async () => {
     seedMinimumDom();
+    globalThis.Vue = { h, render, Fragment };
     const chatSelector = document.getElementById("chat-selector");
     expect(chatSelector).toBeTruthy();
 
