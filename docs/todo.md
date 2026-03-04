@@ -675,12 +675,19 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Migrated weekly activity bar action controls to shared PrimeVue `Button` renderer (`js/analytics/activity/weekly.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Added regression coverage for PrimeVue button renderer contract (`tests/primevueRenderPrimitives.test.js`).
     - [ ] Inputs/selects/date fields -> PrimeVue form components with consistent validation/disabled states.
+      - [x] Migrated Vue toolbar theme radio inputs to shared PrimeVue `RadioButton` renderer with native fallback for partial runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/primevueRenderPrimitives.js`).
+      - [x] Added PrimeVue radio renderer parity coverage for runtime + fallback paths (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
+      - [x] Added shared PrimeVue form render primitives for text/select/date controls (`InputText`, `Select/Dropdown`, `DatePicker/Calendar`) with native fallbacks to support incremental migration of existing DOM-bound form surfaces (`js/vue/primevueRenderPrimitives.js`).
+      - [x] Added parity coverage for text/select/date PrimeVue form primitives and fallback semantics (`tests/primevueRenderPrimitives.test.js`).
     - [ ] Dialogs/overlays/tooltips -> PrimeVue dialog/overlay primitives with unified focus handling.
+      - [x] Migrated Vue onboarding surface to shared PrimeVue `Dialog` renderer with semantic dialog fallback for partial runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/primevueRenderPrimitives.js`).
+      - [x] Added PrimeVue dialog renderer parity coverage and onboarding dialog integration assertions (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
     - [ ] Core tabular/data-list surfaces -> PrimeVue data table/list primitives where applicable.
   - [ ] Remove redundant custom control wrappers once PrimeVue ownership is complete.
-  - [ ] Add/refresh integration tests covering interaction parity (click, keyboard submit, disabled/loading states).
+  - [x] Add/refresh integration tests covering interaction parity (click, keyboard submit, disabled/loading states).
     - [x] Added PrimeVue button renderer parity coverage for disabled/click/attribute forwarding and slot-content behavior (`tests/primevueRenderPrimitives.test.js`).
     - [x] Refreshed shell relay-action primitive tests to assert disabled-state parity on Vue-rendered controls (`tests/shellPrimitiveViews.test.js`).
+    - [x] Added PrimeVue-path search action primitive integration coverage for submit semantics and action dispatch (`tests/searchSavedActionPrimitives.test.js`).
   - [ ] Acceptance: core interactive UI components are PrimeVue-owned with no duplicated custom control implementations.
 
 - [ ] Phase 12 (3-5 days): Prime theme tokens as single source of truth.

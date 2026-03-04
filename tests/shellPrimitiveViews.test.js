@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createActionsToolbarRoot,
   createFirstRunActionsRoot,
+  createOnboardingDialogRoot,
   createRelayHeaderActionsRoot,
   createRelayLiveActionsRoot,
 } from "../js/vue/shellPrimitiveViews.js";
@@ -49,6 +50,7 @@ describe("shell primitive views", () => {
       expect(reloadButton).toBeTruthy();
       expect(reloadButton.type).toBe(PrimeButton);
       expect(reloadButton.props["data-ui-runtime"]).toBe("primevue");
+      expect(reloadButton.props.disabled).toBe(true);
     } finally {
       if (typeof originalPrimeVue === "undefined") {
         delete globalThis.PrimeVue;
@@ -89,6 +91,48 @@ describe("shell primitive views", () => {
     expect(onAction).toHaveBeenNthCalledWith(3, "ui.theme.set", { preference: "dark" });
   });
 
+  it("dispatches theme set action through PrimeVue radio primitive path", () => {
+    const originalPrimeVue = globalThis.PrimeVue;
+    try {
+      const PrimeRadioButton = { name: "PrimeRadioButtonStub" };
+      globalThis.PrimeVue = { RadioButton: PrimeRadioButton };
+      const onAction = vi.fn();
+      const root = createActionsToolbarRoot(h, onAction);
+      const tree = root.render();
+
+      const systemInput = findNode(
+        tree,
+        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-system",
+      );
+      const lightInput = findNode(
+        tree,
+        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-light",
+      );
+      const darkInput = findNode(
+        tree,
+        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-dark",
+      );
+
+      expect(systemInput).toBeTruthy();
+      expect(lightInput).toBeTruthy();
+      expect(darkInput).toBeTruthy();
+
+      systemInput.props["onUpdate:modelValue"]("system");
+      lightInput.props["onUpdate:modelValue"]("light");
+      darkInput.props["onUpdate:modelValue"]("dark");
+
+      expect(onAction).toHaveBeenNthCalledWith(1, "ui.theme.set", { preference: "system" });
+      expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "light" });
+      expect(onAction).toHaveBeenNthCalledWith(3, "ui.theme.set", { preference: "dark" });
+    } finally {
+      if (typeof originalPrimeVue === "undefined") {
+        delete globalThis.PrimeVue;
+      } else {
+        globalThis.PrimeVue = originalPrimeVue;
+      }
+    }
+  });
+
   it("dispatches first-run relay actions from Vue first-run buttons", () => {
     const onAction = vi.fn();
     const root = createFirstRunActionsRoot(h, onAction);
@@ -111,6 +155,42 @@ describe("shell primitive views", () => {
 
     expect(onAction).toHaveBeenNthCalledWith(1, "relay.firstRunOpenRelay");
     expect(onAction).toHaveBeenNthCalledWith(2, "relay.firstRunPrimaryAction");
+  });
+
+  it("renders onboarding root with PrimeVue dialog when available", () => {
+    const originalPrimeVue = globalThis.PrimeVue;
+    try {
+      const PrimeDialog = { name: "PrimeDialogStub" };
+      globalThis.PrimeVue = { Dialog: PrimeDialog };
+      const onAction = vi.fn();
+      const root = createOnboardingDialogRoot(h, onAction);
+      const tree = root.render();
+      expect(tree?.type).toBe(PrimeDialog);
+      expect(tree?.props?.["data-ui-runtime"]).toBe("primevue");
+      const slotTree = typeof tree?.children?.default === "function"
+        ? tree.children.default()
+        : [];
+      const skipButton = findNode(
+        slotTree,
+        node => node?.props?.id === "onboarding-skip",
+      );
+      const nextButton = findNode(
+        slotTree,
+        node => node?.props?.id === "onboarding-next",
+      );
+      expect(skipButton).toBeTruthy();
+      expect(nextButton).toBeTruthy();
+      skipButton.props.onClick();
+      nextButton.props.onClick();
+      expect(onAction).toHaveBeenNthCalledWith(1, "onboarding.skip");
+      expect(onAction).toHaveBeenNthCalledWith(2, "onboarding.next");
+    } finally {
+      if (typeof originalPrimeVue === "undefined") {
+        delete globalThis.PrimeVue;
+      } else {
+        globalThis.PrimeVue = originalPrimeVue;
+      }
+    }
   });
 
   it("dispatches relay core actions from Vue relay action primitives", () => {

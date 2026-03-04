@@ -1,4 +1,4 @@
-import { renderActionButton } from "./primevueRenderPrimitives.js";
+import { renderActionButton, renderDialogContainer, renderRadioInput } from "./primevueRenderPrimitives.js";
 
 export {
   createRelayHeaderActionsRoot,
@@ -98,8 +98,7 @@ export function createActionsToolbarRoot(h, onAction) {
           h("div", { class: "theme-toggle" }, [
             h("span", "Theme"),
             h("div", { class: "segmented-option" }, [
-              h("input", {
-                type: "radio",
+              renderRadioInput(h, {
                 name: "theme-option",
                 id: "theme-system",
                 value: "system",
@@ -114,8 +113,7 @@ export function createActionsToolbarRoot(h, onAction) {
               h("label", { for: "theme-system" }, "Auto"),
             ]),
             h("div", { class: "segmented-option" }, [
-              h("input", {
-                type: "radio",
+              renderRadioInput(h, {
                 name: "theme-option",
                 id: "theme-light",
                 value: "light",
@@ -129,8 +127,7 @@ export function createActionsToolbarRoot(h, onAction) {
               h("label", { for: "theme-light" }, "Light"),
             ]),
             h("div", { class: "segmented-option" }, [
-              h("input", {
-                type: "radio",
+              renderRadioInput(h, {
                 name: "theme-option",
                 id: "theme-dark",
                 value: "dark",
@@ -187,27 +184,31 @@ export function createOnboardingDialogRoot(h, onAction) {
   return {
     name: "OnboardingDialogPrimitive",
     render() {
-      return h("div", { class: "onboarding-panel" }, [
-        h("h2", "Welcome to WAAN"),
-        h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
-        h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
-        h("div", { class: "onboarding-actions" }, [
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button",
-            id: "onboarding-skip",
-            text: "Skip",
-            onClick: () => onAction("onboarding.skip"),
-          }),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button primary",
-            id: "onboarding-next",
-            text: "Next",
-            onClick: () => onAction("onboarding.next"),
-          }),
-        ]),
-      ]);
+      return renderDialogContainer(h, {
+        className: "onboarding-panel",
+        label: "Welcome to WAAN",
+        children: [
+          h("h2", "Welcome to WAAN"),
+          h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
+          h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
+          h("div", { class: "onboarding-actions" }, [
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button",
+              id: "onboarding-skip",
+              text: "Skip",
+              onClick: () => onAction("onboarding.skip"),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button primary",
+              id: "onboarding-next",
+              text: "Next",
+              onClick: () => onAction("onboarding.next"),
+            }),
+          ]),
+        ],
+      });
     },
   };
 }
