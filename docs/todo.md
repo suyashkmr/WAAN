@@ -579,6 +579,8 @@ Completed work is archived in git history and was removed from this file for cla
   - [ ] Standardize composables/stores for shared state (filters, relay status, saved views, search worker progress).
     - [x] Added canonical `searchProgressState` store + subscription API and wired search progress UI updates through it (`js/state/searchProgressState.js`, `js/search/progressUi.js`, `js/stateStore.js`).
     - [x] Added regression coverage for search progress state/store synchronization (`tests/searchProgressState.test.js`, `tests/searchProgressUi.test.js`).
+    - [x] Added canonical `savedViewsState` subscription/snapshot API and mutation emission semantics to align saved-view state with store-driven UI contracts (`js/state/savedViewsState.js`, `js/stateStore.js`).
+    - [x] Added saved-view state regression coverage for subscription emissions, `emitCurrent` behavior, and snapshot immutability (`tests/savedViewsState.test.js`).
   - [ ] Remove obsolete app-shell adapter glue that existed only for incremental migration.
     - [x] Removed lazy bridge remount glue from migrated UI controllers so shell/search/saved consumers resolve registered bridges only (no implicit re-mount in controller paths) (`js/appShell/statusUi.js`, `js/search/resultsUi.js`, `js/savedViewsUi.js`).
     - [x] Removed legacy bridge-global compatibility wiring from Vue bridge registration/resolution and switched island integration tests to registry-only bridge assertions (`js/vue/bridgeRegistry.js`, `js/vue/summaryIsland.js`, `js/vue/dashboardPanelsIsland.js`, `js/vue/shellPrimitivesIsland.js`, `tests/vueBridgeIslandsIntegration.test.js`, `tests/searchSavedIsland.test.js`, `tests/vueBridgeTestUtils.js`).
@@ -586,6 +588,7 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Migrated search/saved controller tests to registry-backed Vue bridge harnesses instead of direct legacy `__WAAN_VUE_*` global mutation (`tests/vueBridgeTestUtils.js`, `tests/searchResultsUi.test.js`, `tests/search.test.js`, `tests/savedViews.test.js`).
     - [x] Migrated shell/summary/dashboard test suites to registry-backed bridge installs and shared runtime cleanup helpers (`tests/uiModules.test.js`, `tests/statusUiDetailed.test.js`, `tests/dashboardRenderModules.test.js`, `tests/summaryCards.test.js`).
     - [x] Migrated relay/activity/dashboard pipeline suites off direct legacy bridge globals onto registry-backed helper installs (`tests/relayControls.test.js`, `tests/activityPanelsDetailed.test.js`, `tests/pipelineRangeDashboard.test.js`).
+    - [x] Added real Vue-rendered saved-views integration coverage (mounted search/saved bridge + rendered panel/galleries + click dispatch) to validate DOM behavior instead of bridge-call side effects (`tests/savedViewsVueBridgeIntegration.test.js`).
   - [ ] Add targeted Vue integration coverage for full-shell boot and cross-surface interactions.
     - [x] Added full-shell interaction integration coverage validating root mount + cross-surface shell/search bridge dispatch in a single runtime (`tests/vueFullShellInteractions.test.js`).
   - [ ] Acceptance: frontend tests and runtime architecture are Vue-native without bridge-specific contracts.
@@ -599,6 +602,31 @@ Completed work is archived in git history and was removed from this file for cla
     - [ ] `README.md` / `FAQ.md` (architecture + support notes)
   - [ ] Add rollback notes for first release after full Vue cutover.
   - [ ] Exit criteria: 100% frontend UI rendering/runtime ownership is Vue 3 + PrimeVue with no legacy fallback rendering paths.
+
+- [ ] Phase 11 (4-7 days): PrimeVue core-component standardization.
+  - [ ] Replace bespoke/native controls with PrimeVue components for core UI surfaces.
+    - [ ] Buttons and icon actions -> PrimeVue button primitives across shell/search/saved/dashboard.
+    - [ ] Inputs/selects/date fields -> PrimeVue form components with consistent validation/disabled states.
+    - [ ] Dialogs/overlays/tooltips -> PrimeVue dialog/overlay primitives with unified focus handling.
+    - [ ] Core tabular/data-list surfaces -> PrimeVue data table/list primitives where applicable.
+  - [ ] Remove redundant custom control wrappers once PrimeVue ownership is complete.
+  - [ ] Add/refresh integration tests covering interaction parity (click, keyboard submit, disabled/loading states).
+  - [ ] Acceptance: core interactive UI components are PrimeVue-owned with no duplicated custom control implementations.
+
+- [ ] Phase 12 (3-5 days): Prime theme tokens as single source of truth.
+  - [ ] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.
+    - [ ] Map existing CSS/token references to Prime theme semantic tokens.
+    - [ ] Remove duplicated non-Prime component token definitions where token roles overlap.
+  - [ ] Ensure light/dark and accessibility contrast remain compliant after token consolidation.
+  - [ ] Add regression checks for token drift (theme snapshot/contract tests in CI).
+  - [ ] Acceptance: component-level color/typography/shape/elevation values resolve from Prime theme tokens by default.
+
+- [ ] Phase 13 (2-4 days): Tailwind layout-only constraint.
+  - [ ] Restrict Tailwind usage to layout glue (`display`, `grid/flex`, spacing, responsive utilities).
+  - [ ] Remove utility usage that re-styles component internals (colors, borders, shadows, typography for Prime-owned components).
+  - [ ] Add lint/check script to flag non-layout Tailwind utility usage in component markup.
+  - [ ] Update docs with an explicit styling contract: Prime theme tokens + PrimeVue for component styling, Tailwind for layout composition only.
+  - [ ] Acceptance: Tailwind utilities are used for layout orchestration only, not component skinning.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.
