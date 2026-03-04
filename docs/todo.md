@@ -619,13 +619,13 @@ Completed work is archived in git history and was removed from this file for cla
       - [ ] Migrate remaining runtime list/select renderers still using manual DOM APIs:
         - [x] `js/analytics/polls.js`
         - [x] `js/search/participantUi.js`
-        - [ ] `js/savedViewsUi.js` (remaining compare-select option construction)
-        - [ ] `js/vue/dashboardPanelsIsland.js` (hourly anomaly badge node construction)
+        - [x] `js/savedViewsUi.js` (remaining compare-select option construction)
+        - [x] `js/vue/dashboardPanelsIsland.js` (hourly anomaly badge node construction)
       - [ ] Remove remaining direct DOM ref fallback access in relay control state paths:
         - [ ] `js/relayControls/statusApply.js` (`resolveRelayButton` -> `documentRef.getElementById` fallback)
         - [ ] `js/appShell/relayBootstrap.js` (`resolveRelayButton` fallback resolution)
       - [ ] Retire or isolate legacy DOM primitive builders from production runtime paths:
-        - [ ] `js/ui/primitives.js`
+        - [x] `js/ui/primitives.js` (runtime sync isolated to `js/ui/runtimeStateSync.js`; no production import path)
         - [ ] `js/ui/appShellPrimitives.js`
       - [ ] Audit and explicitly classify non-render DOM utility modules (keep or migrate):
         - [ ] `js/exporters/createExporters.js` (download anchor creation)
@@ -646,8 +646,8 @@ Completed work is archived in git history and was removed from this file for cla
         - [ ] `js/appShell/relayBootstrap.js`
         - [ ] `js/appShell/bootstrap.js`
       - [ ] Remove stale fallback semantics/labels that no longer match runtime architecture:
-        - [ ] `js/search/resultsUi.js` (bridge/fallback return type/doc wording)
-        - [ ] Vue island/root warning strings that still state legacy fallback retention.
+        - [x] `js/search/resultsUi.js` (bridge/fallback return type/doc wording)
+        - [x] Vue island/root warning strings that still state legacy fallback retention.
     - [ ] Residual-audit closure checklist (must be zero before Phase 10 closure):
       - [ ] Run `rg -n "innerHTML\\s*=|createElement\\(|createDocumentFragment\\(|insertAdjacentHTML\\(|replaceChildren\\(|outerHTML\\s*=|appendChild\\(|removeChild\\(" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.
       - [ ] Run `rg -n "legacy|fallback|process\\.env\\.VITEST|isVitestRuntime|retaining fallback|keeping legacy|using legacy" js --glob '!**/*.test.js' --glob '!**/vendor/**'`.

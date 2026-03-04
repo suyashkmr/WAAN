@@ -1,4 +1,4 @@
-import { initUiPrimitives } from "./primitives.js";
+import { initUiPrimitives } from "./runtimeStateSync.js";
 import { createVuePrimitiveComposables } from "./primitivesVueComposables.js";
 
 export const WAAN_UI_RUNTIME_KEY = "__WAAN_UI_RUNTIME__";

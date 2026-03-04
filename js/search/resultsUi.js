@@ -64,7 +64,7 @@ export function createSearchResultsUiController({
   }
 
   /**
-   * @returns {"bridge"|"fallback"|null}
+   * @returns {"bridge"|null}
    */
   function renderResultsState({ tone = "empty", title = "", message = "", actions = [] } = {}) {
     cancelPendingRender();

@@ -97,5 +97,5 @@ try {
     mountSearchSavedBridge();
   }
 } catch (error) {
-  globalThis.console?.warn?.("Vue search/saved bridge unavailable; using legacy DOM rendering.", error);
+  globalThis.console?.warn?.("Vue search/saved bridge mount failed.", error);
 }

@@ -130,7 +130,7 @@ function mountDashboardCardShellPrimitives(globalScope = globalThis) {
     const tagName = existing.tagName.toLowerCase();
     if (tagName !== "section") return;
     existing.dataset.vuePrimitiveMounted = "true";
-    // Keep legacy nodes/listeners stable while shell migration is in-flight.
+    // Preserve existing card-shell nodes while shell primitives are mounted.
     existing.dataset.vueManaged = "card-shell";
   });
 }
@@ -319,5 +319,5 @@ export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
 try {
   mountShellPrimitivesIsland();
 } catch (error) {
-  globalThis.console?.warn?.("Vue shell primitives unavailable; using legacy DOM primitives.", error);
+  globalThis.console?.warn?.("Vue shell primitives island mount failed.", error);
 }

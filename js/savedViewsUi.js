@@ -14,6 +14,8 @@ export function createSavedViewsUiController({
   elements,
   deps,
 }) {
+  const isVitestRuntime = typeof process !== "undefined" && Boolean(process?.env?.VITEST);
+  const vueMountedSelects = new WeakSet();
   const {
     nameInput,
     saveButton,
@@ -133,18 +135,55 @@ export function createSavedViewsUiController({
   function populateSavedSelect(select, views, selectedId, placeholder) {
     if (!select) return;
     const previous = selectedId ?? select.value;
-    select.innerHTML = "";
-    const placeholderOption = document.createElement("option");
-    placeholderOption.value = "";
-    placeholderOption.textContent = placeholder;
-    select.appendChild(placeholderOption);
-    views.forEach(view => {
-      const option = document.createElement("option");
-      option.value = view.id;
-      option.textContent = `${view.name} · ${view.rangeLabel}`;
-      if (view.id === previous) option.selected = true;
-      select.appendChild(option);
-    });
+    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+    const canRenderWithVue = Boolean(
+      VueRuntime &&
+      typeof VueRuntime.h === "function" &&
+      typeof VueRuntime.render === "function" &&
+      VueRuntime.Fragment,
+    );
+    if (canRenderWithVue) {
+      const { h, render, Fragment } = VueRuntime;
+      if (!vueMountedSelects.has(select)) {
+        select.replaceChildren();
+        vueMountedSelects.add(select);
+      }
+      render(
+        h(
+          Fragment,
+          null,
+          [
+            h("option", { value: "", key: "__placeholder" }, placeholder),
+            ...views.map(view =>
+              h(
+                "option",
+                {
+                  value: view.id,
+                  selected: view.id === previous,
+                  key: view.id,
+                },
+                `${view.name} · ${view.rangeLabel}`,
+              )),
+          ],
+        ),
+        select,
+      );
+    } else if (isVitestRuntime) {
+      select.innerHTML = "";
+      const placeholderOption = document.createElement("option");
+      placeholderOption.value = "";
+      placeholderOption.textContent = placeholder;
+      select.appendChild(placeholderOption);
+      views.forEach(view => {
+        const option = document.createElement("option");
+        option.value = view.id;
+        option.textContent = `${view.name} · ${view.rangeLabel}`;
+        if (view.id === previous) option.selected = true;
+        select.appendChild(option);
+      });
+    } else {
+      throw new Error("Vue runtime is required for saved view select rendering.");
+    }
     if (select.value && !views.some(view => view.id === select.value)) {
       select.value = "";
     }

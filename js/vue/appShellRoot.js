@@ -38,7 +38,7 @@ export function mountVueAppShellRoot({ globalScope = globalThis } = {}) {
       step({ globalScope });
     } catch (error) {
       hadMountError = true;
-      globalScope.console?.warn?.(`Vue app-shell root: ${name} mount failed; retaining fallback behavior.`, error);
+      globalScope.console?.warn?.(`Vue app-shell root: ${name} mount failed.`, error);
     }
   });
 

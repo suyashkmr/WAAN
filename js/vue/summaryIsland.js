@@ -71,6 +71,6 @@ try {
   mountSummaryIsland();
 } catch (error) {
   if (typeof console !== "undefined" && typeof console.warn === "function") {
-    console.warn("Vue summary island unavailable; keeping legacy summary renderer.", error);
+    console.warn("Vue summary island mount failed.", error);
   }
 }

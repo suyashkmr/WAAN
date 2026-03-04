@@ -42,7 +42,8 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   let weekdayMountEl = doc.getElementById("weekday-chart");
   if (!mountEl || mountEl.dataset.vueHighlightsMounted === "true") return;
 
-  const { createApp, h, reactive } = VueRuntime;
+  const { createApp, h, reactive, render } = VueRuntime;
+  if (typeof render !== "function") return;
   const state = reactive({
     highlights: [],
   });
@@ -61,6 +62,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   const weekdayState = reactive({
     model: null,
   });
+  const hourlyAnomaliesMountedEls = new WeakSet();
 
   const iconPath =
     "M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z";
@@ -231,17 +233,36 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       if (!options || typeof options !== "object") return false;
       const chartEl = /** @type {{ chartEl?: HTMLElement | null }} */ (options).chartEl;
       if (!ensureHourlyMounted(chartEl || hourlyMountEl)) return false;
-      const handled = renderHourlyFromPayload(payload, hourlyState);
+      const bridgeOptions = {
+        ...(/** @type {Record<string, any>} */ (options)),
+        anomaliesEl: null,
+      };
+      const bridgePayload = {
+        ...(/** @type {Record<string, any>} */ (payload)),
+        options: bridgeOptions,
+      };
+      const handled = renderHourlyFromPayload(bridgePayload, hourlyState);
       if (!handled) return false;
       const anomaliesEl = /** @type {{ anomaliesEl?: HTMLElement | null }} */ (options).anomaliesEl;
-      if (anomaliesEl && hourlyState.anomalyBadges.length) {
-        anomaliesEl.textContent = "";
-        hourlyState.anomalyBadges.forEach(text => {
-          const badge = doc.createElement("span");
-          badge.className = "badge";
-          badge.textContent = text;
-          anomaliesEl.appendChild(badge);
-        });
+      if (anomaliesEl) {
+        if (!hourlyAnomaliesMountedEls.has(anomaliesEl)) {
+          anomaliesEl.replaceChildren();
+          hourlyAnomaliesMountedEls.add(anomaliesEl);
+        }
+        if (hourlyState.anomalyBadges.length) {
+          render(
+            h(
+              VueRuntime.Fragment || "div",
+              null,
+              hourlyState.anomalyBadges.map((text, index) =>
+                h("span", { class: "badge", key: `${index}-${text}` }, text)),
+            ),
+            anomaliesEl,
+          );
+        } else {
+          render(null, anomaliesEl);
+          anomaliesEl.textContent = "No hourly surprises detected.";
+        }
       }
       return true;
     },
@@ -268,5 +289,5 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
 try {
   mountDashboardPanelsIsland();
 } catch (error) {
-  globalThis.console?.warn?.("Vue dashboard panels island unavailable; falling back to legacy panel rendering.", error);
+  globalThis.console?.warn?.("Vue dashboard panels island mount failed.", error);
 }
