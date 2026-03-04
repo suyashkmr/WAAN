@@ -1,6 +1,5 @@
 // @ts-check
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
-import { mountShellPrimitivesIsland } from "../vue/shellPrimitivesIsland.js";
 
 /**
  * @param {{
@@ -38,10 +37,7 @@ export function createStatusUiController({
    */
   function resolveShellBridge() {
     /** @type {WaanVueShellBridge | null} */
-    let bridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
-    if (bridge) return bridge;
-    mountShellPrimitivesIsland();
-    bridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     return bridge || null;
   }
 

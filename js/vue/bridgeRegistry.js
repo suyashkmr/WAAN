@@ -9,15 +9,6 @@ export const VUE_BRIDGE_NAMES = Object.freeze({
   searchSaved: "searchSaved",
 });
 
-export const LEGACY_VUE_BRIDGE_GLOBAL_KEYS = Object.freeze({
-  [VUE_BRIDGE_NAMES.shell]: "__WAAN_VUE_SHELL_BRIDGE__",
-  [VUE_BRIDGE_NAMES.summary]: "__WAAN_VUE_SUMMARY_BRIDGE__",
-  [VUE_BRIDGE_NAMES.dashboardPanels]: "__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__",
-  [VUE_BRIDGE_NAMES.searchSaved]: "__WAAN_VUE_SEARCH_SAVED_BRIDGE__",
-});
-/** @type {Record<string, string>} */
-const legacyBridgeGlobalKeys = LEGACY_VUE_BRIDGE_GLOBAL_KEYS;
-
 /**
  * @param {any} globalScope
  */
@@ -36,14 +27,10 @@ function ensureVueRuntimeRegistry(globalScope) {
 
 /**
  * @param {string} bridgeName
- * @param {{ globalScope?: any, legacyGlobalKey?: string }} [options]
+ * @param {{ globalScope?: any }} [options]
  */
-export function resolveVueBridge(bridgeName, { globalScope = globalThis, legacyGlobalKey } = {}) {
+export function resolveVueBridge(bridgeName, { globalScope = globalThis } = {}) {
   if (!globalScope || !bridgeName) return null;
-  const resolvedLegacyKey = legacyGlobalKey || legacyBridgeGlobalKeys[bridgeName];
-  if (resolvedLegacyKey && globalScope[resolvedLegacyKey]) {
-    return globalScope[resolvedLegacyKey];
-  }
   const runtimeRegistry = ensureVueRuntimeRegistry(globalScope);
   return runtimeRegistry?.bridges?.[bridgeName] ?? null;
 }
@@ -51,16 +38,12 @@ export function resolveVueBridge(bridgeName, { globalScope = globalThis, legacyG
 /**
  * @param {string} bridgeName
  * @param {Record<string, any>} bridge
- * @param {{ globalScope?: any, legacyGlobalKey?: string }} [options]
+ * @param {{ globalScope?: any }} [options]
  */
-export function registerVueBridge(bridgeName, bridge, { globalScope = globalThis, legacyGlobalKey } = {}) {
+export function registerVueBridge(bridgeName, bridge, { globalScope = globalThis } = {}) {
   if (!globalScope || !bridgeName || !bridge) return null;
   const runtimeRegistry = ensureVueRuntimeRegistry(globalScope);
   if (!runtimeRegistry) return null;
   runtimeRegistry.bridges[bridgeName] = bridge;
-  const resolvedLegacyKey = legacyGlobalKey || legacyBridgeGlobalKeys[bridgeName];
-  if (resolvedLegacyKey) {
-    globalScope[resolvedLegacyKey] = bridge;
-  }
   return bridge;
 }

@@ -4,7 +4,6 @@ import {
   sanitizeText,
 } from "./utils.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
-import { mountSearchSavedBridge } from "./vue/searchSavedIsland.js";
 import {
   formatSavedViewTopHour,
   buildSavedViewCardModel,
@@ -65,11 +64,7 @@ export function createSavedViewsUiController({
      *   }) => boolean,
      *   setPanelActionHandlers?: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
      * } | null} */
-    let bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
-    if (bridge) return bridge;
-    mountSearchSavedBridge();
-    bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
-    return bridge;
+    return resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
   }
 
   function registerPanelActionHandlers(searchSavedBridge) {

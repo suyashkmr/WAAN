@@ -1,5 +1,4 @@
 import {
-  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
   registerVueBridge,
   resolveVueBridge,
@@ -90,10 +89,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
       });
     },
     setPanelActionHandlers,
-  }, {
-    globalScope,
-    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.searchSaved],
-  });
+  }, { globalScope });
 }
 
 try {

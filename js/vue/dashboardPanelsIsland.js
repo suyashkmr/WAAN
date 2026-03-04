@@ -4,7 +4,6 @@ import { createHourlyRoot, renderHourlyFromPayload } from "./dashboardHourlyRoot
 import { createTimeOfDayModel, createTimeOfDayRoot } from "./dashboardTimeOfDayRoot.js";
 import { createWeekdayModel, createWeekdayRoot } from "./dashboardWeekdayRoot.js";
 import {
-  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
   registerVueBridge,
   resolveVueBridge,
@@ -263,10 +262,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       return true;
     },
     ownsParticipantInteractions: true,
-  }, {
-    globalScope,
-    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.dashboardPanels],
-  });
+  }, { globalScope });
 }
 
 try {

@@ -580,10 +580,14 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added canonical `searchProgressState` store + subscription API and wired search progress UI updates through it (`js/state/searchProgressState.js`, `js/search/progressUi.js`, `js/stateStore.js`).
     - [x] Added regression coverage for search progress state/store synchronization (`tests/searchProgressState.test.js`, `tests/searchProgressUi.test.js`).
   - [ ] Remove obsolete app-shell adapter glue that existed only for incremental migration.
+    - [x] Removed lazy bridge remount glue from migrated UI controllers so shell/search/saved consumers resolve registered bridges only (no implicit re-mount in controller paths) (`js/appShell/statusUi.js`, `js/search/resultsUi.js`, `js/savedViewsUi.js`).
+    - [x] Removed legacy bridge-global compatibility wiring from Vue bridge registration/resolution and switched island integration tests to registry-only bridge assertions (`js/vue/bridgeRegistry.js`, `js/vue/summaryIsland.js`, `js/vue/dashboardPanelsIsland.js`, `js/vue/shellPrimitivesIsland.js`, `tests/vueBridgeIslandsIntegration.test.js`, `tests/searchSavedIsland.test.js`, `tests/vueBridgeTestUtils.js`).
   - [ ] Refactor tests to assert Vue component behavior/contracts rather than bridge side effects.
     - [x] Migrated search/saved controller tests to registry-backed Vue bridge harnesses instead of direct legacy `__WAAN_VUE_*` global mutation (`tests/vueBridgeTestUtils.js`, `tests/searchResultsUi.test.js`, `tests/search.test.js`, `tests/savedViews.test.js`).
     - [x] Migrated shell/summary/dashboard test suites to registry-backed bridge installs and shared runtime cleanup helpers (`tests/uiModules.test.js`, `tests/statusUiDetailed.test.js`, `tests/dashboardRenderModules.test.js`, `tests/summaryCards.test.js`).
+    - [x] Migrated relay/activity/dashboard pipeline suites off direct legacy bridge globals onto registry-backed helper installs (`tests/relayControls.test.js`, `tests/activityPanelsDetailed.test.js`, `tests/pipelineRangeDashboard.test.js`).
   - [ ] Add targeted Vue integration coverage for full-shell boot and cross-surface interactions.
+    - [x] Added full-shell interaction integration coverage validating root mount + cross-surface shell/search bridge dispatch in a single runtime (`tests/vueFullShellInteractions.test.js`).
   - [ ] Acceptance: frontend tests and runtime architecture are Vue-native without bridge-specific contracts.
 
 - [ ] Phase 10 (3-5 days): Final hardening and release cut for full Vue frontend.

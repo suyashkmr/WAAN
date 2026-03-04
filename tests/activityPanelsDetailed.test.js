@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { clearVueBridgeRuntime, installDashboardPanelsVueBridge } from "./vueBridgeTestUtils.js";
 
 vi.mock("../js/analytics/activity.js", () => ({
   renderDailySection: vi.fn(),
@@ -62,7 +63,7 @@ function installDashboardPanelsBridge() {
     renderWeekdayChart: vi.fn(() => true),
     renderTimeOfDay: vi.fn(() => true),
   };
-  globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = bridge;
+  installDashboardPanelsVueBridge(bridge);
   return bridge;
 }
 
@@ -70,11 +71,11 @@ describe("activityPanels detailed", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
-    delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("renders hourly summary for empty and populated top-hour states", () => {
-    installDashboardPanelsBridge();
+    const bridge = installDashboardPanelsBridge();
     const elements = baseElements();
     const hourlyState = {
       filters: { weekdays: true, weekends: true, working: true, offhours: true },
@@ -97,7 +98,7 @@ describe("activityPanels detailed", () => {
     });
 
     controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: null });
-    const renderSummary = globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__.renderHourlyHeatmap.mock.calls[0][0].options.renderSummary;
+    const renderSummary = bridge.renderHourlyHeatmap.mock.calls[0][0].options.renderSummary;
 
     renderSummary(null);
     expect(elements.hourlyTopHourEl.textContent).toBe("-");
@@ -330,7 +331,7 @@ describe("activityPanels detailed", () => {
       renderHourlyHeatmap: vi.fn(() => true),
       renderWeekdayChart: vi.fn(() => true),
     };
-    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = bridge;
+    installDashboardPanelsVueBridge(bridge);
     const controller = createActivityPanelsController({
       elements,
       deps: {

@@ -82,6 +82,7 @@ vi.mock("../js/appShell/dashboardRender/highlightsStats.js", () => ({
 }));
 
 import { createDashboardRenderController } from "../js/appShell/dashboardRender.js";
+import { clearVueBridgeRuntime, installDashboardPanelsVueBridge } from "./vueBridgeTestUtils.js";
 
 describe("analytics pipeline", () => {
   let OriginalWorker;
@@ -142,7 +143,7 @@ describe("analytics pipeline", () => {
 describe("dashboard render controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("renders full dashboard and updates availability", () => {
@@ -216,7 +217,7 @@ describe("dashboard render controller", () => {
 
   it("delegates time-of-day panel rendering to Vue dashboard bridge when available", () => {
     const renderTimeOfDay = vi.fn(() => true);
-    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = { renderTimeOfDay };
+    installDashboardPanelsVueBridge({ renderTimeOfDay });
     const controller = createDashboardRenderController({
       elements: {
         summaryEl: document.createElement("div"),

@@ -1,5 +1,4 @@
 import {
-  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
   registerVueBridge,
 } from "./bridgeRegistry.js";
@@ -65,10 +64,7 @@ export function mountSummaryIsland({ globalScope = globalThis } = {}) {
       state.cards = normalizeCards(cards);
       return true;
     },
-  }, {
-    globalScope,
-    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.summary],
-  });
+  }, { globalScope });
 }
 
 try {

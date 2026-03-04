@@ -1,5 +1,4 @@
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
-import { mountSearchSavedBridge } from "../vue/searchSavedIsland.js";
 
 export function createSearchResultsUiController({
   resultsSummaryEl,
@@ -27,7 +26,7 @@ export function createSearchResultsUiController({
   /**
    * @returns {{ renderSearchPanelState?: (payload: any) => boolean, renderSearchResults?: (payload: any) => boolean, renderSearchInsights?: (payload: any) => boolean } | null}
    */
-  function getSearchSavedBridge({ attemptRecover = true } = {}) {
+  function getSearchSavedBridge() {
     /** @type {{
      *   renderSearchPanelState?: (payload: {
      *     tone?: string,
@@ -49,10 +48,7 @@ export function createSearchResultsUiController({
      * } | null} */
     const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
     if (hasSearchBridgeContracts(bridge)) return bridge;
-    if (!attemptRecover) return null;
-    mountSearchSavedBridge();
-    const recoveredBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
-    return hasSearchBridgeContracts(recoveredBridge) ? recoveredBridge : null;
+    return null;
   }
 
   function registerPanelActionHandlers(searchSavedBridge) {
@@ -180,7 +176,7 @@ export function createSearchResultsUiController({
         }
       }
       if (!handledResults) {
-        const recoveredBridge = getSearchSavedBridge({ attemptRecover: true });
+        const recoveredBridge = getSearchSavedBridge();
         if (recoveredBridge && recoveredBridge !== searchSavedBridge) {
           searchSavedBridge = recoveredBridge;
           registerPanelActionHandlers(searchSavedBridge);

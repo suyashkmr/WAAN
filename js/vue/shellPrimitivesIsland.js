@@ -8,7 +8,6 @@ import {
   createRelayLiveActionsRoot,
 } from "./shellPrimitiveViews.js";
 import {
-  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
   registerVueBridge,
   resolveVueBridge,
@@ -302,10 +301,7 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     dispatchShellAction: dispatchShellActionBridge,
     setRelayActionHandlers,
     dispatchRelayAction,
-  }, {
-    globalScope,
-    legacyGlobalKey: LEGACY_VUE_BRIDGE_GLOBAL_KEYS[VUE_BRIDGE_NAMES.shell],
-  });
+  }, { globalScope });
 }
 
 export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {

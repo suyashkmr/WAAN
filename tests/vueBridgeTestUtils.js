@@ -1,5 +1,4 @@
 import {
-  LEGACY_VUE_BRIDGE_GLOBAL_KEYS,
   VUE_BRIDGE_NAMES,
   VUE_RUNTIME_REGISTRY_KEY,
   registerVueBridge,
@@ -24,7 +23,4 @@ export function installDashboardPanelsVueBridge(bridge, { globalScope = globalTh
 export function clearVueBridgeRuntime({ globalScope = globalThis } = {}) {
   if (!globalScope) return;
   delete globalScope[VUE_RUNTIME_REGISTRY_KEY];
-  Object.values(LEGACY_VUE_BRIDGE_GLOBAL_KEYS).forEach(globalKey => {
-    delete globalScope[globalKey];
-  });
 }

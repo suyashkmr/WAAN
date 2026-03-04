@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mountSearchSavedBridge } from "../js/vue/searchSavedIsland.js";
-import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../js/vue/bridgeRegistry.js";
+import { registerVueBridge, resolveVueBridge, VUE_BRIDGE_NAMES } from "../js/vue/bridgeRegistry.js";
 
 function createVueRuntimeStub() {
   return {
@@ -34,7 +34,6 @@ describe("search saved island bridge mounting", () => {
 
   afterEach(() => {
     delete globalThis.__WAAN_VUE_RUNTIME__;
-    delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
   });
 
   it("does not register bridge before Vue runtime is available", () => {
@@ -52,12 +51,16 @@ describe("search saved island bridge mounting", () => {
     const fakeWindow = {
       document,
       console,
-      __WAAN_VUE_SEARCH_SAVED_BRIDGE__: {
+    };
+    registerVueBridge(
+      VUE_BRIDGE_NAMES.searchSaved,
+      {
         __waanVueSearchBridge: true,
         __runtimeBoundToVue: false,
         renderSearchResults: () => false,
       },
-    };
+      { globalScope: fakeWindow },
+    );
 
     mountSearchSavedBridge({ globalScope: fakeWindow });
     const beforeVueBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });

@@ -78,10 +78,6 @@ describe("vue app shell root", () => {
     delete window.PrimeVue;
     delete window.primevue;
     delete window.__WAAN_VUE_RUNTIME__;
-    delete window.__WAAN_VUE_SUMMARY_BRIDGE__;
-    delete window.__WAAN_VUE_SHELL_BRIDGE__;
-    delete window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
-    delete window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
 
     const first = mountVueAppShellRoot();
     expect(first?.mounted).toBe(false);

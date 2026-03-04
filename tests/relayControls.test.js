@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createRelayController } from "../js/relayControls.js";
+import { clearVueBridgeRuntime, installShellVueBridge } from "./vueBridgeTestUtils.js";
 
 function buildRelayElements() {
   const relayLiveCard = document.createElement("section");
@@ -127,7 +128,7 @@ function createController(overrides = {}) {
 
 describe("relayControls", () => {
   afterEach(() => {
-    delete globalThis.__WAAN_VUE_SHELL_BRIDGE__;
+    clearVueBridgeRuntime();
     vi.restoreAllMocks();
     vi.useRealTimers();
   });
@@ -483,9 +484,9 @@ describe("relayControls", () => {
 
   it("routes recovery action state updates through Vue shell bridge when available", async () => {
     const bridgeSpy = vi.fn();
-    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+    installShellVueBridge({
       updateRelayRecoveryActions: bridgeSpy,
-    };
+    });
     const elements = buildRelayElements();
     const fetchJson = vi.fn(async url => {
       if (url.endsWith("/relay/status")) {
@@ -541,9 +542,9 @@ describe("relayControls", () => {
       resolveStop = resolve;
     });
     const recoverySpy = vi.fn();
-    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+    installShellVueBridge({
       updateRelayRecoveryActions: recoverySpy,
-    };
+    });
     const elements = buildRelayElements();
     const fetchJson = vi.fn(async url => {
       if (url.endsWith("/relay/status")) {
@@ -608,10 +609,10 @@ describe("relayControls", () => {
   it("routes primary relay control button updates through Vue shell bridge when available", async () => {
     const recoverySpy = vi.fn();
     const controlsSpy = vi.fn();
-    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+    installShellVueBridge({
       updateRelayRecoveryActions: recoverySpy,
       updateRelayControlButtons: controlsSpy,
-    };
+    });
     const elements = buildRelayElements();
     const fetchJson = vi.fn(async url => {
       if (url.endsWith("/relay/status")) {

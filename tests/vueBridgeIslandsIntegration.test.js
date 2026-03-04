@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
 function createVueRuntimeStub() {
   /** @type {any} */
@@ -52,10 +52,6 @@ describe("vue bridge islands integration", () => {
   });
 
   afterEach(() => {
-    delete window.__WAAN_VUE_SUMMARY_BRIDGE__;
-    delete window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
-    delete window.__WAAN_VUE_SHELL_BRIDGE__;
-    delete window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
     delete window.Vue;
     delete window.PrimeVue;
     delete window.primevue;
@@ -69,20 +65,28 @@ describe("vue bridge islands integration", () => {
     await import("../js/vue/shellPrimitivesIsland.js");
     await import("../js/vue/searchSavedIsland.js");
 
-    expect(window.__WAAN_VUE_SUMMARY_BRIDGE__).toBeTruthy();
-    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__).toBeTruthy();
-    expect(window.__WAAN_VUE_SHELL_BRIDGE__).toBeTruthy();
-    expect(window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__).toBeTruthy();
-    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.summary).toBe(window.__WAAN_VUE_SUMMARY_BRIDGE__);
-    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.dashboardPanels).toBe(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__);
-    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.shell).toBe(window.__WAAN_VUE_SHELL_BRIDGE__);
-    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.searchSaved).toBe(window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__);
+    const summaryBridge = resolveVueBridge(VUE_BRIDGE_NAMES.summary, { globalScope: window });
+    const dashboardBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope: window });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: window });
+    const searchSavedBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: window });
+    expect(summaryBridge).toBeTruthy();
+    expect(dashboardBridge).toBeTruthy();
+    expect(shellBridge).toBeTruthy();
+    expect(searchSavedBridge).toBeTruthy();
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.summary).toBe(summaryBridge);
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.dashboardPanels).toBe(dashboardBridge);
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.shell).toBe(shellBridge);
+    expect(window[VUE_RUNTIME_REGISTRY_KEY]?.bridges?.searchSaved).toBe(searchSavedBridge);
+    expect(window.__WAAN_VUE_SUMMARY_BRIDGE__).toBeUndefined();
+    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__).toBeUndefined();
+    expect(window.__WAAN_VUE_SHELL_BRIDGE__).toBeUndefined();
+    expect(window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__).toBeUndefined();
 
-    expect(window.__WAAN_VUE_SUMMARY_BRIDGE__.render([])).toBe(true);
-    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__.renderHighlights([])).toBe(true);
-    expect(window.__WAAN_VUE_SHELL_BRIDGE__.showToast).toEqual(expect.any(Function));
+    expect(summaryBridge?.render([])).toBe(true);
+    expect(dashboardBridge?.renderHighlights([])).toBe(true);
+    expect(shellBridge?.showToast).toEqual(expect.any(Function));
     expect(
-      window.__WAAN_VUE_SEARCH_SAVED_BRIDGE__.renderSearchPanelState({
+      searchSavedBridge?.renderSearchPanelState({
         tone: "loading",
         title: "Loading",
         message: "Searching…",
@@ -101,7 +105,8 @@ describe("vue bridge islands integration", () => {
 
     await import("../js/vue/dashboardPanelsIsland.js");
 
-    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__).toBeTruthy();
-    expect(window.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__.renderParticipantsRows([])).toBe(true);
+    const dashboardBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope: window });
+    expect(dashboardBridge).toBeTruthy();
+    expect(dashboardBridge?.renderParticipantsRows([])).toBe(true);
   });
 });
