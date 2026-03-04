@@ -1,7 +1,46 @@
 import { formatNumber, formatFloat } from "../../utils.js";
 
+/**
+ * @param {any} entry
+ */
+function resolveWeeklyDelta(entry) {
+  if (entry?.delta === null || entry?.delta === undefined) {
+    return {
+      className: "weekly-bar-delta flat",
+      diff: "—",
+      pct: "",
+    };
+  }
+  if (entry.delta > 0) {
+    const pct = entry.deltaPercent ? formatFloat(entry.deltaPercent * 100, 1) : null;
+    return {
+      className: "weekly-bar-delta up",
+      diff: `▲ ${formatNumber(entry.delta)}`,
+      pct: pct !== null ? `(${pct}%)` : "",
+    };
+  }
+  if (entry.delta < 0) {
+    const pct = entry.deltaPercent ? formatFloat(Math.abs(entry.deltaPercent) * 100, 1) : null;
+    return {
+      className: "weekly-bar-delta down",
+      diff: `▼ ${formatNumber(Math.abs(entry.delta))}`,
+      pct: pct !== null ? `(${pct}%)` : "",
+    };
+  }
+  return {
+    className: "weekly-bar-delta flat",
+    diff: "—",
+    pct: "",
+  };
+}
+
 export function renderWeeklySection(weeklyData, summary, options = {}) {
   const { container, cumulativeEl, rollingEl, averageEl, onSelectRange, selectedRange } = options;
+  const VueRuntime = globalThis.Vue;
+  if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function") {
+    throw new Error("Vue runtime is required for weekly activity rendering.");
+  }
+  const { h, render } = VueRuntime;
 
   if (cumulativeEl) {
     cumulativeEl.textContent = summary && typeof summary.cumulativeTotal === "number"
@@ -21,101 +60,60 @@ export function renderWeeklySection(weeklyData, summary, options = {}) {
 
   if (!container) return;
   container.className = "weekly-chart";
-  container.innerHTML = "";
 
   if (!Array.isArray(weeklyData) || !weeklyData.length) {
-    container.textContent = "No data yet.";
+    render(h("p", null, "No data yet."), container);
     return;
   }
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "weekly-chart-wrapper";
-  const bars = document.createElement("div");
-  bars.className = "weekly-bars";
-  wrapper.appendChild(bars);
-  container.appendChild(wrapper);
+  const maxCount = Math.max(...weeklyData.map(item => Number(item?.count || 0))) || 1;
 
-  const maxCount = Math.max(...weeklyData.map(item => item.count || 0)) || 1;
-
-  weeklyData.forEach(entry => {
-    const bar = document.createElement("button");
-    bar.type = "button";
-    bar.className = "weekly-bar";
-    if (
-      selectedRange &&
-      selectedRange.start === entry.startDate &&
-      selectedRange.end === entry.endDate
-    ) {
-      bar.classList.add("selected");
-    }
-
-    const valueEl = document.createElement("span");
-    valueEl.className = "weekly-bar-value";
-    valueEl.textContent = formatNumber(entry.count);
-    bar.appendChild(valueEl);
-
-    const fillWrap = document.createElement("div");
-    fillWrap.className = "weekly-bar-fill-wrap";
-    const fill = document.createElement("div");
-    fill.className = "weekly-bar-fill";
-    fill.style.height = `${(entry.count / maxCount) * 100}%`;
-    fillWrap.appendChild(fill);
-    bar.appendChild(fillWrap);
-
-    const weekLabel = document.createElement("span");
-    weekLabel.className = "weekly-bar-week";
-    const [weekYear, weekNumber] = (entry.week || "").split("-");
-    if (weekYear && weekNumber) {
-      const yearEl = document.createElement("span");
-      yearEl.className = "week-label-year";
-      yearEl.textContent = weekYear;
-      const numberEl = document.createElement("span");
-      numberEl.className = "week-label-number";
-      numberEl.textContent = weekNumber;
-      weekLabel.append(yearEl, numberEl);
-    } else {
-      weekLabel.textContent = entry.week ?? "—";
-    }
-    bar.appendChild(weekLabel);
-
-    const deltaEl = document.createElement("span");
-    deltaEl.className = "weekly-bar-delta";
-    const deltaDiff = document.createElement("span");
-    deltaDiff.className = "delta-diff";
-    const deltaPct = document.createElement("span");
-    deltaPct.className = "delta-pct";
-
-    if (entry.delta === null || entry.delta === undefined) {
-      deltaEl.classList.add("flat");
-      deltaDiff.textContent = "—";
-      deltaPct.textContent = "";
-    } else if (entry.delta > 0) {
-      const pct = entry.deltaPercent ? formatFloat(entry.deltaPercent * 100, 1) : null;
-      deltaEl.classList.add("up");
-      deltaDiff.textContent = `▲ ${formatNumber(entry.delta)}`;
-      deltaPct.textContent = pct !== null ? `(${pct}%)` : "";
-    } else if (entry.delta < 0) {
-      const pct = entry.deltaPercent ? formatFloat(Math.abs(entry.deltaPercent) * 100, 1) : null;
-      deltaEl.classList.add("down");
-      deltaDiff.textContent = `▼ ${formatNumber(Math.abs(entry.delta))}`;
-      deltaPct.textContent = pct !== null ? `(${pct}%)` : "";
-    } else {
-      deltaEl.classList.add("flat");
-      deltaDiff.textContent = "—";
-      deltaPct.textContent = "";
-    }
-
-    deltaEl.append(deltaDiff, deltaPct);
-    bar.appendChild(deltaEl);
-
-    if (typeof onSelectRange === "function") {
-      bar.addEventListener("click", () => {
-        if (!entry.startDate || !entry.endDate) return;
-        onSelectRange({ start: entry.startDate, end: entry.endDate, entry });
-      });
-    }
-
-    bars.appendChild(bar);
-  });
+  render(
+    h("div", { class: "weekly-chart-wrapper" }, [
+      h(
+        "div",
+        { class: "weekly-bars" },
+        weeklyData.map((entry, index) => {
+          const isSelected = Boolean(
+            selectedRange &&
+            selectedRange.start === entry?.startDate &&
+            selectedRange.end === entry?.endDate,
+          );
+          const classes = ["weekly-bar"];
+          if (isSelected) classes.push("selected");
+          const [weekYear, weekNumber] = String(entry?.week || "").split("-");
+          const delta = resolveWeeklyDelta(entry);
+          return h("button", {
+            key: `${String(entry?.week || "week")}-${index}`,
+            type: "button",
+            class: classes.join(" "),
+            onClick: () => {
+              if (typeof onSelectRange !== "function") return;
+              if (!entry?.startDate || !entry?.endDate) return;
+              onSelectRange({ start: entry.startDate, end: entry.endDate, entry });
+            },
+          }, [
+            h("span", { class: "weekly-bar-value" }, formatNumber(Number(entry?.count || 0))),
+            h("div", { class: "weekly-bar-fill-wrap" }, [
+              h("div", {
+                class: "weekly-bar-fill",
+                style: { height: `${(Number(entry?.count || 0) / maxCount) * 100}%` },
+              }),
+            ]),
+            h("span", { class: "weekly-bar-week" }, weekYear && weekNumber
+              ? [
+                h("span", { class: "week-label-year" }, weekYear),
+                h("span", { class: "week-label-number" }, weekNumber),
+              ]
+              : String(entry?.week ?? "—")),
+            h("span", { class: delta.className }, [
+              h("span", { class: "delta-diff" }, delta.diff),
+              h("span", { class: "delta-pct" }, delta.pct),
+            ]),
+          ]);
+        }),
+      ),
+    ]),
+    container,
+  );
 }
-

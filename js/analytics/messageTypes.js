@@ -3,15 +3,19 @@ import { formatFloat } from "../utils.js";
 export function renderMessageTypesSection({ data, elements = {} } = {}) {
   const { summaryEl, noteEl } = elements;
   if (!summaryEl) return;
+  const VueRuntime = globalThis.Vue;
+  if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function") {
+    throw new Error("Vue runtime is required for message-types rendering.");
+  }
+  const { h, render } = VueRuntime;
 
   const summary = Array.isArray(data?.summary) ? data.summary : [];
-  summaryEl.innerHTML = "";
 
   if (!summary.length) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = "No message categories for this range.";
-    summaryEl.appendChild(empty);
+    render(
+      h("p", { class: "empty-state" }, "No message categories for this range."),
+      summaryEl,
+    );
     if (noteEl) noteEl.textContent = "";
     return;
   }
@@ -20,10 +24,10 @@ export function renderMessageTypesSection({ data, elements = {} } = {}) {
     .map(entry => `${entry.label}: ${formatFloat((entry.share || 0) * 100, 1)}%`)
     .join(" · ");
 
-  const summaryText = document.createElement("p");
-  summaryText.className = "message-type-share-summary";
-  summaryText.textContent = `Share by type → ${shareSnippets}.`;
-  summaryEl.appendChild(summaryText);
+  render(
+    h("p", { class: "message-type-share-summary" }, `Share by type → ${shareSnippets}.`),
+    summaryEl,
+  );
 
   if (noteEl) noteEl.textContent = "";
 }

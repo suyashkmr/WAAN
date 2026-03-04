@@ -607,10 +607,10 @@ Completed work is archived in git history and was removed from this file for cla
     - [x] Added rollback runbook section to `docs/release-smoke-checklist.md`.
   - [ ] Purist frontend completion: remove remaining vanilla DOM render/control modules from runtime paths.
     - [ ] Migrate remaining analytics DOM renderers to Vue components/islands:
-      - [ ] `js/analytics/activity/daily.js`
-      - [ ] `js/analytics/activity/weekly.js`
-      - [ ] `js/analytics/sentiment.js`
-      - [ ] `js/analytics/messageTypes.js`
+      - [x] `js/analytics/activity/daily.js`
+      - [x] `js/analytics/activity/weekly.js`
+      - [x] `js/analytics/sentiment.js`
+      - [x] `js/analytics/messageTypes.js`
     - [ ] Migrate remaining app-shell DOM composition paths to Vue-owned component flows:
       - [ ] `js/appShell/chatSelection.js`
       - [ ] `js/appShell/sectionNav.js`
