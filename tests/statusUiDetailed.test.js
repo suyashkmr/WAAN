@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createStatusUiController } from "../js/appShell/statusUi.js";
+import { clearVueBridgeRuntime, installShellVueBridge } from "./vueBridgeTestUtils.js";
 
 describe("statusUi detailed", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    delete globalThis.__WAAN_VUE_SHELL_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   afterEach(() => {
@@ -39,13 +40,13 @@ describe("statusUi detailed", () => {
     const showStatusMessage = vi.fn();
     const beginStatusExit = vi.fn();
     const finalizeStatusExit = vi.fn();
-    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+    installShellVueBridge({
       showToast,
       dismissToast,
       showStatusMessage,
       beginStatusExit,
       finalizeStatusExit,
-    };
+    });
 
     const controller = createStatusUiController({ autoHideDelayMs: 111, exitDurationMs: 222, maxToasts: 3 });
 

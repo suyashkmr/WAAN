@@ -577,8 +577,12 @@ Completed work is archived in git history and was removed from this file for cla
 
 - [ ] Phase 9 (4-7 days): Consolidate frontend architecture and testing around Vue.
   - [ ] Standardize composables/stores for shared state (filters, relay status, saved views, search worker progress).
+    - [x] Added canonical `searchProgressState` store + subscription API and wired search progress UI updates through it (`js/state/searchProgressState.js`, `js/search/progressUi.js`, `js/stateStore.js`).
+    - [x] Added regression coverage for search progress state/store synchronization (`tests/searchProgressState.test.js`, `tests/searchProgressUi.test.js`).
   - [ ] Remove obsolete app-shell adapter glue that existed only for incremental migration.
   - [ ] Refactor tests to assert Vue component behavior/contracts rather than bridge side effects.
+    - [x] Migrated search/saved controller tests to registry-backed Vue bridge harnesses instead of direct legacy `__WAAN_VUE_*` global mutation (`tests/vueBridgeTestUtils.js`, `tests/searchResultsUi.test.js`, `tests/search.test.js`, `tests/savedViews.test.js`).
+    - [x] Migrated shell/summary/dashboard test suites to registry-backed bridge installs and shared runtime cleanup helpers (`tests/uiModules.test.js`, `tests/statusUiDetailed.test.js`, `tests/dashboardRenderModules.test.js`, `tests/summaryCards.test.js`).
   - [ ] Add targeted Vue integration coverage for full-shell boot and cross-surface interactions.
   - [ ] Acceptance: frontend tests and runtime architecture are Vue-native without bridge-specific contracts.
 

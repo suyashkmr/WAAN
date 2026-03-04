@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createPdfPreviewController } from "../js/appShell/pdfPreview.js";
 import { createStatusUiController } from "../js/appShell/statusUi.js";
 import { createOnboardingController } from "../js/appShell/onboarding.js";
+import { clearVueBridgeRuntime, installShellVueBridge } from "./vueBridgeTestUtils.js";
 
 describe("pdf preview controller", () => {
   beforeEach(() => {
@@ -119,7 +120,7 @@ describe("pdf preview controller", () => {
 describe("status ui controller", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    delete globalThis.__WAAN_VUE_SHELL_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   afterEach(() => {
@@ -140,13 +141,13 @@ describe("status ui controller", () => {
     const showStatusMessage = vi.fn();
     const beginStatusExit = vi.fn();
     const finalizeStatusExit = vi.fn();
-    globalThis.__WAAN_VUE_SHELL_BRIDGE__ = {
+    installShellVueBridge({
       showToast,
       dismissToast,
       showStatusMessage,
       beginStatusExit,
       finalizeStatusExit,
-    };
+    });
     const controller = createStatusUiController({ autoHideDelayMs: 100, exitDurationMs: 50, maxToasts: 2 });
 
     const toast = document.createElement("div");

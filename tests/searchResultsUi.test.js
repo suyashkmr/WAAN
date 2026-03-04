@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { createSearchResultsUiController } from "../js/search/resultsUi.js";
+import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
 function buildResult(index) {
   return {
@@ -16,7 +17,7 @@ function buildResult(index) {
 describe("search results ui controller", () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("does not cache empty state when bridge is unavailable", () => {
@@ -50,14 +51,14 @@ describe("search results ui controller", () => {
     controller.renderResults();
     expect(resultsListEl.children.length).toBe(0);
 
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState() {
         panelStateCalls += 1;
         return true;
       },
       renderSearchResults: () => true,
       renderSearchInsights: () => true,
-    };
+    });
 
     controller.renderResults();
     expect(panelStateCalls).toBe(1);
@@ -79,11 +80,11 @@ describe("search results ui controller", () => {
       return true;
     });
 
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState: panelStateCalls,
       renderSearchResults: () => true,
       renderSearchInsights: insightsCalls,
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
@@ -120,14 +121,14 @@ describe("search results ui controller", () => {
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
     let payloadSeen = null;
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState(payload) {
         payloadSeen = payload;
         return true;
       },
       renderSearchResults: () => true,
       renderSearchInsights: () => true,
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
@@ -163,11 +164,11 @@ describe("search results ui controller", () => {
     const insightsEl = document.createElement("div");
     const renderSearchPanelState = vi.fn(() => true);
     const renderSearchInsights = vi.fn(() => false);
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState,
       renderSearchResults: () => true,
       renderSearchInsights,
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
@@ -207,11 +208,11 @@ describe("search results ui controller", () => {
       return true;
     });
     const renderSearchInsightsBridge = vi.fn(() => true);
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState: () => true,
       renderSearchResults,
       renderSearchInsights: renderSearchInsightsBridge,
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
@@ -260,7 +261,7 @@ describe("search results ui controller", () => {
       lastRun: Date.now(),
       lastRunHasFilters: true,
     };
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState: () => {
         resultsListEl.dataset.vueOwned = "true";
         resultsListEl.innerHTML = '<div class="panel-state"></div>';
@@ -274,7 +275,7 @@ describe("search results ui controller", () => {
         return true;
       },
       renderSearchInsights: () => true,
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
@@ -325,11 +326,11 @@ describe("search results ui controller", () => {
       });
     const renderSearchInsightsBridge = vi.fn(() => true);
 
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState: () => true,
       renderSearchResults,
       renderSearchInsights: renderSearchInsightsBridge,
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,
@@ -411,11 +412,11 @@ describe("search results ui controller", () => {
     const resultsListEl = document.createElement("div");
     const insightsEl = document.createElement("div");
 
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSearchPanelState: () => true,
       renderSearchInsights: () => true,
       // Missing renderSearchResults on purpose.
-    };
+    });
 
     const controller = createSearchResultsUiController({
       resultsSummaryEl,

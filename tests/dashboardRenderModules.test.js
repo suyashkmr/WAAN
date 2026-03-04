@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   createHighlightsStatsController,
 } from "../js/appShell/dashboardRender/highlightsStats.js";
@@ -9,8 +9,13 @@ import {
   applyParticipantPreset,
   toggleParticipantRow,
 } from "../js/appShell/dashboardRender/participantsPanel.js";
+import { clearVueBridgeRuntime, installDashboardPanelsVueBridge } from "./vueBridgeTestUtils.js";
 
 describe("dashboardRender modules", () => {
+  beforeEach(() => {
+    clearVueBridgeRuntime();
+  });
+
   it("highlightsStats skips DOM fallback rendering when dashboard bridge is unavailable", () => {
     const highlightList = document.createElement("div");
     const controller = createHighlightsStatsController({
@@ -28,29 +33,26 @@ describe("dashboardRender modules", () => {
   it("highlightsStats delegates to Vue dashboard panels bridge when available", () => {
     const highlightList = document.createElement("div");
     let captured = null;
-    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = {
+    installDashboardPanelsVueBridge({
       renderHighlights(payload) {
         captured = payload;
         return true;
       },
-    };
-    try {
-      const controller = createHighlightsStatsController({
-        elements: { highlightList },
-        deps: {
-          formatNumber: value => String(value ?? ""),
-          formatFloat: (value, digits = 1) => Number(value || 0).toFixed(digits),
-        },
-      });
+    });
+    const controller = createHighlightsStatsController({
+      elements: { highlightList },
+      deps: {
+        formatNumber: value => String(value ?? ""),
+        formatFloat: (value, digits = 1) => Number(value || 0).toFixed(digits),
+      },
+    });
 
-      const highlights = [{ type: "velocity", label: "Message pace", value: "120/day" }];
-      controller.renderHighlights(highlights);
+    const highlights = [{ type: "velocity", label: "Message pace", value: "120/day" }];
+    controller.renderHighlights(highlights);
 
-      expect(captured).toEqual(highlights);
-      expect(highlightList.children.length).toBe(0);
-    } finally {
-      delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
-    }
+    expect(captured).toEqual(highlights);
+    expect(highlightList.children.length).toBe(0);
+    clearVueBridgeRuntime();
   });
 
   it("highlightsStats formats sentiment and statistics", () => {

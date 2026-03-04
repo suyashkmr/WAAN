@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createSavedViewsController } from "../js/savedViews.js";
+import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
 function buildElements() {
   const nameInput = document.createElement("input");
@@ -111,7 +112,7 @@ function buildDependencies() {
 function installSavedViewsBridge(elements) {
   /** @type {Record<string, Function>} */
   let panelActionHandlers = {};
-  globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+  installSearchSavedVueBridge({
     setPanelActionHandlers: vi.fn(handlers => {
       panelActionHandlers = {
         ...panelActionHandlers,
@@ -158,13 +159,13 @@ function installSavedViewsBridge(elements) {
       return true;
     }),
     renderSavedViewsComparison: vi.fn(() => true),
-  };
+  });
 }
 
 describe("savedViews controller", () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("disables controls when no dataset is available", () => {
@@ -245,9 +246,9 @@ describe("savedViews controller", () => {
     document.body.appendChild(elements.gallery);
     const dependencies = buildDependencies();
     const bridgeSpy = vi.fn(() => true);
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSavedViewsPanelState: bridgeSpy,
-    };
+    });
     const controller = createSavedViewsController({ elements, dependencies });
 
     controller.init();
@@ -264,10 +265,10 @@ describe("savedViews controller", () => {
     const dependencies = buildDependencies();
     const gallerySpy = vi.fn(() => true);
     const comparisonSpy = vi.fn(() => true);
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       renderSavedViewsGallery: gallerySpy,
       renderSavedViewsComparison: comparisonSpy,
-    };
+    });
     const controller = createSavedViewsController({ elements, dependencies });
 
     controller.init();
@@ -288,7 +289,7 @@ describe("savedViews controller", () => {
     const dependencies = buildDependencies();
     /** @type {Record<string, Function>} */
     let panelActionHandlers = {};
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       setPanelActionHandlers: vi.fn(handlers => {
         panelActionHandlers = handlers;
         return true;
@@ -296,7 +297,7 @@ describe("savedViews controller", () => {
       renderSavedViewsGallery: vi.fn(() => true),
       renderSavedViewsComparison: vi.fn(() => true),
       renderSavedViewsPanelState: vi.fn(() => true),
-    };
+    });
     const controller = createSavedViewsController({ elements, dependencies });
 
     controller.init();
@@ -317,10 +318,10 @@ describe("savedViews controller", () => {
     const elements = buildElements();
     const dependencies = buildDependencies();
     elements.gallery.dataset.galleryActionsBound = "true";
-    globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = {
+    installSearchSavedVueBridge({
       setPanelActionHandlers: vi.fn(() => true),
       renderSavedViewsPanelState: vi.fn(() => true),
-    };
+    });
     const controller = createSavedViewsController({ elements, dependencies });
 
     controller.init();

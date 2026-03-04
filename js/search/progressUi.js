@@ -1,3 +1,5 @@
+import { resetSearchProgressState, setSearchProgressState } from "../state/searchProgressState.js";
+
 export function createSearchProgressUi({
   progressEl,
   progressTrackEl,
@@ -6,10 +8,15 @@ export function createSearchProgressUi({
   formatNumber,
 }) {
   function setSearchProgress(scanned, total) {
-    if (!progressEl) return;
     const safeTotal = Math.max(0, total || 0);
     const safeScanned = Math.min(Math.max(0, scanned), safeTotal);
     const percent = safeTotal ? Math.min(100, (safeScanned / safeTotal) * 100) : 0;
+    setSearchProgressState({
+      active: true,
+      scanned: safeScanned,
+      total: safeTotal,
+    });
+    if (!progressEl) return;
     if (progressLabelEl) {
       progressLabelEl.textContent = safeTotal
         ? `Scanning ${formatNumber(safeScanned)} of ${formatNumber(safeTotal)} messages…`
@@ -26,12 +33,12 @@ export function createSearchProgressUi({
   }
 
   function showSearchProgress(total) {
-    if (!progressEl) return;
-    progressEl.classList.add("is-active");
+    if (progressEl) progressEl.classList.add("is-active");
     setSearchProgress(0, total);
   }
 
   function hideSearchProgress() {
+    resetSearchProgressState();
     if (!progressEl) return;
     progressEl.classList.remove("is-active");
     if (progressLabelEl) progressLabelEl.textContent = "";

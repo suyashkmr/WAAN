@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { renderSummaryCards, renderParticipants } from "../js/analytics/summary.js";
+import {
+  clearVueBridgeRuntime,
+  installDashboardPanelsVueBridge,
+  installSummaryVueBridge,
+} from "./vueBridgeTestUtils.js";
 
 function buildAnalytics() {
   return {
@@ -20,7 +25,7 @@ function buildAnalytics() {
 describe("renderSummaryCards", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    delete globalThis.__WAAN_VUE_SUMMARY_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("skips DOM fallback rendering when summary bridge is unavailable", () => {
@@ -40,12 +45,12 @@ describe("renderSummaryCards", () => {
     const summaryEl = document.createElement("section");
     document.body.appendChild(summaryEl);
     const captured = [];
-    globalThis.__WAAN_VUE_SUMMARY_BRIDGE__ = {
+    installSummaryVueBridge({
       render(cards) {
         captured.push(cards);
         return true;
       },
-    };
+    });
 
     renderSummaryCards({
       analytics: buildAnalytics(),
@@ -62,7 +67,7 @@ describe("renderSummaryCards", () => {
 describe("renderParticipants", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    delete globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("skips participants DOM fallback rendering when dashboard bridge is unavailable", () => {
@@ -107,12 +112,12 @@ describe("renderParticipants", () => {
     participantsTable.appendChild(participantsBody);
     document.body.append(participantsTable, participantsNote);
     const captured = [];
-    globalThis.__WAAN_VUE_DASHBOARD_PANELS_BRIDGE__ = {
+    installDashboardPanelsVueBridge({
       renderParticipantsRows(rows) {
         captured.push(rows);
         return true;
       },
-    };
+    });
 
     renderParticipants({
       analytics: {

@@ -6,6 +6,7 @@ import {
   setStatusCallback,
   setSearchQuery,
 } from "../js/state.js";
+import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
 function buildElements() {
   const form = document.createElement("form");
@@ -80,7 +81,7 @@ function installSearchSavedBridge(elements, overrides = {}) {
     setPanelActionHandlers: vi.fn(() => true),
     ...overrides,
   };
-  globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__ = bridge;
+  installSearchSavedVueBridge(bridge);
   return bridge;
 }
 
@@ -154,7 +155,7 @@ describe("search controller", () => {
   afterEach(() => {
     globalThis.Worker = OriginalWorker;
     vi.restoreAllMocks();
-    delete globalThis.__WAAN_VUE_SEARCH_SAVED_BRIDGE__;
+    clearVueBridgeRuntime();
   });
 
   it("populates participant selector from dataset entries", () => {
