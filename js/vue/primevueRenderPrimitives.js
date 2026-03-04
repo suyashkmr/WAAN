@@ -21,6 +21,7 @@ function resolvePrimeVueComponent(componentName, globalScope = globalThis) {
  * @param {{
  *   id?: string,
  *   text?: string,
+ *   children?: any,
  *   className?: string,
  *   type?: "button" | "submit" | "reset",
  *   disabled?: boolean,
@@ -34,6 +35,7 @@ export function renderActionButton(h, options = {}, globalScope = globalThis) {
   const {
     id = "",
     text = "",
+    children = null,
     className = "",
     type = "button",
     disabled = false,
@@ -52,13 +54,17 @@ export function renderActionButton(h, options = {}, globalScope = globalThis) {
 
   const PrimeButton = resolvePrimeVueComponent("Button", globalScope);
   if (PrimeButton) {
-    return h(PrimeButton, {
+    const primeProps = {
       ...commonProps,
-      label: text,
+      ...(children == null ? { label: text } : {}),
       unstyled: true,
       "data-ui-runtime": "primevue",
+    };
+    if (children == null) return h(PrimeButton, primeProps);
+    return h(PrimeButton, primeProps, {
+      default: () => children,
     });
   }
 
-  return h("button", commonProps, text);
+  return h("button", commonProps, children == null ? text : children);
 }

@@ -21,6 +21,22 @@ describe("primevue render primitives", () => {
     expect(vnode.props["data-ui-runtime"]).toBe("primevue");
   });
 
+  it("renders PrimeVue Button default slot when children are provided", () => {
+    const PrimeButton = { name: "PrimeButtonStub" };
+    const globalScope = { PrimeVue: { Button: PrimeButton } };
+    const h = (type, props = {}, children = []) => ({ type, props, children });
+    const childNode = h("span", { class: "child" }, "x");
+    const vnode = renderActionButton(h, {
+      className: "ghost-button",
+      children: [childNode],
+    }, globalScope);
+
+    expect(vnode.type).toBe(PrimeButton);
+    expect(vnode.props.label).toBeUndefined();
+    expect(typeof vnode.children.default).toBe("function");
+    expect(vnode.children.default()).toEqual([childNode]);
+  });
+
   it("falls back to native button vnode when PrimeVue Button is unavailable", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderActionButton(h, {

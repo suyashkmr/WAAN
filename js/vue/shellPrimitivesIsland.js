@@ -12,6 +12,7 @@ import {
   registerVueBridge,
   resolveVueBridge,
 } from "./bridgeRegistry.js";
+import { renderActionButton } from "./primevueRenderPrimitives.js";
 
 /**
  * @param {string} actionId
@@ -272,16 +273,15 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
           },
           [
             h("div", { class: "toast-message" }, item.message),
-            h(
-              "button",
-              {
-                type: "button",
-                class: "toast-close",
+            renderActionButton(h, {
+              type: "button",
+              className: "toast-close",
+              text: "x",
+              attrs: {
                 "aria-label": "Dismiss",
-                onClick: () => dismissToast(item.id),
               },
-              "x",
-            ),
+              onClick: () => dismissToast(item.id),
+            }),
           ],
         ),
       );

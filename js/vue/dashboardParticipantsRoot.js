@@ -1,3 +1,5 @@
+import { renderActionButton } from "./primevueRenderPrimitives.js";
+
 /**
  * @param {any} h
  * @param {{ rows: any[], emptyMessage: string, expandedByRowId: Record<string, boolean> }} participantsState
@@ -44,17 +46,16 @@ export function createParticipantsRoot(h, participantsState) {
               [
                 h("td", { "data-label": "Rank" }, String(row.rank)),
                 h("td", { "data-label": "Participant" }, [
-                  h(
-                    "button",
-                    {
-                      type: "button",
-                      class: "participant-toggle",
+                  renderActionButton(h, {
+                    type: "button",
+                    className: "participant-toggle",
+                    attrs: {
                       "aria-expanded": String(isExpanded),
                       "aria-controls": row.detailId,
                       "aria-label": `${isExpanded ? "Hide" : "Show"} details for ${row.senderLabel}`,
-                      onClick: () => toggleRow(rowKey),
                     },
-                    [
+                    onClick: () => toggleRow(rowKey),
+                    children: [
                       h("span", { class: "toggle-icon" }, isExpanded ? "▾" : "▸"),
                       h(
                         "span",
@@ -65,7 +66,7 @@ export function createParticipantsRoot(h, participantsState) {
                         row.senderLabel,
                       ),
                     ],
-                  ),
+                  }),
                 ]),
                 h("td", { "data-label": "Messages" }, row.messageCount),
                 h(

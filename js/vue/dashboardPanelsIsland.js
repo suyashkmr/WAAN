@@ -8,6 +8,7 @@ import {
   registerVueBridge,
   resolveVueBridge,
 } from "./bridgeRegistry.js";
+import { renderActionButton } from "./primevueRenderPrimitives.js";
 
 function normalizeHighlightEntry(entry) {
   if (!entry || typeof entry !== "object") return null;
@@ -85,16 +86,15 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
               h("div", { class: "highlight-label-row" }, [
                 h("span", { class: "highlight-label" }, highlight.label),
                 highlight.tooltip
-                  ? h(
-                      "button",
-                      {
-                        type: "button",
-                        class: "info-note-button info-note-inline",
+                  ? renderActionButton(h, {
+                      type: "button",
+                      className: "info-note-button info-note-inline",
+                      attrs: {
                         "aria-label": highlight.tooltip,
                         "aria-describedby": `highlight-note-${index}`,
                         title: highlight.tooltip,
                       },
-                      [
+                      children: [
                         h(
                           "svg",
                           {
@@ -113,7 +113,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
                           highlight.tooltip,
                         ),
                       ],
-                    )
+                    })
                   : null,
               ]),
               highlight.headline ? h("p", { class: "highlight-headline" }, highlight.headline) : null,

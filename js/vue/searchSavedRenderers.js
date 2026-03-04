@@ -1,6 +1,7 @@
 import { formatDisplayDate, formatNumber, formatTimestampDisplay } from "../utils.js";
 import { ensureSavedViewsGalleryActions } from "./searchSavedGalleryActions.js";
 import { renderSavedViewsComparisonWithVue } from "./searchSavedComparisonRenderer.js";
+import { renderActionButton } from "./primevueRenderPrimitives.js";
 
 function normalizeActions(value) {
   if (!Array.isArray(value)) return [];
@@ -34,15 +35,18 @@ export function renderPanelStateWithVue({
       safeMessage ? h("p", { class: "panel-state-copy" }, safeMessage) : null,
       safeActions.length
         ? h("div", { class: "app-toolbar-row panel-state-actions" }, safeActions.map(action =>
-          h("button", {
+          renderActionButton(h, {
             type: "button",
-            class: "ghost-button small",
-            "data-panel-action": action.id,
+            className: "ghost-button small",
+            text: action.label,
             disabled: action.disabled,
+            attrs: {
+              "data-panel-action": action.id,
+            },
             onClick: () => {
               if (typeof dispatchAction === "function") dispatchAction(action.id);
             },
-          }, action.label),
+          }),
         ))
         : null,
     ]),
