@@ -215,4 +215,49 @@ describe("theme ui controller", () => {
       window.matchMedia = originalMatchMedia;
     }
   });
+
+  it("keeps theme changes working after radio inputs are remounted", () => {
+    const oldLightInput = document.createElement("input");
+    oldLightInput.type = "radio";
+    oldLightInput.name = "theme-option";
+    oldLightInput.value = "light";
+    const oldDarkInput = document.createElement("input");
+    oldDarkInput.type = "radio";
+    oldDarkInput.name = "theme-option";
+    oldDarkInput.value = "dark";
+    const oldSystemInput = document.createElement("input");
+    oldSystemInput.type = "radio";
+    oldSystemInput.name = "theme-option";
+    oldSystemInput.value = "system";
+    document.body.append(oldLightInput, oldDarkInput, oldSystemInput);
+
+    const controller = createThemeUiController({
+      themeToggleInputs: [oldLightInput, oldDarkInput, oldSystemInput],
+      mediaQuery: { matches: false, addEventListener: vi.fn() },
+      exportThemeStyles: {
+        light: { label: "Light" },
+        dark: { label: "Dark" },
+      },
+    });
+
+    controller.initThemeControls({ bindInputListeners: true });
+    expect(document.documentElement.dataset.theme).toBe("system");
+
+    oldLightInput.remove();
+    oldDarkInput.remove();
+    oldSystemInput.remove();
+
+    const newDarkInput = document.createElement("input");
+    newDarkInput.type = "radio";
+    newDarkInput.name = "theme-option";
+    newDarkInput.value = "dark";
+    document.body.append(newDarkInput);
+
+    newDarkInput.checked = true;
+    newDarkInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.dataset.colorScheme).toBe("dark");
+    expect(localStorage.getItem("waan-theme-preference")).toBe("dark");
+  });
 });
