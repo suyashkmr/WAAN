@@ -617,8 +617,8 @@ Completed work is archived in git history and was removed from this file for cla
       - [x] `js/relayControls/logStream.js`
     - [ ] Remove runtime dependence on direct `createElement` / `innerHTML` / manual node construction in migrated frontend surfaces.
       - [ ] Migrate remaining runtime list/select renderers still using manual DOM APIs:
-        - [ ] `js/analytics/polls.js`
-        - [ ] `js/search/participantUi.js`
+        - [x] `js/analytics/polls.js`
+        - [x] `js/search/participantUi.js`
         - [ ] `js/savedViewsUi.js` (remaining compare-select option construction)
         - [ ] `js/vue/dashboardPanelsIsland.js` (hourly anomaly badge node construction)
       - [ ] Remove remaining direct DOM ref fallback access in relay control state paths:
