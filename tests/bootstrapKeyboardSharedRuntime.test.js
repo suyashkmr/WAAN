@@ -108,7 +108,7 @@ describe("bootstrap controller", () => {
 
     expect(deps.initEventHandlers).toHaveBeenCalledTimes(1);
     expect(deps.initRelayControls).toHaveBeenCalledTimes(1);
-    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: false });
+    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: true });
     expect(deps.initCompactMode).toHaveBeenCalledTimes(1);
     expect(deps.initAccessibilityControls).toHaveBeenCalledTimes(1);
     expect(deps.setDataAvailabilityState).toHaveBeenCalledWith(false);
@@ -187,7 +187,7 @@ describe("bootstrap controller", () => {
     expect(deps.cycleReduceMotionPreference).toHaveBeenCalledTimes(1);
     expect(deps.toggleHighContrastPreference).toHaveBeenCalledTimes(1);
     expect(deps.setThemePreference).toHaveBeenCalledWith("dark");
-    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: false });
+    expect(deps.initThemeControls).toHaveBeenCalledWith({ bindInputListeners: true });
     expect(deps.initCompactMode).toHaveBeenCalledWith({ bindToggleListener: false });
     expect(deps.initAccessibilityControls).toHaveBeenCalledWith({ bindToggleListeners: false });
   });

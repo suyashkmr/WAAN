@@ -23,6 +23,26 @@ export function createThemeUiController({
     preference: "system",
     mediaQuery,
   };
+  /** @type {((event: Event) => void) | null} */
+  let delegatedThemeChangeHandler = null;
+  /** @type {WeakSet<HTMLInputElement>} */
+  const boundThemeInputs = new WeakSet();
+
+  /**
+   * @returns {Array<HTMLInputElement>}
+   */
+  function getThemeToggleInputs() {
+    const staticInputs = themeToggleInputs.filter(Boolean);
+    if (typeof document === "undefined") return staticInputs;
+    const liveInputs = /** @type {Array<HTMLInputElement>} */ (
+      Array.from(document.querySelectorAll('input[name="theme-option"]'))
+    );
+    const merged = [...staticInputs];
+    liveInputs.forEach(input => {
+      if (!merged.includes(input)) merged.push(input);
+    });
+    return merged;
+  }
 
   function detectSystemScheme() {
     if (themeState.mediaQuery && typeof themeState.mediaQuery.matches === "boolean") {
@@ -67,7 +87,7 @@ export function createThemeUiController({
       : "system";
     themeState.preference = normalized;
     applyTheme(normalized);
-    themeToggleInputs.forEach(input => {
+    getThemeToggleInputs().forEach(input => {
       input.checked = input.value === normalized;
     });
     return normalized;
@@ -77,15 +97,24 @@ export function createThemeUiController({
     const saved = globalThis.localStorage?.getItem(storageKey);
     const initial = saved || "system";
     setThemePreference(initial);
-    themeToggleInputs.forEach(input => {
-      if (bindInputListeners) {
+    if (bindInputListeners && typeof document !== "undefined" && delegatedThemeChangeHandler == null) {
+      delegatedThemeChangeHandler = event => {
+        const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
+        if (!target || target.name !== "theme-option") return;
+        if (!target.checked) return;
+        setThemePreference(target.value);
+      };
+      document.addEventListener("change", delegatedThemeChangeHandler);
+    }
+    if (bindInputListeners) {
+      getThemeToggleInputs().forEach(input => {
+        if (boundThemeInputs.has(input)) return;
         input.addEventListener("change", () => {
-          if (input.checked) {
-            setThemePreference(input.value);
-          }
+          if (input.checked) setThemePreference(input.value);
         });
-      }
-    });
+        boundThemeInputs.add(input);
+      });
+    }
     if (themeState.mediaQuery) {
       themeState.mediaQuery.addEventListener("change", () => {
         if (themeState.preference === "system") {

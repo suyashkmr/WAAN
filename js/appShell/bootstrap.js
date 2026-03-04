@@ -169,7 +169,7 @@ export function createBootstrapController({ elements, deps }) {
 
     initEventHandlers();
     initRelayControls();
-    initThemeControls({ bindInputListeners: false });
+    initThemeControls({ bindInputListeners: true });
     initCompactMode({ bindToggleListener: false });
     initAccessibilityControls({ bindToggleListeners: false });
     setDataAvailabilityState(false);
