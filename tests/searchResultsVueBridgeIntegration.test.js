@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { h, render } from "vue";
+import { defineComponent, h, render } from "vue";
 import { createSearchResultsUiController } from "../js/search/resultsUi.js";
 import { mountSearchSavedBridge } from "../js/vue/searchSavedIsland.js";
 import { clearVueBridgeRuntime } from "./vueBridgeTestUtils.js";
@@ -43,11 +43,23 @@ describe("search results Vue bridge integration", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     clearVueBridgeRuntime();
+    delete globalThis.PrimeVue;
     delete globalThis.Vue;
     document.body.innerHTML = "";
   });
 
   it("renders Vue empty state and dispatches clear-filter action from rendered button", () => {
+    const PrimeButton = defineComponent({
+      name: "PrimeButtonStub",
+      inheritAttrs: false,
+      props: {
+        label: { type: String, default: "" },
+      },
+      setup(props, { attrs, slots }) {
+        return () => h("button", attrs, slots.default ? slots.default() : props.label);
+      },
+    });
+    globalThis.PrimeVue = { Button: PrimeButton };
     globalThis.Vue = { h, render };
     mountSearchSavedBridge();
     const searchStateRef = {
@@ -70,6 +82,7 @@ describe("search results Vue bridge integration", () => {
 
     const clearButton = resultsListEl.querySelector('[data-panel-action="clear-search-filters"]');
     expect(clearButton).toBeTruthy();
+    expect(clearButton?.getAttribute("data-ui-runtime")).toBe("primevue");
     clearButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(handleStateAction).toHaveBeenCalledWith("clear-search-filters");
   });

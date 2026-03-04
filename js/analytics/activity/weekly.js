@@ -1,4 +1,5 @@
 import { formatNumber, formatFloat } from "../../utils.js";
+import { renderActionButton } from "../../vue/primevueRenderPrimitives.js";
 
 /**
  * @param {any} entry
@@ -83,16 +84,18 @@ export function renderWeeklySection(weeklyData, summary, options = {}) {
           if (isSelected) classes.push("selected");
           const [weekYear, weekNumber] = String(entry?.week || "").split("-");
           const delta = resolveWeeklyDelta(entry);
-          return h("button", {
-            key: `${String(entry?.week || "week")}-${index}`,
+          return renderActionButton(h, {
             type: "button",
-            class: classes.join(" "),
+            className: classes.join(" "),
+            attrs: {
+              key: `${String(entry?.week || "week")}-${index}`,
+            },
             onClick: () => {
               if (typeof onSelectRange !== "function") return;
               if (!entry?.startDate || !entry?.endDate) return;
               onSelectRange({ start: entry.startDate, end: entry.endDate, entry });
             },
-          }, [
+            children: [
             h("span", { class: "weekly-bar-value" }, formatNumber(Number(entry?.count || 0))),
             h("div", { class: "weekly-bar-fill-wrap" }, [
               h("div", {
@@ -110,7 +113,8 @@ export function renderWeeklySection(weeklyData, summary, options = {}) {
               h("span", { class: "delta-diff" }, delta.diff),
               h("span", { class: "delta-pct" }, delta.pct),
             ]),
-          ]);
+            ],
+          });
         }),
       ),
     ]),

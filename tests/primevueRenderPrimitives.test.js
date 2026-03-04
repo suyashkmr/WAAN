@@ -50,4 +50,26 @@ describe("primevue render primitives", () => {
     expect(vnode.props.id).toBe("reset-search");
     expect(vnode.children).toBe("Clear filters");
   });
+
+  it("preserves disabled/onClick/attrs in fallback native button path", () => {
+    const clickHandler = () => {};
+    const h = (type, props = {}, children = []) => ({ type, props, children });
+    const vnode = renderActionButton(h, {
+      id: "relay-stop",
+      text: "Pause Relay",
+      className: "ghost-button",
+      disabled: true,
+      onClick: clickHandler,
+      attrs: {
+        "aria-label": "Pause relay",
+        "data-action": "relay.stop",
+      },
+    }, { PrimeVue: {} });
+
+    expect(vnode.type).toBe("button");
+    expect(vnode.props.disabled).toBe(true);
+    expect(vnode.props.onClick).toBe(clickHandler);
+    expect(vnode.props["aria-label"]).toBe("Pause relay");
+    expect(vnode.props["data-action"]).toBe("relay.stop");
+  });
 });

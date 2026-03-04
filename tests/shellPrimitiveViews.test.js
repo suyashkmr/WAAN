@@ -34,6 +34,30 @@ function findNode(node, predicate) {
 }
 
 describe("shell primitive views", () => {
+  it("uses PrimeVue Button vnode type when runtime is available", () => {
+    const originalPrimeVue = globalThis.PrimeVue;
+    try {
+      const PrimeButton = { name: "PrimeButtonStub" };
+      globalThis.PrimeVue = { Button: PrimeButton };
+      const onAction = vi.fn();
+      const headerRoot = createRelayHeaderActionsRoot(h, onAction);
+      const headerTree = headerRoot.render();
+      const reloadButton = findNode(
+        headerTree,
+        node => node?.props?.id === "relay-reload-all",
+      );
+      expect(reloadButton).toBeTruthy();
+      expect(reloadButton.type).toBe(PrimeButton);
+      expect(reloadButton.props["data-ui-runtime"]).toBe("primevue");
+    } finally {
+      if (typeof originalPrimeVue === "undefined") {
+        delete globalThis.PrimeVue;
+      } else {
+        globalThis.PrimeVue = originalPrimeVue;
+      }
+    }
+  });
+
   it("dispatches theme set action from toolbar theme radio controls", () => {
     const onAction = vi.fn();
     const root = createActionsToolbarRoot(h, onAction);
@@ -95,14 +119,16 @@ describe("shell primitive views", () => {
     const headerTree = headerRoot.render();
     const reloadButton = findNode(
       headerTree,
-      node => node?.type === "button" && node?.props?.id === "relay-reload-all",
+      node => node?.props?.id === "relay-reload-all",
     );
     const clearButton = findNode(
       headerTree,
-      node => node?.type === "button" && node?.props?.id === "relay-clear-storage",
+      node => node?.props?.id === "relay-clear-storage",
     );
     expect(reloadButton).toBeTruthy();
     expect(clearButton).toBeTruthy();
+    expect(reloadButton.props.disabled).toBe(true);
+    expect(clearButton.props.disabled).toBe(true);
     reloadButton.props.onClick();
     clearButton.props.onClick();
 
@@ -110,19 +136,21 @@ describe("shell primitive views", () => {
     const liveTree = liveRoot.render();
     const connectButton = findNode(
       liveTree,
-      node => node?.type === "button" && node?.props?.id === "relay-start",
+      node => node?.props?.id === "relay-start",
     );
     const stopButton = findNode(
       liveTree,
-      node => node?.type === "button" && node?.props?.id === "relay-stop",
+      node => node?.props?.id === "relay-stop",
     );
     const logoutButton = findNode(
       liveTree,
-      node => node?.type === "button" && node?.props?.id === "relay-logout",
+      node => node?.props?.id === "relay-logout",
     );
     expect(connectButton).toBeTruthy();
     expect(stopButton).toBeTruthy();
     expect(logoutButton).toBeTruthy();
+    expect(stopButton.props.disabled).toBe(true);
+    expect(logoutButton.props.disabled).toBe(true);
     connectButton.props.onClick();
     stopButton.props.onClick();
     logoutButton.props.onClick();
