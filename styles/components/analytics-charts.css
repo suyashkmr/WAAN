@@ -726,7 +726,6 @@
     position: sticky;
     top: 0;
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-    backdrop-filter: blur(8px);
     box-shadow: 0 2px 0 color-mix(in srgb, var(--border) 55%, transparent);
     z-index: 4;
 }
@@ -743,7 +742,6 @@
     left: 0;
     z-index: 3;
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-    backdrop-filter: blur(8px);
     box-shadow: 2px 2px 0 color-mix(in srgb, var(--border) 55%, transparent);
 }
 

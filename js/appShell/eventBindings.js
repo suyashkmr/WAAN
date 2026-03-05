@@ -28,6 +28,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     downloadMessageTypesButton,
     downloadChatJsonButton,
     downloadSentimentButton,
+    statDownloadButtons,
     downloadMarkdownButton,
     downloadSlidesButton,
     downloadSearchButton,
@@ -80,8 +81,6 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     updateHourlyState,
     getHourlyState,
   } = deps;
-
-  const documentRef = globalThis.document ?? null;
 
   function initEventHandlers() {
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
@@ -153,8 +152,8 @@ export function createEventBindingsController({ elements, handlers, deps }) {
       downloadSentimentButton.addEventListener("click", exportSentiment);
     }
 
-    if (documentRef) {
-      documentRef.querySelectorAll(".stat-download").forEach(
+    if (statDownloadButtons?.length) {
+      statDownloadButtons.forEach(
         /** @param {Element} button */ function bindStatDownload(button) {
         button.addEventListener("click", () => {
           const type = /** @type {HTMLElement} */ (button).dataset.export;

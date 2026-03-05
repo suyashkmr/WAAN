@@ -63,7 +63,7 @@
         radial-gradient(120% 140% at 12% -18%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 58%),
         linear-gradient(148deg, color-mix(in srgb, var(--bg-raised) 88%, transparent) 0%, color-mix(in srgb, var(--bg-glass) 88%, transparent) 100%);
     box-shadow: var(--shadow-card), inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 72%, transparent);
-    backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.75));
 }
 
 .app-pulse-bar .toolbar-group.primary {

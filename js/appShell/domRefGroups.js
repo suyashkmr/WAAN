@@ -134,6 +134,7 @@ export function createAppDomRefGroups(refs) {
       downloadMessageTypesButton: refs.downloadMessageTypesButton,
       downloadSentimentButton: refs.downloadSentimentButton,
       downloadChatJsonButton: refs.downloadChatJsonButton,
+      statDownloadButtons: refs.statDownloadButtons,
       downloadSearchButton: refs.downloadSearchButton,
       downloadMarkdownButton: refs.downloadMarkdownButton,
       downloadSlidesButton: refs.downloadSlidesButton,

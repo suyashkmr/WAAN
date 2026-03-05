@@ -7,9 +7,23 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
  */
 
 /**
- * @param {{ elements: AnyRecord, deps: AnyRecord }} params
+ * @param {{
+ *   elements: AnyRecord,
+ *   deps: AnyRecord,
+ *   documentRef?: Document | null,
+ *   windowRef?: Window | null,
+ *   requestAnimationFrameRef?: ((callback: FrameRequestCallback) => number) | null,
+ *   setTimeoutRef?: typeof setTimeout,
+ * }} params
  */
-export function createBootstrapController({ elements, deps }) {
+export function createBootstrapController({
+  elements,
+  deps,
+  documentRef = typeof document !== "undefined" ? document : null,
+  windowRef = typeof window !== "undefined" ? window : null,
+  requestAnimationFrameRef = typeof requestAnimationFrame === "function" ? requestAnimationFrame.bind(globalThis) : null,
+  setTimeoutRef = globalThis.setTimeout.bind(globalThis),
+}) {
   const {
     onboardingSkipButton,
     onboardingNextButton,
@@ -59,7 +73,11 @@ export function createBootstrapController({ elements, deps }) {
       const height = content.scrollHeight;
       content.style.maxHeight = "0px";
       content.style.opacity = "0";
-      requestAnimationFrame(() => {
+      const scheduleFrame = requestAnimationFrameRef ?? (callback => {
+        callback(0);
+        return 0;
+      });
+      scheduleFrame(() => {
         content.style.maxHeight = `${height}px`;
         content.style.opacity = "1";
       });
@@ -74,7 +92,11 @@ export function createBootstrapController({ elements, deps }) {
 
     const height = content.scrollHeight;
     content.style.maxHeight = `${height}px`;
-    requestAnimationFrame(() => {
+    const scheduleFrame = requestAnimationFrameRef ?? (callback => {
+      callback(0);
+      return 0;
+    });
+    scheduleFrame(() => {
       content.style.maxHeight = "0px";
       content.style.opacity = "0";
     });
@@ -88,13 +110,13 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function initCardToggles() {
-    Array.from(document.querySelectorAll(".card-toggle")).forEach(
+    Array.from(documentRef?.querySelectorAll(".card-toggle") ?? []).forEach(
       /** @param {Element} toggle */ toggle => {
       const toggleEl = /** @type {HTMLElement} */ (toggle);
       toggle.addEventListener("click", () => {
         const expanded = toggle.getAttribute("aria-expanded") === "true";
         const targetId = toggleEl.dataset.target;
-        const content = targetId ? document.getElementById(targetId) : null;
+        const content = targetId ? documentRef?.getElementById(targetId) ?? null : null;
         const card = toggle.closest(".card");
         const next = !expanded;
         toggle.setAttribute("aria-expanded", String(next));
@@ -105,7 +127,7 @@ export function createBootstrapController({ elements, deps }) {
   }
 
   function initElectronRelayBridge() {
-    const electronAPI = /** @type {any} */ (window).electronAPI;
+    const electronAPI = /** @type {any} */ (windowRef)?.electronAPI;
     if (!electronAPI?.onRelayAction) return;
     electronAPI.onRelayAction(/** @param {string} action */ action => {
       if (action === "connect") {
@@ -173,7 +195,7 @@ export function createBootstrapController({ elements, deps }) {
     setDataAvailabilityState(false);
     void onboardingSkipButton;
     void onboardingNextButton;
-    setTimeout(() => onboardingController.start(), 500);
+    setTimeoutRef(() => onboardingController.start(), 500);
 
     initElectronRelayBridge();
     buildSectionNav();

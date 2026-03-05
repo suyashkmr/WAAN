@@ -184,7 +184,7 @@
     --text-on-strong: #fffdf8;
     --glass-bg: color-mix(in srgb, var(--card-bg) 75%, transparent);
     --glass-border: color-mix(in srgb, var(--border) 65%, transparent);
-    --glass-blur: 18px;
+    --glass-blur: 10px;
 
     --bg-canvas: var(--bg);
     --bg-room: var(--card-bg);
@@ -234,11 +234,11 @@
     --control-shadow-hover: 0 12px 24px color-mix(in srgb, var(--accent) 16%, rgba(6, 8, 18, 0.34));
     --control-shadow-active: 0 6px 14px color-mix(in srgb, var(--accent) 14%, rgba(5, 6, 16, 0.32));
 
-    --shadow-soft: 0 10px 24px rgba(5, 8, 18, 0.24);
-    --shadow-float: 0 22px 44px rgba(3, 6, 15, 0.42);
-    --shadow-card: 0 16px 36px rgba(7, 10, 20, 0.22);
-    --shadow-card-strong: 0 20px 40px rgba(6, 10, 20, 0.28);
-    --shadow-card-deep: 0 24px 46px rgba(6, 10, 20, 0.34);
+    --shadow-soft: 0 8px 18px rgba(5, 8, 18, 0.2);
+    --shadow-float: 0 16px 34px rgba(3, 6, 15, 0.34);
+    --shadow-card: 0 12px 26px rgba(7, 10, 20, 0.18);
+    --shadow-card-strong: 0 14px 30px rgba(6, 10, 20, 0.22);
+    --shadow-card-deep: 0 18px 34px rgba(6, 10, 20, 0.26);
     --shadow-chip: 0 10px 18px rgba(15, 23, 42, 0.12);
     --shadow-shell: 0 18px 44px rgba(3, 6, 15, 0.54), 0 2px 0 rgba(255, 255, 255, 0.03) inset;
     --shadow-shell-hover: 0 24px 56px rgba(2, 5, 14, 0.64), 0 2px 0 rgba(255, 255, 255, 0.05) inset;

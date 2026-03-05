@@ -87,8 +87,6 @@ describe("event bindings detailed", () => {
     const statB = document.createElement("button");
     statB.className = "stat-download";
     statB.dataset.export = "media";
-    document.body.append(statA, statB);
-
     const downloadParticipantsButton = mkBtn();
     const downloadHourlyButton = mkBtn();
     const downloadDailyButton = mkBtn();
@@ -114,6 +112,7 @@ describe("event bindings detailed", () => {
         downloadMessageTypesButton,
         downloadChatJsonButton,
         downloadSentimentButton,
+        statDownloadButtons: [statA, statB],
         downloadMarkdownButton,
         downloadSlidesButton,
         downloadSearchButton,

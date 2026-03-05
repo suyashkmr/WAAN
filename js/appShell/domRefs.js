@@ -3,10 +3,11 @@
 import { createDomCache } from "./domCache.js";
 
 /**
+ * @param {{ documentRef?: Document | null }} [params]
  * @returns {Record<string, any>}
  */
-export function createAppDomRefs() {
-  const domCache = createDomCache();
+export function createAppDomRefs({ documentRef = typeof document !== "undefined" ? document : null } = {}) {
+  const domCache = createDomCache(documentRef);
   return {
     statusEl: domCache.getById("data-status"),
     relayBannerEl: domCache.getById("relay-status-banner"),
@@ -16,14 +17,14 @@ export function createAppDomRefs() {
     relayRecoveryReconnectButton: domCache.getById("relay-recovery-reconnect"),
     relayRecoveryResyncButton: domCache.getById("relay-recovery-resync"),
     relayRecoveryExportButton: domCache.getById("relay-recovery-export"),
-    relayOnboardingSteps: document.querySelectorAll(".relay-step"),
+    relayOnboardingSteps: documentRef?.querySelectorAll(".relay-step") ?? [],
     summaryEl: domCache.getById("summary"),
-    participantsBody: document.querySelector("#top-senders tbody"),
+    participantsBody: documentRef?.querySelector("#top-senders tbody") ?? null,
     participantsNote: domCache.getById("participants-note"),
     participantsTopSelect: domCache.getById("participants-top-count"),
     participantsSortSelect: domCache.getById("participants-sort"),
     participantsTimeframeSelect: domCache.getById("participants-timeframe"),
-    participantPresetButtons: document.querySelectorAll("[data-participants-preset]"),
+    participantPresetButtons: documentRef?.querySelectorAll("[data-participants-preset]") ?? [],
     rangeSelect: domCache.getById("global-range"),
     chatSelector: domCache.getById("chat-selector"),
     relayStatusEl: domCache.getById("relay-connection-status"),
@@ -76,6 +77,7 @@ export function createAppDomRefs() {
     downloadMessageTypesButton: domCache.getById("download-message-types"),
     downloadSentimentButton: domCache.getById("download-sentiment"),
     downloadChatJsonButton: domCache.getById("download-chat-json"),
+    statDownloadButtons: documentRef?.querySelectorAll(".stat-download") ?? [],
     sentimentSummaryEl: domCache.getById("sentiment-summary"),
     sentimentTrendNote: domCache.getById("sentiment-trend-note"),
     sentimentDailyChart: domCache.getById("sentiment-daily-chart"),
@@ -130,15 +132,15 @@ export function createAppDomRefs() {
     heroStatusCopy: domCache.getById("hero-status-copy"),
     heroStatusMetaCopy: domCache.getById("hero-status-meta-copy"),
     heroSyncDot: domCache.getById("hero-sync-dot"),
-    heroMilestoneSteps: document.querySelectorAll("#hero-milestones .hero-milestone"),
+    heroMilestoneSteps: documentRef?.querySelectorAll("#hero-milestones .hero-milestone") ?? [],
     datasetEmptyCallout: domCache.getById("dataset-empty-callout"),
     datasetEmptyHeading: domCache.getById("dataset-empty-heading"),
     datasetEmptyCopy: domCache.getById("dataset-empty-copy"),
     firstRunSetup: domCache.getById("first-run-setup"),
-    firstRunSetupSteps: document.querySelectorAll("[data-setup-step]"),
+    firstRunSetupSteps: documentRef?.querySelectorAll("[data-setup-step]") ?? [],
     firstRunOpenRelayButton: domCache.getById("first-run-open-relay"),
     firstRunPrimaryActionButton: domCache.getById("first-run-primary-action"),
-    sectionNavInner: document.querySelector(".section-nav-inner"),
+    sectionNavInner: documentRef?.querySelector(".section-nav-inner") ?? null,
     timeOfDayWeekdayToggle: domCache.getById("timeofday-toggle-weekdays"),
     timeOfDayWeekendToggle: domCache.getById("timeofday-toggle-weekends"),
     timeOfDayHourStartInput: domCache.getById("timeofday-hour-start"),
@@ -153,7 +155,7 @@ export function createAppDomRefs() {
     pollsTotalEl: domCache.getById("polls-total"),
     pollsCreatorsEl: domCache.getById("polls-creators"),
     pollsListEl: domCache.getById("polls-list"),
-    dashboardRoot: document.querySelector("main"),
-    themeToggleInputs: Array.from(document.querySelectorAll('input[name="theme-option"]')),
+    dashboardRoot: documentRef?.querySelector("main") ?? null,
+    themeToggleInputs: Array.from(documentRef?.querySelectorAll('input[name="theme-option"]') ?? []),
   };
 }

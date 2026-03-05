@@ -36,6 +36,7 @@ export function createRuntimeEventBindings({
       downloadMessageTypesButton: exportRefs.downloadMessageTypesButton,
       downloadChatJsonButton: exportRefs.downloadChatJsonButton,
       downloadSentimentButton: exportRefs.downloadSentimentButton,
+      statDownloadButtons: exportRefs.statDownloadButtons,
       downloadMarkdownButton: exportRefs.downloadMarkdownButton,
       downloadSlidesButton: exportRefs.downloadSlidesButton,
       downloadSearchButton: exportRefs.downloadSearchButton,

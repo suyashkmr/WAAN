@@ -687,14 +687,22 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Migrated dashboard highlights list rendering to PrimeVue `DataView` with grid-parity styling and island coverage (`js/vue/dashboardPanelsIsland.js`, `styles/components/analytics.css`, `tests/dashboardPanelsIsland.test.js`).
       - [x] Migrated saved-views comparison columns to PrimeVue `DataView` with grid-parity styling and renderer coverage (`js/vue/searchSavedComparisonRenderer.js`, `js/vue/searchSavedIsland.js`, `styles/components/search-saved.css`, `tests/searchSavedComparisonRenderer.test.js`).
   - [ ] Remove redundant custom control wrappers once PrimeVue ownership is complete.
+  - [ ] Explicit end-state acceptance: frontend interaction/render ownership is fully Vue-driven.
+    - [ ] No remaining non-test runtime controllers own primary UI rendering through direct DOM mutation.
+    - [ ] No remaining non-test runtime controllers own primary interaction flow through ad-hoc `addEventListener` wiring where Vue bridge/component ownership should apply.
+    - [ ] Remaining direct DOM/browser API usage is limited to intentional platform utilities only (for example export/download, print-preview, focus/measurement, or other browser-only glue).
+    - [ ] Manual sign-off: major app surfaces behave correctly with Vue-owned flows for shell, relay, search, saved views, and analytics.
   - [ ] DOM-to-Vue replacement queue (from frontend DOM-coupling sweep; execute top-down).
     - [ ] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
       - [ ] `js/appShell/eventBindings.js`
+        - [x] Removed controller-owned `.stat-download` document scanning; stat export buttons now flow through explicit app-shell refs/runtime config.
       - [ ] `js/appShell/bootstrap.js`
+        - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`
       - [ ] `js/appShell/sectionNav.js`
       - [ ] `js/appShell/onboarding.js`
-      - [ ] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
+      - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
+        - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
       - [ ] `js/appShell/dashboardRender/activityPanels.js`
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
       - [ ] `js/appShell/dashboardRender/participantsPanel.js`
