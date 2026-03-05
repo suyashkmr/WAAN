@@ -145,4 +145,107 @@ describe("search saved island bridge mounting", () => {
     expect(document.querySelectorAll(".saved-view-gallery-vue-root").length).toBe(1);
     expect(document.querySelectorAll("#saved-view-gallery .saved-view-card").length).toBe(2);
   });
+
+  it("uses PrimeVue DataView for saved-view gallery when runtime component is available", () => {
+    const PrimeDataView = { name: "PrimeDataViewStub" };
+    const fakeWindow = {
+      document,
+      console,
+      PrimeVue: { DataView: PrimeDataView },
+      Vue: {
+        h: (type, props = {}, children = []) => ({ type, props, children }),
+        render: (vnode, container) => {
+          if (!container) return;
+          if (!vnode) {
+            container.innerHTML = "";
+            return;
+          }
+          const cssClass = typeof vnode?.props?.class === "string" ? vnode.props.class : "";
+          if (!cssClass.includes("saved-view-gallery-vue-root")) {
+            container.innerHTML = "<div>rendered</div>";
+            return;
+          }
+          const children = Array.isArray(vnode.children) ? vnode.children : [];
+          const dataViewNode = children.find(child => child?.type === PrimeDataView) || null;
+          if (!dataViewNode) {
+            container.innerHTML = '<div class="saved-view-gallery-vue-root"></div>';
+            return;
+          }
+          const slot = dataViewNode.children?.list;
+          const listNodes = typeof slot === "function"
+            ? slot({ items: dataViewNode.props?.value || [] })
+            : [];
+          container.innerHTML = `<div class="saved-view-gallery-vue-root" data-ui-runtime="${String(dataViewNode.props?.["data-ui-runtime"] || "")}">${listNodes
+            .map(
+              child =>
+                `<article class="saved-view-card" data-view-id="${String(child?.props?.["data-view-id"] || "")}"></article>`,
+            )
+            .join("")}</div>`;
+        },
+      },
+    };
+
+    mountSearchSavedBridge({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });
+    expect(bridge).toBeTruthy();
+
+    bridge?.renderSavedViewsGallery?.({
+      cards: [{ viewId: "view-1", viewName: "View 1", interactive: true }],
+      interactive: true,
+    });
+
+    const root = document.querySelector(".saved-view-gallery-vue-root");
+    expect(root?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(document.querySelectorAll("#saved-view-gallery .saved-view-card").length).toBe(1);
+  });
+
+  it("uses PrimeVue DataView for search results when runtime component is available", () => {
+    const PrimeDataView = { name: "PrimeDataViewStub" };
+    const fakeWindow = {
+      document,
+      console,
+      PrimeVue: { DataView: PrimeDataView },
+      Vue: {
+        h: (type, props = {}, children = []) => ({ type, props, children }),
+        render: (vnode, container) => {
+          if (!container) return;
+          if (!vnode) {
+            container.innerHTML = "";
+            return;
+          }
+          const cssClass = typeof vnode?.props?.class === "string" ? vnode.props.class : "";
+          if (!cssClass.includes("search-results-vue-list")) {
+            container.innerHTML = "<div>rendered</div>";
+            return;
+          }
+          const children = Array.isArray(vnode.children) ? vnode.children : [];
+          const dataViewNode = children.find(child => child?.type === PrimeDataView) || null;
+          if (!dataViewNode) {
+            container.innerHTML = '<div class="search-results-vue-list"></div>';
+            return;
+          }
+          const slot = dataViewNode.children?.list;
+          const listNodes = typeof slot === "function"
+            ? slot({ items: dataViewNode.props?.value || [] })
+            : [];
+          container.innerHTML = `<div class="search-results-vue-list" data-ui-runtime="${String(dataViewNode.props?.["data-ui-runtime"] || "")}">${listNodes
+            .map(() => '<div class="search-result"></div>')
+            .join("")}</div>`;
+        },
+      },
+    };
+
+    mountSearchSavedBridge({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });
+    expect(bridge).toBeTruthy();
+
+    bridge?.renderSearchResults?.({
+      results: [{ sender: "A", timestamp: "2026-03-05T00:00:00.000Z", message: "hello" }],
+      total: 1,
+    });
+
+    const root = document.querySelector("#search-results-list .search-results-vue-list");
+    expect(root?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(document.querySelectorAll("#search-results-list .search-result").length).toBe(1);
+  });
 });

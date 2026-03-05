@@ -60,6 +60,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
         ...payload,
         container,
         vueRuntime,
+        globalScope,
       });
     },
     renderSearchInsights(payload = {}) {
@@ -78,6 +79,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
           dispatchPanelAction(`savedViews:${actionId}`, payloadData),
         container,
         vueRuntime,
+        globalScope,
       });
     },
     renderSavedViewsComparison(payload = {}) {

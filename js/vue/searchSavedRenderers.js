@@ -78,6 +78,7 @@ export function renderSearchResultsWithVue({
   lastRunFiltered = false,
   container,
   vueRuntime = globalThis.Vue,
+  globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
@@ -86,25 +87,42 @@ export function renderSearchResultsWithVue({
   const safeResults = normalizeSearchResults(results);
   const safeTotal = Number(total || 0);
   const showNarrowNotice = Boolean(lastRunFiltered) && safeTotal > safeResults.length;
+  const renderSearchResultCard = result =>
+    h("div", { class: "search-result" }, [
+      h("div", { class: "search-result-header" }, [
+        h("span", { class: "search-result-sender" }, result.sender),
+        h("span", null, formatTimestampDisplay(result.timestamp)),
+      ]),
+      h(
+        "div",
+        { class: "search-result-message" },
+        result.messageSegments.length
+          ? result.messageSegments
+            .filter(segment => String(segment?.text || ""))
+            .map(segment => h(segment.highlighted ? "mark" : "span", {}, String(segment.text)))
+          : [result.message],
+      ),
+    ]);
+
+  const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
+  const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
   render(
     h("div", { class: "search-results-vue-list" }, [
-      ...safeResults.map(result =>
-        h("div", { class: "search-result" }, [
-          h("div", { class: "search-result-header" }, [
-            h("span", { class: "search-result-sender" }, result.sender),
-            h("span", null, formatTimestampDisplay(result.timestamp)),
-          ]),
-          h(
-            "div",
-            { class: "search-result-message" },
-            result.messageSegments.length
-              ? result.messageSegments
-                .filter(segment => String(segment?.text || ""))
-                .map(segment => h(segment.highlighted ? "mark" : "span", {}, String(segment.text)))
-              : [result.message],
-          ),
-        ]),
-      ),
+      ...(usePrimeDataView
+        ? [
+          h(DataView, {
+            value: safeResults,
+            layout: "list",
+            unstyled: true,
+            "data-ui-runtime": "primevue",
+          }, {
+            list: slotProps => {
+              const items = Array.isArray(slotProps?.items) ? slotProps.items : safeResults;
+              return items.map(renderSearchResultCard);
+            },
+          }),
+        ]
+        : safeResults.map(renderSearchResultCard)),
       showNarrowNotice
         ? h("div", { class: "search-results-empty" }, "Narrow your filters to see more matches.")
         : null,
@@ -208,6 +226,7 @@ export function renderSavedViewsGalleryWithVue({
   dispatchAction = null,
   container,
   vueRuntime = globalThis.Vue,
+  globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
@@ -232,68 +251,87 @@ export function renderSavedViewsGalleryWithVue({
     isActive: Boolean(card?.isActive),
     isDirty: Boolean(card?.isDirty),
   })) : [];
+
+  const renderGalleryCard = card =>
+    h("article", {
+      class: [
+        "saved-view-card",
+        card.interactive ? "" : "disabled",
+        card.isActive ? "is-active" : "",
+        card.isDirty ? "is-dirty" : "",
+      ],
+      "data-view-id": card.viewId,
+      "data-active": String(card.isActive),
+      "data-dirty": String(card.isDirty),
+      role: "button",
+      tabindex: card.interactive ? 0 : -1,
+      "aria-disabled": card.interactive ? undefined : "true",
+      "aria-label": card.interactive ? `Apply saved view ${card.viewName}` : undefined,
+    }, [
+      h("header", { class: "saved-view-card-header" }, [
+        h("div", {}, [
+          h("p", { class: "saved-view-card-title" }, card.viewName),
+          h("p", { class: "saved-view-card-range" }, card.rangeLabel),
+        ]),
+        h("div", { class: "saved-view-card-meta" }, [
+          card.isActive ? h("span", { class: "saved-view-chip saved-view-chip-active" }, "Active") : null,
+          card.isDirty ? h("span", { class: "saved-view-chip saved-view-chip-dirty" }, "Unsaved changes") : null,
+          card.recencyHint ? h("span", { class: "saved-view-card-used" }, card.recencyHint) : null,
+          card.createdAtLabel ? h("span", { class: "saved-view-card-created" }, card.createdAtLabel) : null,
+        ]),
+      ]),
+      h("div", { class: "saved-view-card-metrics" }, [
+        h("div", { class: "saved-view-stat" }, [
+          h("span", { class: "stat-label" }, "Messages"),
+          h("span", { class: "stat-value" }, card.totalMessages),
+        ]),
+        h("div", { class: "saved-view-stat" }, [
+          h("span", { class: "stat-label" }, "Participants"),
+          h("span", { class: "stat-value" }, card.participants),
+        ]),
+        h("div", { class: "saved-view-stat" }, [
+          h("span", { class: "stat-label" }, "Avg pace"),
+          h("span", { class: "stat-value" }, card.avgPerDay),
+        ]),
+      ]),
+      h("div", { class: "saved-view-card-foot" }, [
+        h("div", { class: "saved-view-detail" }, [
+          h("span", { class: "detail-label" }, "Top voice"),
+          h("span", { class: "detail-value" }, card.topSenderName),
+          h("span", { class: "detail-meta" }, card.topSenderShare),
+        ]),
+        h("div", { class: "saved-view-detail" }, [
+          h("span", { class: "detail-label" }, "Peak hour"),
+          h("span", { class: "detail-value" }, card.peakHour),
+          h("span", { class: "detail-meta" }, card.peakHourCount),
+        ]),
+      ]),
+      h("div", { class: ["saved-view-share-bar", card.shareEmpty ? "is-empty" : ""] }, [
+        h("span", { style: { width: `${Math.min(100, Math.max(0, card.barWidth))}%` } }),
+      ]),
+    ]);
+
+  const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
+  const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
+
   render(h(
     "div",
     { class: "saved-view-gallery-vue-root" },
-    safeCards.map(card =>
-      h("article", {
-        class: [
-          "saved-view-card",
-          card.interactive ? "" : "disabled",
-          card.isActive ? "is-active" : "",
-          card.isDirty ? "is-dirty" : "",
-        ],
-        "data-view-id": card.viewId,
-        "data-active": String(card.isActive),
-        "data-dirty": String(card.isDirty),
-        role: "button",
-        tabindex: card.interactive ? 0 : -1,
-        "aria-disabled": card.interactive ? undefined : "true",
-        "aria-label": card.interactive ? `Apply saved view ${card.viewName}` : undefined,
-      }, [
-        h("header", { class: "saved-view-card-header" }, [
-          h("div", {}, [
-            h("p", { class: "saved-view-card-title" }, card.viewName),
-            h("p", { class: "saved-view-card-range" }, card.rangeLabel),
-          ]),
-          h("div", { class: "saved-view-card-meta" }, [
-            card.isActive ? h("span", { class: "saved-view-chip saved-view-chip-active" }, "Active") : null,
-            card.isDirty ? h("span", { class: "saved-view-chip saved-view-chip-dirty" }, "Unsaved changes") : null,
-            card.recencyHint ? h("span", { class: "saved-view-card-used" }, card.recencyHint) : null,
-            card.createdAtLabel ? h("span", { class: "saved-view-card-created" }, card.createdAtLabel) : null,
-          ]),
-        ]),
-        h("div", { class: "saved-view-card-metrics" }, [
-          h("div", { class: "saved-view-stat" }, [
-            h("span", { class: "stat-label" }, "Messages"),
-            h("span", { class: "stat-value" }, card.totalMessages),
-          ]),
-          h("div", { class: "saved-view-stat" }, [
-            h("span", { class: "stat-label" }, "Participants"),
-            h("span", { class: "stat-value" }, card.participants),
-          ]),
-          h("div", { class: "saved-view-stat" }, [
-            h("span", { class: "stat-label" }, "Avg pace"),
-            h("span", { class: "stat-value" }, card.avgPerDay),
-          ]),
-        ]),
-        h("div", { class: "saved-view-card-foot" }, [
-          h("div", { class: "saved-view-detail" }, [
-            h("span", { class: "detail-label" }, "Top voice"),
-            h("span", { class: "detail-value" }, card.topSenderName),
-            h("span", { class: "detail-meta" }, card.topSenderShare),
-          ]),
-          h("div", { class: "saved-view-detail" }, [
-            h("span", { class: "detail-label" }, "Peak hour"),
-            h("span", { class: "detail-value" }, card.peakHour),
-            h("span", { class: "detail-meta" }, card.peakHourCount),
-          ]),
-        ]),
-        h("div", { class: ["saved-view-share-bar", card.shareEmpty ? "is-empty" : ""] }, [
-          h("span", { style: { width: `${Math.min(100, Math.max(0, card.barWidth))}%` } }),
-        ]),
-      ]),
-    ),
+    usePrimeDataView
+      ? [
+        h(DataView, {
+          value: safeCards,
+          layout: "list",
+          unstyled: true,
+          "data-ui-runtime": "primevue",
+        }, {
+          list: slotProps => {
+            const items = Array.isArray(slotProps?.items) ? slotProps.items : safeCards;
+            return items.map(renderGalleryCard);
+          },
+        }),
+      ]
+      : safeCards.map(renderGalleryCard),
   ), container);
   container.dataset.interactive = interactive ? "true" : "false";
   ensureSavedViewsGalleryActions({ container, dispatchAction });
