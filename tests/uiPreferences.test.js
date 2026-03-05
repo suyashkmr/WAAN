@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { createCompactModeManager } from "../js/ui/preferences.js";
+import { createCompactModeManager } from "../js/appShell/preferences.js";
 
 describe("ui preferences module", () => {
   it("can be imported when localStorage access throws", async () => {
@@ -13,7 +13,7 @@ describe("ui preferences module", () => {
         },
       });
 
-      await expect(import("../js/ui/preferences.js")).resolves.toBeTruthy();
+      await expect(import("../js/appShell/preferences.js")).resolves.toBeTruthy();
     } finally {
       if (originalDescriptor) {
         Object.defineProperty(globalThis, "localStorage", originalDescriptor);

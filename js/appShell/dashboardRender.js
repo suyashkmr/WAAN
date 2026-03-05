@@ -4,7 +4,7 @@ import { renderSummaryCards as renderSummarySection } from "../analytics/summary
 import { renderSentimentSection } from "../analytics/sentiment.js";
 import { renderMessageTypesSection } from "../analytics/messageTypes.js";
 import { renderPollsSection } from "../analytics/polls.js";
-import { createDeferredRenderScheduler } from "../ui.js";
+import { createDeferredRenderScheduler } from "./domCache.js";
 import { createActivityPanelsController } from "./dashboardRender/activityPanels.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";

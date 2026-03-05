@@ -41,7 +41,7 @@ vi.mock("../js/analytics/polls.js", () => ({
   renderPollsSection: mocked.renderPollsSection,
 }));
 
-vi.mock("../js/ui.js", () => ({
+vi.mock("../js/appShell/domCache.js", () => ({
   createDeferredRenderScheduler: () => (cb, _token) => cb(),
 }));
 

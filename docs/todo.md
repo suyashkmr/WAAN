@@ -722,15 +722,18 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] `js/appShell/bootstrap.js` no longer calls `initAppShellPrimitives`; runtime bootstrap no longer depends on legacy class-decoration wrappers.
       - [x] `js/ui/runtimeStateSync.js`
         - [x] Folded runtime state sync into `js/ui/primitivesRuntime.js`; removed standalone legacy sync module and repointed tests/imports.
-      - [ ] `js/ui/preferences.js`
+      - [x] `js/ui/preferences.js`
+        - [x] Moved compact-mode/accessibility preference controllers to `js/appShell/preferences.js`; runtime bootstrap imports app-shell local controllers.
       - [x] `js/ui/datasetEmptyState.js`
         - [x] Moved manager to `js/appShell/datasetEmptyState.js`; app-shell now owns dataset-empty UX state directly.
-      - [ ] `js/ui/domCache.js`
+      - [x] `js/ui/domCache.js`
+        - [x] Moved DOM cache + deferred scheduler to `js/appShell/domCache.js` and removed obsolete `js/ui.js` barrel.
       - [ ] `js/appShell/keyboardShortcuts.js`
       - [ ] `js/appShell/chatSelection.js`
       - [ ] `js/appShell/rangeFilters.js`
       - [ ] `js/appShell/pdfPreview.js`
-      - [ ] `js/exporters/io.js` + `js/exporters/createExporters.js`
+      - [x] `js/exporters/io.js` + `js/exporters/createExporters.js`
+        - [x] Export IO now uses injected browser runtime refs (`document`/`URL`/`Blob`) to keep helpers backend-safe outside browser contexts.
       - [ ] Exit criteria: legacy primitive builder modules retired or reduced to non-UI backend-safe utilities only.
     - [ ] Sweep guardrails:
       - [x] Add/refresh grep gate in CI for forbidden frontend render-time DOM APIs in migrated scopes.

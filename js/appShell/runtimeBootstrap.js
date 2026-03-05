@@ -1,6 +1,6 @@
 // @ts-check
 
-import { createCompactModeManager, createAccessibilityController } from "../ui.js";
+import { createCompactModeManager, createAccessibilityController } from "./preferences.js";
 import { createOnboardingController } from "./onboarding.js";
 import { createStatusUiController } from "./statusUi.js";
 import { createSectionNavController } from "./sectionNav.js";

@@ -1,6 +1,6 @@
 // @ts-check
 
-import { createDomCache } from "../ui.js";
+import { createDomCache } from "./domCache.js";
 
 /**
  * @returns {Record<string, any>}

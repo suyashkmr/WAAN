@@ -2,6 +2,9 @@ export function createExportFileHelpers({
   getDatasetLabel,
   getCurrentRange,
   describeRange,
+  documentRef = typeof document !== "undefined" ? document : null,
+  URLRef = typeof URL !== "undefined" ? URL : null,
+  BlobImpl = typeof Blob !== "undefined" ? Blob : null,
 }) {
   // Intentional non-render DOM utility:
   // export/download flows require a transient anchor click to trigger browser file saves.
@@ -25,25 +28,27 @@ export function createExportFileHelpers({
   }
 
   function downloadTextFile(filename, content, mime) {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    if (!documentRef?.body || !URLRef || typeof URLRef.createObjectURL !== "function" || !BlobImpl) return false;
+    const blob = new BlobImpl([content], { type: mime });
+    const url = URLRef.createObjectURL(blob);
+    const link = documentRef.createElement("a");
     link.href = url;
     link.download = filename;
-    document.body.appendChild(link);
+    documentRef.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    documentRef.body.removeChild(link);
+    URLRef.revokeObjectURL(url);
+    return true;
   }
 
   function downloadCSV(filename, headers, rows) {
-    if (!rows.length) return;
+    if (!rows.length) return false;
     const escape = value => `"${String(value ?? "").replace(/"/g, '""')}"`;
     const csvLines = [
       headers.map(escape).join(","),
       ...rows.map(row => row.map(escape).join(",")),
     ];
-    downloadTextFile(filename, csvLines.join("\r\n"), "text/csv;charset=utf-8;");
+    return downloadTextFile(filename, csvLines.join("\r\n"), "text/csv;charset=utf-8;");
   }
 
   return {
