@@ -6,6 +6,12 @@
  *   getExportThemeConfig: () => { label: string } & Record<string, any>,
  *   generatePdfDocumentHtmlAsync: (analytics: Record<string, any>, theme: Record<string, any>) => Promise<{ content: string }>,
  *   updateStatus: (message: string, tone: string) => void,
+ *   documentRef?: Document | null,
+ *   URLRef?: typeof URL | null,
+ *   BlobImpl?: typeof Blob | null,
+ *   setTimeoutRef?: typeof setTimeout,
+ *   clearTimeoutRef?: typeof clearTimeout,
+ *   windowRef?: Window | null,
  * }} params
  */
 export function createPdfPreviewController({
@@ -13,17 +19,24 @@ export function createPdfPreviewController({
   getExportThemeConfig,
   generatePdfDocumentHtmlAsync,
   updateStatus,
+  documentRef = typeof document !== "undefined" ? document : null,
+  URLRef = typeof URL !== "undefined" ? URL : null,
+  BlobImpl = typeof Blob !== "undefined" ? Blob : null,
+  setTimeoutRef = globalThis.setTimeout.bind(globalThis),
+  clearTimeoutRef = globalThis.clearTimeout.bind(globalThis),
+  windowRef = typeof window !== "undefined" ? window : null,
 }) {
   /**
    * @param {string} html
    */
   function launchPrintableDocument(html) {
     try {
-      const blob = new Blob([html], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
+      if (!documentRef?.body || !URLRef || !BlobImpl) return false;
+      const blob = new BlobImpl([html], { type: "text/html" });
+      const url = URLRef.createObjectURL(blob);
       // Intentional non-render DOM utility:
       // hidden iframe is used to launch browser print/save flow for generated HTML.
-      const iframe = document.createElement("iframe");
+      const iframe = documentRef.createElement("iframe");
       iframe.style.position = "fixed";
       iframe.style.right = "0";
       iframe.style.bottom = "0";
@@ -31,7 +44,7 @@ export function createPdfPreviewController({
       iframe.style.height = "0";
       iframe.style.border = "0";
       const cleanup = () => {
-        URL.revokeObjectURL(url);
+        URLRef.revokeObjectURL(url);
         iframe.remove();
       };
       iframe.addEventListener("load", () => {
@@ -43,17 +56,21 @@ export function createPdfPreviewController({
         const handleAfterPrint = () => {
           win.removeEventListener("afterprint", handleAfterPrint);
           if (cleanupTimer) {
-            clearTimeout(cleanupTimer);
+            clearTimeoutRef(cleanupTimer);
             cleanupTimer = null;
           }
           cleanup();
         };
-        /** @type {number | null} */
-        let cleanupTimer = window.setTimeout(() => {
-          handleAfterPrint();
-        }, 60000);
+        /** @type {number | ReturnType<typeof setTimeout> | null} */
+        let cleanupTimer = windowRef?.setTimeout
+          ? windowRef.setTimeout(() => {
+              handleAfterPrint();
+            }, 60000)
+          : setTimeoutRef(() => {
+              handleAfterPrint();
+            }, 60000);
         win.addEventListener("afterprint", handleAfterPrint);
-        setTimeout(() => {
+        setTimeoutRef(() => {
           try {
             win.focus();
             win.print();
@@ -65,7 +82,7 @@ export function createPdfPreviewController({
       });
       iframe.addEventListener("error", cleanup);
       iframe.src = url;
-      document.body.appendChild(iframe);
+      documentRef.body.appendChild(iframe);
       return true;
     } catch (error) {
       console.error(error);

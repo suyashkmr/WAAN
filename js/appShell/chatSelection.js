@@ -12,6 +12,8 @@
  *   formatDisplayDate: (value: any) => string,
  *   getActiveChatId: () => string | null,
  *   setActiveChatId: (value: string) => void,
+ *   vueRuntime?: { h?: (...args: any[]) => any, render?: (...args: any[]) => any } | null,
+ *   now?: () => number,
  * }} params
  */
 export function createChatSelectionController({
@@ -21,6 +23,8 @@ export function createChatSelectionController({
   formatDisplayDate,
   getActiveChatId,
   setActiveChatId,
+  vueRuntime = /** @type {any} */ (globalThis)?.Vue ?? null,
+  now = () => Date.now(),
 }) {
   const remoteChatState = {
     /** @type {AnyRecord[]} */
@@ -66,7 +70,7 @@ export function createChatSelectionController({
    */
   function setRemoteChatList(list = []) {
     remoteChatState.list = Array.isArray(list) ? list : [];
-    remoteChatState.lastFetchedAt = Date.now();
+    remoteChatState.lastFetchedAt = now();
   }
 
   function getRemoteChatList() {
@@ -81,17 +85,17 @@ export function createChatSelectionController({
     if (!chatSelector) {
       return;
     }
-    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
     const canRenderWithVue = Boolean(
-      VueRuntime &&
-      typeof VueRuntime.h === "function" &&
-      typeof VueRuntime.render === "function",
+      vueRuntime &&
+      typeof vueRuntime.h === "function" &&
+      typeof vueRuntime.render === "function",
     );
+    const resolvedVueRuntime = canRenderWithVue ? /** @type {{ h: (...args: any[]) => any, render: (...args: any[]) => any }} */ (vueRuntime) : null;
 
     const remoteChats = getRemoteChatList();
     if (!remoteChats.length) {
-      if (canRenderWithVue) {
-        const { h, render } = VueRuntime;
+      if (resolvedVueRuntime) {
+        const { h, render } = resolvedVueRuntime;
         if (!remoteChatState.vueMounted) {
           chatSelector.textContent = "";
           remoteChatState.vueMounted = true;
@@ -106,8 +110,8 @@ export function createChatSelectionController({
     }
 
     chatSelector.disabled = false;
-    if (canRenderWithVue) {
-      const { h, render } = VueRuntime;
+    if (resolvedVueRuntime) {
+      const { h, render } = resolvedVueRuntime;
       if (!remoteChatState.vueMounted) {
         chatSelector.textContent = "";
         remoteChatState.vueMounted = true;

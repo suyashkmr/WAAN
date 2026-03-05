@@ -728,10 +728,14 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Moved manager to `js/appShell/datasetEmptyState.js`; app-shell now owns dataset-empty UX state directly.
       - [x] `js/ui/domCache.js`
         - [x] Moved DOM cache + deferred scheduler to `js/appShell/domCache.js` and removed obsolete `js/ui.js` barrel.
-      - [ ] `js/appShell/keyboardShortcuts.js`
-      - [ ] `js/appShell/chatSelection.js`
-      - [ ] `js/appShell/rangeFilters.js`
-      - [ ] `js/appShell/pdfPreview.js`
+      - [x] `js/appShell/keyboardShortcuts.js`
+        - [x] Keyboard shortcut controller now binds through injected `documentRef` instead of hard browser globals.
+      - [x] `js/appShell/chatSelection.js`
+        - [x] Chat selector now uses injected Vue runtime + clock sources instead of hard global runtime lookups.
+      - [x] `js/appShell/rangeFilters.js`
+        - [x] Range filter controller remains app-shell-local and already avoids browser-global coupling; verified through detailed + dashboard integration coverage.
+      - [x] `js/appShell/pdfPreview.js`
+        - [x] PDF preview launcher now uses injected browser runtime refs (`document`/`URL`/`Blob`/timers`) to stay safe outside direct browser contexts.
       - [x] `js/exporters/io.js` + `js/exporters/createExporters.js`
         - [x] Export IO now uses injected browser runtime refs (`document`/`URL`/`Blob`) to keep helpers backend-safe outside browser contexts.
       - [ ] Exit criteria: legacy primitive builder modules retired or reduced to non-UI backend-safe utilities only.

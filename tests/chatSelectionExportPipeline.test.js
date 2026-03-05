@@ -16,6 +16,8 @@ function createChatSelection(options = {}) {
     setActiveChatId: value => {
       activeChatId = value;
     },
+    vueRuntime: options.vueRuntime,
+    now: options.now,
   });
 
   return {
@@ -156,6 +158,21 @@ describe("chat selection controller", () => {
     expect(chatSelector.options.length).toBe(1);
     expect(chatSelector.options[0].value).toBe("remote:chat-22");
     expect(chatSelector.textContent).toContain("Launch Team");
+  });
+
+  it("uses injected Vue runtime and clock without global runtime access", async () => {
+    delete globalThis.Vue;
+    const { controller, chatSelector } = createChatSelection({
+      vueRuntime: { h, render },
+      now: () => 1234567890,
+    });
+    controller.setRemoteChatList([{ id: "chat-44", name: "Injected Runtime", messageCount: 2 }]);
+
+    await controller.refreshChatSelector();
+
+    expect(controller.getRemoteChatsLastFetchedAt()).toBe(1234567890);
+    expect(chatSelector.options.length).toBe(1);
+    expect(chatSelector.options[0].value).toBe("remote:chat-44");
   });
 
   it("fails fast without Vue runtime", async () => {

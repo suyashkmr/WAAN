@@ -5,9 +5,12 @@
  */
 
 /**
- * @param {{ deps: AnyRecord }} params
+ * @param {{ deps: AnyRecord, documentRef?: Document | null }} params
  */
-export function createKeyboardShortcutsController({ deps }) {
+export function createKeyboardShortcutsController({
+  deps,
+  documentRef = typeof document !== "undefined" ? document : null,
+}) {
   const {
     syncRelayChats,
     isLogDrawerOpen,
@@ -50,9 +53,10 @@ export function createKeyboardShortcutsController({ deps }) {
 
       if (event.key.toLowerCase() === "m") {
         event.preventDefault();
-        applyCompactMode(!(document.body.dataset.compact === "true"));
+        const nextCompactEnabled = !(documentRef?.body?.dataset?.compact === "true");
+        applyCompactMode(nextCompactEnabled);
         showToast(
-          document.body.dataset.compact === "true" ? "Compact mode enabled." : "Comfort mode enabled.",
+          nextCompactEnabled ? "Compact mode enabled." : "Comfort mode enabled.",
           "info",
           { duration: 2500 },
         );
@@ -72,7 +76,7 @@ export function createKeyboardShortcutsController({ deps }) {
   }
 
   function initKeyboardShortcuts() {
-    document.addEventListener("keydown", handleKeydown);
+    documentRef?.addEventListener("keydown", handleKeydown);
   }
 
   return {
