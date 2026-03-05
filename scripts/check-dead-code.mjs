@@ -24,8 +24,6 @@ const ALLOWLISTED_ORPHANS = new Set([
   "js/analyticsWorker.js",
   "js/exportWorker.js",
   "js/main.js",
-  "js/ui/primitives.js",
-  "js/ui/appShellPrimitives.js",
   "js/searchWorker.js",
 ]);
 

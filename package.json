@@ -20,6 +20,7 @@
     "check:artifacts": "bash scripts/check-artifacts.sh",
     "check:vendor-runtime": "node scripts/check-vendor-runtime.mjs",
     "check:module-size": "node scripts/check-module-size.mjs",
+    "check:legacy-primitives": "node scripts/check-legacy-primitive-imports.mjs",
     "check:types": "tsc --noEmit",
     "check:appshell-contracts": "vitest --run tests/appShellBoot.test.js tests/appShellBoundaryIntegration.test.js tests/controllerWiringContracts.test.js tests/compositionAssemblyContracts.test.js tests/appShellAssemblyWiring.test.js",
     "check:release-reliability": "vitest --run tests/releaseRelayTransitions.test.js tests/releaseExportIntegrity.test.js",
@@ -35,7 +36,7 @@
     "release:cut": "node scripts/cut-release.cjs",
     "check:release-notes": "node scripts/validate-release-notes.mjs",
     "verify": "npm run lint && npm test",
-    "ci:verify": "npm run check:artifacts && npm run check:vendor-runtime && npm run check:module-size && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-adoption && npm run check:appshell-contracts && npm run check:release-reliability && npm run verify && npm run check:circular",
+    "ci:verify": "npm run check:artifacts && npm run check:vendor-runtime && npm run check:module-size && npm run check:legacy-primitives && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-adoption && npm run check:appshell-contracts && npm run check:release-reliability && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },

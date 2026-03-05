@@ -1,41 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
-  createPanelShell,
-  createPanelHeader,
-  createSectionIntro,
-  createStatusBadge,
-  createToolbarRow,
-  createEmptyState,
   decorateToolbarRow,
   initAppShellPrimitives,
-} from "../js/ui/appShellPrimitives.js";
+} from "../js/ui/appShellRuntimeDecorators.js";
 
 describe("app shell primitives", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-  });
-
-  it("creates reusable primitive elements", () => {
-    const shell = createPanelShell({ documentRef: document, id: "panel-a", accent: "relay" });
-    const header = createPanelHeader({ documentRef: document, title: "Relay" });
-    const intro = createSectionIntro({ documentRef: document, kicker: "Jump to", title: "Overview" });
-    const badge = createStatusBadge({ documentRef: document, text: "Ready", state: "ready" });
-    const row = createToolbarRow({ documentRef: document, role: "toolbar" });
-    const empty = createEmptyState({
-      documentRef: document,
-      tone: "error",
-      title: "Failed",
-      message: "Retry",
-    });
-
-    expect(shell?.id).toBe("panel-a");
-    expect(shell?.dataset.accent).toBe("relay");
-    expect(shell?.classList.contains("app-panel-shell")).toBe(true);
-    expect(header?.querySelector("h2")?.textContent).toBe("Relay");
-    expect(intro?.classList.contains("app-section-intro")).toBe(true);
-    expect(badge?.dataset.state).toBe("ready");
-    expect(row?.getAttribute("role")).toBe("toolbar");
-    expect(empty?.getAttribute("role")).toBe("alert");
   });
 
   it("decorates existing app shell surfaces", () => {

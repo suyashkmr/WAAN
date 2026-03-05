@@ -715,8 +715,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/relayControls/logStream.js`
       - [ ] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
     - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
-      - [ ] `js/ui/primitives.js`
-      - [ ] `js/ui/appShellPrimitives.js`
+      - [x] `js/ui/primitives.js`
+      - [x] `js/ui/appShellPrimitives.js`
       - [ ] `js/ui/appShellRuntimeDecorators.js`
       - [ ] `js/ui/runtimeStateSync.js`
       - [ ] `js/ui/preferences.js`
@@ -729,7 +729,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/exporters/io.js` + `js/exporters/createExporters.js`
       - [ ] Exit criteria: legacy primitive builder modules retired or reduced to non-UI backend-safe utilities only.
     - [ ] Sweep guardrails:
-      - [ ] Add/refresh grep gate in CI for forbidden frontend render-time DOM APIs in migrated scopes.
+      - [x] Add/refresh grep gate in CI for forbidden frontend render-time DOM APIs in migrated scopes.
+        - [x] Added CI guard script to block runtime imports of legacy primitive builders (`scripts/check-legacy-primitive-imports.mjs`, `package.json` `check:legacy-primitives`, wired into `ci:verify`).
       - [ ] Keep module-size gate green while splitting large conversions.
       - [ ] Re-run `npm run ci:verify` + `npm run test:visual` after each `P0` slice.
   - [x] Add/refresh integration tests covering interaction parity (click, keyboard submit, disabled/loading states).
