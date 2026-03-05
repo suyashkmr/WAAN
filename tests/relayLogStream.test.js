@@ -47,6 +47,8 @@ describe("relay log stream rendering", () => {
     else delete process.env.VITEST;
 
     delete globalThis.Vue;
+    delete globalThis.PrimeVue;
+    delete globalThis.primevue;
     document.body.innerHTML = "";
   });
 
@@ -76,6 +78,50 @@ describe("relay log stream rendering", () => {
 
     sourceInstance.onopen?.();
     expect(logDrawerConnectionLabel.textContent).toBe("Live log stream");
+  });
+
+  it("renders relay logs via PrimeVue DataView when available", () => {
+    const PrimeDataView = { name: "PrimeDataViewStub" };
+    globalThis.PrimeVue = { DataView: PrimeDataView };
+    globalThis.Vue = {
+      Fragment: Symbol("Fragment"),
+      h: (type, props = {}, children = []) => ({ type, props, children }),
+      render: (vnode, container) => {
+        if (!container) return;
+        if (!vnode) {
+          container.innerHTML = "";
+          return;
+        }
+        if (vnode.type !== PrimeDataView) {
+          container.innerHTML = "<div>rendered</div>";
+          return;
+        }
+        const slot = vnode.children?.list;
+        const listNodes = typeof slot === "function" ? slot({ items: vnode.props?.value || [] }) : [];
+        container.innerHTML = `<div class="relay-log-list-prime" data-ui-runtime="${String(vnode.props?.["data-ui-runtime"] || "")}">${listNodes
+          .map(node => `<p class="relay-log-entry">${String(node?.children || "")}</p>`)
+          .join("")}</div>`;
+      },
+    };
+
+    let sourceInstance = null;
+    class FakeEventSource {
+      constructor() {
+        sourceInstance = this;
+      }
+      close() {}
+    }
+    globalThis.EventSource = /** @type {any} */ (FakeEventSource);
+
+    const { controller, logDrawerList } = createController();
+    controller.initLogStream();
+
+    sourceInstance.onmessage?.({ data: "line one" });
+    sourceInstance.onmessage?.({ data: "line two" });
+
+    const primeList = logDrawerList.querySelector(".relay-log-list-prime");
+    expect(primeList?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(logDrawerList.querySelectorAll(".relay-log-entry")).toHaveLength(2);
   });
 
   it("fails fast without Vue runtime outside Vitest fallback mode", () => {

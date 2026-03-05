@@ -248,4 +248,58 @@ describe("search saved island bridge mounting", () => {
     expect(root?.getAttribute("data-ui-runtime")).toBe("primevue");
     expect(document.querySelectorAll("#search-results-list .search-result").length).toBe(1);
   });
+
+  it("uses PrimeVue DataView for search insights lists when runtime component is available", () => {
+    const PrimeDataView = { name: "PrimeDataViewStub" };
+    const fakeWindow = {
+      document,
+      console,
+      PrimeVue: { DataView: PrimeDataView },
+      Vue: {
+        h: (type, props = {}, children = []) => ({ type, props, children }),
+        render: (vnode, container) => {
+          if (!container) return;
+          if (!vnode) {
+            container.innerHTML = "";
+            return;
+          }
+          const cssClass = typeof vnode?.props?.class === "string" ? vnode.props.class : "";
+          if (!cssClass.includes("search-insights-vue-grid")) {
+            container.innerHTML = "<div>rendered</div>";
+            return;
+          }
+          const cardNodes = Array.isArray(vnode.children) ? vnode.children : [];
+          const dataViews = [];
+          cardNodes.forEach(card => {
+            const children = Array.isArray(card?.children) ? card.children : [];
+            children.forEach(child => {
+              if (child?.type === PrimeDataView) dataViews.push(child);
+            });
+          });
+          container.innerHTML = `<div class="search-insights-vue-grid">${dataViews
+            .map(node => `<div class="insights-dataview" data-ui-runtime="${String(node?.props?.["data-ui-runtime"] || "")}"></div>`)
+            .join("")}</div>`;
+        },
+      },
+    };
+
+    mountSearchSavedBridge({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });
+    expect(bridge).toBeTruthy();
+
+    bridge?.renderSearchInsights?.({
+      summary: {
+        total: 2,
+        truncated: false,
+        hitsPerDay: [{ date: "2026-03-05", count: 2 }],
+        topParticipants: [{ sender: "A", count: 2 }],
+        filters: ["keyword: launch"],
+      },
+      resultLimit: 200,
+    });
+
+    const dataViews = document.querySelectorAll("#search-insights .insights-dataview");
+    expect(dataViews.length).toBe(3);
+    expect(dataViews[0]?.getAttribute("data-ui-runtime")).toBe("primevue");
+  });
 });

@@ -61,6 +61,9 @@ export function createRelayLogController({
       throw new Error("Vue runtime is required for relay log rendering.");
     }
     const { h, render, Fragment } = VueRuntime;
+    const runtimeScope = /** @type {any} */ (globalThis);
+    const DataView = runtimeScope?.PrimeVue?.DataView || runtimeScope?.primevue?.DataView || null;
+    const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
     if (!relayLogState.vueMounted) {
       logDrawerList.textContent = "";
       relayLogState.vueMounted = true;
@@ -69,15 +72,28 @@ export function createRelayLogController({
       render(h("p", { class: "relay-log-empty" }, "No relay logs yet."), logDrawerList);
       return;
     }
-    render(
-      h(
+    const entries = relayLogState.entries.map((line, index) => ({
+      key: `${index}-${line}`,
+      line,
+    }));
+    render(usePrimeDataView
+      ? h(DataView, {
+        value: entries,
+        layout: "list",
+        unstyled: true,
+        "data-ui-runtime": "primevue",
+      }, {
+        list: (/** @type {any} */ slotProps) => {
+          const items = Array.isArray(slotProps?.items) ? slotProps.items : entries;
+          return items.map((/** @type {any} */ item) => h("p", { class: "relay-log-entry", key: item.key }, item.line));
+        },
+      })
+      : h(
         Fragment,
         null,
         relayLogState.entries.map((line, index) =>
           h("p", { class: "relay-log-entry", key: `${index}-${line}` }, line)),
-      ),
-      logDrawerList,
-    );
+      ), logDrawerList);
     if (relayLogState.drawerOpen) {
       logDrawerList.scrollTop = logDrawerList.scrollHeight;
     }

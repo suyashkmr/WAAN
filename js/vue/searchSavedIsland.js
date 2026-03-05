@@ -69,6 +69,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
         ...payload,
         container,
         vueRuntime,
+        globalScope,
       });
     },
     renderSavedViewsGallery(payload = {}) {

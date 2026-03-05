@@ -163,6 +163,7 @@ export function renderSearchInsightsWithVue({
   resultLimit = 200,
   container,
   vueRuntime = globalThis.Vue,
+  globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
@@ -176,42 +177,49 @@ export function renderSearchInsightsWithVue({
   }
   container.classList.remove("hidden");
 
-  const hitsItems = safeSummary.hitsPerDay.length
-    ? safeSummary.hitsPerDay
-    : [{ date: "No daily data", count: "—" }];
-  const participantItems = safeSummary.topParticipants.length
-    ? safeSummary.topParticipants
-    : [{ sender: "No matches yet", count: "—" }];
+  const hitsItems = safeSummary.hitsPerDay.length ? safeSummary.hitsPerDay : [{ date: "No daily data", count: "—" }];
+  const participantItems = safeSummary.topParticipants.length ? safeSummary.topParticipants : [{ sender: "No matches yet", count: "—" }];
   const filtersItems = safeSummary.filters.length ? safeSummary.filters : ["No filters applied"];
-  const noteText = safeSummary.truncated
-    ? `Showing first ${formatNumber(resultLimit)} of ${formatNumber(safeSummary.total)} matches.`
-    : `Total matches: ${formatNumber(safeSummary.total)}.`;
+  const noteText = safeSummary.truncated ? `Showing first ${formatNumber(resultLimit)} of ${formatNumber(safeSummary.total)} matches.` : `Total matches: ${formatNumber(safeSummary.total)}.`;
+  const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
+  const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
+  const renderInsightListItem = ({ label, value }) => h("li", null, [
+    h("span", { class: "search-insight-label" }, label),
+    value ? h("span", null, value) : null,
+  ]);
+  const renderInsightList = items => !usePrimeDataView
+    ? h("ul", { class: "search-insight-list" }, items.map(renderInsightListItem))
+    : h(DataView, {
+      value: items,
+      layout: "list",
+      unstyled: true,
+      "data-ui-runtime": "primevue",
+    }, {
+      list: slotProps => {
+        const safeItems = Array.isArray(slotProps?.items) ? slotProps.items : items;
+        return [h("ul", { class: "search-insight-list" }, safeItems.map(renderInsightListItem))];
+      },
+    });
 
   render(
     h("div", { class: "search-insights-vue-grid" }, [
       h("div", { class: "search-insight-card" }, [
         h("h4", null, "Hits per day"),
-        h("ul", { class: "search-insight-list" }, hitsItems.map(item =>
-          h("li", null, [
-            h("span", { class: "search-insight-label" }, item.date === "No daily data" ? item.date : formatDisplayDate(item.date)),
-            h("span", null, typeof item.count === "number" ? formatNumber(item.count) : String(item.count)),
-          ]),
-        )),
+        renderInsightList(hitsItems.map(item => ({
+          label: item.date === "No daily data" ? item.date : formatDisplayDate(item.date),
+          value: typeof item.count === "number" ? formatNumber(item.count) : String(item.count),
+        }))),
       ]),
       h("div", { class: "search-insight-card" }, [
         h("h4", null, "Top participants"),
-        h("ul", { class: "search-insight-list" }, participantItems.map(item =>
-          h("li", null, [
-            h("span", { class: "search-insight-label" }, item.sender),
-            h("span", null, typeof item.count === "number" ? formatNumber(item.count) : String(item.count)),
-          ]),
-        )),
+        renderInsightList(participantItems.map(item => ({
+          label: item.sender,
+          value: typeof item.count === "number" ? formatNumber(item.count) : String(item.count),
+        }))),
       ]),
       h("div", { class: "search-insight-card" }, [
         h("h4", null, "Search filters"),
-        h("ul", { class: "search-insight-list" }, filtersItems.map(filter =>
-          h("li", null, [h("span", { class: "search-insight-label" }, filter)]),
-        )),
+        renderInsightList(filtersItems.map(filter => ({ label: filter, value: "" }))),
         h("p", { class: "search-insight-note" }, noteText),
       ]),
     ]),
