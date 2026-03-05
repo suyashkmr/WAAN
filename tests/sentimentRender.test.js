@@ -21,6 +21,8 @@ function buildElements() {
 describe("sentiment renderer", () => {
   afterEach(() => {
     delete globalThis.Vue;
+    delete globalThis.PrimeVue;
+    delete globalThis.primevue;
     document.body.innerHTML = "";
   });
 
@@ -79,5 +81,81 @@ describe("sentiment renderer", () => {
         helpers: { formatSentimentScore },
       }))
       .toThrow("Vue runtime is required for sentiment rendering.");
+  });
+
+  it("renders summary tiles via PrimeVue DataView when runtime component is available", () => {
+    const PrimeDataView = {
+      name: "PrimeDataViewStub",
+      props: ["value"],
+      setup(props, context) {
+        return () =>
+          h(
+            "div",
+            {
+              class: "prime-data-view",
+              "data-ui-runtime": String(context?.attrs?.["data-ui-runtime"] || ""),
+            },
+            context?.slots?.list?.({ items: props.value || [] }) || [],
+          );
+      },
+    };
+    globalThis.PrimeVue = { DataView: PrimeDataView };
+    globalThis.primevue = globalThis.PrimeVue;
+    globalThis.Vue = { h, render, Fragment };
+    const elements = buildElements();
+
+    renderSentimentSection({
+      sentiment: {
+        average: 0.21,
+        totals: { positive: 8, neutral: 4, negative: 2 },
+        daily: [
+          { date: "2026-03-01", count: 5, average: 0.3 },
+          { date: "2026-03-02", count: 4, average: -0.1 },
+        ],
+        participants: [],
+      },
+      elements,
+      helpers: { formatSentimentScore },
+    });
+
+    const primeDataView = elements.summaryEl.querySelector(".prime-data-view");
+    expect(primeDataView?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(elements.summaryEl.querySelectorAll(".sentiment-tile")).toHaveLength(4);
+  });
+
+  it("uses lowercase primevue namespace when PrimeVue.DataView is unavailable", () => {
+    const PrimeDataView = {
+      name: "PrimeDataViewStub",
+      props: ["value"],
+      setup(props, context) {
+        return () =>
+          h(
+            "div",
+            {
+              class: "prime-data-view-lowercase",
+              "data-ui-runtime": String(context?.attrs?.["data-ui-runtime"] || ""),
+            },
+            context?.slots?.list?.({ items: props.value || [] }) || [],
+          );
+      },
+    };
+    globalThis.PrimeVue = {};
+    globalThis.primevue = { DataView: PrimeDataView };
+    globalThis.Vue = { h, render, Fragment };
+    const elements = buildElements();
+
+    renderSentimentSection({
+      sentiment: {
+        average: 0.2,
+        totals: { positive: 2, neutral: 1, negative: 1 },
+        daily: [],
+        participants: [],
+      },
+      elements,
+      helpers: { formatSentimentScore },
+    });
+
+    expect(elements.summaryEl.querySelector(".prime-data-view-lowercase")).toBeTruthy();
+    expect(elements.summaryEl.querySelectorAll(".sentiment-tile")).toHaveLength(4);
   });
 });

@@ -1,8 +1,4 @@
-import {
-  formatNumber,
-  formatFloat,
-  formatDisplayDate,
-} from "../utils.js";
+import { formatNumber, formatFloat, formatDisplayDate } from "../utils.js";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -36,7 +32,6 @@ function createSentimentCalendarModel(dailyData, formatSentimentScore) {
   const startMonth = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
   const endMonth = new Date(lastDate.getFullYear(), lastDate.getMonth(), 1);
   const months = [];
-
   for (let cursor = new Date(startMonth); cursor <= endMonth; cursor.setMonth(cursor.getMonth() + 1)) {
     const year = cursor.getFullYear();
     const month = cursor.getMonth();
@@ -47,7 +42,6 @@ function createSentimentCalendarModel(dailyData, formatSentimentScore) {
     let totalMessages = 0;
 
     for (let i = 0; i < firstWeekday; i += 1) cells.push({ filler: true });
-
     for (let day = 1; day <= daysInMonth; day += 1) {
       const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const entry = dailyMap.get(iso);
@@ -71,10 +65,7 @@ function createSentimentCalendarModel(dailyData, formatSentimentScore) {
     }
 
     const remainder = cells.length % 7;
-    if (remainder) {
-      for (let i = remainder; i < 7; i += 1) cells.push({ filler: true });
-    }
-
+    if (remainder) for (let i = remainder; i < 7; i += 1) cells.push({ filler: true });
     const monthAverage = totalMessages ? weightedSum / totalMessages : null;
     months.push({
       id: `${year}-${String(month + 1).padStart(2, "0")}`,
@@ -84,7 +75,6 @@ function createSentimentCalendarModel(dailyData, formatSentimentScore) {
       cells,
     });
   }
-
   return { months };
 }
 
@@ -106,26 +96,22 @@ function renderSentimentTrend({
   }
   const { h, render } = VueRuntime;
   dailyChartEl.className = "sentiment-calendar-container";
-
   if (!dailyData?.length) {
     render(h("p", { class: "empty-state" }, "No scored messages to show."), dailyChartEl);
     if (trendNoteEl) trendNoteEl.textContent = "No scored messages for this range.";
     return;
   }
-
   if (trendNoteEl) {
     const start = dailyData[0].date;
     const end = dailyData[dailyData.length - 1].date;
     const averageText = formatSentimentScore(averageScore ?? 0, 2);
     trendNoteEl.textContent = `${formatDisplayDate(start)} → ${formatDisplayDate(end)} · Avg ${averageText} across ${formatNumber(totalCount)} messages`;
   }
-
   const model = createSentimentCalendarModel(dailyData, formatSentimentScore);
   if (!model) {
     render(h("p", { class: "empty-state" }, "No scored messages to show."), dailyChartEl);
     return;
   }
-
   render(
     h("div", { class: "sentiment-calendar-vue-root" }, [
       h(
@@ -198,7 +184,6 @@ function buildSentimentList(listEl, entries, tone, formatSentimentScore) {
     throw new Error("Vue runtime is required for sentiment participant rendering.");
   }
   const { h, render, Fragment } = VueRuntime;
-
   if (!entries.length) {
     render(
       h(
@@ -210,7 +195,6 @@ function buildSentimentList(listEl, entries, tone, formatSentimentScore) {
     );
     return;
   }
-
   render(
     h(
       Fragment,
@@ -239,22 +223,19 @@ function buildSentimentList(listEl, entries, tone, formatSentimentScore) {
  */
 function renderSentimentParticipants({ participants, positiveListEl, negativeListEl, formatSentimentScore }) {
   if (!positiveListEl || !negativeListEl) return;
-  const valid = Array.isArray(participants)
-    ? participants.filter(entry => Number.isFinite(entry.average) && entry.count >= 3)
-    : [];
-
-  const positives = valid
-    .filter(entry => entry.average > 0)
-    .sort((a, b) => b.average - a.average)
-    .slice(0, 5);
-
-  const negatives = valid
-    .filter(entry => entry.average < 0)
-    .sort((a, b) => a.average - b.average)
-    .slice(0, 5);
-
+  const valid = Array.isArray(participants) ? participants.filter(entry => Number.isFinite(entry.average) && entry.count >= 3) : [];
+  const positives = valid.filter(entry => entry.average > 0).sort((a, b) => b.average - a.average).slice(0, 5);
+  const negatives = valid.filter(entry => entry.average < 0).sort((a, b) => a.average - b.average).slice(0, 5);
   buildSentimentList(positiveListEl, positives, "positive", formatSentimentScore);
   buildSentimentList(negativeListEl, negatives, "negative", formatSentimentScore);
+}
+
+function resolvePrimeDataView(globalScope = globalThis) {
+  const primary = globalScope?.PrimeVue?.DataView;
+  if (typeof primary === "function" || (primary && typeof primary === "object")) return primary;
+  const secondary = globalScope?.primevue?.DataView;
+  if (typeof secondary === "function" || (secondary && typeof secondary === "object")) return secondary;
+  return null;
 }
 
 export function renderSentimentSection({ sentiment, elements, helpers }) {
@@ -272,10 +253,10 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
     throw new Error("Vue runtime is required for sentiment rendering.");
   }
   const { h, render } = VueRuntime;
-
+  const PrimeDataView = resolvePrimeDataView(globalThis);
+  const usePrimeDataView = Boolean(PrimeDataView);
   const totals = sentiment?.totals || {};
   const totalCount = (totals.positive || 0) + (totals.neutral || 0) + (totals.negative || 0);
-
   const summaryData = totalCount
     ? [
       {
@@ -308,26 +289,36 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
   if (!summaryData.length) {
     render(h("p", { class: "empty-state" }, "No sentiment data for this range."), summaryEl);
   } else {
+    const renderSummaryTile = item => {
+      const shareValue = typeof item.share === "number" ? `${formatFloat((item.share || 0) * 100, 1)}%` : item.hint ?? "";
+      const displayValue = typeof item.value === "string" ? item.value : formatNumber(item.value);
+      return h("div", { class: ["sentiment-tile", item.key], key: item.key }, [
+        h("span", { class: "sentiment-label" }, item.label),
+        h("span", { class: "sentiment-value" }, displayValue),
+        h("span", { class: "sentiment-share" }, shareValue),
+      ]);
+    };
     render(
-      h(
-        VueRuntime.Fragment,
-        null,
-        summaryData.map(item => {
-          const shareValue = typeof item.share === "number"
-            ? `${formatFloat((item.share || 0) * 100, 1)}%`
-            : item.hint ?? "";
-          const displayValue = typeof item.value === "string" ? item.value : formatNumber(item.value);
-          return h("div", { class: ["sentiment-tile", item.key], key: item.key }, [
-            h("span", { class: "sentiment-label" }, item.label),
-            h("span", { class: "sentiment-value" }, displayValue),
-            h("span", { class: "sentiment-share" }, shareValue),
-          ]);
-        }),
-      ),
+      usePrimeDataView
+        ? h(PrimeDataView, {
+            value: summaryData,
+            dataKey: "key",
+            unstyled: true,
+            "data-ui-runtime": "primevue",
+          }, {
+            list: slotProps => {
+              const items = Array.isArray(slotProps?.items) ? slotProps.items : summaryData;
+              return items.map(renderSummaryTile);
+            },
+          })
+        : h(
+            VueRuntime.Fragment,
+            null,
+            summaryData.map(renderSummaryTile),
+          ),
       summaryEl,
     );
   }
-
   const activeDays = (sentiment?.daily || []).filter(item => (item?.count || 0) > 0);
   renderSentimentTrend({
     dailyData: activeDays,
@@ -337,7 +328,6 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
     totalCount,
     averageScore: sentiment?.average ?? 0,
   });
-
   renderSentimentParticipants({
     participants: sentiment?.participants || [],
     positiveListEl,

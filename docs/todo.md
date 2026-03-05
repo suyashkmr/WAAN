@@ -683,7 +683,55 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Migrated Vue onboarding surface to shared PrimeVue `Dialog` renderer with semantic dialog fallback for partial runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Added PrimeVue dialog renderer parity coverage and onboarding dialog integration assertions (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
     - [ ] Core tabular/data-list surfaces -> PrimeVue data table/list primitives where applicable.
+      - [x] Migrated sentiment summary tile list rendering to PrimeVue `DataView` with grid-parity styling and runtime coverage (`js/analytics/sentiment.js`, `styles.components.css`, `tests/sentimentRender.test.js`).
+      - [x] Migrated dashboard highlights list rendering to PrimeVue `DataView` with grid-parity styling and island coverage (`js/vue/dashboardPanelsIsland.js`, `styles/components/analytics.css`, `tests/dashboardPanelsIsland.test.js`).
+      - [x] Migrated saved-views comparison columns to PrimeVue `DataView` with grid-parity styling and renderer coverage (`js/vue/searchSavedComparisonRenderer.js`, `js/vue/searchSavedIsland.js`, `styles/components/search-saved.css`, `tests/searchSavedComparisonRenderer.test.js`).
   - [ ] Remove redundant custom control wrappers once PrimeVue ownership is complete.
+  - [ ] DOM-to-Vue replacement queue (from frontend DOM-coupling sweep; execute top-down).
+    - [ ] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
+      - [ ] `js/appShell/eventBindings.js`
+      - [ ] `js/appShell/bootstrap.js`
+      - [ ] `js/appShell/relayBootstrap.js`
+      - [ ] `js/appShell/sectionNav.js`
+      - [ ] `js/appShell/onboarding.js`
+      - [ ] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
+      - [ ] `js/appShell/dashboardRender/activityPanels.js`
+      - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
+      - [ ] `js/appShell/dashboardRender/participantsPanel.js`
+      - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
+      - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
+      - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
+      - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
+    - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
+      - [ ] `js/appShell/dataStatus.js`
+      - [ ] `js/appShell/themeUi.js`
+      - [ ] `js/vue/dashboardHourlyRoot.js` (remaining direct text/DOM node writes)
+      - [ ] `js/vue/shellPrimitivesIsland.js` (status/timer class toggles)
+      - [ ] `js/analytics/messageTypes.js`
+      - [ ] `js/analytics/summaryParticipants.js`
+      - [ ] `js/analytics/activity/daily.js`
+      - [ ] `js/analytics/activity/weekly.js`
+      - [ ] `js/analytics/polls.js`
+      - [ ] `js/relayControls/logStream.js`
+      - [ ] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
+    - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
+      - [ ] `js/ui/primitives.js`
+      - [ ] `js/ui/appShellPrimitives.js`
+      - [ ] `js/ui/appShellRuntimeDecorators.js`
+      - [ ] `js/ui/runtimeStateSync.js`
+      - [ ] `js/ui/preferences.js`
+      - [ ] `js/ui/datasetEmptyState.js`
+      - [ ] `js/ui/domCache.js`
+      - [ ] `js/appShell/keyboardShortcuts.js`
+      - [ ] `js/appShell/chatSelection.js`
+      - [ ] `js/appShell/rangeFilters.js`
+      - [ ] `js/appShell/pdfPreview.js`
+      - [ ] `js/exporters/io.js` + `js/exporters/createExporters.js`
+      - [ ] Exit criteria: legacy primitive builder modules retired or reduced to non-UI backend-safe utilities only.
+    - [ ] Sweep guardrails:
+      - [ ] Add/refresh grep gate in CI for forbidden frontend render-time DOM APIs in migrated scopes.
+      - [ ] Keep module-size gate green while splitting large conversions.
+      - [ ] Re-run `npm run ci:verify` + `npm run test:visual` after each `P0` slice.
   - [x] Add/refresh integration tests covering interaction parity (click, keyboard submit, disabled/loading states).
     - [x] Added PrimeVue button renderer parity coverage for disabled/click/attribute forwarding and slot-content behavior (`tests/primevueRenderPrimitives.test.js`).
     - [x] Refreshed shell relay-action primitive tests to assert disabled-state parity on Vue-rendered controls (`tests/shellPrimitiveViews.test.js`).

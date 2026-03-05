@@ -1525,6 +1525,10 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     margin: 1rem 0 1.5rem;
 }
 
+.sentiment-summary :is(.p-dataview, .p-dataview-content, .p-dataview-list) {
+    display: contents;
+}
+
 .sentiment-tile {
     background: color-mix(in srgb, var(--muted) 8%, transparent);
     border: 1px solid var(--border);

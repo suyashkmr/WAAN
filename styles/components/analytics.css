@@ -16,6 +16,10 @@
     gap: 1rem;
 }
 
+.highlight-grid :is(.p-dataview, .p-dataview-content, .p-dataview-list) {
+    display: contents;
+}
+
 .guided-insights {
     margin-top: 1.25rem;
     display: grid;

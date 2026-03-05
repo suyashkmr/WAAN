@@ -369,6 +369,10 @@
     gap: 1rem;
 }
 
+.compare-summary-grid :is(.p-dataview, .p-dataview-content, .p-dataview-list) {
+    display: contents;
+}
+
 @media (min-width: 780px) {
     .compare-summary-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
