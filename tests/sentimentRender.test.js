@@ -84,10 +84,12 @@ describe("sentiment renderer", () => {
   });
 
   it("renders summary tiles via PrimeVue DataView when runtime component is available", () => {
+    let capturedPt = null;
     const PrimeDataView = {
       name: "PrimeDataViewStub",
-      props: ["value"],
+      props: ["value", "pt"],
       setup(props, context) {
+        capturedPt = props?.pt ?? null;
         return () =>
           h(
             "div",
@@ -120,6 +122,7 @@ describe("sentiment renderer", () => {
 
     const primeDataView = elements.summaryEl.querySelector(".prime-data-view");
     expect(primeDataView?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(capturedPt?.root?.style).toContain("display: contents");
     expect(elements.summaryEl.querySelectorAll(".sentiment-tile")).toHaveLength(4);
   });
 

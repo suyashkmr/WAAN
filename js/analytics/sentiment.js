@@ -305,6 +305,11 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
             dataKey: "key",
             unstyled: true,
             "data-ui-runtime": "primevue",
+            pt: {
+              root: { style: "display: contents;" },
+              content: { style: "display: contents;" },
+              list: { style: "display: contents;" },
+            },
           }, {
             list: slotProps => {
               const items = Array.isArray(slotProps?.items) ? slotProps.items : summaryData;

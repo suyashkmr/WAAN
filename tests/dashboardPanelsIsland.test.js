@@ -15,11 +15,13 @@ describe("dashboard panels island", () => {
   it("renders highlights via PrimeVue DataView when runtime component is available", async () => {
     document.body.innerHTML = '<div id="highlight-list" class="highlight-grid"></div>';
     let capturedDataKey = "";
+    let capturedPt = null;
     const PrimeDataView = {
       name: "PrimeDataViewStub",
-      props: ["value", "dataKey"],
+      props: ["value", "dataKey", "pt"],
       setup(props, context) {
         capturedDataKey = String(props?.dataKey || "");
+        capturedPt = props?.pt ?? null;
         return () =>
           h(
             "div",
@@ -57,6 +59,7 @@ describe("dashboard panels island", () => {
     const dataViewRoot = document.querySelector("#highlight-list .highlights-dataview-prime");
     expect(dataViewRoot).toBeTruthy();
     expect(capturedDataKey).toBe("key");
+    expect(capturedPt?.root?.style).toContain("display: contents");
     expect(document.querySelectorAll("#highlight-list .highlight-card")).toHaveLength(1);
   });
 });
