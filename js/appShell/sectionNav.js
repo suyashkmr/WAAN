@@ -1,6 +1,15 @@
 // @ts-check
 
-import { decorateToolbarRow } from "../ui/appShellRuntimeDecorators.js";
+/**
+ * @param {HTMLElement | null | undefined} element
+ * @param {{ role?: string }} [params]
+ */
+function decorateToolbarRow(element, { role = "" } = {}) {
+  if (!element) return null;
+  element.classList.add("app-toolbar-row");
+  if (role) element.setAttribute("role", role);
+  return element;
+}
 
 /**
  * @typedef {{ id: string, label: string }} SectionNavItemConfig

@@ -1,6 +1,5 @@
 // @ts-check
 
-import { initAppShellPrimitives } from "../ui/appShellRuntimeDecorators.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
@@ -146,7 +145,6 @@ export function createBootstrapController({ elements, deps }) {
   function initAppBootstrap() {
     assertSearchSavedBridgeReady();
     assertShellBridgeReady();
-    initAppShellPrimitives({ documentRef: document });
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     shellBridge.setShellActionHandlers({
       "ui.compact.toggle": () => {

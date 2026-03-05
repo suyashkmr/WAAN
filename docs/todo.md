@@ -717,10 +717,14 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
       - [x] `js/ui/primitives.js`
       - [x] `js/ui/appShellPrimitives.js`
-      - [ ] `js/ui/appShellRuntimeDecorators.js`
-      - [ ] `js/ui/runtimeStateSync.js`
+      - [x] `js/ui/appShellRuntimeDecorators.js`
+        - [x] `js/appShell/sectionNav.js` no longer imports decorator wrappers; toolbar-row decoration is now local to section-nav controller.
+        - [x] `js/appShell/bootstrap.js` no longer calls `initAppShellPrimitives`; runtime bootstrap no longer depends on legacy class-decoration wrappers.
+      - [x] `js/ui/runtimeStateSync.js`
+        - [x] Folded runtime state sync into `js/ui/primitivesRuntime.js`; removed standalone legacy sync module and repointed tests/imports.
       - [ ] `js/ui/preferences.js`
-      - [ ] `js/ui/datasetEmptyState.js`
+      - [x] `js/ui/datasetEmptyState.js`
+        - [x] Moved manager to `js/appShell/datasetEmptyState.js`; app-shell now owns dataset-empty UX state directly.
       - [ ] `js/ui/domCache.js`
       - [ ] `js/appShell/keyboardShortcuts.js`
       - [ ] `js/appShell/chatSelection.js`

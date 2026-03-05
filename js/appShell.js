@@ -13,7 +13,7 @@ import {
   motionPreferenceQuery,
   initialReduceMotionPreferred,
 } from "./config.js";
-import { createDatasetEmptyStateManager } from "./ui.js";
+import { createDatasetEmptyStateManager } from "./appShell/datasetEmptyState.js";
 import {
   createAppDomRefs,
   fetchJson,

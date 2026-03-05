@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyUiRuntimeState } from "../js/ui/runtimeStateSync.js";
+import { applyUiRuntimeState } from "../js/ui/primitivesRuntime.js";
 import { createVuePrimitiveComposables } from "../js/ui/primitivesVueComposables.js";
 
 describe("ui primitives", () => {
