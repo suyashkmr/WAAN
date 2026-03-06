@@ -715,6 +715,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
         - [x] Routed search action-row ownership through explicit `searchActionsEl` refs instead of `form.querySelector(...)`, and injected search timing/Vue runtime dependencies into search controllers rather than discovering them ad hoc.
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
+        - [x] Replaced saved-view dirty-tracking `document.getElementById(...)` discovery with explicit filter-control refs from controller wiring, and injected Vue runtime into saved-view select rendering instead of discovering `globalThis.Vue` inside the UI controller.
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):

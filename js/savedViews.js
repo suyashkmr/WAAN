@@ -54,11 +54,24 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     ensureWeekdayDayFilters,
     ensureWeekdayHourFilters,
     syncWeekdayControlsWithState,
+    filterWeekdays,
+    filterWeekends,
+    filterWorking,
+    filterOffhours,
+    hourlyBrushStartInput,
+    hourlyBrushEndInput,
+    weekdayToggleWeekdays,
+    weekdayToggleWeekends,
+    weekdayToggleWorking,
+    weekdayToggleOffhours,
+    weekdayHourStartInput,
+    weekdayHourEndInput,
     describeRange,
     updateStatus,
     filterEntriesByRange,
     normalizeRangeValue,
     computeAnalyticsWithWorker,
+    vueRuntime = typeof globalThis !== "undefined" ? globalThis.Vue : null,
   } = dependencies;
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
@@ -148,6 +161,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       ensureViewSnapshot,
       formatSavedViewRange,
       dataAvailableGetter: () => dataAvailable,
+      vueRuntime,
       getActiveViewContext: () => ({
         activeViewId,
         activeViewDirty: isActiveViewDirty(),
@@ -159,11 +173,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       },
     },
   });
-  const {
-    refreshUI,
-    renderComparisonSummary,
-    updateControlsDisabled,
-  } = savedViewsUiController;
+  const { refreshUI, renderComparisonSummary, updateControlsDisabled } = savedViewsUiController;
 
   function resetForNewDataset() {
     clearSavedViews();
@@ -185,18 +195,12 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       if (customEndInput) customEndInput.value = rangeValue.end ?? "";
     }
 
-    updateHourlyState({
-      filters: { ...view.hourlyFilters },
-      brush: { ...view.hourlyBrush },
-    });
+    updateHourlyState({ filters: { ...view.hourlyFilters }, brush: { ...view.hourlyBrush } });
     ensureDayFilters();
     ensureHourFilters();
     syncHourlyControlsWithState();
 
-    updateWeekdayState({
-      filters: { ...view.weekdayFilters },
-      brush: { ...view.weekdayBrush },
-    });
+    updateWeekdayState({ filters: { ...view.weekdayFilters }, brush: { ...view.weekdayBrush } });
     ensureWeekdayDayFilters();
     ensureWeekdayHourFilters();
     syncWeekdayControlsWithState();
@@ -305,6 +309,20 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       rangeSelect,
       customStartInput,
       customEndInput,
+      filterControls: [
+        filterWeekdays,
+        filterWeekends,
+        filterWorking,
+        filterOffhours,
+        hourlyBrushStartInput,
+        hourlyBrushEndInput,
+        weekdayToggleWeekdays,
+        weekdayToggleWeekends,
+        weekdayToggleWorking,
+        weekdayToggleOffhours,
+        weekdayHourStartInput,
+        weekdayHourEndInput,
+      ],
       onStateChange: refreshOnStateChange,
     });
   }
@@ -319,11 +337,5 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     refreshUI();
   }
 
-  return {
-    init() {
-      attachEvents();
-      refreshUI();
-    },
-    refreshUI, resetForNewDataset, setDataAvailability: setDataAvailabilityState,
-  };
+  return { init() { attachEvents(); refreshUI(); }, refreshUI, resetForNewDataset, setDataAvailability: setDataAvailabilityState };
 }

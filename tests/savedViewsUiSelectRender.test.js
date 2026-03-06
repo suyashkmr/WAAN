@@ -3,7 +3,11 @@ import { Fragment, h, render } from "vue";
 
 import { createSavedViewsUiController } from "../js/savedViewsUi.js";
 
-function buildController({ views = [], compareSelection = { primary: null, secondary: null } } = {}) {
+function buildController({
+  views = [],
+  compareSelection = { primary: null, secondary: null },
+  vueRuntime = null,
+} = {}) {
   const listSelect = document.createElement("select");
   const compareSelectA = document.createElement("select");
   const compareSelectB = document.createElement("select");
@@ -19,6 +23,7 @@ function buildController({ views = [], compareSelection = { primary: null, secon
     formatSavedViewRange: () => "range",
     dataAvailableGetter: () => true,
     onPanelAction: vi.fn(),
+    vueRuntime,
   };
 
   const controller = createSavedViewsUiController({
@@ -51,12 +56,12 @@ describe("saved views select rendering", () => {
   });
 
   it("renders list/compare options via Vue and clears prefilled static options", () => {
-    globalThis.Vue = { h, render, Fragment };
+    const vueRuntime = { h, render, Fragment };
     const views = [
       { id: "v1", name: "Baseline", rangeLabel: "all" },
       { id: "v2", name: "Recent", rangeLabel: "last 30" },
     ];
-    const { controller, listSelect, compareSelectA, compareSelectB } = buildController({ views });
+    const { controller, listSelect, compareSelectA, compareSelectB } = buildController({ views, vueRuntime });
 
     listSelect.innerHTML = '<option value="">No saved views yet</option>';
     compareSelectA.innerHTML = '<option value="">Select view A…</option>';

@@ -46,29 +46,15 @@ export function bindSavedViewDirtyWatchers({
   rangeSelect,
   customStartInput,
   customEndInput,
+  filterControls = [],
   onStateChange,
-  documentRef = typeof document !== "undefined" ? document : null,
 }) {
   if (typeof onStateChange !== "function") return;
-  const ids = [
-    "filter-weekdays",
-    "filter-weekends",
-    "filter-working",
-    "filter-offhours",
-    "hourly-brush-start",
-    "hourly-brush-end",
-    "weekday-toggle-weekdays",
-    "weekday-toggle-weekends",
-    "weekday-toggle-working",
-    "weekday-toggle-offhours",
-    "weekday-hour-start",
-    "weekday-hour-end",
-  ];
   const controls = [
     rangeSelect,
     customStartInput,
     customEndInput,
-    ...ids.map(id => documentRef?.getElementById(id) || null),
+    ...(Array.isArray(filterControls) ? filterControls : []),
   ];
   controls.forEach(control => {
     if (!control) return;

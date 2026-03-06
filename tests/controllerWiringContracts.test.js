@@ -134,6 +134,14 @@ describe("controllerWiring contracts", () => {
       hourlyBrushEndInput: document.createElement("input"),
       hourlyBrushStartLabel: document.createElement("span"),
       hourlyBrushEndLabel: document.createElement("span"),
+      weekdayToggleWeekdays: document.createElement("input"),
+      weekdayToggleWeekends: document.createElement("input"),
+      weekdayToggleWorking: document.createElement("input"),
+      weekdayToggleOffhours: document.createElement("input"),
+      weekdayHourStartInput: document.createElement("input"),
+      weekdayHourEndInput: document.createElement("input"),
+      weekdayHourStartLabel: document.createElement("span"),
+      weekdayHourEndLabel: document.createElement("span"),
       searchForm: document.createElement("form"),
       searchKeywordInput: document.createElement("input"),
       searchParticipantSelect: document.createElement("select"),
@@ -238,6 +246,24 @@ describe("controllerWiring contracts", () => {
     expect(typeof result.initThemeControls).toBe("function");
     expect(typeof result.getExportThemeConfig).toBe("function");
     expect(h.createSavedViewsController).toHaveBeenCalledTimes(1);
+    const savedViewsConfig = h.createSavedViewsController.mock.calls[0]?.[0];
+    expect(savedViewsConfig?.dependencies).toEqual(
+      expect.objectContaining({
+        filterWeekdays: dom.filterWeekdays,
+        filterWeekends: dom.filterWeekends,
+        filterWorking: dom.filterWorking,
+        filterOffhours: dom.filterOffhours,
+        hourlyBrushStartInput: dom.hourlyBrushStartInput,
+        hourlyBrushEndInput: dom.hourlyBrushEndInput,
+        weekdayToggleWeekdays: dom.weekdayToggleWeekdays,
+        weekdayToggleWeekends: dom.weekdayToggleWeekends,
+        weekdayToggleWorking: dom.weekdayToggleWorking,
+        weekdayToggleOffhours: dom.weekdayToggleOffhours,
+        weekdayHourStartInput: dom.weekdayHourStartInput,
+        weekdayHourEndInput: dom.weekdayHourEndInput,
+        vueRuntime: undefined,
+      }),
+    );
     const dashboardRuntimeConfig = h.createDashboardRuntime.mock.calls[0]?.[0];
     expect(dashboardRuntimeConfig?.deps?.subscribeAppShellUiState).toBe(state.subscribeAppShellUiState);
     expect(dashboardRuntimeConfig?.elements).toEqual(

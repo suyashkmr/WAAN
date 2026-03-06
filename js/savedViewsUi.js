@@ -36,6 +36,7 @@ export function createSavedViewsUiController({
     formatSavedViewRange,
     dataAvailableGetter,
     onPanelAction,
+    vueRuntime = typeof globalThis !== "undefined" ? globalThis.Vue : null,
   } = deps;
 
   /**
@@ -134,7 +135,7 @@ export function createSavedViewsUiController({
   function populateSavedSelect(select, views, selectedId, placeholder) {
     if (!select) return;
     const previous = selectedId ?? select.value;
-    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+    const VueRuntime = /** @type {any} */ (vueRuntime);
     const canRenderWithVue = Boolean(
       VueRuntime &&
       typeof VueRuntime.h === "function" &&
