@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { createRelayController } from "../js/relayControls.js";
 
 function buildRelayElements() {
+  const relayLiveCard = document.createElement("section");
+  const chatSelector = document.createElement("select");
   const relayStartButton = document.createElement("button");
   const relayStopButton = document.createElement("button");
   const relayLogoutButton = document.createElement("button");
@@ -59,12 +61,16 @@ function buildRelayElements() {
     logDrawerList,
     logDrawerConnectionLabel,
     relaySyncProgressEl,
+    relaySyncChatsStep: chatsStep,
+    relaySyncMessagesStep: messagesStep,
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
     firstRunSetup,
     firstRunSetupSteps,
     firstRunOpenRelayButton,
     firstRunPrimaryActionButton,
+    relayLiveCard,
+    chatSelector,
   };
 }
 

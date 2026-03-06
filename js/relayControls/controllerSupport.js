@@ -15,12 +15,16 @@ export function createRelaySupportControllers({
     firstRunSetup: elements.firstRunSetup,
     firstRunSetupSteps: elements.firstRunSetupSteps,
     firstRunPrimaryActionButton: elements.firstRunPrimaryActionButton,
+    relayLiveCard: elements.relayLiveCard,
+    chatSelector: elements.chatSelector,
     relayStartButton: elements.relayStartButton,
     getControlsLocked: deps.getControlsLocked,
     getDataAvailable: deps.getDataAvailable,
   });
   const relaySyncProgressController = createRelaySyncProgressController({
     relaySyncProgressEl: elements.relaySyncProgressEl,
+    relaySyncChatsStep: elements.relaySyncChatsStep,
+    relaySyncMessagesStep: elements.relaySyncMessagesStep,
     relaySyncChatsMeta: elements.relaySyncChatsMeta,
     relaySyncMessagesMeta: elements.relaySyncMessagesMeta,
     formatNumber: deps.formatNumber,

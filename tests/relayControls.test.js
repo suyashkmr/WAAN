@@ -82,12 +82,16 @@ function buildRelayElements() {
     logDrawerList,
     logDrawerConnectionLabel,
     relaySyncProgressEl,
+    relaySyncChatsStep: chatsStep,
+    relaySyncMessagesStep: messagesStep,
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
     firstRunSetup,
     firstRunSetupSteps,
     firstRunOpenRelayButton,
     firstRunPrimaryActionButton,
+    relayLiveCard,
+    chatSelector,
   };
 }
 

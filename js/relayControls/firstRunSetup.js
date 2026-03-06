@@ -9,6 +9,8 @@
  *   firstRunSetup?: HTMLElement | null,
  *   firstRunSetupSteps?: Array<HTMLElement> | null,
  *   firstRunPrimaryActionButton?: HTMLButtonElement | null,
+ *   relayLiveCard?: HTMLElement | null,
+ *   chatSelector?: HTMLElement | null,
  *   relayStartButton?: HTMLButtonElement | null,
  *   getControlsLocked?: (() => boolean) | null,
  *   getDataAvailable?: (() => boolean) | null,
@@ -18,6 +20,8 @@ export function createFirstRunSetupController({
   firstRunSetup,
   firstRunSetupSteps,
   firstRunPrimaryActionButton,
+  relayLiveCard,
+  chatSelector,
   relayStartButton,
   getControlsLocked,
   getDataAvailable,
@@ -83,16 +87,14 @@ export function createFirstRunSetupController({
   }
 
   function handleFirstRunOpenRelay() {
-    const relayCard = document.getElementById("relay-live-card");
-    scrollToElement(relayCard);
+    scrollToElement(relayLiveCard);
   }
 
   function handleFirstRunPrimaryAction() {
     const action = firstRunPrimaryActionButton?.dataset.action || "connect";
     if (action === "select-chat") {
-      const selector = document.getElementById("chat-selector");
-      scrollToElement(selector);
-      selector?.focus();
+      scrollToElement(chatSelector);
+      chatSelector?.focus();
       return;
     }
     if (relayStartButton && !relayStartButton.disabled) {

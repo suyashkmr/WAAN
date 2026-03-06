@@ -692,6 +692,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [ ] No remaining non-test runtime controllers own primary interaction flow through ad-hoc `addEventListener` wiring where Vue bridge/component ownership should apply.
     - [ ] Remaining direct DOM/browser API usage is limited to intentional platform utilities only (for example export/download, print-preview, focus/measurement, or other browser-only glue).
     - [ ] Manual sign-off: major app surfaces behave correctly with Vue-owned flows for shell, relay, search, saved views, and analytics.
+    - [ ] Final runtime audit confirms shell, relay, search, saved views, and analytics surfaces all mount through Vue-owned contracts with no controller-owned primary render path remaining.
   - [ ] DOM-to-Vue replacement queue (from frontend DOM-coupling sweep; execute top-down).
     - [ ] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
       - [ ] `js/appShell/eventBindings.js`
@@ -717,7 +718,9 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
         - [x] Replaced saved-view dirty-tracking `document.getElementById(...)` discovery with explicit filter-control refs from controller wiring, and injected Vue runtime into saved-view select rendering instead of discovering `globalThis.Vue` inside the UI controller.
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
+        - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
+        - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
       - [ ] `js/appShell/dataStatus.js`
       - [ ] `js/appShell/themeUi.js`
@@ -765,6 +768,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Refreshed shell relay-action primitive tests to assert disabled-state parity on Vue-rendered controls (`tests/shellPrimitiveViews.test.js`).
     - [x] Added PrimeVue-path search action primitive integration coverage for submit semantics and action dispatch (`tests/searchSavedActionPrimitives.test.js`).
   - [ ] Acceptance: core interactive UI components are PrimeVue-owned with no duplicated custom control implementations.
+    - [ ] No production UI path depends on bespoke app-owned button/input/select/date/dialog primitives where PrimeVue equivalents exist.
+    - [ ] PrimeVue is the default component layer for all core interactive controls in shell, relay, search, saved views, and dashboard surfaces.
 
 - [ ] Phase 12 (3-5 days): Prime theme tokens as single source of truth.
   - [ ] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.
@@ -773,6 +778,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
   - [ ] Ensure light/dark and accessibility contrast remain compliant after token consolidation.
   - [ ] Add regression checks for token drift (theme snapshot/contract tests in CI).
   - [ ] Acceptance: component-level color/typography/shape/elevation values resolve from Prime theme tokens by default.
+    - [ ] Prime theme tokens are the sole source of truth for component skinning; any remaining custom CSS tokens are limited to app layout/brand framing only.
 
 - [ ] Phase 13 (2-4 days): Tailwind layout-only constraint.
   - [ ] Restrict Tailwind usage to layout glue (`display`, `grid/flex`, spacing, responsive utilities).
@@ -780,6 +786,15 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
   - [ ] Add lint/check script to flag non-layout Tailwind utility usage in component markup.
   - [ ] Update docs with an explicit styling contract: Prime theme tokens + PrimeVue for component styling, Tailwind for layout composition only.
   - [ ] Acceptance: Tailwind utilities are used for layout orchestration only, not component skinning.
+    - [ ] Tailwind no longer overrides PrimeVue-owned component visuals outside intentional layout wrappers.
+
+- [ ] Phase 14 (1-2 days): Final 100% migration sign-off and purge.
+  - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
+  - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
+  - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
+  - [ ] Re-run `npm run ci:verify`, `npm run test:visual`, and release smoke checks after purge.
+  - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, and onboarding.
+  - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.

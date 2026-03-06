@@ -3,6 +3,8 @@
 /**
  * @param {{
  *   relaySyncProgressEl: HTMLElement | null | undefined,
+ *   relaySyncChatsStep: HTMLElement | null | undefined,
+ *   relaySyncMessagesStep: HTMLElement | null | undefined,
  *   relaySyncChatsMeta: HTMLElement | null | undefined,
  *   relaySyncMessagesMeta: HTMLElement | null | undefined,
  *   formatNumber: (value: number) => string,
@@ -10,17 +12,13 @@
  */
 export function createRelaySyncProgressController({
   relaySyncProgressEl,
+  relaySyncChatsStep,
+  relaySyncMessagesStep,
   relaySyncChatsMeta,
   relaySyncMessagesMeta,
   formatNumber,
 }) {
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
-  const relaySyncChatsStep = /** @type {HTMLElement | null} */ (
-    relaySyncProgressEl?.querySelector('[data-step="chats"]')
-  );
-  const relaySyncMessagesStep = /** @type {HTMLElement | null} */ (
-    relaySyncProgressEl?.querySelector('[data-step="messages"]')
-  );
 
   const relaySyncUiState = {
     manualActive: false,
