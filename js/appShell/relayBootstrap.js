@@ -10,9 +10,19 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
  *   elements: AnyRecord,
  *   handlers: AnyRecord,
  *   deps: AnyRecord,
+ *   documentRef?: Document | null | undefined,
+ *   windowRef?: Window | null | undefined,
+ *   globalScope?: any,
  * }} params
  */
-export function createRelayBootstrapController({ elements, handlers, deps }) {
+export function createRelayBootstrapController({
+  elements,
+  handlers,
+  deps,
+  documentRef = typeof document !== "undefined" ? document : null,
+  windowRef = typeof window !== "undefined" ? window : null,
+  globalScope = globalThis,
+}) {
   const {
     relayStartButton,
     relayStatusEl,
@@ -89,15 +99,15 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
   }
 
   async function handleClearStorageClick(payload = null) {
-    if (typeof window !== "undefined" && window.confirm) {
-      const confirmed = window.confirm(
+    if (typeof windowRef?.confirm === "function") {
+      const confirmed = windowRef.confirm(
         "Clear all cached WAAN chats on this machine? You'll need to refresh to download them again.",
       );
       if (!confirmed) return;
     }
 
     const clearStorageButton = resolveRelayButtonFromPayload(payload, relayClearStorageButton);
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     shellBridge?.updateRelayControlButtons?.({ clearStorageDisabled: true });
     if (clearStorageButton) clearStorageButton.disabled = true;
     try {
@@ -119,7 +129,7 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
       return;
     }
 
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     const supportsRelayActionDispatch =
       typeof shellBridge?.setRelayActionHandlers === "function" &&
       typeof shellBridge?.dispatchRelayAction === "function";
@@ -161,8 +171,8 @@ export function createRelayBootstrapController({ elements, handlers, deps }) {
     void relayRecoveryResyncButton;
     void relayRecoveryExportButton;
 
-    document.addEventListener("click", handleLogDrawerDocumentClick);
-    document.addEventListener("keydown", handleLogDrawerKeydown);
+    documentRef?.addEventListener("click", handleLogDrawerDocumentClick);
+    documentRef?.addEventListener("keydown", handleLogDrawerKeydown);
     refreshRelayStatus({ silent: true }).finally(() => {
       startStatusPolling();
     });

@@ -244,4 +244,48 @@ describe("onboarding controller", () => {
     controller.start();
     expect(controller.isOpen()).toBe(false);
   });
+
+  it("uses injected document and storage refs instead of ambient globals", () => {
+    const overlayEl = document.createElement("div");
+    const copyEl = document.createElement("div");
+    const stepLabelEl = document.createElement("div");
+    const nextButtonEl = document.createElement("button");
+    const body = document.createElement("body");
+    const section = document.createElement("section");
+    section.className = "target";
+    body.append(section);
+
+    const storage = new Map();
+    const storageRef = {
+      getItem: vi.fn(key => storage.get(key) ?? null),
+      setItem: vi.fn((key, value) => storage.set(key, String(value))),
+    };
+    const documentRef = {
+      body,
+      querySelector: vi.fn(selector => (selector === ".target" ? section : null)),
+    };
+    const scrollSpy = vi.spyOn(section, "scrollIntoView").mockImplementation(() => {});
+
+    const controller = createOnboardingController({
+      overlayEl,
+      copyEl,
+      stepLabelEl,
+      nextButtonEl,
+      steps: [{ copy: "Injected", target: ".target" }],
+      storageKey: "test-onboarding-injected",
+      documentRef: /** @type {any} */ (documentRef),
+      storageRef,
+    });
+
+    controller.start();
+    expect(controller.isOpen()).toBe(true);
+    expect(copyEl.textContent).toBe("Injected");
+    expect(body.classList.contains("onboarding-active")).toBe(true);
+    expect(documentRef.querySelector).toHaveBeenCalledWith(".target");
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+
+    controller.advance();
+    expect(body.classList.contains("onboarding-active")).toBe(false);
+    expect(storageRef.setItem).toHaveBeenCalledWith("test-onboarding-injected", "done");
+  });
 });

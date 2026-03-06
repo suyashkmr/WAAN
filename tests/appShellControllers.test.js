@@ -192,6 +192,102 @@ describe("appShell controllers", () => {
     expect(deps.refreshChatSelector).toHaveBeenCalled();
   });
 
+  it("relayBootstrap uses injected runtime refs instead of ambient globals", async () => {
+    const liveActionsContainer = document.createElement("div");
+    liveActionsContainer.className = "live-actions";
+    liveActionsContainer.dataset.vuePrimitiveMounted = "true";
+    const relayStartButton = document.createElement("button");
+    liveActionsContainer.append(relayStartButton);
+    const headerActionsContainer = document.createElement("div");
+    headerActionsContainer.className = "card-header-actions";
+    headerActionsContainer.dataset.vuePrimitiveMounted = "true";
+    const relayReloadAllButton = document.createElement("button");
+    const relayClearStorageButton = document.createElement("button");
+    headerActionsContainer.append(relayReloadAllButton, relayClearStorageButton);
+    document.body.append(liveActionsContainer, headerActionsContainer);
+
+    const relayStatusEl = document.createElement("div");
+    const logDrawerCloseButton = document.createElement("button");
+
+    const registeredDocumentListeners = {};
+    const documentRef = {
+      addEventListener: vi.fn((type, handler) => {
+        registeredDocumentListeners[type] = handler;
+      }),
+    };
+    const windowRef = {
+      confirm: vi.fn(() => true),
+    };
+    /** @type {Record<string, Function>} */
+    let relayActionHandlers = {};
+    const globalScope = {
+      [VUE_RUNTIME_REGISTRY_KEY]: {
+        bridges: {
+          [VUE_BRIDGE_NAMES.shell]: {
+            setRelayActionHandlers: handlersMap => {
+              relayActionHandlers = handlersMap;
+            },
+            dispatchRelayAction: vi.fn(),
+          },
+        },
+      },
+    };
+
+    const handlers = {
+      handleRelayPrimaryActionClick: vi.fn(),
+      stopRelaySession: vi.fn(),
+      logoutRelaySession: vi.fn(),
+      handleReloadAllChats: vi.fn(),
+      openLogDrawer: vi.fn(),
+      closeLogDrawer: vi.fn(),
+      handleExportDiagnostics: vi.fn(),
+      handleReportIssue: vi.fn(),
+      handleLogClear: vi.fn(),
+      handleLogDrawerDocumentClick: vi.fn(),
+      handleLogDrawerKeydown: vi.fn(),
+      refreshRelayStatus: vi.fn(async () => {}),
+      startStatusPolling: vi.fn(),
+      initLogStream: vi.fn(),
+    };
+    const deps = {
+      fetchJson: vi.fn(async () => ({})),
+      apiBase: "http://127.0.0.1:3334",
+      setRemoteChatList: vi.fn(),
+      refreshChatSelector: vi.fn(async () => {}),
+      updateStatus: vi.fn(),
+    };
+
+    const { initRelayControls, handleClearStorageClick } = createRelayBootstrapController({
+      elements: {
+        relayStartButton,
+        relayStatusEl,
+        relayReloadAllButton,
+        relayClearStorageButton,
+        logDrawerCloseButton,
+      },
+      handlers,
+      deps,
+      documentRef: /** @type {any} */ (documentRef),
+      windowRef: /** @type {any} */ (windowRef),
+      globalScope,
+    });
+
+    initRelayControls();
+    expect(documentRef.addEventListener).toHaveBeenCalledWith("click", handlers.handleLogDrawerDocumentClick);
+    expect(documentRef.addEventListener).toHaveBeenCalledWith("keydown", handlers.handleLogDrawerKeydown);
+
+    await relayActionHandlers["relay.clearStorage"]?.();
+    expect(windowRef.confirm).toHaveBeenCalledTimes(1);
+
+    registeredDocumentListeners.click?.(new Event("click"));
+    registeredDocumentListeners.keydown?.(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(handlers.handleLogDrawerDocumentClick).toHaveBeenCalledTimes(1);
+    expect(handlers.handleLogDrawerKeydown).toHaveBeenCalledTimes(1);
+
+    await handleClearStorageClick();
+    expect(deps.fetchJson).toHaveBeenCalledWith("http://127.0.0.1:3334/chats/clear", { method: "POST" });
+  });
+
   it("eventBindings handles custom range validation and apply", async () => {
     const chatSelector = document.createElement("select");
     const rangeSelect = document.createElement("select");

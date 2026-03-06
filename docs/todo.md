@@ -699,9 +699,11 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/appShell/bootstrap.js`
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`
+        - [x] Routed relay-bootstrap document/window/bridge access through injected runtime refs (`documentRef`, `windowRef`, `globalScope`) instead of hard globals.
       - [ ] `js/appShell/sectionNav.js`
         - [x] Routed section-nav DOM/window/Vue runtime access through injected refs (`documentRef`, `windowRef`, `vueRuntime`) instead of hard globals.
       - [ ] `js/appShell/onboarding.js`
+        - [x] Routed onboarding document/query/storage access through injected refs (`documentRef`, `storageRef`) instead of hard globals.
       - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
       - [ ] `js/appShell/dashboardRender/activityPanels.js`

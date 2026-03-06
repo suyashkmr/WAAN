@@ -159,6 +159,8 @@ bootstrapAppShellRuntime(
       skipButtonEl: onboardingSkipButton,
       nextButtonEl: onboardingNextButton,
       steps: ONBOARDING_STEPS,
+      documentRef: document,
+      storageRef: globalThis.localStorage,
     },
     keyboardDeps: {
       syncRelayChats: compositionAssembly.syncRelayChats,

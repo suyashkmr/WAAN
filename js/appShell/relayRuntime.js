@@ -18,6 +18,9 @@ import { createRelayBootstrapController } from "./relayBootstrap.js";
  *   setRemoteChatList: (...args: any[]) => void,
  *   refreshChatSelector: (...args: any[]) => Promise<any> | void,
  *   updateStatus: (...args: any[]) => void,
+ *   documentRef?: Document | null | undefined,
+ *   windowRef?: Window | null | undefined,
+ *   globalScope?: any,
  * }} params
  */
 export function createRelayRuntime({
@@ -30,6 +33,9 @@ export function createRelayRuntime({
   setRemoteChatList,
   refreshChatSelector,
   updateStatus,
+  documentRef = typeof document !== "undefined" ? document : null,
+  windowRef = typeof window !== "undefined" ? window : null,
+  globalScope = globalThis,
 }) {
   const relayController = createRelayController({
     elements: relayElements,
@@ -93,6 +99,9 @@ export function createRelayRuntime({
       refreshChatSelector,
       updateStatus,
     },
+    documentRef,
+    windowRef,
+    globalScope,
   });
 
   return {

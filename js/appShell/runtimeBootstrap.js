@@ -84,6 +84,8 @@ export function bootstrapAppShellRuntime({
     stepLabelEl: onboardingConfig.stepLabelEl,
     nextButtonEl: onboardingConfig.nextButtonEl,
     steps: onboardingConfig.steps,
+    documentRef: onboardingConfig.documentRef,
+    storageRef: onboardingConfig.storageRef,
   });
 
   const keyboardShortcutsController = createKeyboardShortcutsController({
