@@ -47,6 +47,9 @@ export function bootstrapAppShellRuntime({
   const sectionNavController = createSectionNavController({
     containerEl: sectionNavConfig.containerEl,
     navItemsConfig: sectionNavConfig.navItemsConfig,
+    documentRef: sectionNavConfig.documentRef,
+    windowRef: sectionNavConfig.windowRef,
+    vueRuntime: sectionNavConfig.vueRuntime,
   });
   const { buildSectionNav, setupSectionNavTracking } = sectionNavController;
 

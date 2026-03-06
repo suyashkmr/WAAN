@@ -16,11 +16,20 @@ function decorateToolbarRow(element, { role = "" } = {}) {
  */
 
 /**
- * @param {{ containerEl: HTMLElement | null | undefined, navItemsConfig?: SectionNavItemConfig[] }} params
+ * @param {{
+ *   containerEl: HTMLElement | null | undefined,
+ *   navItemsConfig?: SectionNavItemConfig[],
+ *   documentRef?: Document | null | undefined,
+ *   windowRef?: Window | null | undefined,
+ *   vueRuntime?: any,
+ * }} params
  */
 export function createSectionNavController({
   containerEl,
   navItemsConfig = [],
+  documentRef = typeof document !== "undefined" ? document : null,
+  windowRef = typeof window !== "undefined" ? window : null,
+  vueRuntime = /** @type {any} */ (globalThis)?.Vue ?? null,
 }) {
   /** @type {HTMLAnchorElement[]} */
   let sectionNavLinks = [];
@@ -57,11 +66,11 @@ export function createSectionNavController({
       link => link.getAttribute("href")?.replace(/^#/, "") === targetId,
     );
     const reduceMotionFlag =
-      typeof document !== "undefined" ? document.body?.dataset?.reduceMotion === "true" : false;
+      documentRef?.body?.dataset?.reduceMotion === "true";
     const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      ((typeof window.matchMedia === "function" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+      Boolean(windowRef) &&
+      ((typeof windowRef?.matchMedia === "function" &&
+        windowRef.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
         reduceMotionFlag);
     activeLink?.scrollIntoView?.({
       inline: "center",
@@ -76,21 +85,20 @@ export function createSectionNavController({
     /** @type {Array<SectionNavItemConfig & { target: HTMLElement }>} */
     const resolvedItems = [];
     navItemsConfig.forEach(item => {
-      const target = document.getElementById(item.id);
+      const target = documentRef?.getElementById(item.id);
       if (!target) return;
       resolvedItems.push({ ...item, target });
     });
     sectionNavLinks = [];
     sectionNavItems = [];
-    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
     const canRenderWithVue = Boolean(
-      VueRuntime &&
-      typeof VueRuntime.h === "function" &&
-      typeof VueRuntime.render === "function" &&
-      VueRuntime.Fragment,
+      vueRuntime &&
+      typeof vueRuntime.h === "function" &&
+      typeof vueRuntime.render === "function" &&
+      vueRuntime.Fragment,
     );
     if (canRenderWithVue) {
-      const { h, render, Fragment } = VueRuntime;
+      const { h, render, Fragment } = vueRuntime;
       render(
         h(
           Fragment,
@@ -121,13 +129,15 @@ export function createSectionNavController({
   }
 
   function setupSectionNavTracking() {
-    if (!sectionNavItems.length || typeof window === "undefined" || !("IntersectionObserver" in window)) {
+    const IntersectionObserverRef =
+      /** @type {any} */ (windowRef)?.IntersectionObserver ?? globalThis.IntersectionObserver;
+    if (!sectionNavItems.length || !windowRef || typeof IntersectionObserverRef !== "function") {
       return;
     }
 
     const navItems = sectionNavItems.slice();
     const viewportAnchorY = () => {
-      const viewportHeight = Number(window.innerHeight) || 0;
+      const viewportHeight = Number(windowRef.innerHeight) || 0;
       return viewportHeight > 0 ? Math.round(viewportHeight * 0.28) : 200;
     };
     const resolveActiveSectionId = () => {
@@ -211,13 +221,13 @@ export function createSectionNavController({
       sectionNavObserver = null;
     }
     if (sectionNavViewportListener) {
-      window.removeEventListener("scroll", sectionNavViewportListener);
-      window.removeEventListener("resize", sectionNavViewportListener);
+      windowRef.removeEventListener("scroll", sectionNavViewportListener);
+      windowRef.removeEventListener("resize", sectionNavViewportListener);
       sectionNavViewportListener = null;
     }
     intersectingSections.clear();
 
-    sectionNavObserver = new IntersectionObserver(
+    sectionNavObserver = new IntersectionObserverRef(
       /** @param {IntersectionObserverEntry[]} observerEntries */ observerEntries => {
         observerEntries.forEach(entry => {
           const id = entry?.target?.id;
@@ -241,8 +251,8 @@ export function createSectionNavController({
     const observer = sectionNavObserver;
     navItems.forEach(({ target }) => observer.observe(target));
     sectionNavViewportListener = () => syncActiveSection();
-    window.addEventListener("scroll", sectionNavViewportListener, { passive: true });
-    window.addEventListener("resize", sectionNavViewportListener);
+    windowRef.addEventListener("scroll", sectionNavViewportListener, { passive: true });
+    windowRef.addEventListener("resize", sectionNavViewportListener);
 
     syncActiveSection();
   }

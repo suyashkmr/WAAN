@@ -53,4 +53,51 @@ describe("sectionNav Vue rendering", () => {
       "Vue runtime is required for section navigation rendering.",
     );
   });
+
+  it("renders and tracks via injected runtime refs without relying on globals", () => {
+    delete globalThis.Vue;
+    document.body.innerHTML = `
+      <section id="summary"></section>
+      <section id="relay"></section>
+      <div class="section-nav-inner"></div>
+    `;
+
+    let observerCallback;
+    class MockIntersectionObserver {
+      constructor(callback) {
+        observerCallback = callback;
+      }
+      observe() {}
+      disconnect() {}
+    }
+
+    const containerEl = /** @type {HTMLElement} */ (document.querySelector(".section-nav-inner"));
+    const controller = createSectionNavController({
+      containerEl,
+      navItemsConfig: [
+        { id: "summary", label: "Summary" },
+        { id: "relay", label: "Relay" },
+      ],
+      documentRef: document,
+      windowRef: /** @type {any} */ ({
+        innerHeight: 900,
+        IntersectionObserver: MockIntersectionObserver,
+        matchMedia: () => ({ matches: false }),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }),
+      vueRuntime: { h, render, Fragment },
+    });
+
+    controller.buildSectionNav();
+    controller.setupSectionNavTracking();
+
+    const links = Array.from(containerEl.querySelectorAll("a[data-section-id]"));
+    expect(links).toHaveLength(2);
+
+    observerCallback?.([
+      { isIntersecting: true, intersectionRatio: 0.9, target: document.getElementById("relay") },
+    ]);
+    expect(links[1].classList.contains("active")).toBe(true);
+  });
 });

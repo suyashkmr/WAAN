@@ -700,6 +700,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`
       - [ ] `js/appShell/sectionNav.js`
+        - [x] Routed section-nav DOM/window/Vue runtime access through injected refs (`documentRef`, `windowRef`, `vueRuntime`) instead of hard globals.
       - [ ] `js/appShell/onboarding.js`
       - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.

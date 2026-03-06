@@ -136,6 +136,9 @@ bootstrapAppShellRuntime(
     sectionNavConfig: {
       containerEl: sectionNavInner,
       navItemsConfig: SECTION_NAV_ITEMS,
+      documentRef: document,
+      windowRef: window,
+      vueRuntime: globalThis.Vue,
     },
     compactConfig: {
       toggle: compactToggleButton,
