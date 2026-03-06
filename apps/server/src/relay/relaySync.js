@@ -5,6 +5,24 @@ async function waitBeforeRetry(delayMs) {
   await new Promise(resolve => setTimeout(resolve, delayMs));
 }
 
+function isTransientStoreFallbackError(error) {
+  const message = error instanceof Error
+    ? error.message
+    : (error && typeof error === "object" && typeof error.message === "string")
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
+  const normalized = String(message || "").toLowerCase();
+  return (
+    normalized.includes("detached frame") ||
+    normalized.includes("execution context was destroyed") ||
+    normalized.includes("cannot find context with specified id") ||
+    normalized.includes("navigating frame was detached") ||
+    normalized.includes("target closed")
+  );
+}
+
 function clampEnrichmentConcurrency(value) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 6;
@@ -32,42 +50,74 @@ async function mapWithConcurrency(items, concurrency, worker) {
   return results;
 }
 
-async function getChatsFromStoreFallback(client) {
+async function getChatsFromStoreFallback(client, options = {}) {
   if (!client || !client.pupPage) {
     throw new Error("Fallback chat sync unavailable: browser page is not ready.");
   }
-  const payload = await client.pupPage.evaluate(() => {
-    if (!window.Store) {
-      return { ok: false, error: "window.Store is unavailable" };
-    }
-    if (!window.Store.Chat || typeof window.Store.Chat.getModelsArray !== "function") {
-      return { ok: false, error: "window.Store.Chat.getModelsArray is unavailable" };
-    }
-    const chatModels = window.Store.Chat.getModelsArray();
-    const chats = chatModels
-      .map(chat => {
-        try {
-          const chatId = chat.id?._serialized || chat.id?.id || chat.id?.user || null;
-          if (!chatId) return null;
-          return {
-            id: chatId,
-            name:
-              chat.name ||
-              chat.formattedTitle ||
-              chat.contact?.name ||
-              chat.contact?.pushname ||
-              null,
-            timestamp: Number(chat.t || chat.timestamp || 0) || 0,
-            isGroup: Boolean(chat.isGroup),
-            unreadCount: Number(chat.unreadCount) || 0,
-          };
-        } catch {
-          return null;
+  const retryAttemptsRaw = Number(options.retryAttempts);
+  const retryAttempts = Number.isFinite(retryAttemptsRaw)
+    ? Math.min(Math.max(Math.trunc(retryAttemptsRaw), 1), 5)
+    : 2;
+  const retryDelayMsRaw = Number(options.retryDelayMs);
+  const retryDelayMs = Number.isFinite(retryDelayMsRaw)
+    ? Math.max(Math.trunc(retryDelayMsRaw), 0)
+    : 250;
+  const pause = typeof options.waitBeforeRetry === "function" ? options.waitBeforeRetry : waitBeforeRetry;
+
+  let payload = null;
+  let lastError = null;
+  for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
+    try {
+      const page = client?.pupPage;
+      if (!page || typeof page.evaluate !== "function") {
+        throw new Error("Fallback chat sync unavailable: browser page is not ready.");
+      }
+      payload = await page.evaluate(() => {
+        if (!window.Store) {
+          return { ok: false, error: "window.Store is unavailable" };
         }
-      })
-      .filter(Boolean);
-    return { ok: true, chats };
-  });
+        if (!window.Store.Chat || typeof window.Store.Chat.getModelsArray !== "function") {
+          return { ok: false, error: "window.Store.Chat.getModelsArray is unavailable" };
+        }
+        const chatModels = window.Store.Chat.getModelsArray();
+        const chats = chatModels
+          .map(chat => {
+            try {
+              const chatId = chat.id?._serialized || chat.id?.id || chat.id?.user || null;
+              if (!chatId) return null;
+              return {
+                id: chatId,
+                name:
+                  chat.name ||
+                  chat.formattedTitle ||
+                  chat.contact?.name ||
+                  chat.contact?.pushname ||
+                  null,
+                timestamp: Number(chat.t || chat.timestamp || 0) || 0,
+                isGroup: Boolean(chat.isGroup),
+                unreadCount: Number(chat.unreadCount) || 0,
+              };
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+        return { ok: true, chats };
+      });
+      lastError = null;
+      break;
+    } catch (error) {
+      lastError = error;
+      if (!isTransientStoreFallbackError(error) || attempt >= retryAttempts) {
+        throw error;
+      }
+      await pause(retryDelayMs);
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
   if (!payload || payload.ok !== true) {
     const message = payload && payload.error
       ? String(payload.error)
@@ -138,6 +188,7 @@ async function persistSyncedChatMeta({
 
 module.exports = {
   waitBeforeRetry,
+  isTransientStoreFallbackError,
   getChatsFromStoreFallback,
   persistSyncedChatMeta,
 };

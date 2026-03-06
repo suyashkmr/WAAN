@@ -696,6 +696,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [ ] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
       - [ ] `js/appShell/eventBindings.js`
         - [x] Removed controller-owned `.stat-download` document scanning; stat export buttons now flow through explicit app-shell refs/runtime config.
+        - [x] Routed event-binding bridge ownership checks through injected `globalScope` and removed stale unused toolbar-button refs from the controller wiring surface.
       - [ ] `js/appShell/bootstrap.js`
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`
@@ -708,6 +709,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
       - [ ] `js/appShell/dashboardRender/activityPanels.js`
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
+        - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
       - [ ] `js/appShell/dashboardRender/participantsPanel.js`
       - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`

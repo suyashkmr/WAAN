@@ -24,6 +24,14 @@ function baseElements() {
     weeklyCumulativeEl: document.createElement("div"),
     weeklyRollingEl: document.createElement("div"),
     weeklyAverageEl: document.createElement("div"),
+    filterWeekdays: document.createElement("input"),
+    filterWeekends: document.createElement("input"),
+    filterWorking: document.createElement("input"),
+    filterOffhours: document.createElement("input"),
+    hourlyBrushStartInput: document.createElement("input"),
+    hourlyBrushEndInput: document.createElement("input"),
+    hourlyBrushStartLabel: document.createElement("span"),
+    hourlyBrushEndLabel: document.createElement("span"),
     weekdayChartEl: document.createElement("div"),
     weekdayFilterNote: document.createElement("div"),
     weekdayToggleWeekdays: document.createElement("input"),
@@ -141,6 +149,14 @@ describe("activityPanels detailed", () => {
     );
 
     const elements = baseElements();
+    elements.filterWeekdays = filterWeekdays;
+    elements.filterWeekends = filterWeekends;
+    elements.filterWorking = filterWorking;
+    elements.filterOffhours = filterOffhours;
+    elements.hourlyBrushStartInput = brushStart;
+    elements.hourlyBrushEndInput = brushEnd;
+    elements.hourlyBrushStartLabel = brushStartLabel;
+    elements.hourlyBrushEndLabel = brushEndLabel;
     const hourlyState = {
       filters: { weekdays: true, weekends: true, working: true, offhours: true },
       brush: { start: 3, end: 21 },

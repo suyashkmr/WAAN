@@ -33,6 +33,14 @@ export function createActivityPanelsController({ elements, deps }) {
     weeklyCumulativeEl,
     weeklyRollingEl,
     weeklyAverageEl,
+    filterWeekdays,
+    filterWeekends,
+    filterWorking,
+    filterOffhours,
+    hourlyBrushStartInput,
+    hourlyBrushEndInput,
+    hourlyBrushStartLabel,
+    hourlyBrushEndLabel,
     weekdayChartEl,
     weekdayFilterNote,
     weekdayToggleWeekdays,
@@ -243,6 +251,14 @@ export function createActivityPanelsController({ elements, deps }) {
       updateHourlyState,
       ensureDayFilters,
       ensureHourFilters,
+      weekdayToggle: filterWeekdays,
+      weekendToggle: filterWeekends,
+      workingToggle: filterWorking,
+      offToggle: filterOffhours,
+      brushStart: hourlyBrushStartInput,
+      brushEnd: hourlyBrushEndInput,
+      startLabel: hourlyBrushStartLabel,
+      endLabel: hourlyBrushEndLabel,
     });
   }
 
@@ -256,10 +272,8 @@ export function createActivityPanelsController({ elements, deps }) {
         weekdays: true,
         weekends: true,
       };
-      const weekdayToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekdays"));
-      const weekendToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekends"));
-      if (weekdayToggle) weekdayToggle.checked = true;
-      if (weekendToggle) weekendToggle.checked = true;
+      if (filterWeekdays) filterWeekdays.checked = true;
+      if (filterWeekends) filterWeekends.checked = true;
       updateHourlyState({ filters: normalizedFilters });
       return;
     }
@@ -275,10 +289,8 @@ export function createActivityPanelsController({ elements, deps }) {
         working: true,
         offhours: true,
       };
-      const workingToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-working"));
-      const offToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-offhours"));
-      if (workingToggle) workingToggle.checked = true;
-      if (offToggle) offToggle.checked = true;
+      if (filterWorking) filterWorking.checked = true;
+      if (filterOffhours) filterOffhours.checked = true;
       updateHourlyState({ filters: normalizedFilters });
       return;
     }
@@ -287,23 +299,14 @@ export function createActivityPanelsController({ elements, deps }) {
   function syncHourlyControlsWithState() {
     /** @type {FilterState} */
     const state = getHourlyState();
-    const weekdayToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekdays"));
-    const weekendToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-weekends"));
-    const workingToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-working"));
-    const offToggle = /** @type {HTMLInputElement | null} */ (document.getElementById("filter-offhours"));
-    const brushStart = /** @type {HTMLInputElement | null} */ (document.getElementById("hourly-brush-start"));
-    const brushEnd = /** @type {HTMLInputElement | null} */ (document.getElementById("hourly-brush-end"));
-    const startLabel = /** @type {HTMLElement | null} */ (document.getElementById("hourly-brush-start-label"));
-    const endLabel = /** @type {HTMLElement | null} */ (document.getElementById("hourly-brush-end-label"));
-
-    if (weekdayToggle) weekdayToggle.checked = state.filters.weekdays;
-    if (weekendToggle) weekendToggle.checked = state.filters.weekends;
-    if (workingToggle) workingToggle.checked = state.filters.working;
-    if (offToggle) offToggle.checked = state.filters.offhours;
-    if (brushStart) brushStart.value = String(state.brush.start);
-    if (brushEnd) brushEnd.value = String(state.brush.end);
-    if (startLabel) startLabel.textContent = `${String(state.brush.start).padStart(2, "0")}:00`;
-    if (endLabel) endLabel.textContent = `${String(state.brush.end).padStart(2, "0")}:00`;
+    if (filterWeekdays) filterWeekdays.checked = state.filters.weekdays;
+    if (filterWeekends) filterWeekends.checked = state.filters.weekends;
+    if (filterWorking) filterWorking.checked = state.filters.working;
+    if (filterOffhours) filterOffhours.checked = state.filters.offhours;
+    if (hourlyBrushStartInput) hourlyBrushStartInput.value = String(state.brush.start);
+    if (hourlyBrushEndInput) hourlyBrushEndInput.value = String(state.brush.end);
+    if (hourlyBrushStartLabel) hourlyBrushStartLabel.textContent = `${String(state.brush.start).padStart(2, "0")}:00`;
+    if (hourlyBrushEndLabel) hourlyBrushEndLabel.textContent = `${String(state.brush.end).padStart(2, "0")}:00`;
     if (timeOfDayWeekdayToggle) timeOfDayWeekdayToggle.checked = state.filters.weekdays;
     if (timeOfDayWeekendToggle) timeOfDayWeekendToggle.checked = state.filters.weekends;
     if (timeOfDayHourStartInput) timeOfDayHourStartInput.value = String(state.brush.start);

@@ -6,7 +6,14 @@
  *   updateHourlyState: (next: Record<string, any>) => void,
  *   ensureDayFilters: () => void,
  *   ensureHourFilters: () => void,
- *   documentRef?: Document | null,
+ *   weekdayToggle?: HTMLInputElement | null,
+ *   weekendToggle?: HTMLInputElement | null,
+ *   workingToggle?: HTMLInputElement | null,
+ *   offToggle?: HTMLInputElement | null,
+ *   brushStart?: HTMLInputElement | null,
+ *   brushEnd?: HTMLInputElement | null,
+ *   startLabel?: HTMLElement | null,
+ *   endLabel?: HTMLElement | null,
  * }} params
  */
 export function initActivityHourlyControls({
@@ -14,17 +21,15 @@ export function initActivityHourlyControls({
   updateHourlyState,
   ensureDayFilters,
   ensureHourFilters,
-  documentRef = globalThis.document ?? null,
+  weekdayToggle = null,
+  weekendToggle = null,
+  workingToggle = null,
+  offToggle = null,
+  brushStart = null,
+  brushEnd = null,
+  startLabel = null,
+  endLabel = null,
 }) {
-  if (!documentRef) return;
-
-  const weekdayToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-weekdays"));
-  const weekendToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-weekends"));
-  const workingToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-working"));
-  const offToggle = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("filter-offhours"));
-  const brushStart = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("hourly-brush-start"));
-  const brushEnd = /** @type {HTMLInputElement | null} */ (documentRef.getElementById("hourly-brush-end"));
-
   if (weekdayToggle) {
     weekdayToggle.addEventListener("change", () => {
       updateHourlyState({
@@ -83,8 +88,6 @@ export function initActivityHourlyControls({
       });
       brushStart.value = String(start);
       brushEnd.value = String(end);
-      const startLabel = documentRef.getElementById("hourly-brush-start-label");
-      const endLabel = documentRef.getElementById("hourly-brush-end-label");
       if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
       if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
     };

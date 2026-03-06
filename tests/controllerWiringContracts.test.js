@@ -126,6 +126,14 @@ describe("controllerWiring contracts", () => {
       customStartInput: document.createElement("input"),
       customEndInput: document.createElement("input"),
       customApplyButton: document.createElement("button"),
+      filterWeekdays: document.createElement("input"),
+      filterWeekends: document.createElement("input"),
+      filterWorking: document.createElement("input"),
+      filterOffhours: document.createElement("input"),
+      hourlyBrushStartInput: document.createElement("input"),
+      hourlyBrushEndInput: document.createElement("input"),
+      hourlyBrushStartLabel: document.createElement("span"),
+      hourlyBrushEndLabel: document.createElement("span"),
       searchForm: document.createElement("form"),
       searchKeywordInput: document.createElement("input"),
       searchParticipantSelect: document.createElement("select"),
@@ -231,5 +239,17 @@ describe("controllerWiring contracts", () => {
     expect(h.createSavedViewsController).toHaveBeenCalledTimes(1);
     const dashboardRuntimeConfig = h.createDashboardRuntime.mock.calls[0]?.[0];
     expect(dashboardRuntimeConfig?.deps?.subscribeAppShellUiState).toBe(state.subscribeAppShellUiState);
+    expect(dashboardRuntimeConfig?.elements).toEqual(
+      expect.objectContaining({
+        filterWeekdays: dom.filterWeekdays,
+        filterWeekends: dom.filterWeekends,
+        filterWorking: dom.filterWorking,
+        filterOffhours: dom.filterOffhours,
+        hourlyBrushStartInput: dom.hourlyBrushStartInput,
+        hourlyBrushEndInput: dom.hourlyBrushEndInput,
+        hourlyBrushStartLabel: dom.hourlyBrushStartLabel,
+        hourlyBrushEndLabel: dom.hourlyBrushEndLabel,
+      }),
+    );
   });
 });

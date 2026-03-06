@@ -211,7 +211,11 @@ class RelayManager extends EventEmitter {
   }
 
   async getChatsFromStoreFallback() {
-    const chats = await getChatsFromStoreFallback(this.client);
+    const chats = await getChatsFromStoreFallback(this.client, {
+      retryAttempts: this.relayConfig.PRIMARY_SYNC_RETRY_ATTEMPTS,
+      retryDelayMs: this.relayConfig.PRIMARY_SYNC_RETRY_DELAY_MS,
+      waitBeforeRetry: delayMs => this.waitBeforePrimaryRetry(delayMs),
+    });
     this.log(`Fallback chat sync path loaded ${chats.length} chats.`);
     return chats;
   }
