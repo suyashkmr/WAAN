@@ -16,6 +16,8 @@ function buildElements() {
   const startInput = document.createElement("input");
   const endInput = document.createElement("input");
   const resetButton = document.createElement("button");
+  const searchActionsEl = document.createElement("div");
+  searchActionsEl.className = "search-actions";
   const resultsSummaryEl = document.createElement("div");
   const resultsListEl = document.createElement("div");
   const insightsEl = document.createElement("div");
@@ -24,7 +26,7 @@ function buildElements() {
   const progressBarEl = document.createElement("div");
   const progressLabelEl = document.createElement("div");
 
-  form.append(keywordInput, participantSelect, startInput, endInput, resetButton);
+  form.append(keywordInput, participantSelect, startInput, endInput, searchActionsEl, resetButton);
 
   return {
     form,
@@ -32,6 +34,7 @@ function buildElements() {
     participantSelect,
     startInput,
     endInput,
+    searchActionsEl,
     resetButton,
     resultsSummaryEl,
     resultsListEl,
@@ -253,10 +256,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
-    const actionsEl = document.createElement("div");
-    actionsEl.className = "search-actions";
-    actionsEl.dataset.vuePrimitiveMounted = "true";
-    elements.form.append(actionsEl);
+    elements.searchActionsEl.dataset.vuePrimitiveMounted = "true";
     /** @type {Record<string, Function>} */
     let panelActionHandlers = {};
     installSearchSavedBridge(elements, {

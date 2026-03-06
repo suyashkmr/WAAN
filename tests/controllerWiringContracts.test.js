@@ -139,6 +139,7 @@ describe("controllerWiring contracts", () => {
       searchParticipantSelect: document.createElement("select"),
       searchStartInput: document.createElement("input"),
       searchEndInput: document.createElement("input"),
+      searchActionsEl: document.createElement("div"),
       resetSearchButton: document.createElement("button"),
       searchResultsSummary: document.createElement("div"),
       searchResultsList: document.createElement("div"),
@@ -249,6 +250,8 @@ describe("controllerWiring contracts", () => {
         hourlyBrushEndInput: dom.hourlyBrushEndInput,
         hourlyBrushStartLabel: dom.hourlyBrushStartLabel,
         hourlyBrushEndLabel: dom.hourlyBrushEndLabel,
+        weekdayHourStartLabel: dom.weekdayHourStartLabel,
+        weekdayHourEndLabel: dom.weekdayHourEndLabel,
       }),
     );
   });

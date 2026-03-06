@@ -32,6 +32,10 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
+function defaultNow() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
 function normalizeWorkerSearchResults(results) {
   if (!Array.isArray(results)) return [];
   const normalized = [];
@@ -62,9 +66,12 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     progressTrackEl,
     progressBarEl,
     progressLabelEl,
+    searchActionsEl,
   } = elements;
 
   const resultLimit = Number.isFinite(options.resultLimit) ? options.resultLimit : DEFAULT_RESULT_LIMIT;
+  const now = typeof options.now === "function" ? options.now : defaultNow;
+  const vueRuntime = options.vueRuntime ?? (typeof globalThis !== "undefined" ? globalThis.Vue : null);
   let activeSearchRequest = 0;
   const searchWorkerClient = createSearchWorkerClient();
   const {
@@ -84,6 +91,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     getDatasetFingerprint,
     getSearchState,
     buildParticipantOptionsCacheKey,
+    vueRuntime,
   });
   const { populateParticipants, resetParticipantOptionsCache } = participantUiController;
   const resultsUiController = createSearchResultsUiController({
@@ -165,7 +173,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     const endBound = endDate ? endDate.getTime() : null;
     const requestHasFilters = hasSearchFilters(query);
     const requestLimit = requestHasFilters ? resultLimit : entries.length;
-    const startedAt = globalThis.performance?.now?.() ?? Date.now();
+    const startedAt = now();
     let requestId = 0;
     const { requestId: nextRequestId, promise } = searchWorkerClient.runSearchRequest({
       payload: {
@@ -215,7 +223,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
           const prefix = requestHasFilters ? "Found" : "Listed";
           updateStatus(`${prefix} ${formatNumber(total)} messages.`, "success");
         }
-        const finishedAt = globalThis.performance?.now?.() ?? Date.now();
+        const finishedAt = now();
         logPerfDuration("search.run", finishedAt - startedAt, {
           entries: entries.length,
           matched: total,
@@ -229,7 +237,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         updateStatus("Search could not complete.", "error");
         clearStateOverride();
         renderErrorState("Search could not complete. Try again.");
-        const finishedAt = globalThis.performance?.now?.() ?? Date.now();
+        const finishedAt = now();
         logPerfDuration("search.run.failed", finishedAt - startedAt, {
           entries: entries.length,
           error: error?.message || "unknown",
@@ -279,7 +287,6 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
 
   function init() {
     const searchSavedBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
-    const searchActionsEl = form?.querySelector?.(".search-actions") ?? null;
     const searchActionsVueManaged = searchActionsEl?.dataset?.vuePrimitiveMounted === "true";
     const supportsSearchActionDispatch = Boolean(
       searchActionsVueManaged

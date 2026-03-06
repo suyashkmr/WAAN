@@ -4,7 +4,6 @@ export function renderSavedViewsComparisonWithVue({
   columns = [],
   container,
   vueRuntime = globalThis.Vue,
-  globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
@@ -30,8 +29,6 @@ export function renderSavedViewsComparisonWithVue({
     ]), container);
     return true;
   }
-  const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
-  const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
   const renderColumn = column =>
     h("div", { class: "compare-column" }, [
       h("h3", null, column.heading),
@@ -57,21 +54,7 @@ export function renderSavedViewsComparisonWithVue({
     h(
       "div",
       { class: "compare-summary-grid" },
-      usePrimeDataView
-        ? [
-          h(DataView, {
-            value: safeColumns,
-            dataKey: "key",
-            unstyled: true,
-            "data-ui-runtime": "primevue",
-          }, {
-            list: slotProps => {
-              const items = Array.isArray(slotProps?.items) ? slotProps.items : safeColumns;
-              return items.map(renderColumn);
-            },
-          }),
-        ]
-        : safeColumns.map(renderColumn),
+      safeColumns.map(renderColumn),
     ),
   ]), container);
   return true;

@@ -136,6 +136,8 @@ export function createDashboardDataStatusThemeWiring({
       weekdayToggleOffhours: dom.weekdayToggleOffhours,
       weekdayHourStartInput: dom.weekdayHourStartInput,
       weekdayHourEndInput: dom.weekdayHourEndInput,
+      weekdayHourStartLabel: dom.weekdayHourStartLabel,
+      weekdayHourEndLabel: dom.weekdayHourEndLabel,
       timeOfDayWeekdayToggle: dom.timeOfDayWeekdayToggle,
       timeOfDayWeekendToggle: dom.timeOfDayWeekendToggle,
       timeOfDayHourStartInput: dom.timeOfDayHourStartInput,

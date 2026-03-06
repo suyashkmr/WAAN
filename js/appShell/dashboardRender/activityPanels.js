@@ -49,6 +49,8 @@ export function createActivityPanelsController({ elements, deps }) {
     weekdayToggleOffhours,
     weekdayHourStartInput,
     weekdayHourEndInput,
+    weekdayHourStartLabel,
+    weekdayHourEndLabel,
     timeOfDayWeekdayToggle,
     timeOfDayWeekendToggle,
     timeOfDayHourStartInput,
@@ -216,10 +218,12 @@ export function createActivityPanelsController({ elements, deps }) {
     if (weekdayToggleOffhours) weekdayToggleOffhours.checked = filters.offhours;
     if (weekdayHourStartInput) weekdayHourStartInput.value = String(brush.start);
     if (weekdayHourEndInput) weekdayHourEndInput.value = String(brush.end);
-    const startLabel = /** @type {HTMLElement | null} */ (document.getElementById("weekday-hour-start-label"));
-    const endLabel = /** @type {HTMLElement | null} */ (document.getElementById("weekday-hour-end-label"));
-    if (startLabel) startLabel.textContent = `${String(brush.start).padStart(2, "0")}:00`;
-    if (endLabel) endLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
+    if (weekdayHourStartLabel) {
+      weekdayHourStartLabel.textContent = `${String(brush.start).padStart(2, "0")}:00`;
+    }
+    if (weekdayHourEndLabel) {
+      weekdayHourEndLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
+    }
   }
 
   function rerenderHourlyFromState() {

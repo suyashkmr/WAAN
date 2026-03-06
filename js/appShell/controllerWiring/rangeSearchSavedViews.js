@@ -101,6 +101,7 @@ export function createRangeSearchSavedViewsWiring({
       participantSelect: dom.searchParticipantSelect,
       startInput: dom.searchStartInput,
       endInput: dom.searchEndInput,
+      searchActionsEl: dom.searchActionsEl,
       resetButton: dom.resetSearchButton,
       resultsSummaryEl: dom.searchResultsSummary,
       resultsListEl: dom.searchResultsList,
@@ -110,7 +111,11 @@ export function createRangeSearchSavedViewsWiring({
       progressBarEl: dom.searchProgressBar,
       progressLabelEl: dom.searchProgressLabel,
     },
-    options: { resultLimit: constants.searchResultLimit },
+    options: {
+      resultLimit: constants.searchResultLimit,
+      now: () => globalThis.performance?.now?.() ?? Date.now(),
+      vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
+    },
   });
 
   const savedViewsController = createSavedViewsController({

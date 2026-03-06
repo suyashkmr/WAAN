@@ -710,8 +710,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/appShell/dashboardRender/activityPanels.js`
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
         - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
+        - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.
       - [ ] `js/appShell/dashboardRender/participantsPanel.js`
       - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
+        - [x] Routed search action-row ownership through explicit `searchActionsEl` refs instead of `form.querySelector(...)`, and injected search timing/Vue runtime dependencies into search controllers rather than discovering them ad hoc.
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.

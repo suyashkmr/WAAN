@@ -4,6 +4,7 @@ export function createSearchParticipantUiController({
   getDatasetFingerprint,
   getSearchState,
   buildParticipantOptionsCacheKey,
+  vueRuntime = typeof globalThis !== "undefined" ? globalThis.Vue : null,
 }) {
   let participantOptionsCacheKey = "";
   let vueMounted = false;
@@ -31,7 +32,7 @@ export function createSearchParticipantUiController({
     const selected = getSearchState()?.query.participant ?? "";
     const options = Array.from(senders).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
     const previousValue = participantSelect.value;
-    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+    const VueRuntime = /** @type {any} */ (vueRuntime);
     const canRenderWithVue = Boolean(
       VueRuntime &&
       typeof VueRuntime.h === "function" &&

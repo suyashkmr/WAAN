@@ -40,6 +40,8 @@ function baseElements() {
     weekdayToggleOffhours: document.createElement("input"),
     weekdayHourStartInput: document.createElement("input"),
     weekdayHourEndInput: document.createElement("input"),
+    weekdayHourStartLabel: document.createElement("span"),
+    weekdayHourEndLabel: document.createElement("span"),
     timeOfDayWeekdayToggle: document.createElement("input"),
     timeOfDayWeekendToggle: document.createElement("input"),
     timeOfDayHourStartInput: document.createElement("input"),
