@@ -125,6 +125,7 @@ bootstrapAppShellRuntime(
     runtimeRefs,
     handlers: runtimeHandlers,
     deps: runtimeDeps,
+    globalScope: globalThis,
     relayServiceName: RELAY_SERVICE_NAME,
     statusConfig: {
       setStatusCallback: appState.setStatusCallback,

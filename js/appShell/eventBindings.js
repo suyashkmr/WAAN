@@ -10,9 +10,15 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
  *   elements: AnyRecord,
  *   handlers: AnyRecord,
  *   deps: AnyRecord,
+ *   globalScope?: any,
  * }} params
  */
-export function createEventBindingsController({ elements, handlers, deps }) {
+export function createEventBindingsController({
+  elements,
+  handlers,
+  deps,
+  globalScope = globalThis,
+}) {
   const {
     chatSelector,
     rangeSelect,
@@ -29,10 +35,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
     downloadChatJsonButton,
     downloadSentimentButton,
     statDownloadButtons,
-    downloadMarkdownButton,
-    downloadSlidesButton,
     downloadSearchButton,
-    downloadPdfButton,
     participantsTopSelect,
     participantsSortSelect,
     participantsTimeframeSelect,
@@ -83,7 +86,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
   } = deps;
 
   function initEventHandlers() {
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     const supportsShellActionDispatch =
       typeof shellBridge?.setShellActionHandlers === "function" &&
       typeof shellBridge?.dispatchShellAction === "function";
@@ -182,7 +185,7 @@ export function createEventBindingsController({ elements, handlers, deps }) {
         button.addEventListener("click", handleParticipantPresetClick);
       });
     }
-    const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
+    const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope });
     const vueOwnsParticipantInteractions = Boolean(dashboardPanelsBridge?.ownsParticipantInteractions);
     if (!vueOwnsParticipantInteractions) {
       throw new Error("Dashboard panels bridge participant interaction ownership is required.");

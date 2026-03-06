@@ -18,6 +18,7 @@ import {
  *   runtimeRefs: AnyRecord,
  *   handlers: AnyRecord,
  *   deps: AnyRecord,
+ *   globalScope?: any,
  *   relayServiceName: string,
  *   statusConfig: AnyRecord,
  *   sectionNavConfig: AnyRecord,
@@ -35,6 +36,7 @@ export function createRuntimeBootstrapConfig({
   runtimeRefs,
   handlers,
   deps,
+  globalScope = globalThis,
   relayServiceName,
   statusConfig,
   sectionNavConfig,
@@ -49,6 +51,7 @@ export function createRuntimeBootstrapConfig({
     dashboardRefs,
     handlers,
     deps,
+    globalScope,
   });
 
   const runtimeBootstrapDeps = createRuntimeBootstrapDeps({

@@ -219,6 +219,44 @@ describe("event bindings detailed", () => {
     expect(handlers.handleDownloadSlidesReport).toHaveBeenCalledTimes(1);
   });
 
+  it("resolves shell and dashboard bridges from injected global scope", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    /** @type {Record<string, Function>} */
+    let registeredHandlers = {};
+    const globalScope = {
+      [VUE_RUNTIME_REGISTRY_KEY]: {
+        bridges: {
+          [VUE_BRIDGE_NAMES.shell]: {
+            setShellActionHandlers: handlersMap => {
+              registeredHandlers = handlersMap;
+            },
+            dispatchShellAction: vi.fn(),
+          },
+          [VUE_BRIDGE_NAMES.dashboardPanels]: {
+            ownsParticipantInteractions: true,
+          },
+        },
+      },
+    };
+
+    const downloadSearchButton = document.createElement("button");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: { downloadSearchButton },
+      handlers,
+      deps,
+      globalScope,
+    });
+
+    delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
+    initEventHandlers();
+
+    expect(typeof registeredHandlers["export.pdf"]).toBe("function");
+    downloadSearchButton.click();
+    expect(handlers.exportSearchResults).toHaveBeenCalledTimes(1);
+  });
+
   it("supports forced chat reselect via double-click and Enter", () => {
     const handlers = createHandlers();
     const deps = createDeps();

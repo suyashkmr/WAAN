@@ -11,6 +11,7 @@
  *   dashboardRefs: AnyRecord,
  *   handlers: AnyRecord,
  *   deps: AnyRecord,
+ *   globalScope?: any,
  * }} params
  */
 export function createRuntimeEventBindings({
@@ -19,6 +20,7 @@ export function createRuntimeEventBindings({
   dashboardRefs,
   handlers,
   deps,
+  globalScope = globalThis,
 }) {
   return {
     elements: {
@@ -87,6 +89,7 @@ export function createRuntimeEventBindings({
       updateHourlyState: deps.updateHourlyState,
       getHourlyState: deps.getHourlyState,
     },
+    globalScope,
   };
 }
 
