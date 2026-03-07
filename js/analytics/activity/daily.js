@@ -89,10 +89,10 @@ function createDailyCalendarModel(dailyCounts) {
   return { months };
 }
 
-export function renderDailySection(dailyCounts, elements = {}) {
+export function renderDailySection(dailyCounts, elements = {}, vueRuntime = null) {
   const { container, averageEl } = elements;
   if (!container) return;
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function" || !VueRuntime.Fragment) {
     throw new Error("Vue runtime is required for daily activity rendering.");
   }

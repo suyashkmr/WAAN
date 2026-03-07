@@ -9,7 +9,6 @@ describe("daily renderer", () => {
   });
 
   it("renders calendar months and legend as direct children of calendar container", () => {
-    globalThis.Vue = { h, render, Fragment };
     const container = document.createElement("div");
     const averageEl = document.createElement("span");
     renderDailySection(
@@ -18,6 +17,7 @@ describe("daily renderer", () => {
         { date: "2026-03-01", count: 3 },
       ],
       { container, averageEl },
+      { h, render, Fragment },
     );
 
     const directChildren = Array.from(container.children);

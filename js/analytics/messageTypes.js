@@ -1,9 +1,9 @@
 import { formatFloat } from "../utils.js";
 
-export function renderMessageTypesSection({ data, elements = {} } = {}) {
+export function renderMessageTypesSection({ data, elements = {}, vueRuntime = null } = {}) {
   const { summaryEl, noteEl } = elements;
   if (!summaryEl) return;
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function") {
     throw new Error("Vue runtime is required for message-types rendering.");
   }

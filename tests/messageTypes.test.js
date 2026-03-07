@@ -9,20 +9,19 @@ describe("message types renderer", () => {
   });
 
   it("renders empty state when summary is missing", () => {
-    globalThis.Vue = { h, render };
     const summaryEl = document.createElement("div");
     const noteEl = document.createElement("p");
     noteEl.textContent = "stale";
     renderMessageTypesSection({
       data: { summary: [] },
       elements: { summaryEl, noteEl },
+      vueRuntime: { h, render },
     });
     expect(summaryEl.textContent).toContain("No message categories for this range.");
     expect(noteEl.textContent).toBe("");
   });
 
   it("renders share summary via Vue runtime", () => {
-    globalThis.Vue = { h, render };
     const summaryEl = document.createElement("div");
     const noteEl = document.createElement("p");
     renderMessageTypesSection({
@@ -33,6 +32,7 @@ describe("message types renderer", () => {
         ],
       },
       elements: { summaryEl, noteEl },
+      vueRuntime: { h, render },
     });
     expect(summaryEl.querySelector(".message-type-share-summary")?.textContent).toContain("Text: 50.0%");
     expect(summaryEl.querySelector(".message-type-share-summary")?.textContent).toContain("Media: 25.0%");
