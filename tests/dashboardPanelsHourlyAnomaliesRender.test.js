@@ -79,6 +79,8 @@ describe("dashboard panels hourly anomaly rendering", () => {
     expect(anomaliesEl?.querySelectorAll(".badge").length).toBeGreaterThan(0);
     expect(anomaliesEl?.textContent).toContain("09:00 (12 msgs)");
     expect(anomaliesEl?.textContent).not.toContain("No hourly surprises detected.");
+    expect(filterNoteEl?.textContent).toBe("");
+    expect(brushSummaryEl?.textContent).toContain("00:00–23:00");
   });
 
   it("re-renders badges after non-empty to empty to non-empty transitions", () => {
@@ -154,6 +156,8 @@ describe("dashboard panels hourly anomaly rendering", () => {
 
     expect(anomaliesEl?.querySelectorAll(".badge")).toHaveLength(0);
     expect(anomaliesEl?.textContent).toContain("No hourly surprises detected.");
+    expect(brushSummaryEl?.textContent).toContain("00:00–23:00");
+    expect(brushSummaryEl?.textContent).toContain("0 msgs");
 
     bridge?.renderHourlyHeatmap({
       data: {

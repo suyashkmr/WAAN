@@ -73,7 +73,7 @@ function createVueRuntimeStub() {
       if (!vnode) return;
       container.appendChild(createNode(vnode));
     },
-    createApp: () => ({
+    createApp: rootComponent => ({
       use() {
         return this;
       },
@@ -82,6 +82,13 @@ function createVueRuntimeStub() {
       },
       mount(mountEl) {
         if (!mountEl) return;
+        const vnode = typeof rootComponent?.render === "function"
+          ? rootComponent.render()
+          : null;
+        mountEl.innerHTML = "";
+        if (vnode) {
+          mountEl.appendChild(createNode(vnode));
+        }
         mountEl.dataset.vueAppMounted = "true";
       },
     }),
@@ -133,6 +140,10 @@ describe("vue full-shell interactions", () => {
     });
     expect(shellBridge?.dispatchShellAction?.("ui.theme.set", { preference: "dark" })).toBe(true);
     expect(onThemeSet).toHaveBeenCalledWith({ preference: "dark" });
+    shellBridge?.showStatusMessage?.("Saved", "success", {
+      autoHideDelayMs: 9999,
+      exitDurationMs: 150,
+    });
 
     const onClearFilters = vi.fn();
     searchBridge?.setPanelActionHandlers?.({

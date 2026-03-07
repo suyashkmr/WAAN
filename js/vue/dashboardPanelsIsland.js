@@ -64,17 +64,53 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   });
   const hourlyState = reactive({
     model: null,
+    filterNote: "",
+    brushSummary: "",
     anomalyBadges: [],
+    anomalyMessage: "No hourly surprises detected.",
   });
+  const hourlyMetaMountedEls = new WeakSet();
   const weekdayState = reactive({
     model: null,
   });
-  const hourlyAnomaliesMountedEls = new WeakSet();
   const PrimeDataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
   const usePrimeDataView = Boolean(PrimeDataView && (typeof PrimeDataView === "function" || typeof PrimeDataView === "object"));
 
   const iconPath =
     "M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z";
+
+  function renderHourlyMetaText(container, text) {
+    if (!container) return;
+    if (!hourlyMetaMountedEls.has(container)) {
+      container.textContent = "";
+      hourlyMetaMountedEls.add(container);
+    }
+    render(text ? h("span", null, text) : null, container);
+  }
+
+  function renderHourlyAnomalies(container) {
+    if (!container) return;
+    if (!hourlyMetaMountedEls.has(container)) {
+      container.textContent = "";
+      hourlyMetaMountedEls.add(container);
+    }
+    if (hourlyState.anomalyBadges.length) {
+      render(
+        h(
+          VueRuntime.Fragment || "div",
+          null,
+          hourlyState.anomalyBadges.map((text, index) =>
+            h("span", { class: "badge", key: `${index}-${text}` }, text)),
+        ),
+        container,
+      );
+      return;
+    }
+    render(
+      h("span", null, hourlyState.anomalyMessage || "No hourly surprises detected."),
+      container,
+    );
+  }
 
   const HighlightsRoot = {
     name: "WaanHighlightsIsland",
@@ -269,27 +305,12 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       };
       const handled = renderHourlyFromPayload(bridgePayload, hourlyState);
       if (!handled) return false;
+      const filterNoteEl = /** @type {{ filterNoteEl?: HTMLElement | null }} */ (options).filterNoteEl;
+      renderHourlyMetaText(filterNoteEl, hourlyState.filterNote);
+      const brushSummaryEl = /** @type {{ brushSummaryEl?: HTMLElement | null }} */ (options).brushSummaryEl;
+      renderHourlyMetaText(brushSummaryEl, hourlyState.brushSummary);
       const anomaliesEl = /** @type {{ anomaliesEl?: HTMLElement | null }} */ (options).anomaliesEl;
-      if (anomaliesEl) {
-        if (!hourlyAnomaliesMountedEls.has(anomaliesEl)) {
-          anomaliesEl.textContent = "";
-          hourlyAnomaliesMountedEls.add(anomaliesEl);
-        }
-        if (hourlyState.anomalyBadges.length) {
-          render(
-            h(
-              VueRuntime.Fragment || "div",
-              null,
-              hourlyState.anomalyBadges.map((text, index) =>
-                h("span", { class: "badge", key: `${index}-${text}` }, text)),
-            ),
-            anomaliesEl,
-          );
-        } else {
-          render(null, anomaliesEl);
-          anomaliesEl.textContent = "No hourly surprises detected.";
-        }
-      }
+      renderHourlyAnomalies(anomaliesEl);
       return true;
     },
     /**

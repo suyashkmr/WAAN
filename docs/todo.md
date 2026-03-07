@@ -729,8 +729,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
       - [ ] `js/appShell/themeUi.js`
         - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
-      - [ ] `js/vue/dashboardHourlyRoot.js` (remaining direct text/DOM node writes)
-      - [ ] `js/vue/shellPrimitivesIsland.js` (status/timer class toggles)
+      - [ ] `js/vue/dashboardHourlyRoot.js`
+        - [x] Moved hourly filter-note/brush-summary/anomaly presentation into hourly Vue state + Vue-rendered sibling surfaces; the hourly bridge no longer mutates those DOM nodes via direct text writes.
+      - [ ] `js/vue/shellPrimitivesIsland.js`
+        - [x] Moved shell feedback status visibility/tone/exit presentation into reactive Vue state; the status bridge no longer toggles status classes imperatively on the mount node.
       - [ ] `js/analytics/messageTypes.js`
         - [x] Removed ambient Vue runtime discovery from message-type analytics rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
       - [ ] `js/analytics/summaryParticipants.js`

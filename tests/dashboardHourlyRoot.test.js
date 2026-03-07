@@ -23,10 +23,12 @@ describe("dashboardHourlyRoot", () => {
       brush: { start: 0, end: 23 },
     });
 
-    const anomaliesEl = document.createElement("div");
     const stateRef = {
       model: null,
+      filterNote: "",
+      brushSummary: "",
       anomalyBadges: ["09:00 (100 msgs)"],
+      anomalyMessage: "",
     };
 
     const handled = renderHourlyFromPayload(
@@ -34,7 +36,6 @@ describe("dashboardHourlyRoot", () => {
         data: null,
         options: {
           chartEl: document.createElement("div"),
-          anomaliesEl,
         },
       },
       stateRef,
@@ -42,7 +43,9 @@ describe("dashboardHourlyRoot", () => {
 
     expect(handled).toBe(true);
     expect(stateRef.model).toEqual({ mode: "empty", message: "No data available." });
+    expect(stateRef.filterNote).toBe("");
+    expect(stateRef.brushSummary).toBe("No hourly data for this range.");
     expect(stateRef.anomalyBadges).toEqual([]);
-    expect(anomaliesEl.textContent).toBe("No hourly surprises detected.");
+    expect(stateRef.anomalyMessage).toBe("No hourly surprises detected.");
   });
 });

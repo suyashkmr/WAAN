@@ -144,7 +144,7 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
   if (resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })) return;
 
   const { createApp, h, reactive } = VueRuntime;
-  const statusState = reactive({ message: "" });
+  const statusState = reactive({ message: "", tone: "", active: false, exiting: false, hidden: true });
   const toastState = reactive({ items: [] });
   let statusHideTimer = null;
   let statusExitTimer = null;
@@ -154,27 +154,37 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     ? globalScope.requestAnimationFrame.bind(globalScope)
     : globalThis.requestAnimationFrame?.bind(globalThis);
 
-  function clearStatusClasses() {
-    statusEl.classList.remove("is-active", "is-exiting", "success", "warning", "error");
-    statusEl.classList.add("hidden");
+  function syncStatusMountClasses() {
+    statusEl.classList.toggle("hidden", Boolean(statusState.hidden));
+    statusEl.classList.toggle("is-active", Boolean(statusState.active));
+    statusEl.classList.toggle("is-exiting", Boolean(statusState.exiting));
+    statusEl.classList.toggle("success", statusState.tone === "success");
+    statusEl.classList.toggle("warning", statusState.tone === "warning");
+    statusEl.classList.toggle("error", statusState.tone === "error");
   }
-
   function finalizeStatusExit() {
-    clearStatusClasses();
+    statusState.active = false;
+    statusState.exiting = false;
+    statusState.hidden = true;
+    statusState.tone = "";
+    syncStatusMountClasses();
   }
-
   function beginStatusExit(exitDurationMs = 300) {
-    statusEl.classList.add("is-exiting");
+    statusState.active = false;
+    statusState.exiting = true;
+    syncStatusMountClasses();
     if (statusExitTimer) {
       clearTimeout(statusExitTimer);
     }
     statusExitTimer = setTimer(() => finalizeStatusExit(), exitDurationMs);
   }
-
   function showStatusMessage(message, tone = "info", { autoHideDelayMs = 5000, exitDurationMs = 300 } = {}) {
     statusState.message = String(message ?? "");
-    statusEl.classList.remove("hidden", "is-exiting", "success", "warning", "error");
-    if (tone) statusEl.classList.add(String(tone));
+    statusState.hidden = false;
+    statusState.exiting = false;
+    statusState.active = false;
+    statusState.tone = tone ? String(tone) : "";
+    syncStatusMountClasses();
     if (statusHideTimer) {
       clearTimeout(statusHideTimer);
       statusHideTimer = null;
@@ -184,11 +194,11 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
       statusExitTimer = null;
     }
     raf?.(() => {
-      statusEl.classList.add("is-active");
+      statusState.active = true;
+      syncStatusMountClasses();
     });
     statusHideTimer = setTimer(() => beginStatusExit(exitDurationMs), autoHideDelayMs);
   }
-
   function dismissToast(toastOrId) {
     const toastId = typeof toastOrId === "number" ? toastOrId : Number(toastOrId?.dataset?.toastId || 0);
     const index = toastState.items.findIndex(item => item.id === toastId);
@@ -199,7 +209,6 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
       if (nextIndex >= 0) toastState.items.splice(nextIndex, 1);
     }, 150);
   }
-
   function showToast(message, tone = "info", { duration = 5000, maxToasts = 4 } = {}) {
     const id = nextToastId++;
     toastState.items.push({
@@ -256,9 +265,21 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
   const StatusRoot = {
     name: "StatusSnackbarPrimitive",
     render() {
-      return h("span", statusState.message);
+      return h(
+        "span",
+        {
+          class: [
+            statusState.hidden ? "hidden" : "",
+            statusState.active ? "is-active" : "",
+            statusState.exiting ? "is-exiting" : "",
+            statusState.tone || "",
+          ].filter(Boolean).join(" "),
+        },
+        statusState.message,
+      );
     },
   };
+  syncStatusMountClasses();
   createApp(StatusRoot).mount(statusEl);
 
   const ToastRoot = {

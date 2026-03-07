@@ -99,12 +99,12 @@ export function renderHourlyFromPayload(payload, stateRef) {
   if (typeof options.renderSummary === "function") {
     options.renderSummary(activeSummary);
   }
+  stateRef.filterNote = buildFilterNote(state);
   if (!activeHeatmap || !activeHeatmap.length) {
     stateRef.model = { mode: "empty", message: "No data available." };
+    stateRef.brushSummary = "No hourly data for this range.";
     stateRef.anomalyBadges = [];
-    if (options.filterNoteEl) options.filterNoteEl.textContent = buildFilterNote(state);
-    if (options.brushSummaryEl) options.brushSummaryEl.textContent = "No hourly data for this range.";
-    if (options.anomaliesEl) options.anomaliesEl.textContent = "No hourly surprises detected.";
+    stateRef.anomalyMessage = "No hourly surprises detected.";
     return true;
   }
 
@@ -158,13 +158,9 @@ export function renderHourlyFromPayload(payload, stateRef) {
     weekdayHeaders: WEEKDAY_SHORT,
     rows,
   };
-  if (options.filterNoteEl) options.filterNoteEl.textContent = buildFilterNote(state);
-  if (options.brushSummaryEl) options.brushSummaryEl.textContent = buildBrushSummary(filteredHeatmap, activeSummary, state.brush);
-  if (options.anomaliesEl) {
-    options.anomaliesEl.textContent = "";
-    if (!anomalyBadges.length) options.anomaliesEl.textContent = "No hourly surprises detected.";
-  }
+  stateRef.brushSummary = buildBrushSummary(filteredHeatmap, activeSummary, state.brush);
   stateRef.anomalyBadges = anomalyBadges;
+  stateRef.anomalyMessage = anomalyBadges.length ? "" : "No hourly surprises detected.";
   return true;
 }
 
