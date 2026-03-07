@@ -20,13 +20,11 @@ const PrimeButton = defineComponent({
 
 describe("weekly renderer", () => {
   afterEach(() => {
-    delete globalThis.Vue;
     delete globalThis.PrimeVue;
     document.body.innerHTML = "";
   });
 
   it("renders weekly bars via PrimeVue button primitive and dispatches range selection", () => {
-    globalThis.Vue = { h, render };
     globalThis.PrimeVue = { Button: PrimeButton };
     const container = document.createElement("div");
     const cumulativeEl = document.createElement("span");
@@ -51,6 +49,7 @@ describe("weekly renderer", () => {
         averagePerWeek: 12,
       },
       { container, cumulativeEl, rollingEl, averageEl, onSelectRange },
+      { h, render },
     );
 
     const bar = container.querySelector(".weekly-bar");

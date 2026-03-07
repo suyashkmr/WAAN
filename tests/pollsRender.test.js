@@ -9,12 +9,10 @@ describe("polls renderer", () => {
   afterEach(() => {
     if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
     else delete process.env.VITEST;
-    delete globalThis.Vue;
     document.body.innerHTML = "";
   });
 
   it("renders poll list via Vue runtime", () => {
-    globalThis.Vue = { h, render, Fragment };
     const listEl = document.createElement("ul");
     const totalsEl = document.createElement("span");
     const creatorsEl = document.createElement("span");
@@ -36,6 +34,7 @@ describe("polls renderer", () => {
         top_creators: [{ sender: "Ana", count: 2 }],
       },
       elements: { listEl, totalsEl, creatorsEl, noteEl },
+      vueRuntime: { h, render, Fragment },
     });
 
     expect(listEl.querySelectorAll(".poll-item")).toHaveLength(1);
@@ -53,6 +52,7 @@ describe("polls renderer", () => {
       renderPollsSection({
         data: { entries: [] },
         elements: { listEl },
+        vueRuntime: null,
       }))
       .toThrow("Vue runtime is required for polls rendering.");
   });

@@ -35,13 +35,12 @@ function resolveWeeklyDelta(entry) {
   };
 }
 
-export function renderWeeklySection(weeklyData, summary, options = {}) {
+export function renderWeeklySection(weeklyData, summary, options = {}, vueRuntime = null) {
   const { container, cumulativeEl, rollingEl, averageEl, onSelectRange, selectedRange } = options;
-  const VueRuntime = globalThis.Vue;
-  if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function") {
+  if (!vueRuntime || typeof vueRuntime.h !== "function" || typeof vueRuntime.render !== "function") {
     throw new Error("Vue runtime is required for weekly activity rendering.");
   }
-  const { h, render } = VueRuntime;
+  const { h, render } = vueRuntime;
 
   if (cumulativeEl) {
     cumulativeEl.textContent = summary && typeof summary.cumulativeTotal === "number"

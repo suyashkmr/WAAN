@@ -1,14 +1,13 @@
 import { sanitizeText, formatNumber, formatDisplayDate } from "../utils.js";
 
-export function renderPollsSection({ data, elements = {} } = {}) {
+export function renderPollsSection({ data, elements = {}, vueRuntime = null } = {}) {
   const { listEl, totalsEl, creatorsEl, noteEl } = elements;
   if (!listEl) return;
-  const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
   const canRenderWithVue = Boolean(
-    VueRuntime &&
-    typeof VueRuntime.h === "function" &&
-    typeof VueRuntime.render === "function" &&
-    VueRuntime.Fragment,
+    vueRuntime &&
+    typeof vueRuntime.h === "function" &&
+    typeof vueRuntime.render === "function" &&
+    vueRuntime.Fragment,
   );
 
   const total = Number.isFinite(data?.total) && data.total > 0 ? data.total : 0;
@@ -23,7 +22,7 @@ export function renderPollsSection({ data, elements = {} } = {}) {
 
   if (!entries.length) {
     if (canRenderWithVue) {
-      const { h, render } = VueRuntime;
+      const { h, render } = vueRuntime;
       render(h("li", { class: "empty-state" }, "No polls captured yet."), listEl);
     } else {
       throw new Error("Vue runtime is required for polls rendering.");
@@ -41,7 +40,7 @@ export function renderPollsSection({ data, elements = {} } = {}) {
   };
 
   if (canRenderWithVue) {
-    const { h, render, Fragment } = VueRuntime;
+    const { h, render, Fragment } = vueRuntime;
     render(
       h(
         Fragment,

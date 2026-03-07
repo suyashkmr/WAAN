@@ -732,11 +732,15 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/vue/dashboardHourlyRoot.js` (remaining direct text/DOM node writes)
       - [ ] `js/vue/shellPrimitivesIsland.js` (status/timer class toggles)
       - [ ] `js/analytics/messageTypes.js`
+        - [x] Removed ambient Vue runtime discovery from message-type analytics rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
       - [ ] `js/analytics/summaryParticipants.js`
         - [x] Removed ambient dashboard-bridge mount/resolve from participant analytics rendering; bridge ownership is now injected from app-shell dashboard composition.
       - [ ] `js/analytics/activity/daily.js`
+        - [x] Removed ambient Vue runtime discovery from daily activity calendar rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
       - [ ] `js/analytics/activity/weekly.js`
+        - [x] Removed ambient Vue runtime discovery from weekly activity rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
       - [ ] `js/analytics/polls.js`
+        - [x] Removed ambient Vue runtime discovery from polls rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
       - [ ] `js/relayControls/logStream.js`
       - [ ] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
     - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):

@@ -146,28 +146,33 @@ export function createActivityPanelsController({ elements, deps }) {
     renderDailySection(analytics.daily_counts, {
       container: dailyChartEl,
       averageEl: dailyAvgDayEl,
-    });
+    }, /** @type {any} */ (globalThis).Vue ?? null);
   }
 
   /** @param {Record<string, any>} analytics */
   function renderWeeklyPanel(analytics) {
     const customRange = getCustomRange();
-    renderWeeklySection(analytics.weekly_counts, analytics.weekly_summary, {
-      container: weeklyChartEl,
-      cumulativeEl: weeklyCumulativeEl,
-      rollingEl: weeklyRollingEl,
-      averageEl: weeklyAverageEl,
-      selectedRange:
-        customRange && customRange.type === "custom"
-          ? { start: customRange.start, end: customRange.end }
-          : null,
-      /** @param {{ start?: string, end?: string }} range */
-      onSelectRange: range => {
-        if (!range?.start || !range?.end) return;
-        applyCustomRange(range.start, range.end);
-        if (rangeSelect) rangeSelect.value = "custom";
+    renderWeeklySection(
+      analytics.weekly_counts,
+      analytics.weekly_summary,
+      {
+        container: weeklyChartEl,
+        cumulativeEl: weeklyCumulativeEl,
+        rollingEl: weeklyRollingEl,
+        averageEl: weeklyAverageEl,
+        selectedRange:
+          customRange && customRange.type === "custom"
+            ? { start: customRange.start, end: customRange.end }
+            : null,
+        /** @param {{ start?: string, end?: string }} range */
+        onSelectRange: range => {
+          if (!range?.start || !range?.end) return;
+          applyCustomRange(range.start, range.end);
+          if (rangeSelect) rangeSelect.value = "custom";
+        },
       },
-    });
+      /** @type {any} */ (globalThis).Vue ?? null,
+    );
   }
 
   /** @param {Record<string, any>} analytics */
