@@ -61,6 +61,8 @@ export function createRelayStatusApplyController({
     brandName,
     relayServiceName,
     remoteChatRefreshIntervalMs,
+    globalScope = globalThis,
+    now = () => Date.now(),
     formatNumber,
     formatDisplayDate,
     formatRelativeTime,
@@ -121,7 +123,7 @@ export function createRelayStatusApplyController({
      *   exportDisabled: boolean,
      *   exportTitle: string,
      * }) => void } | null} */
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     if (shellBridge?.updateRelayRecoveryActions) {
       shellBridge.updateRelayRecoveryActions({
         show,
@@ -189,7 +191,7 @@ export function createRelayStatusApplyController({
           "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
       }
       /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
-      const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+      const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
       if (shellBridge?.updateRelayControlButtons) {
         shellBridge.updateRelayControlButtons({
           stopDisabled: true,
@@ -248,7 +250,7 @@ export function createRelayStatusApplyController({
     const logoutDisabled = !canLogout;
     const reloadAllDisabled = !running;
     /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     if (shellBridge?.updateRelayControlButtons) {
       shellBridge.updateRelayControlButtons({
         stopDisabled,
@@ -284,7 +286,7 @@ export function createRelayStatusApplyController({
         : 0;
       const needsRefresh =
         !getRemoteChatList().length ||
-        (lastFetchedAt && Date.now() - lastFetchedAt > remoteChatRefreshIntervalMs);
+        (lastFetchedAt && now() - lastFetchedAt > remoteChatRefreshIntervalMs);
       if (needsRefresh) {
         refreshRemoteChats({ silent: true });
       }

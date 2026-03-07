@@ -721,10 +721,12 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
         - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
         - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
+        - [x] Routed relay status application through injected `globalScope`/`now` deps so shell-bridge updates and refresh timing no longer depend on ambient globals.
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
       - [ ] `js/appShell/dataStatus.js`
+        - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
       - [ ] `js/appShell/themeUi.js`
       - [ ] `js/vue/dashboardHourlyRoot.js` (remaining direct text/DOM node writes)
       - [ ] `js/vue/shellPrimitivesIsland.js` (status/timer class toggles)

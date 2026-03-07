@@ -24,6 +24,9 @@ export function createDataStatusController({ elements, deps }) {
     formatRelayAccount,
     formatNumber,
     notifyRelayReady,
+    formatStatusTime: formatStatusTimeFn = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    setTimeoutRef = setTimeout,
+    clearTimeoutRef = clearTimeout,
   } = deps;
 
   let dataAvailable = false;
@@ -52,10 +55,6 @@ export function createDataStatusController({ elements, deps }) {
     dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
   }
 
-  function formatStatusTime() {
-    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
-
   /**
    * @param {{ state?: string, message?: string }} [params]
    */
@@ -81,7 +80,7 @@ export function createDataStatusController({ elements, deps }) {
    */
   function clearReadyCelebration({ rearm = true } = {}) {
     if (celebrationTimer) {
-      clearTimeout(celebrationTimer);
+      clearTimeoutRef(celebrationTimer);
       celebrationTimer = null;
     }
     heroStatusBadge?.classList.remove("hero-status-badge-ready");
@@ -102,7 +101,7 @@ export function createDataStatusController({ elements, deps }) {
         step.classList.add("is-ready-celebration");
       }
     });
-    celebrationTimer = setTimeout(() => {
+    celebrationTimer = setTimeoutRef(() => {
       clearReadyCelebration({ rearm: false });
     }, 1200);
   }
@@ -155,7 +154,7 @@ export function createDataStatusController({ elements, deps }) {
         setHeroBadgeState("ready");
         heroStatusCopy.textContent = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
         applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
-        updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTime()}` });
+        updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTimeFn()}` });
         if (!readyCelebrated) {
           triggerReadyCelebration();
           if (typeof notifyRelayReady === "function") {

@@ -23,6 +23,7 @@ describe("dataStatus controller details", () => {
       formatRelayAccount: vi.fn(() => "Alice"),
       formatNumber: vi.fn(value => String(value)),
       notifyRelayReady,
+      formatStatusTime: vi.fn(() => "10:51"),
     };
 
     const controller = createDataStatusController({
@@ -71,6 +72,7 @@ describe("dataStatus controller details", () => {
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
     expect(heroStatusCopy.textContent).toContain("Insights are ready");
     expect(heroSyncDot.dataset.state).toBe("ready");
+    expect(heroStatusMetaCopy.textContent).toContain("Last updated 10:51");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
     expect(notifyRelayReady).toHaveBeenCalledTimes(1);
     expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(true);
@@ -147,6 +149,7 @@ describe("dataStatus controller details", () => {
           formatRelayAccount: vi.fn(() => "Alice"),
           formatNumber: vi.fn(value => String(value)),
           notifyRelayReady,
+          formatStatusTime: vi.fn(() => "11:11"),
         },
       });
 

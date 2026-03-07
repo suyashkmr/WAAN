@@ -670,6 +670,63 @@ describe("relayControls", () => {
     expect(payloads.some(payload => payload?.reloadAllDisabled === false)).toBe(true);
   });
 
+  it("routes relay status apply bridge updates through injected global scope", async () => {
+    const fakeWindow = {};
+    const recoverySpy = vi.fn();
+    const controlsSpy = vi.fn();
+    installShellVueBridge(
+      {
+        updateRelayRecoveryActions: recoverySpy,
+        updateRelayControlButtons: controlsSpy,
+      },
+      { globalScope: fakeWindow },
+    );
+    const elements = buildRelayElements();
+    const fetchJson = vi.fn(async url => {
+      if (url.endsWith("/relay/status")) {
+        return {
+          status: "running",
+          account: { pushName: "Alice" },
+          chatCount: 2,
+          syncingChats: false,
+        };
+      }
+      if (url.endsWith("/api/chats")) return { chats: [] };
+      return {};
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson,
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        getDatasetLabel: vi.fn(() => "General"),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+      globalScope: fakeWindow,
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(recoverySpy).toHaveBeenCalled();
+    expect(controlsSpy).toHaveBeenCalled();
+  });
+
   it("keeps last known relay status during transient polling failures and shows retry timing", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);

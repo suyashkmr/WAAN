@@ -393,6 +393,7 @@ describe("appShell controllers", () => {
       },
       formatRelayAccount: vi.fn(() => "Alice"),
       formatNumber: vi.fn(value => String(value)),
+      formatStatusTime: vi.fn(() => "10:42"),
     };
 
     const controller = createDataStatusController({
@@ -419,7 +420,7 @@ describe("appShell controllers", () => {
     controller.updateHeroRelayStatus({ status: "running", account: { wid: "1@c.us" }, chatCount: 42 });
     expect(heroStatusBadge.textContent).toContain("Connected");
     expect(heroStatusCopy.textContent).toContain("42 chats indexed.");
-    expect(heroStatusMetaCopy.textContent).toContain("Last updated");
+    expect(heroStatusMetaCopy.textContent).toContain("Last updated 10:42");
     expect(heroSyncDot.dataset.state).toBe("ready");
   });
 });

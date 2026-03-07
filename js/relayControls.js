@@ -27,7 +27,7 @@ import {
   updateRelayOnboarding,
 } from "./relayControls/statusView.js";
 
-export function createRelayController({ elements, helpers, electronAPI = null, platform = null }) {
+export function createRelayController({ elements, helpers, electronAPI = null, platform = null, globalScope = globalThis }) {
   const {
     relayStartButton,
     relayStopButton,
@@ -234,6 +234,8 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       brandName: BRAND_NAME,
       relayServiceName: RELAY_SERVICE_NAME,
       remoteChatRefreshIntervalMs: REMOTE_CHAT_REFRESH_INTERVAL_MS,
+      globalScope,
+      now: () => Date.now(),
       formatNumber,
       formatDisplayDate,
       formatRelativeTime,

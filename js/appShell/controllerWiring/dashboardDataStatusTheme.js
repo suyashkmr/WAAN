@@ -59,6 +59,7 @@ export function createDashboardDataStatusThemeWiring({
       formatRelayAccount,
       formatNumber: utils.formatNumber,
       notifyRelayReady: /** @param {string} message */ message => dataStatus.updateStatus?.(message, "success"),
+      formatStatusTime: () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   });
   const {
