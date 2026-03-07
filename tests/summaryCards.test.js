@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { renderSummaryCards, renderParticipants } from "../js/analytics/summary.js";
 import {
   clearVueBridgeRuntime,
-  installDashboardPanelsVueBridge,
   installSummaryVueBridge,
 } from "./vueBridgeTestUtils.js";
 
@@ -100,6 +99,7 @@ describe("renderParticipants", () => {
       participantsNote,
       participantPresetButtons: [],
       setParticipantView: () => {},
+      resolveDashboardPanelsBridgeFn: () => null,
     });
 
     expect(participantsBody.children.length).toBe(0);
@@ -112,13 +112,6 @@ describe("renderParticipants", () => {
     participantsTable.appendChild(participantsBody);
     document.body.append(participantsTable, participantsNote);
     const captured = [];
-    installDashboardPanelsVueBridge({
-      renderParticipantsRows(rows) {
-        captured.push(rows);
-        return true;
-      },
-    });
-
     renderParticipants({
       analytics: {
         top_senders: [
@@ -142,6 +135,12 @@ describe("renderParticipants", () => {
       participantsNote,
       participantPresetButtons: [],
       setParticipantView: () => {},
+      resolveDashboardPanelsBridgeFn: () => ({
+        renderParticipantsRows(rows) {
+          captured.push(rows);
+          return true;
+        },
+      }),
     });
 
     expect(captured).toHaveLength(1);

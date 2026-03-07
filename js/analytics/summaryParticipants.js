@@ -1,7 +1,5 @@
 import { formatNumber, formatFloat, formatDisplayDate } from "../utils.js";
 import { buildParticipantDetailModel } from "./participantDetail.js";
-import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
-import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
 
 function computeParticipantTimeframeStats(entries, timeframe, analytics) {
   if (timeframe !== "week") return null;
@@ -120,14 +118,6 @@ function buildParticipantRowData(entry, index) {
   };
 }
 
-function resolveDashboardPanelsBridge() {
-  let bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
-  if (bridge) return bridge;
-  mountDashboardPanelsIsland();
-  bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
-  return bridge;
-}
-
 export function renderParticipants({
   analytics,
   entries = [],
@@ -137,11 +127,12 @@ export function renderParticipants({
   participantPresetButtons,
   setParticipantView,
   participantsVirtualizer,
+  resolveDashboardPanelsBridgeFn = () => null,
 }) {
   void participantsVirtualizer;
   if (!participantsBody || !analytics) return;
   /** @type {{ renderParticipantsRows?: (rows: unknown) => boolean, renderParticipantsEmpty?: (message: unknown) => boolean } | null} */
-  const dashboardPanelsBridge = resolveDashboardPanelsBridge();
+  const dashboardPanelsBridge = resolveDashboardPanelsBridgeFn();
   if (!dashboardPanelsBridge) return;
   if (typeof setParticipantView === "function") {
     setParticipantView([]);

@@ -63,12 +63,18 @@ export function createDashboardRenderController({ elements, deps }) {
     sanitizeText,
   } = deps;
 
+  function resolveDashboardPanelsBridgeForParticipants() {
+    mountDashboardPanelsIsland();
+    return resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
+  }
+
   const participantsPanelController = createParticipantsPanelController({
     elements,
     deps: {
       getDatasetEntries,
       participantFilters,
       setParticipantView,
+      resolveDashboardPanelsBridge: resolveDashboardPanelsBridgeForParticipants,
     },
   });
   const { renderParticipants } = participantsPanelController;

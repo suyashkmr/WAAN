@@ -216,6 +216,42 @@ describe("theme ui controller", () => {
     }
   });
 
+  it("uses injected document/window/storage refs instead of ambient globals", () => {
+    const documentRef = document.implementation.createHTMLDocument("theme");
+    const windowRef = {
+      matchMedia: vi.fn().mockReturnValue({ matches: true }),
+    };
+    const storageRef = {
+      getItem: vi.fn(() => "dark"),
+      setItem: vi.fn(),
+    };
+    const darkInput = documentRef.createElement("input");
+    darkInput.type = "radio";
+    darkInput.name = "theme-option";
+    darkInput.value = "dark";
+    documentRef.body.appendChild(darkInput);
+
+    const controller = createThemeUiController({
+      themeToggleInputs: [],
+      mediaQuery: null,
+      exportThemeStyles: {
+        light: { label: "Light" },
+        dark: { label: "Dark" },
+      },
+      documentRef,
+      windowRef,
+      storageRef: /** @type {any} */ (storageRef),
+    });
+
+    controller.initThemeControls();
+
+    expect(storageRef.getItem).toHaveBeenCalledWith("waan-theme-preference");
+    expect(storageRef.setItem).toHaveBeenCalledWith("waan-theme-preference", "dark");
+    expect(documentRef.documentElement.dataset.theme).toBe("dark");
+    expect(documentRef.documentElement.dataset.colorScheme).toBe("dark");
+    expect(darkInput.checked).toBe(true);
+  });
+
   it("keeps theme changes working after radio inputs are remounted", () => {
     const oldLightInput = document.createElement("input");
     oldLightInput.type = "radio";

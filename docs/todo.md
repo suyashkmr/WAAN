@@ -728,10 +728,12 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/appShell/dataStatus.js`
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
       - [ ] `js/appShell/themeUi.js`
+        - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
       - [ ] `js/vue/dashboardHourlyRoot.js` (remaining direct text/DOM node writes)
       - [ ] `js/vue/shellPrimitivesIsland.js` (status/timer class toggles)
       - [ ] `js/analytics/messageTypes.js`
       - [ ] `js/analytics/summaryParticipants.js`
+        - [x] Removed ambient dashboard-bridge mount/resolve from participant analytics rendering; bridge ownership is now injected from app-shell dashboard composition.
       - [ ] `js/analytics/activity/daily.js`
       - [ ] `js/analytics/activity/weekly.js`
       - [ ] `js/analytics/polls.js`

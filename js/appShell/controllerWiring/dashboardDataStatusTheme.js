@@ -189,6 +189,9 @@ export function createDashboardDataStatusThemeWiring({
     themeToggleInputs: dom.themeToggleInputs,
     mediaQuery: /** @type {any} */ (viewAdapter.getThemeMediaQuery()),
     exportThemeStyles: EXPORT_THEME_STYLES,
+    documentRef: typeof document !== "undefined" ? document : null,
+    windowRef: typeof window !== "undefined" ? window : null,
+    storageRef: globalThis.localStorage ?? null,
   });
   const { initThemeControls, setThemePreference, getExportThemeConfig } = themeUiController;
 

@@ -20,6 +20,7 @@ export function createParticipantsPanelController({ elements, deps }) {
     getDatasetEntries,
     participantFilters,
     setParticipantView,
+    resolveDashboardPanelsBridge,
   } = deps;
 
   /**
@@ -37,6 +38,7 @@ export function createParticipantsPanelController({ elements, deps }) {
       setParticipantView: /** @param {any[]} next */ next => {
         setParticipantView(Array.isArray(next) ? next : []);
       },
+      resolveDashboardPanelsBridgeFn: resolveDashboardPanelsBridge,
     }));
   }
 

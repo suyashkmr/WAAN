@@ -10,6 +10,9 @@
  *   mediaQuery?: MediaQueryList | null,
  *   exportThemeStyles?: AnyRecord,
  *   storageKey?: string,
+ *   documentRef?: Document | null,
+ *   windowRef?: Window | null,
+ *   storageRef?: Storage | null,
  * }} params
  */
 export function createThemeUiController({
@@ -17,6 +20,9 @@ export function createThemeUiController({
   mediaQuery = null,
   exportThemeStyles = {},
   storageKey = "waan-theme-preference",
+  documentRef = typeof document !== "undefined" ? document : null,
+  windowRef = typeof window !== "undefined" ? window : null,
+  storageRef = globalThis.localStorage ?? null,
 }) {
   /** @type {{ preference: string, mediaQuery: MediaQueryList | null }} */
   const themeState = {
@@ -33,9 +39,9 @@ export function createThemeUiController({
    */
   function getThemeToggleInputs() {
     const staticInputs = themeToggleInputs.filter(Boolean);
-    if (typeof document === "undefined") return staticInputs;
+    if (!documentRef) return staticInputs;
     const liveInputs = /** @type {Array<HTMLInputElement>} */ (
-      Array.from(document.querySelectorAll('input[name="theme-option"]'))
+      Array.from(documentRef.querySelectorAll('input[name="theme-option"]'))
     );
     const merged = [...staticInputs];
     liveInputs.forEach(input => {
@@ -49,8 +55,8 @@ export function createThemeUiController({
       return themeState.mediaQuery.matches ? "dark" : "light";
     }
     try {
-      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
-        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      if (typeof windowRef?.matchMedia === "function") {
+        return windowRef.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       }
     } catch (error) {
       console.warn("Unable to resolve system color scheme.", error);
@@ -71,10 +77,10 @@ export function createThemeUiController({
    * @param {string} preference
    */
   function applyTheme(preference) {
-    const root = document.documentElement;
+    const root = documentRef?.documentElement ?? null;
     if (!root) return;
     root.dataset.theme = preference;
-    globalThis.localStorage?.setItem(storageKey, preference);
+    storageRef?.setItem(storageKey, preference);
     root.dataset.colorScheme = resolveColorScheme(preference);
   }
 
@@ -94,17 +100,17 @@ export function createThemeUiController({
   }
 
   function initThemeControls({ bindInputListeners = true } = {}) {
-    const saved = globalThis.localStorage?.getItem(storageKey);
+    const saved = storageRef?.getItem(storageKey);
     const initial = saved || "system";
     setThemePreference(initial);
-    if (bindInputListeners && typeof document !== "undefined" && delegatedThemeChangeHandler == null) {
+    if (bindInputListeners && documentRef && delegatedThemeChangeHandler == null) {
       delegatedThemeChangeHandler = event => {
         const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
         if (!target || target.name !== "theme-option") return;
         if (!target.checked) return;
         setThemePreference(target.value);
       };
-      document.addEventListener("change", delegatedThemeChangeHandler);
+      documentRef.addEventListener("change", delegatedThemeChangeHandler);
     }
     if (bindInputListeners) {
       getThemeToggleInputs().forEach(input => {
@@ -125,7 +131,7 @@ export function createThemeUiController({
   }
 
   function getInterfaceColorScheme() {
-    const root = document.documentElement;
+    const root = documentRef?.documentElement ?? null;
     const preference = root?.dataset.theme || themeState.preference || "system";
     return resolveColorScheme(preference);
   }
