@@ -713,12 +713,14 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
         - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.
       - [ ] `js/appShell/dashboardRender/participantsPanel.js`
+        - [x] Replaced participant-row detail lookup against `participantsBody` with structural sibling resolution, so row toggles no longer depend on controller-side table-body querying.
       - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
         - [x] Routed search action-row ownership through explicit `searchActionsEl` refs instead of `form.querySelector(...)`, and injected search timing/Vue runtime dependencies into search controllers rather than discovering them ad hoc.
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
         - [x] Replaced saved-view dirty-tracking `document.getElementById(...)` discovery with explicit filter-control refs from controller wiring, and injected Vue runtime into saved-view select rendering instead of discovering `globalThis.Vue` inside the UI controller.
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
         - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
+        - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):

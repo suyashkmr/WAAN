@@ -100,10 +100,25 @@ export function applyParticipantPreset(participantFilters, preset, controls) {
 }
 
 /**
- * @param {MouseEvent} event
- * @param {HTMLElement | null | undefined} participantsBody
+ * @param {Element | null | undefined} row
+ * @param {string} rowId
  */
-export function toggleParticipantRow(event, participantsBody) {
+function resolveParticipantDetailRow(row, rowId) {
+  const nextRow = row?.nextElementSibling;
+  if (
+    nextRow instanceof HTMLElement &&
+    nextRow.matches("tr.participant-detail-row") &&
+    nextRow.dataset.rowId === rowId
+  ) {
+    return nextRow;
+  }
+  return null;
+}
+
+/**
+ * @param {MouseEvent} event
+ */
+export function toggleParticipantRow(event) {
   const target = /** @type {Element | null} */ (event.target instanceof Element ? event.target : null);
   const toggle = target?.closest(".participant-toggle");
   if (!toggle) return;
@@ -111,8 +126,8 @@ export function toggleParticipantRow(event, participantsBody) {
   const row = toggle.closest("tr");
   if (!row) return;
   const rowId = row.dataset.rowId;
-  if (!rowId || !participantsBody) return;
-  const detailRow = participantsBody.querySelector(`tr.participant-detail-row[data-row-id="${rowId}"]`);
+  if (!rowId) return;
+  const detailRow = resolveParticipantDetailRow(row, rowId);
   const isExpanded = toggle.getAttribute("aria-expanded") === "true";
   toggle.setAttribute("aria-expanded", String(!isExpanded));
   const participantName = toggle.querySelector(".participant-name")?.textContent?.trim() || "participant";

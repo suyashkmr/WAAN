@@ -172,7 +172,7 @@ describe("dashboardRender modules", () => {
       target: toggle,
       preventDefault: () => {},
     };
-    toggleParticipantRow(expandEvent, participantsBody);
+    toggleParticipantRow(expandEvent);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(toggle.getAttribute("aria-label")).toBe("Hide details for Alice");
     expect(icon.textContent).toBe("▾");
@@ -183,7 +183,7 @@ describe("dashboardRender modules", () => {
       target: toggle,
       preventDefault: () => {},
     };
-    toggleParticipantRow(collapseEvent, participantsBody);
+    toggleParticipantRow(collapseEvent);
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(toggle.getAttribute("aria-label")).toBe("Show details for Alice");
     expect(icon.textContent).toBe("▸");

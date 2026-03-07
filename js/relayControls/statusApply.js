@@ -50,6 +50,7 @@ export function createRelayStatusApplyController({
     relayRecoveryResyncButton,
     relayRecoveryExportButton,
     relayOnboardingSteps,
+    relayOnboardingStepDetails,
     relayStopButton,
     relayLogoutButton,
     relayReloadAllButton,
@@ -175,7 +176,7 @@ export function createRelayStatusApplyController({
       formatDisplayDate,
       formatNumber,
     });
-    updateRelayOnboarding({ status, relayOnboardingSteps });
+    updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails });
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);

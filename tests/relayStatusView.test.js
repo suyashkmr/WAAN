@@ -9,15 +9,21 @@ function createBannerElements() {
 }
 
 function createOnboardingSteps() {
+  /** @type {Record<string, HTMLElement | null>} */
+  const details = {};
   const createStep = stepId => {
     const el = document.createElement("article");
     el.dataset.stepId = stepId;
     const detail = document.createElement("p");
     detail.className = "relay-step-detail";
     el.appendChild(detail);
+    details[stepId] = detail;
     return el;
   };
-  return [createStep("start"), createStep("qr"), createStep("sync")];
+  return {
+    steps: [createStep("start"), createStep("qr"), createStep("sync")],
+    details,
+  };
 }
 
 describe("relay status view mapping", () => {
@@ -106,14 +112,22 @@ describe("relay status view mapping", () => {
   });
 
   it("maps onboarding step states across relay lifecycle", () => {
-    const steps = createOnboardingSteps();
+    const { steps, details } = createOnboardingSteps();
 
-    updateRelayOnboarding({ status: { status: "starting" }, relayOnboardingSteps: steps });
+    updateRelayOnboarding({
+      status: { status: "starting" },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
+    });
     expect(steps[0].dataset.state).toBe("active");
     expect(steps[1].dataset.state).toBe("pending");
     expect(steps[2].dataset.state).toBe("pending");
 
-    updateRelayOnboarding({ status: { status: "waiting_qr" }, relayOnboardingSteps: steps });
+    updateRelayOnboarding({
+      status: { status: "waiting_qr" },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
+    });
     expect(steps[0].dataset.state).toBe("complete");
     expect(steps[1].dataset.state).toBe("active");
     expect(steps[2].dataset.state).toBe("pending");
@@ -121,6 +135,7 @@ describe("relay status view mapping", () => {
     updateRelayOnboarding({
       status: { status: "running", chatCount: 0 },
       relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
     });
     expect(steps[0].dataset.state).toBe("complete");
     expect(steps[1].dataset.state).toBe("complete");
@@ -129,7 +144,36 @@ describe("relay status view mapping", () => {
     updateRelayOnboarding({
       status: { status: "running", chatCount: 5 },
       relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
     });
     expect(steps[2].dataset.state).toBe("complete");
+    expect(details.start?.textContent).toBe("Relay is running.");
+    expect(details.qr?.textContent).toBe("Phone linked.");
+    expect(details.sync?.textContent).toBe("Chats synced.");
+  });
+
+  it("preserves onboarding detail updates when explicit detail refs are absent or incomplete", () => {
+    const { steps, details } = createOnboardingSteps();
+
+    updateRelayOnboarding({
+      status: { status: "starting" },
+      relayOnboardingSteps: steps,
+    });
+    expect(details.start?.textContent).toBe("Launching the service…");
+
+    updateRelayOnboarding({
+      status: { status: "waiting_qr" },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: { start: details.start, qr: null, sync: details.sync },
+    });
+    expect(details.qr?.textContent).toBe("Scan the QR code shown below.");
+
+    updateRelayOnboarding({
+      status: { status: "running", chatCount: 0 },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: { start: null, qr: details.qr, sync: null },
+    });
+    expect(details.start?.textContent).toBe("Relay is running.");
+    expect(details.sync?.textContent).toBe("Syncing chats…");
   });
 });

@@ -103,7 +103,7 @@ describe("participant interactions controller", () => {
       participantsSortSelect,
       participantsTimeframeSelect,
     });
-    expect(participantMocks.toggleParticipantRow).toHaveBeenCalledWith(toggleEvent, participantsBody);
+    expect(participantMocks.toggleParticipantRow).toHaveBeenCalledWith(toggleEvent);
     expect(renderParticipants).not.toHaveBeenCalled();
   });
 });

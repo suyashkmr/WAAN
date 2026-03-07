@@ -136,21 +136,27 @@ export function updateRelayBanner({
 }
 
 /**
- * @param {{ status: AnyRecord | null | undefined, relayOnboardingSteps: Array<HTMLElement> | null | undefined }} params
+ * @param {{
+ *   status: AnyRecord | null | undefined,
+ *   relayOnboardingSteps: Array<HTMLElement> | null | undefined,
+ *   relayOnboardingStepDetails?: Record<string, HTMLElement | null> | null | undefined,
+ * }} params
  */
-export function updateRelayOnboarding({ status, relayOnboardingSteps }) {
+export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails }) {
   if (!relayOnboardingSteps?.length) return;
   const state = status?.status || "stopped";
   const chatCount = Number(status?.chatCount ?? 0);
   relayOnboardingSteps.forEach(step => {
     const id = step.dataset.stepId;
+    const detail =
+      relayOnboardingStepDetails?.[String(id || "")] ??
+      /** @type {HTMLElement | null} */ (step.querySelector(".relay-step-detail"));
     let value = "pending";
     if (id === "start") {
       if (!status) value = "pending";
       else if (state === "starting") value = "active";
       else if (state === "running" || state === "waiting_qr") value = "complete";
       else value = "pending";
-      const detail = step.querySelector(".relay-step-detail");
       if (detail) {
         if (value === "complete") {
           detail.textContent = "Relay is running.";
@@ -166,7 +172,6 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps }) {
       if (!status) value = "pending";
       else if (state === "waiting_qr") value = "active";
       else if (state === "running") value = "complete";
-      const detail = step.querySelector(".relay-step-detail");
       if (detail) {
         detail.textContent =
           value === "complete"
@@ -179,7 +184,6 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps }) {
       if (state === "running" && chatCount === 0) value = "active";
       else if (state === "running" && chatCount > 0) value = "complete";
       else value = "pending";
-      const detail = step.querySelector(".relay-step-detail");
       if (detail) {
         detail.textContent =
           value === "complete"

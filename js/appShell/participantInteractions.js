@@ -20,7 +20,6 @@ export function createParticipantInteractionsController({ elements, deps }) {
     participantsTopSelect,
     participantsSortSelect,
     participantsTimeframeSelect,
-    participantsBody,
   } = elements;
 
   const {
@@ -66,7 +65,7 @@ export function createParticipantInteractionsController({ elements, deps }) {
    * @param {MouseEvent} event
    */
   function handleParticipantRowToggle(event) {
-    toggleParticipantRow(event, participantsBody);
+    toggleParticipantRow(event);
   }
 
   return {

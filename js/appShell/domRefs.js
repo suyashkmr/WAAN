@@ -18,6 +18,11 @@ export function createAppDomRefs({ documentRef = typeof document !== "undefined"
     relayRecoveryResyncButton: domCache.getById("relay-recovery-resync"),
     relayRecoveryExportButton: domCache.getById("relay-recovery-export"),
     relayOnboardingSteps: documentRef?.querySelectorAll(".relay-step") ?? [],
+    relayOnboardingStepDetails: {
+      start: documentRef?.querySelector('.relay-step[data-step-id="start"] .relay-step-detail') ?? null,
+      qr: documentRef?.querySelector('.relay-step[data-step-id="qr"] .relay-step-detail') ?? null,
+      sync: documentRef?.querySelector('.relay-step[data-step-id="sync"] .relay-step-detail') ?? null,
+    },
     summaryEl: domCache.getById("summary"),
     participantsBody: documentRef?.querySelector("#top-senders tbody") ?? null,
     participantsNote: domCache.getById("participants-note"),
