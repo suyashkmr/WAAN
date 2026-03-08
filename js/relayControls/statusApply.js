@@ -91,6 +91,55 @@ export function createRelayStatusApplyController({
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
   const canRenderStatusSurface = typeof relayStatusRenderer?.renderStatusSurface === "function";
 
+  function resolveShellBridge() {
+    return /** @type {{ updateRelayRecoveryActions?: (payload: any) => void, updateRelayControlButtons?: (payload: any) => void } | null} */ (
+      resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })
+    );
+  }
+
+  /**
+   * @param {{ statusText?: string, accountText?: string, helpText?: string, qrSrc?: string | null }} [payload]
+   */
+  function renderRelayStatusSurface({ statusText = "", accountText = "", helpText = "", qrSrc = null } = {}) {
+    if (canRenderStatusSurface) {
+      relayStatusRenderer.renderStatusSurface({ statusText, accountText, helpText, qrSrc });
+      return;
+    }
+    relayStatusEl.textContent = statusText;
+    if (relayAccountEl) relayAccountEl.textContent = accountText;
+    if (relayHelpText) relayHelpText.textContent = helpText;
+    if (relayQrImage) {
+      if (qrSrc) relayQrImage.src = qrSrc;
+      else relayQrImage.removeAttribute("src");
+    }
+    if (relayQrContainer) relayQrContainer.classList.toggle("hidden", !qrSrc);
+  }
+
+  /**
+   * @param {{ stopDisabled: boolean, clearStorageDisabled?: boolean, logoutDisabled?: boolean, reloadAllDisabled: boolean }} payload
+   */
+  function applyRelayControlButtons({
+    stopDisabled,
+    clearStorageDisabled = false,
+    logoutDisabled = false,
+    reloadAllDisabled,
+  }) {
+    const shellBridge = resolveShellBridge();
+    if (shellBridge?.updateRelayControlButtons) {
+      shellBridge.updateRelayControlButtons({
+        stopDisabled,
+        clearStorageDisabled,
+        logoutDisabled,
+        reloadAllDisabled,
+      });
+      return;
+    }
+    if (relayStopButton) relayStopButton.disabled = stopDisabled;
+    if (relayClearStorageButton) relayClearStorageButton.disabled = clearStorageDisabled;
+    if (relayLogoutButton) relayLogoutButton.disabled = logoutDisabled;
+    if (relayReloadAllButton) relayReloadAllButton.disabled = reloadAllDisabled;
+  }
+
   /**
    * @param {RelayStatus | null | undefined} status
    */
@@ -117,16 +166,7 @@ export function createRelayStatusApplyController({
     const exportDisabled = false;
     const exportTitle = "Download relay diagnostics JSON for support or bug reports.";
 
-    /** @type {{ updateRelayRecoveryActions?: (payload: {
-     *   show: boolean,
-     *   reconnectDisabled: boolean,
-     *   reconnectTitle: string,
-     *   resyncDisabled: boolean,
-     *   resyncTitle: string,
-     *   exportDisabled: boolean,
-     *   exportTitle: string,
-     * }) => void } | null} */
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
+    const shellBridge = resolveShellBridge();
     if (shellBridge?.updateRelayRecoveryActions) {
       shellBridge.updateRelayRecoveryActions({
         show,
@@ -188,38 +228,13 @@ export function createRelayStatusApplyController({
       updateSyncProgressFromStatus(null);
       const offlineHelpText =
         "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
-      if (canRenderStatusSurface) {
-        relayStatusRenderer.renderStatusSurface({
-          statusText: `Relay offline. Open the desktop relay to connect ${brandName}.`,
-          accountText: "",
-          helpText: offlineHelpText,
-          qrSrc: null,
-        });
-      } else {
-        relayStatusEl.textContent = `Relay offline. Open the desktop relay to connect ${brandName}.`;
-        if (relayAccountEl) relayAccountEl.textContent = "";
-        if (relayQrContainer) relayQrContainer.classList.add("hidden");
-        if (relayQrImage) relayQrImage.removeAttribute("src");
-        if (relayHelpText) {
-          relayHelpText.textContent = offlineHelpText;
-        }
-      }
-      /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
-      const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
-      if (shellBridge?.updateRelayControlButtons) {
-        shellBridge.updateRelayControlButtons({
-          stopDisabled: true,
-          reloadAllDisabled: true,
-          clearStorageDisabled: false,
-        });
-      } else {
-        const stopButton = relayStopButton || null;
-        const reloadAllButton = relayReloadAllButton || null;
-        const clearStorageButton = relayClearStorageButton || null;
-        if (stopButton) stopButton.disabled = true;
-        if (reloadAllButton) reloadAllButton.disabled = true;
-        if (clearStorageButton) clearStorageButton.disabled = false;
-      }
+      renderRelayStatusSurface({
+        statusText: `Relay offline. Open the desktop relay to connect ${brandName}.`,
+        accountText: "",
+        helpText: offlineHelpText,
+        qrSrc: null,
+      });
+      applyRelayControlButtons({ stopDisabled: true, reloadAllDisabled: true });
       if (isStateTransition) {
         setRemoteChatList([]);
         relayUiState.lastStatusKind = "offline";
@@ -244,28 +259,12 @@ export function createRelayStatusApplyController({
       status.status === "running"
         ? `Your mirrored ${brandName} chats appear under “Loaded chats”. Pick one to view insights.`
         : "Open Linked Devices on your phone and scan the QR code shown here.";
-    if (canRenderStatusSurface) {
-      relayStatusRenderer.renderStatusSurface({
-        statusText: description.message,
-        accountText,
-        helpText,
-        qrSrc: status.lastQr || null,
-      });
-    } else {
-      relayStatusEl.textContent = description.message;
-      if (relayAccountEl) {
-        relayAccountEl.textContent = accountText;
-      }
-      if (relayHelpText) {
-        relayHelpText.textContent = helpText;
-      }
-      if (status.lastQr && relayQrContainer && relayQrImage) {
-        relayQrImage.src = status.lastQr;
-        relayQrContainer.classList.remove("hidden");
-      } else if (relayQrContainer) {
-        relayQrContainer.classList.add("hidden");
-      }
-    }
+    renderRelayStatusSurface({
+      statusText: description.message,
+      accountText,
+      helpText,
+      qrSrc: status.lastQr || null,
+    });
 
     const running = status.status === "running";
     const waiting = status.status === "waiting_qr" || status.status === "starting";
@@ -274,25 +273,7 @@ export function createRelayStatusApplyController({
     const clearStorageDisabled = relayUiState.controlsLocked;
     const logoutDisabled = !canLogout;
     const reloadAllDisabled = !running;
-    /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
-    if (shellBridge?.updateRelayControlButtons) {
-      shellBridge.updateRelayControlButtons({
-        stopDisabled,
-        clearStorageDisabled,
-        logoutDisabled,
-        reloadAllDisabled,
-      });
-    } else {
-      const stopButton = relayStopButton || null;
-      const clearStorageButton = relayClearStorageButton || null;
-      const logoutButton = relayLogoutButton || null;
-      const reloadAllButton = relayReloadAllButton || null;
-      if (stopButton) stopButton.disabled = stopDisabled;
-      if (clearStorageButton) clearStorageButton.disabled = clearStorageDisabled;
-      if (logoutButton) logoutButton.disabled = logoutDisabled;
-      if (reloadAllButton) reloadAllButton.disabled = reloadAllDisabled;
-    }
+    applyRelayControlButtons({ stopDisabled, clearStorageDisabled, logoutDisabled, reloadAllDisabled });
     if (!getRemoteChatList().length) {
       if (running) {
         setDatasetEmptyMessage(

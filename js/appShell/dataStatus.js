@@ -45,6 +45,35 @@ export function createDataStatusController({ elements, deps }) {
   const canRenderCopy = typeof heroStatusRenderer?.renderCopy === "function";
 
   /**
+   * @param {{ text: string, state: string, readyCelebrating?: boolean }} params
+   */
+  function renderHeroBadge({ text, state, readyCelebrating = false }) {
+    heroViewState.badgeText = text;
+    setHeroBadgeState(heroViewState, heroStatusBadge, state);
+    if (canRenderBadge) {
+      heroStatusRenderer.renderBadge({ text, state, readyCelebrating });
+      return;
+    }
+    if (heroStatusBadge) {
+      heroStatusBadge.textContent = text;
+    }
+  }
+
+  /**
+   * @param {string} text
+   */
+  function renderHeroCopy(text) {
+    heroViewState.copyText = text;
+    if (canRenderCopy) {
+      heroStatusRenderer.renderCopy(text);
+      return;
+    }
+    if (heroStatusCopy) {
+      heroStatusCopy.textContent = text;
+    }
+  }
+
+  /**
    * @param {{ connect?: string, sync?: string, ready?: string }} [params]
    */
   function applyHeroMilestones({ connect = "pending", sync = "pending", ready = "pending" } = {}) {
@@ -193,19 +222,8 @@ export function createDataStatusController({ elements, deps }) {
   function updateHeroRelayStatus(status) {
     if (!heroStatusBadge || !heroStatusCopy) return;
     if (!status) {
-      setHeroBadgeState(heroViewState, heroStatusBadge, "offline");
-      heroViewState.badgeText = "Not connected";
-      heroViewState.copyText = "Open Relay Controls, then press Connect.";
-      if (canRenderBadge) {
-        heroStatusRenderer.renderBadge({ text: "Not connected", state: "offline", readyCelebrating: false });
-      }
-      if (canRenderCopy) {
-        heroStatusRenderer.renderCopy("Open Relay Controls, then press Connect.");
-      }
-      if (!canRenderBadge || !canRenderCopy) {
-        heroStatusBadge.textContent = "Not connected";
-        heroStatusCopy.textContent = "Open Relay Controls, then press Connect.";
-      }
+      renderHeroBadge({ text: "Not connected", state: "offline" });
+      renderHeroCopy("Open Relay Controls, then press Connect.");
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Awaiting relay." });
       setDashboardSyncState(false);
@@ -219,25 +237,14 @@ export function createDataStatusController({ elements, deps }) {
       const badgeText = status.account
         ? `Connected • ${formatRelayAccount(status.account)}`
         : "Relay connected";
-      heroViewState.badgeText = badgeText;
-      if (canRenderBadge) {
-        heroStatusRenderer.renderBadge({
-          text: badgeText,
-          state: chatCount > 0 && !isSyncing ? "ready" : "syncing",
-          readyCelebrating: false,
-        });
-      } else {
-        heroStatusBadge.textContent = badgeText;
-      }
+      renderHeroBadge({
+        text: badgeText,
+        state: chatCount > 0 && !isSyncing ? "ready" : "syncing",
+      });
       setDashboardSyncState(isSyncing);
       if (chatCount > 0 && !isSyncing) {
-        setHeroBadgeState(heroViewState, heroStatusBadge, "ready");
-        heroViewState.copyText = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
-        if (canRenderCopy) {
-          heroStatusRenderer.renderCopy(`${formatNumber(chatCount)} chats indexed. Insights are ready.`);
-        } else {
-          heroStatusCopy.textContent = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
-        }
+        renderHeroBadge({ text: badgeText, state: "ready" });
+        renderHeroCopy(`${formatNumber(chatCount)} chats indexed. Insights are ready.`);
         applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
         updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTimeFn()}` });
         if (!readyCelebrated) {
@@ -248,16 +255,11 @@ export function createDataStatusController({ elements, deps }) {
           readyCelebrated = true;
         }
       } else {
-        setHeroBadgeState(heroViewState, heroStatusBadge, "syncing");
         const copyText = chatCount > 0
           ? `${formatNumber(chatCount)} chats indexed. Syncing updates…`
           : "Connected. Syncing chats…";
-        heroViewState.copyText = copyText;
-        if (canRenderCopy) {
-          heroStatusRenderer.renderCopy(copyText);
-        } else {
-          heroStatusCopy.textContent = copyText;
-        }
+        renderHeroBadge({ text: badgeText, state: "syncing" });
+        renderHeroCopy(copyText);
         applyHeroMilestones({ connect: "complete", sync: "active", ready: "pending" });
         updateHeroSyncMeta({
           state: "syncing",
@@ -271,28 +273,11 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "waiting_qr") {
-      setHeroBadgeState(heroViewState, heroStatusBadge, "waiting");
-      heroViewState.badgeText = "Scan the QR code";
-      if (canRenderBadge) {
-        heroStatusRenderer.renderBadge({ text: "Scan the QR code", state: "waiting", readyCelebrating: false });
-      } else {
-        heroStatusBadge.textContent = "Scan the QR code";
-      }
+      renderHeroBadge({ text: "Scan the QR code", state: "waiting" });
       if (status.lastQr) {
-        heroViewState.copyText = "On your phone: Linked Devices -> Link a device -> scan this code.";
-        if (canRenderCopy) {
-          heroStatusRenderer.renderCopy("On your phone: Linked Devices -> Link a device -> scan this code.");
-        } else {
-          heroStatusCopy.textContent =
-            "On your phone: Linked Devices -> Link a device -> scan this code.";
-        }
+        renderHeroCopy("On your phone: Linked Devices -> Link a device -> scan this code.");
       } else {
-        heroViewState.copyText = "Press Connect to show a new QR code.";
-        if (canRenderCopy) {
-          heroStatusRenderer.renderCopy("Press Connect to show a new QR code.");
-        } else {
-          heroStatusCopy.textContent = "Press Connect to show a new QR code.";
-        }
+        renderHeroCopy("Press Connect to show a new QR code.");
       }
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Waiting for phone link." });
@@ -302,19 +287,8 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "starting") {
-      setHeroBadgeState(heroViewState, heroStatusBadge, "starting");
-      heroViewState.badgeText = "Starting relay";
-      heroViewState.copyText = "Starting relay…";
-      if (canRenderBadge) {
-        heroStatusRenderer.renderBadge({ text: "Starting relay", state: "starting", readyCelebrating: false });
-      }
-      if (canRenderCopy) {
-        heroStatusRenderer.renderCopy("Starting relay…");
-      }
-      if (!canRenderBadge || !canRenderCopy) {
-        heroStatusBadge.textContent = "Starting relay";
-        heroStatusCopy.textContent = "Starting relay…";
-      }
+      renderHeroBadge({ text: "Starting relay", state: "starting" });
+      renderHeroCopy("Starting relay…");
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: "Starting session…" });
       setDashboardSyncState(false);
@@ -322,19 +296,8 @@ export function createDataStatusController({ elements, deps }) {
       return;
     }
 
-    setHeroBadgeState(heroViewState, heroStatusBadge, "offline");
-    heroViewState.badgeText = "Not connected";
-    heroViewState.copyText = "Open Relay Controls, then press Connect.";
-    if (canRenderBadge) {
-      heroStatusRenderer.renderBadge({ text: "Not connected", state: "offline", readyCelebrating: false });
-    }
-    if (canRenderCopy) {
-      heroStatusRenderer.renderCopy("Open Relay Controls, then press Connect.");
-    }
-    if (!canRenderBadge || !canRenderCopy) {
-      heroStatusBadge.textContent = "Not connected";
-      heroStatusCopy.textContent = "Open Relay Controls, then press Connect.";
-    }
+    renderHeroBadge({ text: "Not connected", state: "offline" });
+    renderHeroCopy("Open Relay Controls, then press Connect.");
     applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
     updateHeroSyncMeta({ state: "idle", message: "Awaiting relay." });
     setDashboardSyncState(false);
