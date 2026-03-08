@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { updateRelayBanner, updateRelayOnboarding } from "../js/relayControls/statusView.js";
 
 function createBannerElements() {
@@ -174,6 +174,72 @@ describe("relay status view mapping", () => {
       relayOnboardingStepDetails: { start: null, qr: details.qr, sync: null },
     });
     expect(details.start?.textContent).toBe("Relay is running.");
+    expect(details.sync?.textContent).toBe("Syncing chats…");
+  });
+
+  it("can route relay banner and onboarding copy through an injected renderer", () => {
+    const { relayBannerEl, relayBannerMessage, relayBannerMeta } = createBannerElements();
+    const { steps, details } = createOnboardingSteps();
+    const relayStatusViewRenderer = {
+      renderBanner: vi.fn(),
+      renderOnboardingDetail: vi.fn(),
+    };
+
+    updateRelayBanner({
+      status: { status: "running", chatCount: 5 },
+      relayBannerEl,
+      relayBannerMessage,
+      relayBannerMeta,
+      describeRelayStatusFn: () => ({ message: "Relay live" }),
+      formatRelayAccountFn: () => "",
+      formatRelativeTime: () => "",
+      formatDisplayDate: () => "",
+      formatNumber: value => String(value),
+      relayStatusViewRenderer,
+    });
+    updateRelayOnboarding({
+      status: { status: "running", chatCount: 5 },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
+      relayStatusViewRenderer,
+    });
+
+    expect(relayStatusViewRenderer.renderBanner).toHaveBeenCalledWith({
+      message: "Relay live",
+      meta: "Sync pending · 5 chats indexed",
+    });
+    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("start", "Relay is running.", details.start);
+    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("qr", "Phone linked.", details.qr);
+    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("sync", "Chats synced.", details.sync);
+  });
+
+  it("falls back to DOM writes when a partial renderer omits banner/detail methods", () => {
+    const { relayBannerEl, relayBannerMessage, relayBannerMeta } = createBannerElements();
+    const { steps, details } = createOnboardingSteps();
+
+    updateRelayBanner({
+      status: { status: "running", chatCount: 3 },
+      relayBannerEl,
+      relayBannerMessage,
+      relayBannerMeta,
+      describeRelayStatusFn: () => ({ message: "Relay running" }),
+      formatRelayAccountFn: () => "",
+      formatRelativeTime: () => "",
+      formatDisplayDate: () => "",
+      formatNumber: value => String(value),
+      relayStatusViewRenderer: {},
+    });
+    updateRelayOnboarding({
+      status: { status: "running", chatCount: 0 },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
+      relayStatusViewRenderer: { renderBanner: vi.fn() },
+    });
+
+    expect(relayBannerMessage.textContent).toBe("Relay running");
+    expect(relayBannerMeta.textContent).toBe("Sync pending · 3 chats indexed");
+    expect(details.start?.textContent).toBe("Relay is running.");
+    expect(details.qr?.textContent).toBe("Phone linked.");
     expect(details.sync?.textContent).toBe("Syncing chats…");
   });
 });

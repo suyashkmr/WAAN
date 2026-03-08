@@ -21,6 +21,7 @@ import { createRelayPlatformAdapter } from "./relayControls/platformAdapter.js";
 import { createRelayUiState, setRelayControlsDisabled as applyRelayControlsDisabled } from "./relayControls/controllerState.js";
 import { createRelaySupportControllers } from "./relayControls/controllerSupport.js";
 import { createRelayStatusRenderer } from "./vue/relayStatusRenderer.js";
+import { createRelayStatusViewRenderer } from "./vue/relayStatusViewRenderer.js";
 import {
   describeRelayStatus,
   formatRelayAccount,
@@ -85,6 +86,15 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       relayQrContainer,
       relayQrImage,
       relayHelpText,
+    },
+    vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
+    globalScope,
+  });
+  const relayStatusViewRenderer = createRelayStatusViewRenderer({
+    elements: {
+      relayBannerMessage,
+      relayBannerMeta,
+      relayOnboardingStepDetails: elements.relayOnboardingStepDetails ?? null,
     },
     vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
     globalScope,
@@ -259,6 +269,7 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       updateHeroRelayStatus,
       updateRelayBanner,
       updateRelayOnboarding,
+      relayStatusViewRenderer,
       applyRelayPrimaryAction,
       updateFirstRunSetup,
       updateSyncProgressFromStatus,

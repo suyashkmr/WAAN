@@ -121,6 +121,94 @@ describe("activityPanels detailed", () => {
     expect(elements.hourlyTopHourEl.textContent).toContain("(50.0%)");
   });
 
+  it("routes meta labels through the injected activity meta renderer when present", () => {
+    installDashboardPanelsBridge();
+    const elements = baseElements();
+    const hourlyState = {
+      filters: { weekdays: true, weekends: false, working: true, offhours: false },
+      brush: { start: 5, end: 19 },
+    };
+    const weekdayState = {
+      filters: { weekdays: true, weekends: true, working: true, offhours: true },
+      brush: { start: 7, end: 21 },
+    };
+    const activityPanelsMetaRenderer = {
+      renderHourlyTopHour: vi.fn(),
+      renderHourlyBrushLabels: vi.fn(),
+      renderWeekdayBrushLabels: vi.fn(),
+      renderTimeOfDayBrushLabels: vi.fn(),
+    };
+
+    const controller = createActivityPanelsController({
+      elements,
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => hourlyState,
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => weekdayState,
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+        activityPanelsMetaRenderer,
+      },
+    });
+
+    controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: { topHour: { dayIndex: 0, hour: 9, count: 4 }, totalMessages: 8 } });
+    controller.syncHourlyControlsWithState();
+    controller.syncWeekdayControlsWithState();
+
+    expect(activityPanelsMetaRenderer.renderHourlyTopHour).toHaveBeenCalledWith("Sun 09:00 · 4 msgs (50.0%)");
+    expect(activityPanelsMetaRenderer.renderHourlyBrushLabels).toHaveBeenCalledWith({ start: "05:00", end: "19:00" });
+    expect(activityPanelsMetaRenderer.renderTimeOfDayBrushLabels).toHaveBeenCalledWith({ start: "05:00", end: "19:00" });
+    expect(activityPanelsMetaRenderer.renderWeekdayBrushLabels).toHaveBeenCalledWith({ start: "07:00", end: "21:00" });
+  });
+
+  it("keeps DOM fallback for labels and top-hour text when a partial meta renderer omits methods", () => {
+    installDashboardPanelsBridge();
+    const elements = baseElements();
+    const hourlyState = {
+      filters: { weekdays: true, weekends: false, working: true, offhours: false },
+      brush: { start: 6, end: 18 },
+    };
+    const weekdayState = {
+      filters: { weekdays: true, weekends: true, working: true, offhours: true },
+      brush: { start: 8, end: 20 },
+    };
+    const activityPanelsMetaRenderer = {
+      renderHourlyTopHour: vi.fn(),
+    };
+
+    const controller = createActivityPanelsController({
+      elements,
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => hourlyState,
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => weekdayState,
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+        activityPanelsMetaRenderer,
+      },
+    });
+
+    controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: { topHour: { dayIndex: 1, hour: 10, count: 2 }, totalMessages: 4 } });
+    controller.syncHourlyControlsWithState();
+    controller.syncWeekdayControlsWithState();
+
+    expect(activityPanelsMetaRenderer.renderHourlyTopHour).toHaveBeenCalledWith("Mon 10:00 · 2 msgs (50.0%)");
+    expect(elements.hourlyBrushStartLabel.textContent).toBe("06:00");
+    expect(elements.hourlyBrushEndLabel.textContent).toBe("18:00");
+    expect(elements.timeOfDayHourStartLabel.textContent).toBe("06:00");
+    expect(elements.timeOfDayHourEndLabel.textContent).toBe("18:00");
+    expect(elements.weekdayHourStartLabel.textContent).toBe("08:00");
+    expect(elements.weekdayHourEndLabel.textContent).toBe("20:00");
+  });
+
   it("initializes hourly controls once and normalizes toggles/brush", () => {
     const bridge = installDashboardPanelsBridge();
     const filterWeekdays = document.createElement("input");

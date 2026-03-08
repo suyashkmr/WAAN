@@ -24,6 +24,7 @@ const mocked = vi.hoisted(() => ({
   renderStatistics: vi.fn(),
   formatSentimentScore: vi.fn(() => "0.0"),
   createActivityPanelsControllerArgs: [],
+  createActivityPanelsMetaRenderer: vi.fn(() => ({ renderHourlyTopHour: vi.fn() })),
 }));
 
 vi.mock("../js/analytics/summary.js", () => ({
@@ -83,6 +84,10 @@ vi.mock("../js/appShell/dashboardRender/highlightsStats.js", () => ({
     renderStatistics: mocked.renderStatistics,
     formatSentimentScore: mocked.formatSentimentScore,
   }),
+}));
+
+vi.mock("../js/vue/activityPanelsMetaRenderer.js", () => ({
+  createActivityPanelsMetaRenderer: (...args) => mocked.createActivityPanelsMetaRenderer(...args),
 }));
 
 import { createDashboardRenderController } from "../js/appShell/dashboardRender.js";
@@ -148,6 +153,7 @@ describe("dashboard render controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocked.createActivityPanelsControllerArgs.length = 0;
+    mocked.createActivityPanelsMetaRenderer.mockClear();
     clearVueBridgeRuntime();
   });
 
@@ -218,6 +224,8 @@ describe("dashboard render controller", () => {
     expect(searchPopulateParticipants).toHaveBeenCalled();
     expect(searchRenderResults).toHaveBeenCalled();
     expect(setDataAvailabilityState).toHaveBeenCalledWith(true);
+    expect(mocked.createActivityPanelsMetaRenderer).toHaveBeenCalledTimes(1);
+    expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.activityPanelsMetaRenderer).toBeTruthy();
     expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.vueRuntime).toBe(globalThis.Vue ?? null);
   });
 

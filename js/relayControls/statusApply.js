@@ -72,6 +72,7 @@ export function createRelayStatusApplyController({
     updateHeroRelayStatus,
     updateRelayBanner,
     updateRelayOnboarding,
+    relayStatusViewRenderer = null,
     applyRelayPrimaryAction,
     updateFirstRunSetup,
     updateSyncProgressFromStatus,
@@ -178,8 +179,9 @@ export function createRelayStatusApplyController({
       formatRelativeTime,
       formatDisplayDate,
       formatNumber,
+      relayStatusViewRenderer,
     });
-    updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails });
+    updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails, relayStatusViewRenderer });
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);

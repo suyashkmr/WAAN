@@ -8,6 +8,11 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js"
 import { mountDashboardPanelsIsland } from "../../vue/dashboardPanelsIsland.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
+import {
+  buildHourLabels,
+  ensureFilterPair,
+  syncHourLabelPair,
+} from "./activityPanelFilterUtils.js";
 
 /**
  * @typedef {{ weekdays: boolean, weekends: boolean, working: boolean, offhours: boolean }} ActivityFilters
@@ -72,6 +77,7 @@ export function createActivityPanelsController({ elements, deps }) {
     formatNumber,
     formatFloat,
     vueRuntime = null,
+    activityPanelsMetaRenderer = null,
   } = deps;
   const resolvedVueRuntime = vueRuntime ?? /** @type {any} */ (globalThis)?.Vue ?? null;
 
@@ -112,11 +118,15 @@ export function createActivityPanelsController({ elements, deps }) {
 
   /** @param {any} summary */
   function renderHourlySummary(summary) {
-    if (!hourlyTopHourEl) return;
-    hourlyTopHourEl.textContent = buildHourlyTopHourSummary(/** @type {import("./hourlySummary.js").HourlySummaryData | null | undefined} */ (summary), {
+    const text = buildHourlyTopHourSummary(/** @type {import("./hourlySummary.js").HourlySummaryData | null | undefined} */ (summary), {
       formatNumber,
       formatFloat,
     });
+    const canRenderHourlyTopHour = typeof activityPanelsMetaRenderer?.renderHourlyTopHour === "function";
+    activityPanelsMetaRenderer?.renderHourlyTopHour?.(text);
+    if (!canRenderHourlyTopHour && hourlyTopHourEl) {
+      hourlyTopHourEl.textContent = text;
+    }
   }
 
   /** @param {Record<string, any>} analytics */
@@ -190,29 +200,23 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureWeekdayDayFilters() {
-    /** @type {FilterState} */
-    const state = getWeekdayState();
-    const filters = { ...state.filters };
-    if (!filters.weekdays && !filters.weekends) {
-      filters.weekdays = true;
-      filters.weekends = true;
-      if (weekdayToggleWeekdays) weekdayToggleWeekdays.checked = true;
-      if (weekdayToggleWeekends) weekdayToggleWeekends.checked = true;
-    }
-    updateWeekdayState({ filters });
+    ensureFilterPair(getWeekdayState(), {
+      firstKey: "weekdays",
+      secondKey: "weekends",
+      firstToggle: weekdayToggleWeekdays,
+      secondToggle: weekdayToggleWeekends,
+      updateState: updateWeekdayState,
+    });
   }
 
   function ensureWeekdayHourFilters() {
-    /** @type {FilterState} */
-    const state = getWeekdayState();
-    const filters = { ...state.filters };
-    if (!filters.working && !filters.offhours) {
-      filters.working = true;
-      filters.offhours = true;
-      if (weekdayToggleWorking) weekdayToggleWorking.checked = true;
-      if (weekdayToggleOffhours) weekdayToggleOffhours.checked = true;
-    }
-    updateWeekdayState({ filters });
+    ensureFilterPair(getWeekdayState(), {
+      firstKey: "working",
+      secondKey: "offhours",
+      firstToggle: weekdayToggleWorking,
+      secondToggle: weekdayToggleOffhours,
+      updateState: updateWeekdayState,
+    });
   }
 
   function syncWeekdayControlsWithState() {
@@ -225,12 +229,13 @@ export function createActivityPanelsController({ elements, deps }) {
     if (weekdayToggleOffhours) weekdayToggleOffhours.checked = filters.offhours;
     if (weekdayHourStartInput) weekdayHourStartInput.value = String(brush.start);
     if (weekdayHourEndInput) weekdayHourEndInput.value = String(brush.end);
-    if (weekdayHourStartLabel) {
-      weekdayHourStartLabel.textContent = `${String(brush.start).padStart(2, "0")}:00`;
-    }
-    if (weekdayHourEndLabel) {
-      weekdayHourEndLabel.textContent = `${String(brush.end).padStart(2, "0")}:00`;
-    }
+    syncHourLabelPair(
+      weekdayHourStartLabel,
+      weekdayHourEndLabel,
+      buildHourLabels(brush.start, brush.end),
+      () => typeof activityPanelsMetaRenderer?.renderWeekdayBrushLabels === "function",
+      labels => activityPanelsMetaRenderer?.renderWeekdayBrushLabels?.(labels),
+    );
   }
 
   function rerenderHourlyFromState() {
@@ -274,37 +279,23 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureDayFilters() {
-    /** @type {FilterState} */
-    const state = getHourlyState();
-    const filters = state.filters;
-    if (!filters.weekdays && !filters.weekends) {
-      const normalizedFilters = {
-        ...filters,
-        weekdays: true,
-        weekends: true,
-      };
-      if (filterWeekdays) filterWeekdays.checked = true;
-      if (filterWeekends) filterWeekends.checked = true;
-      updateHourlyState({ filters: normalizedFilters });
-      return;
-    }
+    ensureFilterPair(getHourlyState(), {
+      firstKey: "weekdays",
+      secondKey: "weekends",
+      firstToggle: filterWeekdays,
+      secondToggle: filterWeekends,
+      updateState: updateHourlyState,
+    });
   }
 
   function ensureHourFilters() {
-    /** @type {FilterState} */
-    const state = getHourlyState();
-    const filters = state.filters;
-    if (!filters.working && !filters.offhours) {
-      const normalizedFilters = {
-        ...filters,
-        working: true,
-        offhours: true,
-      };
-      if (filterWorking) filterWorking.checked = true;
-      if (filterOffhours) filterOffhours.checked = true;
-      updateHourlyState({ filters: normalizedFilters });
-      return;
-    }
+    ensureFilterPair(getHourlyState(), {
+      firstKey: "working",
+      secondKey: "offhours",
+      firstToggle: filterWorking,
+      secondToggle: filterOffhours,
+      updateState: updateHourlyState,
+    });
   }
 
   function syncHourlyControlsWithState() {
@@ -316,18 +307,25 @@ export function createActivityPanelsController({ elements, deps }) {
     if (filterOffhours) filterOffhours.checked = state.filters.offhours;
     if (hourlyBrushStartInput) hourlyBrushStartInput.value = String(state.brush.start);
     if (hourlyBrushEndInput) hourlyBrushEndInput.value = String(state.brush.end);
-    if (hourlyBrushStartLabel) hourlyBrushStartLabel.textContent = `${String(state.brush.start).padStart(2, "0")}:00`;
-    if (hourlyBrushEndLabel) hourlyBrushEndLabel.textContent = `${String(state.brush.end).padStart(2, "0")}:00`;
+    const labels = buildHourLabels(state.brush.start, state.brush.end);
+    syncHourLabelPair(
+      hourlyBrushStartLabel,
+      hourlyBrushEndLabel,
+      labels,
+      () => typeof activityPanelsMetaRenderer?.renderHourlyBrushLabels === "function",
+      nextLabels => activityPanelsMetaRenderer?.renderHourlyBrushLabels?.(nextLabels),
+    );
     if (timeOfDayWeekdayToggle) timeOfDayWeekdayToggle.checked = state.filters.weekdays;
     if (timeOfDayWeekendToggle) timeOfDayWeekendToggle.checked = state.filters.weekends;
     if (timeOfDayHourStartInput) timeOfDayHourStartInput.value = String(state.brush.start);
     if (timeOfDayHourEndInput) timeOfDayHourEndInput.value = String(state.brush.end);
-    if (timeOfDayHourStartLabel) {
-      timeOfDayHourStartLabel.textContent = `${String(state.brush.start).padStart(2, "0")}:00`;
-    }
-    if (timeOfDayHourEndLabel) {
-      timeOfDayHourEndLabel.textContent = `${String(state.brush.end).padStart(2, "0")}:00`;
-    }
+    syncHourLabelPair(
+      timeOfDayHourStartLabel,
+      timeOfDayHourEndLabel,
+      labels,
+      () => typeof activityPanelsMetaRenderer?.renderTimeOfDayBrushLabels === "function",
+      nextLabels => activityPanelsMetaRenderer?.renderTimeOfDayBrushLabels?.(nextLabels),
+    );
   }
 
   return {

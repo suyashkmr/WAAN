@@ -710,6 +710,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
       - [ ] `js/appShell/dashboardRender/activityPanels.js`
         - [x] Removed ambient Vue runtime discovery from daily/weekly panel rendering; the controller now consumes injected `vueRuntime` from dashboard wiring.
+        - [x] Moved hourly top-hour and hour-brush label presentation behind a dedicated Vue-capable activity-panels meta renderer, so the controller no longer paints those visible summary/label surfaces directly.
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
         - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
         - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.
@@ -724,6 +725,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
         - [x] Routed relay status application through injected `globalScope`/`now` deps so shell-bridge updates and refresh timing no longer depend on ambient globals.
         - [x] Moved relay status/account/help/QR presentation behind a dedicated Vue-capable relay-status renderer, so the controller coordinates visible relay-card state instead of painting that surface directly.
+        - [x] Moved relay banner message/meta and onboarding detail copy behind a dedicated Vue-capable status-view renderer, so the status-view mapper no longer paints those visible text surfaces directly.
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
@@ -810,6 +812,12 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
   - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
+  - [ ] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
+    - [ ] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is still tracked under the open Phase 11 `P0`/`P1` tasks and final runtime audit acceptance above.
+    - [ ] `js/vue/heroStatusRenderer.js`
+    - [ ] `js/vue/relayStatusRenderer.js`
+    - [ ] `js/vue/relayStatusViewRenderer.js`
+    - [ ] `js/vue/activityPanelsMetaRenderer.js`
   - [ ] Re-run `npm run ci:verify`, `npm run test:visual`, and release smoke checks after purge.
   - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, and onboarding.
   - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access.

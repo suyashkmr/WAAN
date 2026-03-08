@@ -8,6 +8,7 @@ import { createDeferredRenderScheduler } from "./domCache.js";
 import { createActivityPanelsController } from "./dashboardRender/activityPanels.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
+import { createActivityPanelsMetaRenderer } from "../vue/activityPanelsMetaRenderer.js";
 import {
   createParticipantsPanelController,
   applyParticipantTopChange,
@@ -80,6 +81,11 @@ export function createDashboardRenderController({ elements, deps }) {
   });
   const { renderParticipants } = participantsPanelController;
 
+  const activityPanelsMetaRenderer = createActivityPanelsMetaRenderer({
+    elements,
+    vueRuntime,
+  });
+
   const activityPanelsController = createActivityPanelsController({
     elements,
     deps: {
@@ -94,6 +100,7 @@ export function createDashboardRenderController({ elements, deps }) {
       formatNumber,
       formatFloat,
       vueRuntime,
+      activityPanelsMetaRenderer,
     },
   });
   const {
