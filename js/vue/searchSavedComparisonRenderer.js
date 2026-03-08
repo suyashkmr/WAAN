@@ -5,7 +5,7 @@ export function renderSavedViewsComparisonWithVue({
   message = "",
   columns = [],
   container,
-  vueRuntime = globalThis.Vue,
+  vueRuntime = null,
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;

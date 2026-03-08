@@ -226,7 +226,7 @@ describe("dashboard render controller", () => {
     expect(setDataAvailabilityState).toHaveBeenCalledWith(true);
     expect(mocked.createActivityPanelsMetaRenderer).toHaveBeenCalledTimes(1);
     expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.activityPanelsMetaRenderer).toBeTruthy();
-    expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.vueRuntime).toBe(globalThis.Vue ?? null);
+    expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.vueRuntime).toBe(null);
   });
 
   it("delegates time-of-day panel rendering to Vue dashboard bridge when available", () => {

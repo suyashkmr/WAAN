@@ -9,6 +9,7 @@ import { createDomCache } from "./domCache.js";
 export function createAppDomRefs({ documentRef = typeof document !== "undefined" ? document : null } = {}) {
   const domCache = createDomCache(documentRef);
   return {
+    vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue ?? null : null,
     statusEl: domCache.getById("data-status"),
     relayBannerEl: domCache.getById("relay-status-banner"),
     relayBannerMessage: domCache.getById("relay-status-message"),

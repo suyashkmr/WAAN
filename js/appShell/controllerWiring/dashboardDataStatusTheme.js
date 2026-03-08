@@ -53,7 +53,7 @@ export function createDashboardDataStatusThemeWiring({
       heroSyncDot: dom.heroSyncDot,
       heroMilestoneSteps: dom.heroMilestoneSteps,
     },
-    vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
+    vueRuntime: dom.vueRuntime ?? null,
   });
   const dataStatusController = createDataStatusController({
     elements: {
@@ -194,7 +194,7 @@ export function createDashboardDataStatusThemeWiring({
       formatNumber: utils.formatNumber,
       formatFloat: utils.formatFloat,
       sanitizeText: utils.sanitizeText,
-      vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
+      vueRuntime: dom.vueRuntime ?? null,
     },
   });
   dashboardControllerApi.setController(createdDashboardRuntimeController);

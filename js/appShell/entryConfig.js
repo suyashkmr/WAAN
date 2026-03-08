@@ -38,6 +38,7 @@ export function buildControllerWiringArgs({
       ...dashboardRefs,
       ...savedViewRefs,
       ...searchRefs,
+      vueRuntime: runtimeRefs.vueRuntime,
       heroStatusBadge: runtimeRefs.heroStatusBadge,
       heroStatusCopy: runtimeRefs.heroStatusCopy,
       heroStatusMetaCopy: runtimeRefs.heroStatusMetaCopy,

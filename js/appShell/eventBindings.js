@@ -85,6 +85,75 @@ export function createEventBindingsController({
     getHourlyState,
   } = deps;
 
+  function handleForcedChatSelection() {
+    if (!chatSelector?.value) return;
+    void handleChatSelectionChange({ target: chatSelector, force: true });
+  }
+
+  /**
+   * @param {KeyboardEvent} event
+   */
+  function handleChatSelectorKeydown(event) {
+    if (event.key !== "Enter" || !chatSelector?.value) return;
+    event.preventDefault();
+    handleForcedChatSelection();
+  }
+
+  async function handleCustomApplyClick() {
+    const start = customStartInput?.value;
+    const end = customEndInput?.value;
+    if (!start || !end) {
+      updateStatus("Please pick both a start and end date.", "warning");
+      return;
+    }
+    await applyCustomRange(start, end);
+  }
+
+  /**
+   * @param {string} filterKey
+   * @param {HTMLInputElement | null | undefined} input
+   */
+  function updateWeekdayFilter(filterKey, input) {
+    if (!input) return;
+    updateWeekdayState({ filters: { [filterKey]: input.checked } });
+  }
+
+  /**
+   * @param {"weekdays" | "weekends"} filterKey
+   * @param {HTMLInputElement | null | undefined} input
+   */
+  function updateHourlyFilter(filterKey, input) {
+    if (!input) return;
+    updateHourlyState({
+      filters: {
+        ...getHourlyState().filters,
+        [filterKey]: input.checked,
+      },
+    });
+  }
+
+  /**
+   * @param {HTMLInputElement | null | undefined} startInput
+   * @param {HTMLInputElement | null | undefined} endInput
+   * @param {(payload: { start: number, end: number }) => void} applyBrush
+   */
+  function applyNormalizedBrush(startInput, endInput, applyBrush) {
+    let start = Number(startInput?.value);
+    let end = Number(endInput?.value);
+    if (start > end) [start, end] = [end, start];
+    applyBrush({ start, end });
+  }
+
+  /**
+   * @param {Element} button
+   */
+  function handleStatDownloadClick(button) {
+    const type = /** @type {HTMLElement} */ (button).dataset.export;
+    if (type) {
+      exportMessageSubtype(type);
+    }
+  }
+
   function initEventHandlers() {
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     const supportsShellActionDispatch =
@@ -101,30 +170,15 @@ export function createEventBindingsController({
 
     if (chatSelector) {
       chatSelector.addEventListener("change", handleChatSelectionChange);
-      chatSelector.addEventListener("dblclick", () => {
-        if (!chatSelector.value) return;
-        void handleChatSelectionChange({ target: chatSelector, force: true });
-      });
-      chatSelector.addEventListener("keydown", /** @param {KeyboardEvent} event */ event => {
-        if (event.key !== "Enter" || !chatSelector.value) return;
-        event.preventDefault();
-        void handleChatSelectionChange({ target: chatSelector, force: true });
-      });
+      chatSelector.addEventListener("dblclick", handleForcedChatSelection);
+      chatSelector.addEventListener("keydown", handleChatSelectorKeydown);
     }
     if (rangeSelect) {
       rangeSelect.addEventListener("change", handleRangeChange);
     }
 
     if (customApplyButton) {
-      customApplyButton.addEventListener("click", async () => {
-        const start = customStartInput?.value;
-        const end = customEndInput?.value;
-        if (!start || !end) {
-          updateStatus("Please pick both a start and end date.", "warning");
-          return;
-        }
-        await applyCustomRange(start, end);
-      });
+      customApplyButton.addEventListener("click", handleCustomApplyClick);
     }
 
     if (downloadParticipantsButton) {
@@ -158,12 +212,7 @@ export function createEventBindingsController({
     if (statDownloadButtons?.length) {
       statDownloadButtons.forEach(
         /** @param {Element} button */ function bindStatDownload(button) {
-        button.addEventListener("click", () => {
-          const type = /** @type {HTMLElement} */ (button).dataset.export;
-          if (type) {
-            exportMessageSubtype(type);
-          }
-        });
+        button.addEventListener("click", () => handleStatDownloadClick(button));
       });
     }
 
@@ -194,64 +243,42 @@ export function createEventBindingsController({
     void handleParticipantRowToggle;
 
     if (weekdayToggleWeekdays) {
-      weekdayToggleWeekdays.addEventListener("change", () => {
-        updateWeekdayState({ filters: { weekdays: weekdayToggleWeekdays.checked } });
-      });
+      weekdayToggleWeekdays.addEventListener("change", () => updateWeekdayFilter("weekdays", weekdayToggleWeekdays));
     }
     if (weekdayToggleWeekends) {
-      weekdayToggleWeekends.addEventListener("change", () => {
-        updateWeekdayState({ filters: { weekends: weekdayToggleWeekends.checked } });
-      });
+      weekdayToggleWeekends.addEventListener("change", () => updateWeekdayFilter("weekends", weekdayToggleWeekends));
     }
     if (weekdayToggleWorking) {
-      weekdayToggleWorking.addEventListener("change", () => {
-        updateWeekdayState({ filters: { working: weekdayToggleWorking.checked } });
-      });
+      weekdayToggleWorking.addEventListener("change", () => updateWeekdayFilter("working", weekdayToggleWorking));
     }
     if (weekdayToggleOffhours) {
-      weekdayToggleOffhours.addEventListener("change", () => {
-        updateWeekdayState({ filters: { offhours: weekdayToggleOffhours.checked } });
-      });
+      weekdayToggleOffhours.addEventListener("change", () => updateWeekdayFilter("offhours", weekdayToggleOffhours));
     }
 
     if (timeOfDayWeekdayToggle) {
-      timeOfDayWeekdayToggle.addEventListener("change", () => {
-        updateHourlyState({
-          filters: {
-            ...getHourlyState().filters,
-            weekdays: timeOfDayWeekdayToggle.checked,
-          },
-        });
-      });
+      timeOfDayWeekdayToggle.addEventListener("change", () => updateHourlyFilter("weekdays", timeOfDayWeekdayToggle));
     }
     if (timeOfDayWeekendToggle) {
-      timeOfDayWeekendToggle.addEventListener("change", () => {
-        updateHourlyState({
-          filters: {
-            ...getHourlyState().filters,
-            weekends: timeOfDayWeekendToggle.checked,
-          },
-        });
-      });
+      timeOfDayWeekendToggle.addEventListener("change", () => updateHourlyFilter("weekends", timeOfDayWeekendToggle));
     }
     if (timeOfDayHourStartInput && timeOfDayHourEndInput) {
-      const updateTimeOfDayBrush = () => {
-        let start = Number(timeOfDayHourStartInput.value);
-        let end = Number(timeOfDayHourEndInput.value);
-        if (start > end) [start, end] = [end, start];
-        updateHourlyState({ brush: { start, end } });
-      };
+      const updateTimeOfDayBrush = () =>
+        applyNormalizedBrush(
+          timeOfDayHourStartInput,
+          timeOfDayHourEndInput,
+          brush => updateHourlyState({ brush }),
+        );
       timeOfDayHourStartInput.addEventListener("input", updateTimeOfDayBrush);
       timeOfDayHourEndInput.addEventListener("input", updateTimeOfDayBrush);
     }
 
     if (weekdayHourStartInput && weekdayHourEndInput) {
-      const updateBrush = () => {
-        let start = Number(weekdayHourStartInput.value);
-        let end = Number(weekdayHourEndInput.value);
-        if (start > end) [start, end] = [end, start];
-        updateWeekdayState({ brush: { start, end } });
-      };
+      const updateBrush = () =>
+        applyNormalizedBrush(
+          weekdayHourStartInput,
+          weekdayHourEndInput,
+          brush => updateWeekdayState({ brush }),
+        );
       weekdayHourStartInput.addEventListener("input", updateBrush);
       weekdayHourEndInput.addEventListener("input", updateBrush);
     }

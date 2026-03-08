@@ -62,7 +62,7 @@ export function createDashboardRenderController({ elements, deps }) {
     formatNumber,
     formatFloat,
     sanitizeText,
-    vueRuntime = /** @type {any} */ (globalThis).Vue ?? null,
+    vueRuntime = null,
   } = deps;
 
   function resolveDashboardPanelsBridgeForParticipants() {

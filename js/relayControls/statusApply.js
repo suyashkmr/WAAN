@@ -89,6 +89,7 @@ export function createRelayStatusApplyController({
     relayStatusRenderer = null,
   } = deps;
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
+  const canRenderStatusSurface = typeof relayStatusRenderer?.renderStatusSurface === "function";
 
   /**
    * @param {RelayStatus | null | undefined} status
@@ -187,13 +188,14 @@ export function createRelayStatusApplyController({
       updateSyncProgressFromStatus(null);
       const offlineHelpText =
         "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
-      relayStatusRenderer?.renderStatusSurface?.({
-        statusText: `Relay offline. Open the desktop relay to connect ${brandName}.`,
-        accountText: "",
-        helpText: offlineHelpText,
-        qrSrc: null,
-      });
-      if (!relayStatusRenderer) {
+      if (canRenderStatusSurface) {
+        relayStatusRenderer.renderStatusSurface({
+          statusText: `Relay offline. Open the desktop relay to connect ${brandName}.`,
+          accountText: "",
+          helpText: offlineHelpText,
+          qrSrc: null,
+        });
+      } else {
         relayStatusEl.textContent = `Relay offline. Open the desktop relay to connect ${brandName}.`;
         if (relayAccountEl) relayAccountEl.textContent = "";
         if (relayQrContainer) relayQrContainer.classList.add("hidden");
@@ -242,13 +244,14 @@ export function createRelayStatusApplyController({
       status.status === "running"
         ? `Your mirrored ${brandName} chats appear under “Loaded chats”. Pick one to view insights.`
         : "Open Linked Devices on your phone and scan the QR code shown here.";
-    relayStatusRenderer?.renderStatusSurface?.({
-      statusText: description.message,
-      accountText,
-      helpText,
-      qrSrc: status.lastQr || null,
-    });
-    if (!relayStatusRenderer) {
+    if (canRenderStatusSurface) {
+      relayStatusRenderer.renderStatusSurface({
+        statusText: description.message,
+        accountText,
+        helpText,
+        qrSrc: status.lastQr || null,
+      });
+    } else {
       relayStatusEl.textContent = description.message;
       if (relayAccountEl) {
         relayAccountEl.textContent = accountText;

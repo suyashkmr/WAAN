@@ -6,6 +6,7 @@
 export function createAppDomRefGroups(refs) {
   return {
     runtimeRefs: {
+      vueRuntime: refs.vueRuntime,
       statusEl: refs.statusEl,
       toastContainer: refs.toastContainer,
       globalProgressEl: refs.globalProgressEl,

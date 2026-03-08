@@ -472,4 +472,45 @@ describe("appShell controllers", () => {
       expect.objectContaining({ connect: "complete", sync: "complete", ready: "complete" }),
     );
   });
+
+  it("dataStatus preserves DOM fallback when a partial hero renderer omits badge/copy methods", () => {
+    const heroStatusBadge = document.createElement("span");
+    const heroStatusCopy = document.createElement("span");
+    const heroStatusMetaCopy = document.createElement("span");
+    const heroSyncDot = document.createElement("span");
+    const heroStatusRenderer = {
+      renderSyncMeta: vi.fn(),
+    };
+
+    const controller = createDataStatusController({
+      elements: {
+        dashboardRoot: document.createElement("main"),
+        heroStatusBadge,
+        heroStatusCopy,
+        heroStatusMetaCopy,
+        heroSyncDot,
+        heroMilestoneSteps: [],
+        datasetEmptyStateManager: { setAvailability: vi.fn() },
+      },
+      deps: {
+        setDatasetEmptyMessage: vi.fn(),
+        savedViewsController: {
+          setDataAvailability: vi.fn(),
+          refreshUI: vi.fn(),
+        },
+        formatRelayAccount: vi.fn(() => "Alice"),
+        formatNumber: vi.fn(value => String(value)),
+        formatStatusTime: vi.fn(() => "10:42"),
+        heroStatusRenderer,
+      },
+    });
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
+
+    expect(heroStatusBadge.textContent).toBe("Relay connected");
+    expect(heroStatusCopy.textContent).toBe("3 chats indexed. Insights are ready.");
+    expect(heroStatusRenderer.renderSyncMeta).toHaveBeenCalledWith(
+      expect.objectContaining({ state: "ready", message: "Last updated 10:42" }),
+    );
+  });
 });

@@ -79,7 +79,6 @@ export function createActivityPanelsController({ elements, deps }) {
     vueRuntime = null,
     activityPanelsMetaRenderer = null,
   } = deps;
-  const resolvedVueRuntime = vueRuntime ?? /** @type {any} */ (globalThis)?.Vue ?? null;
 
   let hourlyControlsInitialised = false;
   let stateSubscriptionsInitialised = false;
@@ -158,7 +157,7 @@ export function createActivityPanelsController({ elements, deps }) {
     renderDailySection(analytics.daily_counts, {
       container: dailyChartEl,
       averageEl: dailyAvgDayEl,
-    }, resolvedVueRuntime);
+    }, vueRuntime);
   }
 
   /** @param {Record<string, any>} analytics */
@@ -183,7 +182,7 @@ export function createActivityPanelsController({ elements, deps }) {
         if (rangeSelect) rangeSelect.value = "custom";
       },
       },
-      resolvedVueRuntime,
+      vueRuntime,
     );
   }
 

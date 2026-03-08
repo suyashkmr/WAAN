@@ -718,20 +718,24 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Replaced participant-row detail lookup against `participantsBody` with structural sibling resolution, so row toggles no longer depend on controller-side table-body querying.
       - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
         - [x] Routed search action-row ownership through explicit `searchActionsEl` refs instead of `form.querySelector(...)`, and injected search timing/Vue runtime dependencies into search controllers rather than discovering them ad hoc.
+        - [x] Removed remaining ambient Vue runtime fallback from search controller/participant UI paths; search runtime ownership is now injected explicitly through controller wiring and tests (`js/search.js`, `js/search/participantUi.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`, related tests).
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
         - [x] Replaced saved-view dirty-tracking `document.getElementById(...)` discovery with explicit filter-control refs from controller wiring, and injected Vue runtime into saved-view select rendering instead of discovering `globalThis.Vue` inside the UI controller.
+        - [x] Removed remaining ambient Vue runtime fallback from saved-view controller/UI paths; runtime ownership is now injected explicitly through controller wiring and tests (`js/savedViews.js`, `js/savedViewsUi.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`, related tests).
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
         - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
         - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
         - [x] Routed relay status application through injected `globalScope`/`now` deps so shell-bridge updates and refresh timing no longer depend on ambient globals.
         - [x] Moved relay status/account/help/QR presentation behind a dedicated Vue-capable relay-status renderer, so the controller coordinates visible relay-card state instead of painting that surface directly.
         - [x] Moved relay banner message/meta and onboarding detail copy behind a dedicated Vue-capable status-view renderer, so the status-view mapper no longer paints those visible text surfaces directly.
+        - [x] Hardened relay status renderer fallback behavior so partial renderer objects cannot suppress visible relay-card updates (`js/relayControls/statusApply.js`, `tests/relayStatusApply.test.js`).
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
       - [ ] `js/appShell/dataStatus.js`
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
         - [x] Moved hero-status badge/copy/meta presentation behind a dedicated Vue-capable hero-status renderer, so the controller coordinates hero view state instead of writing hero text directly.
+        - [x] Hardened hero-status renderer fallback behavior so partial renderer objects cannot suppress visible hero updates (`js/appShell/dataStatus.js`, `tests/appShellControllers.test.js`).
       - [ ] `js/appShell/themeUi.js`
         - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
       - [ ] `js/vue/dashboardHourlyRoot.js`
@@ -752,6 +756,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Removed ambient Vue runtime discovery from sentiment rendering paths; the renderer now consumes injected Vue runtime from dashboard composition.
       - [ ] `js/relayControls/logStream.js`
         - [x] Removed ambient Vue runtime discovery from relay-log rendering and moved the connection-label presentation onto controller state rendered through injected Vue runtime.
+      - [x] `js/vue/searchSavedRenderers.js` + `js/vue/searchSavedComparisonRenderer.js` + `js/vue/searchSavedIsland.js`
+        - [x] Removed ambient Vue runtime defaults from search/saved renderer helpers so renderer ownership is explicit and bridge bootstrap is the only place that decides whether Vue is present.
       - [ ] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
     - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
       - [x] `js/ui/primitives.js`

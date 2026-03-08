@@ -244,76 +244,70 @@ describe("activityPanels controller", () => {
     expect(rangeSelect.value).toBe("custom");
   });
 
-  it("falls back to global Vue runtime when injected runtime is absent", () => {
-    const originalVue = globalThis.Vue;
-    const fallbackVue = { h: vi.fn(), render: vi.fn(), Fragment: Symbol("Fragment") };
-    globalThis.Vue = fallbackVue;
+  it("passes injected Vue runtime to daily and weekly renderers", () => {
+    const vueRuntime = { h: vi.fn(), render: vi.fn(), Fragment: Symbol("Fragment") };
+    const controller = createActivityPanelsController({
+      elements: {
+        hourlyChartEl: document.createElement("div"),
+        filterNoteEl: document.createElement("div"),
+        brushSummaryEl: document.createElement("div"),
+        hourlyAnomaliesEl: document.createElement("div"),
+        hourlyTopHourEl: document.createElement("div"),
+        dailyChartEl: document.createElement("div"),
+        dailyAvgDayEl: document.createElement("div"),
+        weeklyChartEl: document.createElement("div"),
+        weeklyCumulativeEl: document.createElement("div"),
+        weeklyRollingEl: document.createElement("div"),
+        weeklyAverageEl: document.createElement("div"),
+        filterWeekdays: document.createElement("input"),
+        filterWeekends: document.createElement("input"),
+        filterWorking: document.createElement("input"),
+        filterOffhours: document.createElement("input"),
+        hourlyBrushStartInput: document.createElement("input"),
+        hourlyBrushEndInput: document.createElement("input"),
+        hourlyBrushStartLabel: document.createElement("span"),
+        hourlyBrushEndLabel: document.createElement("span"),
+        weekdayChartEl: document.createElement("div"),
+        weekdayFilterNote: document.createElement("div"),
+        weekdayToggleWeekdays: document.createElement("input"),
+        weekdayToggleWeekends: document.createElement("input"),
+        weekdayToggleWorking: document.createElement("input"),
+        weekdayToggleOffhours: document.createElement("input"),
+        weekdayHourStartInput: document.createElement("input"),
+        weekdayHourEndInput: document.createElement("input"),
+        weekdayHourStartLabel: document.createElement("span"),
+        weekdayHourEndLabel: document.createElement("span"),
+        timeOfDayWeekdayToggle: document.createElement("input"),
+        timeOfDayWeekendToggle: document.createElement("input"),
+        timeOfDayHourStartInput: document.createElement("input"),
+        timeOfDayHourEndInput: document.createElement("input"),
+        timeOfDayHourStartLabel: document.createElement("span"),
+        timeOfDayHourEndLabel: document.createElement("span"),
+        timeOfDayChartContainer: document.createElement("div"),
+        timeOfDaySparklineEl: document.createElement("div"),
+        timeOfDayBandsEl: document.createElement("div"),
+        timeOfDayCalloutsEl: document.createElement("div"),
+        rangeSelect: createRangeSelect(),
+      },
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+        vueRuntime,
+      },
+    });
 
-    try {
-      const controller = createActivityPanelsController({
-        elements: {
-          hourlyChartEl: document.createElement("div"),
-          filterNoteEl: document.createElement("div"),
-          brushSummaryEl: document.createElement("div"),
-          hourlyAnomaliesEl: document.createElement("div"),
-          hourlyTopHourEl: document.createElement("div"),
-          dailyChartEl: document.createElement("div"),
-          dailyAvgDayEl: document.createElement("div"),
-          weeklyChartEl: document.createElement("div"),
-          weeklyCumulativeEl: document.createElement("div"),
-          weeklyRollingEl: document.createElement("div"),
-          weeklyAverageEl: document.createElement("div"),
-          filterWeekdays: document.createElement("input"),
-          filterWeekends: document.createElement("input"),
-          filterWorking: document.createElement("input"),
-          filterOffhours: document.createElement("input"),
-          hourlyBrushStartInput: document.createElement("input"),
-          hourlyBrushEndInput: document.createElement("input"),
-          hourlyBrushStartLabel: document.createElement("span"),
-          hourlyBrushEndLabel: document.createElement("span"),
-          weekdayChartEl: document.createElement("div"),
-          weekdayFilterNote: document.createElement("div"),
-          weekdayToggleWeekdays: document.createElement("input"),
-          weekdayToggleWeekends: document.createElement("input"),
-          weekdayToggleWorking: document.createElement("input"),
-          weekdayToggleOffhours: document.createElement("input"),
-          weekdayHourStartInput: document.createElement("input"),
-          weekdayHourEndInput: document.createElement("input"),
-          weekdayHourStartLabel: document.createElement("span"),
-          weekdayHourEndLabel: document.createElement("span"),
-          timeOfDayWeekdayToggle: document.createElement("input"),
-          timeOfDayWeekendToggle: document.createElement("input"),
-          timeOfDayHourStartInput: document.createElement("input"),
-          timeOfDayHourEndInput: document.createElement("input"),
-          timeOfDayHourStartLabel: document.createElement("span"),
-          timeOfDayHourEndLabel: document.createElement("span"),
-          timeOfDayChartContainer: document.createElement("div"),
-          timeOfDaySparklineEl: document.createElement("div"),
-          timeOfDayBandsEl: document.createElement("div"),
-          timeOfDayCalloutsEl: document.createElement("div"),
-          rangeSelect: createRangeSelect(),
-        },
-        deps: {
-          getCustomRange: () => null,
-          getDatasetAnalytics: () => null,
-          getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
-          updateHourlyState: vi.fn(),
-          getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
-          updateWeekdayState: vi.fn(),
-          applyCustomRange: vi.fn(),
-          formatNumber: value => String(value),
-          formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
-        },
-      });
+    controller.renderDailyPanel({ daily_counts: [] });
+    controller.renderWeeklyPanel({ weekly_counts: [], weekly_summary: {} });
 
-      controller.renderDailyPanel({ daily_counts: [] });
-      controller.renderWeeklyPanel({ weekly_counts: [], weekly_summary: {} });
-
-      expect(renderDailySection).toHaveBeenCalledWith([], expect.any(Object), fallbackVue);
-      expect(renderWeeklySection).toHaveBeenCalledWith([], {}, expect.any(Object), fallbackVue);
-    } finally {
-      globalThis.Vue = originalVue;
-    }
+    expect(renderDailySection).toHaveBeenCalledWith([], expect.any(Object), vueRuntime);
+    expect(renderWeeklySection).toHaveBeenCalledWith([], {}, expect.any(Object), vueRuntime);
   });
 
   it("no-ops panel rerenders when dashboard bridge is unavailable", () => {

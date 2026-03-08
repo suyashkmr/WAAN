@@ -97,7 +97,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
 }
 
 try {
-  if (typeof globalThis.document !== "undefined" && globalThis.Vue) {
+  if (typeof globalThis.document !== "undefined") {
     mountSearchSavedBridge();
   }
 } catch (error) {

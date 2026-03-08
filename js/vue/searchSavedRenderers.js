@@ -15,7 +15,7 @@ export function renderPanelStateWithVue({
   actions = [],
   dispatchAction = null,
   container,
-  vueRuntime = globalThis.Vue,
+  vueRuntime = null,
 }) {
   const VueRuntime = vueRuntime;
   if (!VueRuntime || !container) return false;
@@ -76,7 +76,7 @@ export function renderSearchResultsWithVue({
   total = 0,
   lastRunFiltered = false,
   container,
-  vueRuntime = globalThis.Vue,
+  vueRuntime = null,
   globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
@@ -162,7 +162,7 @@ export function renderSearchInsightsWithVue({
   summary,
   resultLimit = 200,
   container,
-  vueRuntime = globalThis.Vue,
+  vueRuntime = null,
   globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
@@ -234,7 +234,7 @@ export function renderSavedViewsGalleryWithVue({
   interactive = false,
   dispatchAction = null,
   container,
-  vueRuntime = globalThis.Vue,
+  vueRuntime = null,
   globalScope = globalThis,
 }) {
   const VueRuntime = vueRuntime;
