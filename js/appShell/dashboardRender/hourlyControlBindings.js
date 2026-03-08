@@ -14,6 +14,7 @@
  *   brushEnd?: HTMLInputElement | null,
  *   startLabel?: HTMLElement | null,
  *   endLabel?: HTMLElement | null,
+ *   syncBrushLabels?: ((labels: { start: string, end: string }) => void) | null,
  * }} params
  */
 export function initActivityHourlyControls({
@@ -29,6 +30,7 @@ export function initActivityHourlyControls({
   brushEnd = null,
   startLabel = null,
   endLabel = null,
+  syncBrushLabels = null,
 }) {
   if (weekdayToggle) {
     weekdayToggle.addEventListener("change", () => {
@@ -88,8 +90,16 @@ export function initActivityHourlyControls({
       });
       brushStart.value = String(start);
       brushEnd.value = String(end);
-      if (startLabel) startLabel.textContent = `${String(start).padStart(2, "0")}:00`;
-      if (endLabel) endLabel.textContent = `${String(end).padStart(2, "0")}:00`;
+      const labels = {
+        start: `${String(start).padStart(2, "0")}:00`,
+        end: `${String(end).padStart(2, "0")}:00`,
+      };
+      if (typeof syncBrushLabels === "function") {
+        syncBrushLabels(labels);
+      } else {
+        if (startLabel) startLabel.textContent = labels.start;
+        if (endLabel) endLabel.textContent = labels.end;
+      }
     };
     brushStart.addEventListener("input", updateBrush);
     brushEnd.addEventListener("input", updateBrush);

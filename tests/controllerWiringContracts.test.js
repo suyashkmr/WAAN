@@ -101,7 +101,6 @@ vi.mock("../js/appShell/index.js", () => ({
     handleParticipantsSortChange: vi.fn(),
     handleParticipantsTimeframeChange: vi.fn(),
     handleParticipantPresetClick: vi.fn(),
-    handleParticipantRowToggle: vi.fn(),
   })),
   createExportFilterSummary: vi.fn(() => h.getExportFilterSummary),
   createDashboardRuntime: h.createDashboardRuntime,
@@ -110,6 +109,7 @@ vi.mock("../js/appShell/index.js", () => ({
 }));
 
 import { createAppControllerWiring } from "../js/appShell/controllerWiring.js";
+import { createThemeUiController } from "../js/appShell/index.js";
 
 describe("controllerWiring contracts", () => {
   beforeEach(() => {
@@ -167,6 +167,9 @@ describe("controllerWiring contracts", () => {
       compareViewsButton: document.createElement("button"),
       compareSummaryEl: document.createElement("div"),
       dashboardRoot: document.createElement("main"),
+      documentRef: document,
+      windowRef: window,
+      storageRef: localStorage,
       heroStatusBadge: document.createElement("span"),
       heroStatusCopy: document.createElement("span"),
       participantsTopSelect: document.createElement("select"),
@@ -245,6 +248,14 @@ describe("controllerWiring contracts", () => {
     expect(result.getParticipantView()).toEqual({ id: "participants" });
     expect(typeof result.initThemeControls).toBe("function");
     expect(typeof result.getExportThemeConfig).toBe("function");
+    expect(h.themeUiController.initThemeControls).not.toHaveBeenCalled();
+    expect(vi.mocked(createThemeUiController).mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        documentRef: dom.documentRef,
+        windowRef: dom.windowRef,
+        storageRef: dom.storageRef,
+      }),
+    );
     expect(h.createSavedViewsController).toHaveBeenCalledTimes(1);
     const savedViewsConfig = h.createSavedViewsController.mock.calls[0]?.[0];
     expect(savedViewsConfig?.dependencies).toEqual(

@@ -38,7 +38,12 @@ import {
   createCompositionAssemblyConfig,
 } from "./appShell/compositionConfig.js";
 
-const appDomRefs = createAppDomRefs();
+const appDomRefs = createAppDomRefs({
+  documentRef: document,
+  windowRef: window,
+  storageRef: globalThis.localStorage,
+  vueRuntime: globalThis.Vue,
+});
 const {
   runtimeRefs,
   relayRefs,

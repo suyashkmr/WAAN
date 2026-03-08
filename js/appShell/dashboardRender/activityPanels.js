@@ -1,5 +1,4 @@
 // @ts-check
-
 import {
   renderDailySection,
   renderWeeklySection,
@@ -79,7 +78,6 @@ export function createActivityPanelsController({ elements, deps }) {
     vueRuntime = null,
     activityPanelsMetaRenderer = null,
   } = deps;
-
   let hourlyControlsInitialised = false;
   let stateSubscriptionsInitialised = false;
   const hasStateSubscription = typeof subscribeAppShellUiState === "function";
@@ -274,6 +272,14 @@ export function createActivityPanelsController({ elements, deps }) {
       brushEnd: hourlyBrushEndInput,
       startLabel: hourlyBrushStartLabel,
       endLabel: hourlyBrushEndLabel,
+      syncBrushLabels: labels =>
+        syncHourLabelPair(
+          hourlyBrushStartLabel,
+          hourlyBrushEndLabel,
+          labels,
+          () => typeof activityPanelsMetaRenderer?.renderHourlyBrushLabels === "function",
+          nextLabels => activityPanelsMetaRenderer?.renderHourlyBrushLabels?.(nextLabels),
+        ),
     });
   }
 

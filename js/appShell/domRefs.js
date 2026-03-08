@@ -3,13 +3,26 @@
 import { createDomCache } from "./domCache.js";
 
 /**
- * @param {{ documentRef?: Document | null }} [params]
+ * @param {{
+ *   documentRef?: Document | null,
+ *   windowRef?: Window | null,
+ *   storageRef?: Storage | null,
+ *   vueRuntime?: any,
+ * }} [params]
  * @returns {Record<string, any>}
  */
-export function createAppDomRefs({ documentRef = typeof document !== "undefined" ? document : null } = {}) {
+export function createAppDomRefs({
+  documentRef = typeof document !== "undefined" ? document : null,
+  windowRef = typeof window !== "undefined" ? window : null,
+  storageRef = globalThis.localStorage ?? null,
+  vueRuntime = typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue ?? null : null,
+} = {}) {
   const domCache = createDomCache(documentRef);
   return {
-    vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue ?? null : null,
+    documentRef,
+    windowRef,
+    storageRef,
+    vueRuntime,
     statusEl: domCache.getById("data-status"),
     relayBannerEl: domCache.getById("relay-status-banner"),
     relayBannerMessage: domCache.getById("relay-status-message"),

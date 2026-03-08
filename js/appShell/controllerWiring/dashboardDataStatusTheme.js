@@ -107,7 +107,6 @@ export function createDashboardDataStatusThemeWiring({
     handleParticipantsSortChange,
     handleParticipantsTimeframeChange,
     handleParticipantPresetClick,
-    handleParticipantRowToggle,
   } = participantInteractionsController;
 
   const getExportFilterSummary = createExportFilterSummary({
@@ -203,9 +202,9 @@ export function createDashboardDataStatusThemeWiring({
     themeToggleInputs: dom.themeToggleInputs,
     mediaQuery: /** @type {any} */ (viewAdapter.getThemeMediaQuery()),
     exportThemeStyles: EXPORT_THEME_STYLES,
-    documentRef: typeof document !== "undefined" ? document : null,
-    windowRef: typeof window !== "undefined" ? window : null,
-    storageRef: globalThis.localStorage ?? null,
+    documentRef: dom.documentRef ?? null,
+    windowRef: dom.windowRef ?? null,
+    storageRef: dom.storageRef ?? null,
   });
   const { initThemeControls, setThemePreference, getExportThemeConfig } = themeUiController;
 
@@ -218,7 +217,6 @@ export function createDashboardDataStatusThemeWiring({
     handleParticipantsSortChange,
     handleParticipantsTimeframeChange,
     handleParticipantPresetClick,
-    handleParticipantRowToggle,
     getExportFilterSummary,
     getParticipantView,
     initThemeControls,

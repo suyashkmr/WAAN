@@ -317,6 +317,64 @@ describe("activityPanels detailed", () => {
     expect(bridge.renderHourlyHeatmap.mock.calls.length).toBeGreaterThan(2);
   });
 
+  it("routes hourly brush input label updates through the injected meta renderer when present", () => {
+    installDashboardPanelsBridge();
+    const filterWeekdays = document.createElement("input");
+    const filterWeekends = document.createElement("input");
+    const filterWorking = document.createElement("input");
+    const filterOffhours = document.createElement("input");
+    const brushStart = document.createElement("input");
+    const brushEnd = document.createElement("input");
+    const brushStartLabel = document.createElement("span");
+    const brushEndLabel = document.createElement("span");
+    const activityPanelsMetaRenderer = {
+      renderHourlyBrushLabels: vi.fn(),
+    };
+    const hourlyState = {
+      filters: { weekdays: true, weekends: true, working: true, offhours: true },
+      brush: { start: 5, end: 19 },
+    };
+
+    const controller = createActivityPanelsController({
+      elements: {
+        ...baseElements(),
+        filterWeekdays,
+        filterWeekends,
+        filterWorking,
+        filterOffhours,
+        hourlyBrushStartInput: brushStart,
+        hourlyBrushEndInput: brushEnd,
+        hourlyBrushStartLabel: brushStartLabel,
+        hourlyBrushEndLabel: brushEndLabel,
+      },
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => hourlyState,
+        updateHourlyState: patch => {
+          if (patch.filters) hourlyState.filters = patch.filters;
+          if (patch.brush) hourlyState.brush = patch.brush;
+        },
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+        activityPanelsMetaRenderer,
+      },
+    });
+
+    controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: null });
+    brushStart.value = "22";
+    brushEnd.value = "7";
+    brushStart.dispatchEvent(new Event("input"));
+
+    expect(hourlyState.brush).toEqual({ start: 7, end: 22 });
+    expect(activityPanelsMetaRenderer.renderHourlyBrushLabels).toHaveBeenCalledWith({ start: "07:00", end: "22:00" });
+    expect(brushStartLabel.textContent).toBe("");
+    expect(brushEndLabel.textContent).toBe("");
+  });
+
   it("passes selected custom range to weekly renderer and applies valid selections", () => {
     const elements = baseElements();
     const applyCustomRange = vi.fn();

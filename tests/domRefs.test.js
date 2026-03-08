@@ -15,9 +15,17 @@ describe("app shell dom refs", () => {
       <input name="theme-option" value="system" />
     `;
 
-    const refs = createAppDomRefs({ documentRef: sandbox });
+    const windowRef = /** @type {Window} */ ({ matchMedia: () => null });
+    const storageRef = /** @type {Storage} */ ({ getItem: () => null, setItem: () => {} });
+    const vueRuntime = { h: () => null, render: () => null };
+
+    const refs = createAppDomRefs({ documentRef: sandbox, windowRef, storageRef, vueRuntime });
 
     expect(refs.statusEl?.id).toBe("data-status");
+    expect(refs.documentRef).toBe(sandbox);
+    expect(refs.windowRef).toBe(windowRef);
+    expect(refs.storageRef).toBe(storageRef);
+    expect(refs.vueRuntime).toBe(vueRuntime);
     expect(refs.participantsBody?.tagName).toBe("TBODY");
     expect(refs.participantPresetButtons.length).toBe(1);
     expect(refs.heroMilestoneSteps.length).toBe(1);

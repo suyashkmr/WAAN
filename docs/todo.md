@@ -709,6 +709,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
       - [ ] `js/appShell/dashboardRender/activityPanels.js`
+        - [x] Moved hourly brush-input label painting out of `hourlyControlBindings` and into the shared activity meta renderer/label-sync path (`js/appShell/dashboardRender/hourlyControlBindings.js`, `js/appShell/dashboardRender/activityPanels.js`, `tests/activityPanelsDetailed.test.js`).
         - [x] Removed ambient Vue runtime discovery from daily/weekly panel rendering; the controller now consumes injected `vueRuntime` from dashboard wiring.
         - [x] Moved hourly top-hour and hour-brush label presentation behind a dedicated Vue-capable activity-panels meta renderer, so the controller no longer paints those visible summary/label surfaces directly.
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
@@ -736,7 +737,9 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
         - [x] Moved hero-status badge/copy/meta presentation behind a dedicated Vue-capable hero-status renderer, so the controller coordinates hero view state instead of writing hero text directly.
         - [x] Hardened hero-status renderer fallback behavior so partial renderer objects cannot suppress visible hero updates (`js/appShell/dataStatus.js`, `tests/appShellControllers.test.js`).
+        - [x] Replaced ready-celebration DOM readbacks with controller-held hero view state, so hero transitions no longer depend on reading badge/milestone text/state back out of mounted elements (`js/appShell/dataStatus.js`, `tests/dataStatusBootstrapSectionNav.test.js`).
       - [ ] `js/appShell/themeUi.js`
+        - [x] Threaded `documentRef`, `windowRef`, and `storageRef` explicitly from app-shell DOM/runtime wiring into `createThemeUiController(...)`, removing the last ambient browser-global reintroduction in theme controller composition (`js/appShell/domRefs.js`, `js/appShell/domRefGroups.js`, `js/appShell/entryConfig.js`, `js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell.js`, `tests/controllerWiringContracts.test.js`, `tests/domRefs.test.js`).
         - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
       - [ ] `js/vue/dashboardHourlyRoot.js`
         - [x] Moved hourly filter-note/brush-summary/anomaly presentation into hourly Vue state + Vue-rendered sibling surfaces; the hourly bridge no longer mutates those DOM nodes via direct text writes.

@@ -1,5 +1,7 @@
 // @ts-check
 
+import { createHeroViewState, setHeroBadgeState, setHeroMilestones } from "./dataStatusHeroState.js";
+
 /**
  * @typedef {Record<string, any>} AnyRecord
  */
@@ -34,6 +36,7 @@ export function createDataStatusController({ elements, deps }) {
   let readyCelebrated = false;
   /** @type {ReturnType<typeof setTimeout> | null} */
   let celebrationTimer = null;
+  const heroViewState = createHeroViewState();
   const canRenderMilestones = typeof heroStatusRenderer?.renderMilestones === "function";
   const canSetDashboardLoadingState = typeof heroStatusRenderer?.setDashboardLoadingState === "function";
   const canRenderSyncMeta = typeof heroStatusRenderer?.renderSyncMeta === "function";
@@ -45,8 +48,9 @@ export function createDataStatusController({ elements, deps }) {
    * @param {{ connect?: string, sync?: string, ready?: string }} [params]
    */
   function applyHeroMilestones({ connect = "pending", sync = "pending", ready = "pending" } = {}) {
+    setHeroMilestones(heroViewState, { connect, sync, ready });
     if (canRenderMilestones) {
-      heroStatusRenderer.renderMilestones({ connect, sync, ready, readyCelebrating: false });
+      heroStatusRenderer.renderMilestones({ connect, sync, ready, readyCelebrating: heroViewState.readyCelebrating });
     } else {
       if (!heroMilestoneSteps?.length) return;
       heroMilestoneSteps.forEach(/** @param {HTMLElement} step */ step => {
@@ -74,6 +78,8 @@ export function createDataStatusController({ elements, deps }) {
    * @param {{ state?: string, message?: string }} [params]
    */
   function updateHeroSyncMeta({ state = "idle", message = "Awaiting relay." } = {}) {
+    heroViewState.syncMetaState = state;
+    heroViewState.syncMetaMessage = message;
     if (canRenderSyncMeta) {
       heroStatusRenderer.renderSyncMeta({ state, message });
     } else {
@@ -106,18 +112,19 @@ export function createDataStatusController({ elements, deps }) {
       clearTimeoutRef(celebrationTimer);
       celebrationTimer = null;
     }
+    heroViewState.readyCelebrating = false;
     if (canRenderBadge) {
       heroStatusRenderer.renderBadge({
-        text: heroStatusBadge?.textContent || "",
-        state: heroStatusBadge?.dataset?.state || "offline",
+        text: heroViewState.badgeText,
+        state: heroViewState.badgeState,
         readyCelebrating: false,
       });
     }
     if (canRenderMilestones) {
       heroStatusRenderer.renderMilestones({
-        connect: heroMilestoneSteps?.[0]?.dataset?.state || "pending",
-        sync: heroMilestoneSteps?.[1]?.dataset?.state || "pending",
-        ready: heroMilestoneSteps?.[2]?.dataset?.state || "pending",
+        connect: heroViewState.milestones.connect,
+        sync: heroViewState.milestones.sync,
+        ready: heroViewState.milestones.ready,
         readyCelebrating: false,
       });
     }
@@ -135,18 +142,19 @@ export function createDataStatusController({ elements, deps }) {
   }
 
   function triggerReadyCelebration() {
+    heroViewState.readyCelebrating = true;
     if (canRenderBadge) {
       heroStatusRenderer.renderBadge({
-        text: heroStatusBadge?.textContent || "",
-        state: heroStatusBadge?.dataset?.state || "ready",
+        text: heroViewState.badgeText,
+        state: heroViewState.badgeState,
         readyCelebrating: true,
       });
     }
     if (canRenderMilestones) {
       heroStatusRenderer.renderMilestones({
-        connect: heroMilestoneSteps?.[0]?.dataset?.state || "complete",
-        sync: heroMilestoneSteps?.[1]?.dataset?.state || "complete",
-        ready: heroMilestoneSteps?.[2]?.dataset?.state || "complete",
+        connect: heroViewState.milestones.connect,
+        sync: heroViewState.milestones.sync,
+        ready: heroViewState.milestones.ready,
         readyCelebrating: true,
       });
     }
@@ -184,13 +192,10 @@ export function createDataStatusController({ elements, deps }) {
    */
   function updateHeroRelayStatus(status) {
     if (!heroStatusBadge || !heroStatusCopy) return;
-    /** @param {string} state */
-    const setHeroBadgeState = state => {
-      if (!heroStatusBadge) return;
-      heroStatusBadge.dataset.state = state;
-    };
     if (!status) {
-      setHeroBadgeState("offline");
+      setHeroBadgeState(heroViewState, heroStatusBadge, "offline");
+      heroViewState.badgeText = "Not connected";
+      heroViewState.copyText = "Open Relay Controls, then press Connect.";
       if (canRenderBadge) {
         heroStatusRenderer.renderBadge({ text: "Not connected", state: "offline", readyCelebrating: false });
       }
@@ -214,6 +219,7 @@ export function createDataStatusController({ elements, deps }) {
       const badgeText = status.account
         ? `Connected • ${formatRelayAccount(status.account)}`
         : "Relay connected";
+      heroViewState.badgeText = badgeText;
       if (canRenderBadge) {
         heroStatusRenderer.renderBadge({
           text: badgeText,
@@ -225,7 +231,8 @@ export function createDataStatusController({ elements, deps }) {
       }
       setDashboardSyncState(isSyncing);
       if (chatCount > 0 && !isSyncing) {
-        setHeroBadgeState("ready");
+        setHeroBadgeState(heroViewState, heroStatusBadge, "ready");
+        heroViewState.copyText = `${formatNumber(chatCount)} chats indexed. Insights are ready.`;
         if (canRenderCopy) {
           heroStatusRenderer.renderCopy(`${formatNumber(chatCount)} chats indexed. Insights are ready.`);
         } else {
@@ -241,10 +248,11 @@ export function createDataStatusController({ elements, deps }) {
           readyCelebrated = true;
         }
       } else {
-        setHeroBadgeState("syncing");
+        setHeroBadgeState(heroViewState, heroStatusBadge, "syncing");
         const copyText = chatCount > 0
           ? `${formatNumber(chatCount)} chats indexed. Syncing updates…`
           : "Connected. Syncing chats…";
+        heroViewState.copyText = copyText;
         if (canRenderCopy) {
           heroStatusRenderer.renderCopy(copyText);
         } else {
@@ -263,13 +271,15 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "waiting_qr") {
-      setHeroBadgeState("waiting");
+      setHeroBadgeState(heroViewState, heroStatusBadge, "waiting");
+      heroViewState.badgeText = "Scan the QR code";
       if (canRenderBadge) {
         heroStatusRenderer.renderBadge({ text: "Scan the QR code", state: "waiting", readyCelebrating: false });
       } else {
         heroStatusBadge.textContent = "Scan the QR code";
       }
       if (status.lastQr) {
+        heroViewState.copyText = "On your phone: Linked Devices -> Link a device -> scan this code.";
         if (canRenderCopy) {
           heroStatusRenderer.renderCopy("On your phone: Linked Devices -> Link a device -> scan this code.");
         } else {
@@ -277,6 +287,7 @@ export function createDataStatusController({ elements, deps }) {
             "On your phone: Linked Devices -> Link a device -> scan this code.";
         }
       } else {
+        heroViewState.copyText = "Press Connect to show a new QR code.";
         if (canRenderCopy) {
           heroStatusRenderer.renderCopy("Press Connect to show a new QR code.");
         } else {
@@ -291,7 +302,9 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "starting") {
-      setHeroBadgeState("starting");
+      setHeroBadgeState(heroViewState, heroStatusBadge, "starting");
+      heroViewState.badgeText = "Starting relay";
+      heroViewState.copyText = "Starting relay…";
       if (canRenderBadge) {
         heroStatusRenderer.renderBadge({ text: "Starting relay", state: "starting", readyCelebrating: false });
       }
@@ -309,7 +322,9 @@ export function createDataStatusController({ elements, deps }) {
       return;
     }
 
-    setHeroBadgeState("offline");
+    setHeroBadgeState(heroViewState, heroStatusBadge, "offline");
+    heroViewState.badgeText = "Not connected";
+    heroViewState.copyText = "Open Relay Controls, then press Connect.";
     if (canRenderBadge) {
       heroStatusRenderer.renderBadge({ text: "Not connected", state: "offline", readyCelebrating: false });
     }
