@@ -58,6 +58,7 @@ describe("event bindings detailed", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          ownsActivityFilterInteractions: true,
           setPanelActionHandlers: vi.fn(() => true),
         },
       },
@@ -179,6 +180,7 @@ describe("event bindings detailed", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          ownsActivityFilterInteractions: true,
           setPanelActionHandlers: vi.fn(() => true),
         },
       },
@@ -229,6 +231,7 @@ describe("event bindings detailed", () => {
           },
           [VUE_BRIDGE_NAMES.dashboardPanels]: {
             ownsParticipantInteractions: true,
+            ownsActivityFilterInteractions: true,
             setPanelActionHandlers: vi.fn(() => true),
           },
         },
@@ -280,7 +283,7 @@ describe("event bindings detailed", () => {
     );
   });
 
-  it("updates weekday filters and brush state", () => {
+  it("does not bind weekday filters and brush state directly", () => {
     const handlers = createHandlers();
     const deps = createDeps();
 
@@ -319,14 +322,10 @@ describe("event bindings detailed", () => {
     weekdayHourEndInput.value = "6";
     weekdayHourStartInput.dispatchEvent(new Event("input"));
 
-    expect(deps.updateWeekdayState).toHaveBeenCalledWith({ filters: { weekdays: false } });
-    expect(deps.updateWeekdayState).toHaveBeenCalledWith({ filters: { weekends: true } });
-    expect(deps.updateWeekdayState).toHaveBeenCalledWith({ filters: { working: false } });
-    expect(deps.updateWeekdayState).toHaveBeenCalledWith({ filters: { offhours: true } });
-    expect(deps.updateWeekdayState).toHaveBeenCalledWith({ brush: { start: 6, end: 22 } });
+    expect(deps.updateWeekdayState).not.toHaveBeenCalled();
   });
 
-  it("updates time-of-day filters, swaps brush values, and applies custom range", async () => {
+  it("does not bind time-of-day filters and brush directly", async () => {
     const handlers = createHandlers();
     const deps = createDeps();
 
@@ -373,15 +372,7 @@ describe("event bindings detailed", () => {
     customApplyButton.click();
     await Promise.resolve();
 
-    expect(deps.updateHourlyState).toHaveBeenCalledWith({
-      filters: {
-        weekdays: false,
-        weekends: true,
-        working: true,
-        offhours: true,
-      },
-    });
-    expect(deps.updateHourlyState).toHaveBeenCalledWith({ brush: { start: 8, end: 20 } });
+    expect(deps.updateHourlyState).not.toHaveBeenCalled();
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
   });
 
@@ -408,7 +399,7 @@ describe("event bindings detailed", () => {
     timeOfDayWeekendToggle.checked = true;
     timeOfDayWeekendToggle.dispatchEvent(new Event("change"));
 
-    expect(deps.updateHourlyState).toHaveBeenCalledTimes(2);
+    expect(deps.updateHourlyState).not.toHaveBeenCalled();
   });
 
   it("does not require legacy participant row-toggle handler wiring when Vue dashboard bridge owns interactions", () => {
@@ -423,6 +414,7 @@ describe("event bindings detailed", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          ownsActivityFilterInteractions: true,
           setPanelActionHandlers: vi.fn(() => true),
         },
       },

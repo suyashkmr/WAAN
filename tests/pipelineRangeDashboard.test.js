@@ -162,6 +162,10 @@ describe("dashboard render controller", () => {
     mocked.applyParticipantSortChange.mockClear();
     mocked.applyParticipantTimeframeChange.mockClear();
     mocked.applyParticipantPreset.mockClear();
+    mocked.syncWeekdayControlsWithState.mockClear();
+    mocked.rerenderWeekdayFromState.mockClear();
+    mocked.syncHourlyControlsWithState.mockClear();
+    mocked.rerenderHourlyFromState.mockClear();
     clearVueBridgeRuntime();
   });
 
@@ -362,6 +366,101 @@ describe("dashboard render controller", () => {
       },
     );
     expect(mocked.renderParticipants).toHaveBeenCalledTimes(4);
+  });
+
+  it("registers weekday and time-of-day action handlers on the dashboard bridge", () => {
+    /** @type {Record<string, Function>} */
+    let panelActionHandlers = {};
+    const syncWeekdayControls = vi.fn();
+    const syncTimeOfDayControls = vi.fn();
+    installDashboardPanelsVueBridge({
+      setPanelActionHandlers(handlers) {
+        panelActionHandlers = handlers;
+        return true;
+      },
+      syncWeekdayControls,
+      syncTimeOfDayControls,
+      renderTimeOfDay: vi.fn(() => true),
+    });
+    const hourlyState = {
+      filters: { weekdays: true, weekends: true, working: true, offhours: true },
+      brush: { start: 0, end: 23 },
+    };
+    const weekdayState = {
+      filters: { weekdays: true, weekends: true, working: true, offhours: true },
+      brush: { start: 0, end: 23 },
+    };
+    const updateHourlyState = vi.fn(patch => {
+      if (patch.filters) hourlyState.filters = { ...hourlyState.filters, ...patch.filters };
+      if (patch.brush) hourlyState.brush = patch.brush;
+    });
+    const updateWeekdayState = vi.fn(patch => {
+      if (patch.filters) weekdayState.filters = { ...weekdayState.filters, ...patch.filters };
+      if (patch.brush) weekdayState.brush = patch.brush;
+    });
+
+    createDashboardRenderController({
+      elements: {
+        summaryEl: document.createElement("div"),
+        sentimentSummaryEl: document.createElement("div"),
+        sentimentTrendNote: document.createElement("div"),
+        sentimentDailyChart: document.createElement("div"),
+        sentimentPositiveList: document.createElement("div"),
+        sentimentNegativeList: document.createElement("div"),
+        messageTypeSummaryEl: document.createElement("div"),
+        messageTypeNoteEl: document.createElement("div"),
+        pollsListEl: document.createElement("div"),
+        pollsTotalEl: document.createElement("div"),
+        pollsCreatorsEl: document.createElement("div"),
+        pollsNote: document.createElement("div"),
+      },
+      deps: {
+        getDatasetLabel: () => "Demo",
+        getDatasetEntries: () => [],
+        getDatasetAnalytics: () => ({ top_senders: [], hourly_heatmap: [] }),
+        getCustomRange: () => null,
+        getHourlyState: () => hourlyState,
+        updateHourlyState,
+        getWeekdayState: () => weekdayState,
+        updateWeekdayState,
+        participantFilters: {},
+        setParticipantView: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        searchPopulateParticipants: vi.fn(),
+        searchRenderResults: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: value => String(value),
+        sanitizeText: text => String(text),
+      },
+    });
+
+    panelActionHandlers["hourly:set-day-filter"]("hourly:set-day-filter", { filterKey: "weekdays", checked: false });
+    panelActionHandlers["hourly:set-hour-filter"]("hourly:set-hour-filter", { filterKey: "working", checked: false });
+    panelActionHandlers["hourly:set-brush"]("hourly:set-brush", { start: 18, end: 6 });
+    panelActionHandlers["weekday:set-day-filter"]("weekday:set-day-filter", { filterKey: "weekdays", checked: false });
+    panelActionHandlers["weekday:set-hour-filter"]("weekday:set-hour-filter", { filterKey: "working", checked: false });
+    panelActionHandlers["weekday:set-brush"]("weekday:set-brush", { start: 20, end: 8 });
+    panelActionHandlers["timeofday:set-day-filter"]("timeofday:set-day-filter", { filterKey: "weekends", checked: false });
+    panelActionHandlers["timeofday:set-brush"]("timeofday:set-brush", { start: 18, end: 6 });
+
+    expect(updateHourlyState).toHaveBeenCalledWith({
+      filters: { weekdays: false, weekends: true, working: true, offhours: true },
+    });
+    expect(updateHourlyState).toHaveBeenCalledWith({
+      filters: { weekdays: false, weekends: true, working: false, offhours: true },
+    });
+    expect(updateHourlyState).toHaveBeenCalledWith({ brush: { start: 6, end: 18 } });
+    expect(updateWeekdayState).toHaveBeenCalledWith({ filters: { weekdays: false } });
+    expect(updateWeekdayState).toHaveBeenCalledWith({ filters: { working: false } });
+    expect(updateWeekdayState).toHaveBeenCalledWith({ brush: { start: 8, end: 20 } });
+    expect(updateHourlyState).toHaveBeenCalledWith({
+      filters: { weekdays: false, weekends: false, working: false, offhours: true },
+    });
+    expect(mocked.syncWeekdayControlsWithState).toHaveBeenCalled();
+    expect(mocked.rerenderWeekdayFromState).toHaveBeenCalled();
+    expect(mocked.syncHourlyControlsWithState).toHaveBeenCalled();
+    expect(mocked.rerenderHourlyFromState).toHaveBeenCalled();
   });
 });
 

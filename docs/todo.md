@@ -699,7 +699,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Removed controller-owned `.stat-download` document scanning; stat export buttons now flow through explicit app-shell refs/runtime config.
         - [x] Routed event-binding bridge ownership checks through injected `globalScope` and removed stale unused toolbar-button refs from the controller wiring surface.
         - [x] Replaced direct participant filter/preset listeners (`participantsTopSelect`, `participantsSortSelect`, `participantsTimeframeSelect`, `participantPresetButtons`) with a dashboard-bridge action path; participant controls now mount through the Vue dashboard island and dispatch bridge-owned actions instead of controller `addEventListener` bindings.
-        - [ ] Replace direct weekday/time-of-day filter and brush listeners in `eventBindings` with Vue-owned dashboard control interaction contracts; keep controller responsibility limited to state writes/contracts only.
+        - [x] Replaced direct weekday/time-of-day filter and brush listeners in `eventBindings` with Vue-owned dashboard control interaction contracts; weekday/time-of-day controls now mount through the dashboard bridge and dispatch bridge-owned actions while controller responsibility stays limited to state writes/contracts.
       - [ ] `js/appShell/bootstrap.js`
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`
@@ -714,6 +714,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Moved hourly brush-input label painting out of `hourlyControlBindings` and into the shared activity meta renderer/label-sync path (`js/appShell/dashboardRender/hourlyControlBindings.js`, `js/appShell/dashboardRender/activityPanels.js`, `tests/activityPanelsDetailed.test.js`).
         - [x] Removed ambient Vue runtime discovery from daily/weekly panel rendering; the controller now consumes injected `vueRuntime` from dashboard wiring.
         - [x] Moved hourly top-hour and hour-brush label presentation behind a dedicated Vue-capable activity-panels meta renderer, so the controller no longer paints those visible summary/label surfaces directly.
+        - [x] Replaced direct hourly filter and brush listeners with a dashboard-bridge action path; hourly controls now mount through the Vue dashboard island and dispatch bridge-owned actions while the legacy hourly control binder remains fallback-only when the bridge is absent.
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
         - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
         - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.

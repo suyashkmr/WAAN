@@ -37,16 +37,6 @@ export function createEventBindingsController({
     downloadSentimentButton,
     statDownloadButtons,
     downloadSearchButton,
-    weekdayToggleWeekdays,
-    weekdayToggleWeekends,
-    weekdayToggleWorking,
-    weekdayToggleOffhours,
-    timeOfDayWeekdayToggle,
-    timeOfDayWeekendToggle,
-    timeOfDayHourStartInput,
-    timeOfDayHourEndInput,
-    weekdayHourStartInput,
-    weekdayHourEndInput,
   } = elements;
 
   const {
@@ -71,9 +61,6 @@ export function createEventBindingsController({
   const {
     updateStatus,
     applyCustomRange,
-    updateWeekdayState,
-    updateHourlyState,
-    getHourlyState,
   } = deps;
 
   function handleForcedChatSelection() {
@@ -98,41 +85,6 @@ export function createEventBindingsController({
       return;
     }
     await applyCustomRange(start, end);
-  }
-
-  /**
-   * @param {string} filterKey
-   * @param {HTMLInputElement | null | undefined} input
-   */
-  function updateWeekdayFilter(filterKey, input) {
-    if (!input) return;
-    updateWeekdayState({ filters: { [filterKey]: input.checked } });
-  }
-
-  /**
-   * @param {"weekdays" | "weekends"} filterKey
-   * @param {HTMLInputElement | null | undefined} input
-   */
-  function updateHourlyFilter(filterKey, input) {
-    if (!input) return;
-    updateHourlyState({
-      filters: {
-        ...getHourlyState().filters,
-        [filterKey]: input.checked,
-      },
-    });
-  }
-
-  /**
-   * @param {HTMLInputElement | null | undefined} startInput
-   * @param {HTMLInputElement | null | undefined} endInput
-   * @param {(payload: { start: number, end: number }) => void} applyBrush
-   */
-  function applyNormalizedBrush(startInput, endInput, applyBrush) {
-    let start = Number(startInput?.value);
-    let end = Number(endInput?.value);
-    if (start > end) [start, end] = [end, start];
-    applyBrush({ start, end });
   }
 
   /**
@@ -216,49 +168,11 @@ export function createEventBindingsController({
     const vueOwnsParticipantInteractions =
       Boolean(dashboardPanelsBridge?.ownsParticipantInteractions)
       && typeof dashboardPanelsBridge?.setPanelActionHandlers === "function";
-    if (!vueOwnsParticipantInteractions) {
-      throw new Error("Dashboard panels bridge participant interaction ownership is required.");
-    }
-
-    if (weekdayToggleWeekdays) {
-      weekdayToggleWeekdays.addEventListener("change", () => updateWeekdayFilter("weekdays", weekdayToggleWeekdays));
-    }
-    if (weekdayToggleWeekends) {
-      weekdayToggleWeekends.addEventListener("change", () => updateWeekdayFilter("weekends", weekdayToggleWeekends));
-    }
-    if (weekdayToggleWorking) {
-      weekdayToggleWorking.addEventListener("change", () => updateWeekdayFilter("working", weekdayToggleWorking));
-    }
-    if (weekdayToggleOffhours) {
-      weekdayToggleOffhours.addEventListener("change", () => updateWeekdayFilter("offhours", weekdayToggleOffhours));
-    }
-
-    if (timeOfDayWeekdayToggle) {
-      timeOfDayWeekdayToggle.addEventListener("change", () => updateHourlyFilter("weekdays", timeOfDayWeekdayToggle));
-    }
-    if (timeOfDayWeekendToggle) {
-      timeOfDayWeekendToggle.addEventListener("change", () => updateHourlyFilter("weekends", timeOfDayWeekendToggle));
-    }
-    if (timeOfDayHourStartInput && timeOfDayHourEndInput) {
-      const updateTimeOfDayBrush = () =>
-        applyNormalizedBrush(
-          timeOfDayHourStartInput,
-          timeOfDayHourEndInput,
-          brush => updateHourlyState({ brush }),
-        );
-      timeOfDayHourStartInput.addEventListener("input", updateTimeOfDayBrush);
-      timeOfDayHourEndInput.addEventListener("input", updateTimeOfDayBrush);
-    }
-
-    if (weekdayHourStartInput && weekdayHourEndInput) {
-      const updateBrush = () =>
-        applyNormalizedBrush(
-          weekdayHourStartInput,
-          weekdayHourEndInput,
-          brush => updateWeekdayState({ brush }),
-        );
-      weekdayHourStartInput.addEventListener("input", updateBrush);
-      weekdayHourEndInput.addEventListener("input", updateBrush);
+    const vueOwnsActivityFilterInteractions =
+      Boolean(dashboardPanelsBridge?.ownsActivityFilterInteractions)
+      && typeof dashboardPanelsBridge?.setPanelActionHandlers === "function";
+    if (!vueOwnsParticipantInteractions || !vueOwnsActivityFilterInteractions) {
+      throw new Error("Dashboard panels bridge interaction ownership is required.");
     }
   }
 

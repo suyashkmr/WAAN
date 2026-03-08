@@ -6,6 +6,10 @@ import {
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../../vue/dashboardPanelsIsland.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
+import {
+  syncHourlyControls,
+  syncWeekdayControls,
+} from "./activityPanelControlSync.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
 import {
   buildHourLabels,
@@ -143,7 +147,12 @@ export function createActivityPanelsController({ elements, deps }) {
     };
     renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options });
     if (!hourlyControlsInitialised) {
-      initHourlyControls();
+      const bridgeOwnsHourlyControls = renderWithDashboardPanelsBridge("syncHourlyControls", {
+        filters: getHourlyState().filters,
+        brush: getHourlyState().brush,
+        labels: buildHourLabels(getHourlyState().brush.start, getHourlyState().brush.end),
+      });
+      if (!bridgeOwnsHourlyControls) initHourlyControls();
       hourlyControlsInitialised = true;
     }
     initStateSubscriptions();
@@ -217,22 +226,19 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function syncWeekdayControlsWithState() {
-    /** @type {FilterState} */
-    const state = getWeekdayState();
-    const { filters, brush } = state;
-    if (weekdayToggleWeekdays) weekdayToggleWeekdays.checked = filters.weekdays;
-    if (weekdayToggleWeekends) weekdayToggleWeekends.checked = filters.weekends;
-    if (weekdayToggleWorking) weekdayToggleWorking.checked = filters.working;
-    if (weekdayToggleOffhours) weekdayToggleOffhours.checked = filters.offhours;
-    if (weekdayHourStartInput) weekdayHourStartInput.value = String(brush.start);
-    if (weekdayHourEndInput) weekdayHourEndInput.value = String(brush.end);
-    syncHourLabelPair(
+    syncWeekdayControls({
+      state: getWeekdayState(),
+      renderWithDashboardPanelsBridge,
+      weekdayToggleWeekdays,
+      weekdayToggleWeekends,
+      weekdayToggleWorking,
+      weekdayToggleOffhours,
+      weekdayHourStartInput,
+      weekdayHourEndInput,
       weekdayHourStartLabel,
       weekdayHourEndLabel,
-      buildHourLabels(brush.start, brush.end),
-      () => typeof activityPanelsMetaRenderer?.renderWeekdayBrushLabels === "function",
-      labels => activityPanelsMetaRenderer?.renderWeekdayBrushLabels?.(labels),
-    );
+      activityPanelsMetaRenderer,
+    });
   }
 
   function rerenderHourlyFromState() {
@@ -304,33 +310,25 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function syncHourlyControlsWithState() {
-    /** @type {FilterState} */
-    const state = getHourlyState();
-    if (filterWeekdays) filterWeekdays.checked = state.filters.weekdays;
-    if (filterWeekends) filterWeekends.checked = state.filters.weekends;
-    if (filterWorking) filterWorking.checked = state.filters.working;
-    if (filterOffhours) filterOffhours.checked = state.filters.offhours;
-    if (hourlyBrushStartInput) hourlyBrushStartInput.value = String(state.brush.start);
-    if (hourlyBrushEndInput) hourlyBrushEndInput.value = String(state.brush.end);
-    const labels = buildHourLabels(state.brush.start, state.brush.end);
-    syncHourLabelPair(
+    syncHourlyControls({
+      state: getHourlyState(),
+      renderWithDashboardPanelsBridge,
+      filterWeekdays,
+      filterWeekends,
+      filterWorking,
+      filterOffhours,
+      hourlyBrushStartInput,
+      hourlyBrushEndInput,
       hourlyBrushStartLabel,
       hourlyBrushEndLabel,
-      labels,
-      () => typeof activityPanelsMetaRenderer?.renderHourlyBrushLabels === "function",
-      nextLabels => activityPanelsMetaRenderer?.renderHourlyBrushLabels?.(nextLabels),
-    );
-    if (timeOfDayWeekdayToggle) timeOfDayWeekdayToggle.checked = state.filters.weekdays;
-    if (timeOfDayWeekendToggle) timeOfDayWeekendToggle.checked = state.filters.weekends;
-    if (timeOfDayHourStartInput) timeOfDayHourStartInput.value = String(state.brush.start);
-    if (timeOfDayHourEndInput) timeOfDayHourEndInput.value = String(state.brush.end);
-    syncHourLabelPair(
+      timeOfDayWeekdayToggle,
+      timeOfDayWeekendToggle,
+      timeOfDayHourStartInput,
+      timeOfDayHourEndInput,
       timeOfDayHourStartLabel,
       timeOfDayHourEndLabel,
-      labels,
-      () => typeof activityPanelsMetaRenderer?.renderTimeOfDayBrushLabels === "function",
-      nextLabels => activityPanelsMetaRenderer?.renderTimeOfDayBrushLabels?.(nextLabels),
-    );
+      activityPanelsMetaRenderer,
+    });
   }
 
   return {

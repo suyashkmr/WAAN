@@ -145,4 +145,98 @@ describe("dashboard panels island", () => {
     expect(topCountHandler).toHaveBeenCalledWith({ value: "10" });
     expect(document.querySelector('[data-participants-preset="quiet"]')?.getAttribute("aria-pressed")).toBe("false");
   });
+
+  it("renders hourly, weekday, and time-of-day controls through the dashboard bridge and dispatches actions", async () => {
+    document.body.innerHTML = `
+      <div id="highlight-list"></div>
+      <table id="top-senders"><tbody></tbody></table>
+      <div class="hourly-controls">
+        <label class="segmented-option"><input type="checkbox" id="filter-weekdays" checked><span>Weekdays</span></label>
+        <label class="segmented-option"><input type="checkbox" id="filter-weekends" checked><span>Weekends</span></label>
+        <label class="segmented-option"><input type="checkbox" id="filter-working" checked><span>Working</span></label>
+        <label class="segmented-option"><input type="checkbox" id="filter-offhours" checked><span>Off hours</span></label>
+        <input type="range" id="hourly-brush-start" min="0" max="23" value="0">
+        <input type="range" id="hourly-brush-end" min="0" max="23" value="23">
+        <span id="hourly-brush-start-label">00:00</span>
+        <span id="hourly-brush-end-label">23:00</span>
+      </div>
+      <div class="weekday-controls">
+        <label class="segmented-option"><input type="checkbox" id="weekday-toggle-weekdays" checked><span>Weekdays</span></label>
+        <label class="segmented-option"><input type="checkbox" id="weekday-toggle-weekends" checked><span>Weekends</span></label>
+        <label class="segmented-option"><input type="checkbox" id="weekday-toggle-working" checked><span>Work hours</span></label>
+        <label class="segmented-option"><input type="checkbox" id="weekday-toggle-offhours" checked><span>Off hours</span></label>
+        <input type="range" id="weekday-hour-start" min="0" max="23" value="0">
+        <input type="range" id="weekday-hour-end" min="0" max="23" value="23">
+        <span id="weekday-hour-start-label">00:00</span>
+        <span id="weekday-hour-end-label">23:00</span>
+      </div>
+      <div id="weekday-chart"></div>
+      <div class="timeofday-controls">
+        <label class="segmented-option"><input type="checkbox" id="timeofday-toggle-weekdays" checked><span>Weekdays</span></label>
+        <label class="segmented-option"><input type="checkbox" id="timeofday-toggle-weekends" checked><span>Weekends</span></label>
+        <input type="range" id="timeofday-hour-start" min="0" max="23" value="0">
+        <input type="range" id="timeofday-hour-end" min="0" max="23" value="23">
+        <span id="timeofday-hour-start-label">00:00</span>
+        <span id="timeofday-hour-end-label">23:00</span>
+      </div>
+      <div id="timeofday-chart"></div>
+      <div id="hourly-chart"></div>
+    `;
+
+    const fakeWindow = {
+      document,
+      console,
+      Vue: await import("vue"),
+    };
+
+    mountDashboardPanelsIsland({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope: fakeWindow });
+    expect(bridge?.ownsActivityFilterInteractions).toBe(true);
+
+    const hourlyBrushHandler = vi.fn();
+    const weekdayBrushHandler = vi.fn();
+    const timeOfDayFilterHandler = vi.fn();
+    bridge?.setPanelActionHandlers?.({
+      "hourly:set-brush": (_actionId, payload) => hourlyBrushHandler(payload),
+      "weekday:set-brush": (_actionId, payload) => weekdayBrushHandler(payload),
+      "timeofday:set-day-filter": (_actionId, payload) => timeOfDayFilterHandler(payload),
+    });
+    bridge?.syncHourlyControls?.({
+      filters: { weekdays: false, weekends: true, working: false, offhours: true },
+      brush: { start: 4, end: 15 },
+      labels: { start: "04:00", end: "15:00" },
+    });
+    bridge?.syncWeekdayControls?.({
+      filters: { weekdays: true, weekends: false, working: true, offhours: false },
+      brush: { start: 6, end: 18 },
+      labels: { start: "06:00", end: "18:00" },
+    });
+    bridge?.syncTimeOfDayControls?.({
+      filters: { weekdays: false, weekends: true },
+      brush: { start: 8, end: 20 },
+      labels: { start: "08:00", end: "20:00" },
+    });
+    await fakeWindow.Vue.nextTick();
+
+    expect(document.getElementById("hourly-brush-start")?.value).toBe("4");
+    expect(document.getElementById("weekday-hour-start")?.value).toBe("6");
+    expect(document.getElementById("timeofday-toggle-weekdays")?.checked).toBe(false);
+
+    const hourlyEndInput = document.getElementById("hourly-brush-end");
+    if (hourlyEndInput) {
+      hourlyEndInput.value = "14";
+      hourlyEndInput.dispatchEvent(new Event("input"));
+    }
+    const weekdayEndInput = document.getElementById("weekday-hour-end");
+    if (weekdayEndInput) {
+      weekdayEndInput.value = "16";
+      weekdayEndInput.dispatchEvent(new Event("input"));
+    }
+    document.getElementById("timeofday-toggle-weekdays")?.dispatchEvent(new Event("change"));
+    await fakeWindow.Vue.nextTick();
+
+    expect(hourlyBrushHandler).toHaveBeenCalledWith({ start: 4, end: 14 });
+    expect(weekdayBrushHandler).toHaveBeenCalledWith({ start: 6, end: 16 });
+    expect(timeOfDayFilterHandler).toHaveBeenCalledWith({ filterKey: "weekdays", checked: false });
+  });
 });

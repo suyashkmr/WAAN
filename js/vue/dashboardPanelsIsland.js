@@ -1,9 +1,21 @@
 import { getWeekdayState } from "../state.js";
+import {
+  createHourlyControlsState,
+  createTimeOfDayControlsState,
+  createWeekdayControlsState,
+  syncActivityControlsState,
+} from "./dashboardActivityControlsState.js";
+import { createDashboardMetaRenderHelpers } from "./dashboardPanelsMetaHelpers.js";
 import { createParticipantsRoot } from "./dashboardParticipantsRoot.js";
 import {
   createParticipantControlsRoot,
   createParticipantQuickFiltersRoot,
 } from "./dashboardParticipantControlsRoot.js";
+import {
+  createHourlyControlsRoot,
+  createWeekdayControlsRoot,
+  createTimeOfDayControlsRoot,
+} from "./dashboardActivityControlsRoot.js";
 import { createHighlightsRoot, normalizeHighlightEntry } from "./dashboardHighlightsRoot.js";
 import { createHourlyRoot, renderHourlyFromPayload } from "./dashboardHourlyRoot.js";
 import { createTimeOfDayModel, createTimeOfDayRoot } from "./dashboardTimeOfDayRoot.js";
@@ -25,6 +37,9 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   const participantsMountEl = doc.querySelector("#top-senders tbody");
   const participantControlsMountEl = doc.querySelector(".participants-controls");
   const participantQuickFiltersMountEl = doc.querySelector(".participants-quick-filters");
+  const hourlyControlsMountEl = doc.querySelector(".hourly-controls");
+  const weekdayControlsMountEl = doc.querySelector(".weekday-controls");
+  const timeOfDayControlsMountEl = doc.querySelector(".timeofday-controls");
   const timeOfDayMountEl = doc.getElementById("timeofday-chart");
   let hourlyMountEl = doc.getElementById("hourly-chart");
   let weekdayMountEl = doc.getElementById("weekday-chart");
@@ -55,46 +70,16 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     anomalyBadges: [],
     anomalyMessage: "No hourly surprises detected.",
   });
-  const hourlyMetaMountedEls = new WeakSet();
   const weekdayState = reactive({
     model: null,
   });
+  const hourlyControlsState = createHourlyControlsState(doc, VueRuntime);
+  const weekdayControlsState = createWeekdayControlsState(doc, VueRuntime);
+  const timeOfDayControlsState = createTimeOfDayControlsState(doc, VueRuntime);
   const PrimeDataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
   const usePrimeDataView = Boolean(PrimeDataView && (typeof PrimeDataView === "function" || typeof PrimeDataView === "object"));
   const { dispatchPanelAction, setPanelActionHandlers } = createPanelActionDispatcher();
-
-  function renderMetaText(container, text) {
-    if (!container) return;
-    if (!hourlyMetaMountedEls.has(container)) {
-      container.textContent = "";
-      hourlyMetaMountedEls.add(container);
-    }
-    render(text ? h("span", null, text) : null, container);
-  }
-
-  function renderHourlyAnomalies(container) {
-    if (!container) return;
-    if (!hourlyMetaMountedEls.has(container)) {
-      container.textContent = "";
-      hourlyMetaMountedEls.add(container);
-    }
-    if (hourlyState.anomalyBadges.length) {
-      render(
-        h(
-          VueRuntime.Fragment || "div",
-          null,
-          hourlyState.anomalyBadges.map((text, index) =>
-            h("span", { class: "badge", key: `${index}-${text}` }, text)),
-        ),
-        container,
-      );
-      return;
-    }
-    render(
-      h("span", null, hourlyState.anomalyMessage || "No hourly surprises detected."),
-      container,
-    );
-  }
+  const { renderMetaText, renderHourlyAnomalies } = createDashboardMetaRenderHelpers({ VueRuntime, hourlyState });
 
   const HighlightsRoot = createHighlightsRoot({ h, state, PrimeDataView, usePrimeDataView, globalScope });
 
@@ -128,6 +113,36 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     );
     createApp(ParticipantsQuickFiltersRoot).mount(participantQuickFiltersMountEl);
     participantQuickFiltersMountEl.dataset.vueParticipantsQuickFiltersMounted = "true";
+  }
+
+  if (hourlyControlsMountEl && hourlyControlsMountEl.dataset.vueHourlyControlsMounted !== "true") {
+    const HourlyControlsRoot = createHourlyControlsRoot(
+      h,
+      hourlyControlsState,
+      dispatchPanelAction,
+    );
+    createApp(HourlyControlsRoot).mount(hourlyControlsMountEl);
+    hourlyControlsMountEl.dataset.vueHourlyControlsMounted = "true";
+  }
+
+  if (weekdayControlsMountEl && weekdayControlsMountEl.dataset.vueWeekdayControlsMounted !== "true") {
+    const WeekdayControlsRoot = createWeekdayControlsRoot(
+      h,
+      weekdayControlsState,
+      dispatchPanelAction,
+    );
+    createApp(WeekdayControlsRoot).mount(weekdayControlsMountEl);
+    weekdayControlsMountEl.dataset.vueWeekdayControlsMounted = "true";
+  }
+
+  if (timeOfDayControlsMountEl && timeOfDayControlsMountEl.dataset.vueTimeOfDayControlsMounted !== "true") {
+    const TimeOfDayControlsRoot = createTimeOfDayControlsRoot(
+      h,
+      timeOfDayControlsState,
+      dispatchPanelAction,
+    );
+    createApp(TimeOfDayControlsRoot).mount(timeOfDayControlsMountEl);
+    timeOfDayControlsMountEl.dataset.vueTimeOfDayControlsMounted = "true";
   }
 
   if (timeOfDayMountEl && timeOfDayMountEl.dataset.vueTimeOfDayMounted !== "true") {
@@ -208,6 +223,27 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       return true;
     },
     /**
+     * @param {{ filters?: { weekdays?: boolean, weekends?: boolean, working?: boolean, offhours?: boolean }, brush?: { start?: number|string, end?: number|string }, labels?: { start?: string, end?: string } } | null | undefined} nextState
+     * @returns {boolean}
+     */
+    syncHourlyControls(nextState) {
+      return syncActivityControlsState(hourlyControlsState, nextState);
+    },
+    /**
+     * @param {{ filters?: { weekdays?: boolean, weekends?: boolean, working?: boolean, offhours?: boolean }, brush?: { start?: number|string, end?: number|string }, labels?: { start?: string, end?: string } } | null | undefined} nextState
+     * @returns {boolean}
+     */
+    syncWeekdayControls(nextState) {
+      return syncActivityControlsState(weekdayControlsState, nextState);
+    },
+    /**
+     * @param {{ filters?: { weekdays?: boolean, weekends?: boolean }, brush?: { start?: number|string, end?: number|string }, labels?: { start?: string, end?: string } } | null | undefined} nextState
+     * @returns {boolean}
+     */
+    syncTimeOfDayControls(nextState) {
+      return syncActivityControlsState(timeOfDayControlsState, nextState);
+    },
+    /**
      * @param {unknown} analytics
      * @returns {boolean}
      */
@@ -260,6 +296,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     },
     setPanelActionHandlers,
     ownsParticipantInteractions: true,
+    ownsActivityFilterInteractions: true,
   }, { globalScope });
 }
 

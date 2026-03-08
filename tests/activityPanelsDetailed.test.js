@@ -209,6 +209,42 @@ describe("activityPanels detailed", () => {
     expect(elements.weekdayHourEndLabel.textContent).toBe("20:00");
   });
 
+  it("prefers bridge-owned hourly controls over DOM sync and listeners when available", () => {
+    const bridge = installDashboardPanelsBridge();
+    bridge.syncHourlyControls = vi.fn(() => true);
+    const elements = baseElements();
+    const hourlyState = {
+      filters: { weekdays: false, weekends: true, working: false, offhours: true },
+      brush: { start: 4, end: 15 },
+    };
+
+    const controller = createActivityPanelsController({
+      elements,
+      deps: {
+        getCustomRange: () => null,
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => hourlyState,
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+      },
+    });
+
+    controller.renderHourlyPanel({ hourly_heatmap: [], hourly_summary: null });
+    controller.syncHourlyControlsWithState();
+
+    expect(bridge.syncHourlyControls).toHaveBeenCalledWith({
+      filters: hourlyState.filters,
+      brush: hourlyState.brush,
+      labels: { start: "04:00", end: "15:00" },
+    });
+    expect(elements.filterWeekdays.checked).toBe(false);
+    expect(elements.hourlyBrushStartInput.value).toBe("");
+  });
+
   it("initializes hourly controls once and normalizes toggles/brush", () => {
     const bridge = installDashboardPanelsBridge();
     const filterWeekdays = document.createElement("input");

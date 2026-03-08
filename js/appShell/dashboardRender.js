@@ -4,17 +4,18 @@ import { renderSummaryCards as renderSummarySection } from "../analytics/summary
 import { renderSentimentSection } from "../analytics/sentiment.js";
 import { renderMessageTypesSection } from "../analytics/messageTypes.js";
 import { renderPollsSection } from "../analytics/polls.js";
+import { registerDashboardPanelActionHandlers } from "./dashboardPanelActions.js";
 import { createDeferredRenderScheduler } from "./domCache.js";
 import { createActivityPanelsController } from "./dashboardRender/activityPanels.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
 import { createActivityPanelsMetaRenderer } from "../vue/activityPanelsMetaRenderer.js";
 import {
-  createParticipantsPanelController,
-  applyParticipantTopChange,
+  applyParticipantPreset,
   applyParticipantSortChange,
   applyParticipantTimeframeChange,
-  applyParticipantPreset,
+  applyParticipantTopChange,
+  createParticipantsPanelController,
   toggleParticipantRow,
 } from "./dashboardRender/participantsPanel.js";
 import { createHighlightsStatsController } from "./dashboardRender/highlightsStats.js";
@@ -75,46 +76,24 @@ export function createDashboardRenderController({ elements, deps }) {
     if (analytics) renderParticipants(analytics);
   }
 
-  function registerParticipantActionHandlers() {
+  function initDashboardPanelActionHandlers() {
     const dashboardPanelsBridge = resolveDashboardPanelsBridgeForParticipants();
-    if (typeof dashboardPanelsBridge?.setPanelActionHandlers !== "function") return;
-    dashboardPanelsBridge.setPanelActionHandlers({
-      "participants:set-top-count": (
-        /** @type {string} */ _actionId,
-        /** @type {{ value?: string } | null | undefined} */ payload,
-      ) => {
-        applyParticipantTopChange(participantFilters, payload?.value);
-        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
-        rerenderParticipantsIfAvailable();
-      },
-      "participants:set-sort-mode": (
-        /** @type {string} */ _actionId,
-        /** @type {{ value?: string } | null | undefined} */ payload,
-      ) => {
-        applyParticipantSortChange(participantFilters, payload?.value);
-        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
-        rerenderParticipantsIfAvailable();
-      },
-      "participants:set-timeframe": (
-        /** @type {string} */ _actionId,
-        /** @type {{ value?: string } | null | undefined} */ payload,
-      ) => {
-        applyParticipantTimeframeChange(participantFilters, payload?.value);
-        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
-        rerenderParticipantsIfAvailable();
-      },
-      "participants:apply-preset": (
-        /** @type {string} */ _actionId,
-        /** @type {{ preset?: string } | null | undefined} */ payload,
-      ) => {
-        applyParticipantPreset(participantFilters, payload?.preset, {
-          participantsTopSelect: null,
-          participantsSortSelect: null,
-          participantsTimeframeSelect: null,
-        });
-        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
-        rerenderParticipantsIfAvailable();
-      },
+    registerDashboardPanelActionHandlers({
+      dashboardPanelsBridge,
+      participantFilters,
+      rerenderParticipantsIfAvailable,
+      getHourlyState,
+      updateHourlyState,
+      getWeekdayState,
+      updateWeekdayState,
+      ensureWeekdayDayFilters,
+      ensureWeekdayHourFilters,
+      syncWeekdayControlsWithState,
+      rerenderWeekdayFromState,
+      ensureDayFilters,
+      ensureHourFilters,
+      syncHourlyControlsWithState,
+      rerenderHourlyFromState,
     });
   }
 
@@ -128,7 +107,6 @@ export function createDashboardRenderController({ elements, deps }) {
     },
   });
   const { renderParticipants } = participantsPanelController;
-  registerParticipantActionHandlers();
 
   const activityPanelsMetaRenderer = createActivityPanelsMetaRenderer({
     elements,
@@ -307,6 +285,8 @@ export function createDashboardRenderController({ elements, deps }) {
     const renderFinishedAt = globalThis.performance?.now?.() ?? Date.now();
     logPerfDuration("dashboard.total_render", renderFinishedAt - renderStartedAt, /** @type {any} */ ({ totalMessages }));
   }
+
+  initDashboardPanelActionHandlers();
 
   return {
     renderDashboard,
