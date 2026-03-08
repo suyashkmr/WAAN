@@ -14,7 +14,7 @@ describe("search participant UI rendering", () => {
   });
 
   it("renders participant options with Vue runtime and clears prefilled markup", () => {
-    globalThis.Vue = { h, render, Fragment };
+    const vueRuntime = { h, render, Fragment };
     const participantSelect = document.createElement("select");
     participantSelect.innerHTML = '<option value="">All participants</option>';
 
@@ -25,6 +25,7 @@ describe("search participant UI rendering", () => {
         { type: "message", sender: "Ana" },
         { type: "system", sender: "Ignored" },
       ],
+      vueRuntime,
       getDatasetFingerprint: () => "fp-1",
       getSearchState: () => ({ query: { participant: "" } }),
       buildParticipantOptionsCacheKey: ({ datasetFingerprint, entriesLength, selectedStateValue, selectedUiValue }) =>
@@ -48,6 +49,7 @@ describe("search participant UI rendering", () => {
       getDatasetFingerprint: () => "fp-1",
       getSearchState: () => ({ query: { participant: "" } }),
       buildParticipantOptionsCacheKey: ({ datasetFingerprint }) => datasetFingerprint,
+      vueRuntime: null,
     });
 
     expect(() => controller.populateParticipants()).toThrow(

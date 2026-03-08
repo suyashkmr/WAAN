@@ -113,6 +113,7 @@ function buildDependencies() {
     updateStatus: vi.fn(),
     filterEntriesByRange: vi.fn(entries => entries),
     normalizeRangeValue: vi.fn(value => value),
+    vueRuntime: { h, render, Fragment },
   };
 }
 

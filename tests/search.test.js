@@ -9,6 +9,8 @@ import {
 } from "../js/state.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
+const testVueRuntime = { h, render, Fragment };
+
 function buildElements() {
   const form = document.createElement("form");
   const keywordInput = document.createElement("input");
@@ -95,7 +97,6 @@ describe("search controller", () => {
   let statusEvents;
 
   beforeEach(() => {
-    globalThis.Vue = { h, render, Fragment };
     workerInstances = [];
     statusEvents = [];
     resetSearchState();
@@ -159,7 +160,6 @@ describe("search controller", () => {
 
   afterEach(() => {
     globalThis.Worker = OriginalWorker;
-    delete globalThis.Vue;
     vi.restoreAllMocks();
     clearVueBridgeRuntime();
   });
@@ -173,7 +173,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
-    const controller = createSearchController({ elements, options: { resultLimit: 10 } });
+    const controller = createSearchController({ elements, options: { resultLimit: 10, vueRuntime: testVueRuntime } });
 
     controller.populateParticipants();
 
@@ -196,7 +196,7 @@ describe("search controller", () => {
 
     const elements = buildElements();
     installSearchSavedBridge(elements);
-    const controller = createSearchController({ elements, options: { resultLimit: 10 } });
+    const controller = createSearchController({ elements, options: { resultLimit: 10, vueRuntime: testVueRuntime } });
     controller.init();
 
     elements.keywordInput.value = "world";
@@ -220,7 +220,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
-    const controller = createSearchController({ elements });
+    const controller = createSearchController({ elements, options: { vueRuntime: testVueRuntime } });
     controller.init();
 
     elements.startInput.value = "2025-01-10";
@@ -233,7 +233,7 @@ describe("search controller", () => {
   it("renders recovery state when search runs without dataset", () => {
     const elements = buildElements();
     installSearchSavedBridge(elements);
-    const controller = createSearchController({ elements });
+    const controller = createSearchController({ elements, options: { vueRuntime: testVueRuntime } });
     controller.init();
 
     elements.keywordInput.value = "hello";
@@ -269,7 +269,7 @@ describe("search controller", () => {
       },
     });
 
-    const controller = createSearchController({ elements, options: { resultLimit: 10 } });
+    const controller = createSearchController({ elements, options: { resultLimit: 10, vueRuntime: testVueRuntime } });
     controller.init();
 
     elements.keywordInput.value = "world";
@@ -297,7 +297,7 @@ describe("search controller", () => {
     installSearchSavedBridge(elements, {
       setPanelActionHandlers: vi.fn(() => true),
     });
-    const controller = createSearchController({ elements });
+    const controller = createSearchController({ elements, options: { vueRuntime: testVueRuntime } });
     controller.init();
 
     elements.keywordInput.value = "reset me";
@@ -353,7 +353,7 @@ describe("search controller", () => {
 
     const elements = buildElements();
     installSearchSavedBridge(elements);
-    const controller = createSearchController({ elements, options: { resultLimit: 10 } });
+    const controller = createSearchController({ elements, options: { resultLimit: 10, vueRuntime: testVueRuntime } });
     controller.init();
     elements.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await Promise.resolve();

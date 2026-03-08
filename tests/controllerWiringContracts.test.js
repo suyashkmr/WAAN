@@ -261,7 +261,7 @@ describe("controllerWiring contracts", () => {
         weekdayToggleOffhours: dom.weekdayToggleOffhours,
         weekdayHourStartInput: dom.weekdayHourStartInput,
         weekdayHourEndInput: dom.weekdayHourEndInput,
-        vueRuntime: undefined,
+        vueRuntime: dom.vueRuntime ?? globalThis.Vue,
       }),
     );
     const dashboardRuntimeConfig = h.createDashboardRuntime.mock.calls[0]?.[0];

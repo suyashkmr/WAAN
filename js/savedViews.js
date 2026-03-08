@@ -71,7 +71,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     filterEntriesByRange,
     normalizeRangeValue,
     computeAnalyticsWithWorker,
-    vueRuntime = typeof globalThis !== "undefined" ? globalThis.Vue : null,
+    vueRuntime = null,
   } = dependencies;
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";

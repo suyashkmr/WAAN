@@ -71,7 +71,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
 
   const resultLimit = Number.isFinite(options.resultLimit) ? options.resultLimit : DEFAULT_RESULT_LIMIT;
   const now = typeof options.now === "function" ? options.now : defaultNow;
-  const vueRuntime = options.vueRuntime ?? (typeof globalThis !== "undefined" ? globalThis.Vue : null);
+  const vueRuntime = options.vueRuntime ?? null;
   let activeSearchRequest = 0;
   const searchWorkerClient = createSearchWorkerClient();
   const {

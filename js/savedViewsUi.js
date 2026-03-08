@@ -36,7 +36,7 @@ export function createSavedViewsUiController({
     formatSavedViewRange,
     dataAvailableGetter,
     onPanelAction,
-    vueRuntime = typeof globalThis !== "undefined" ? globalThis.Vue : null,
+    vueRuntime = null,
   } = deps;
 
   /**

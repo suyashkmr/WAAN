@@ -114,7 +114,7 @@ export function createRangeSearchSavedViewsWiring({
     options: {
       resultLimit: constants.searchResultLimit,
       now: () => globalThis.performance?.now?.() ?? Date.now(),
-      vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
+      vueRuntime: dom.vueRuntime ?? (typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null),
     },
   });
 
@@ -178,7 +178,7 @@ export function createRangeSearchSavedViewsWiring({
       filterEntriesByRange,
       normalizeRangeValue,
       computeAnalyticsWithWorker,
-      vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
+      vueRuntime: dom.vueRuntime ?? (typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null),
     },
   });
 

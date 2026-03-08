@@ -4,7 +4,7 @@ export function createSearchParticipantUiController({
   getDatasetFingerprint,
   getSearchState,
   buildParticipantOptionsCacheKey,
-  vueRuntime = typeof globalThis !== "undefined" ? globalThis.Vue : null,
+  vueRuntime = null,
 }) {
   let participantOptionsCacheKey = "";
   let vueMounted = false;
