@@ -27,6 +27,8 @@ export function createRelayLogController({
   getRemoteChatCount,
   fetchJson,
   updateStatus,
+  vueRuntime = null,
+  globalScope = globalThis,
 }) {
   const relayLogState = {
     /** @type {string[]} */
@@ -37,31 +39,51 @@ export function createRelayLogController({
     reconnectTimer: null,
     drawerOpen: false,
     vueMounted: false,
+    connectionLabel: "",
   };
 
   /**
    * @param {string} text
    */
   function setLogConnectionLabel(text) {
-    if (logDrawerConnectionLabel) {
-      logDrawerConnectionLabel.textContent = text;
-    }
+    relayLogState.connectionLabel = String(text || "");
+    renderRelayLogConnectionLabel();
   }
 
-  function renderRelayLogs() {
-    if (!logDrawerList) return;
-    const VueRuntime = /** @type {any} */ (globalThis)?.Vue;
+  function getRelayLogVueRuntime() {
+    const candidate = vueRuntime || /** @type {any} */ (globalScope)?.Vue || null;
     const canRenderWithVue = Boolean(
-      VueRuntime &&
-      typeof VueRuntime.h === "function" &&
-      typeof VueRuntime.render === "function" &&
-      VueRuntime.Fragment,
+      candidate &&
+      typeof candidate.h === "function" &&
+      typeof candidate.render === "function" &&
+      candidate.Fragment,
     );
     if (!canRenderWithVue) {
       throw new Error("Vue runtime is required for relay log rendering.");
     }
-    const { h, render, Fragment } = VueRuntime;
-    const runtimeScope = /** @type {any} */ (globalThis);
+    return candidate;
+  }
+
+  function renderRelayLogConnectionLabel() {
+    if (!logDrawerConnectionLabel) return;
+    const candidate = vueRuntime || /** @type {any} */ (globalScope)?.Vue || null;
+    const canRenderWithVue = Boolean(
+      candidate &&
+      typeof candidate.h === "function" &&
+      typeof candidate.render === "function",
+    );
+    if (!canRenderWithVue) {
+      logDrawerConnectionLabel.textContent = relayLogState.connectionLabel;
+      return;
+    }
+    const { h, render } = /** @type {{ h: (...args: any[]) => any, render: (...args: any[]) => any }} */ (candidate);
+    render(relayLogState.connectionLabel ? h("span", null, relayLogState.connectionLabel) : null, logDrawerConnectionLabel);
+  }
+
+  function renderRelayLogs() {
+    if (!logDrawerList) return;
+    const { h, render, Fragment } = getRelayLogVueRuntime();
+    const runtimeScope = /** @type {any} */ (globalScope);
     const DataView = runtimeScope?.PrimeVue?.DataView || runtimeScope?.primevue?.DataView || null;
     const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
     if (!relayLogState.vueMounted) {
@@ -113,6 +135,7 @@ export function createRelayLogController({
     logDrawerEl.setAttribute("aria-hidden", "false");
     relayLogState.drawerOpen = true;
     logDrawerToggleButton?.removeAttribute("data-has-unread");
+    renderRelayLogConnectionLabel();
     renderRelayLogs();
   }
 

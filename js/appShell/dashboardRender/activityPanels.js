@@ -71,7 +71,9 @@ export function createActivityPanelsController({ elements, deps }) {
     subscribeAppShellUiState,
     formatNumber,
     formatFloat,
+    vueRuntime = null,
   } = deps;
+  const resolvedVueRuntime = vueRuntime ?? /** @type {any} */ (globalThis)?.Vue ?? null;
 
   let hourlyControlsInitialised = false;
   let stateSubscriptionsInitialised = false;
@@ -146,7 +148,7 @@ export function createActivityPanelsController({ elements, deps }) {
     renderDailySection(analytics.daily_counts, {
       container: dailyChartEl,
       averageEl: dailyAvgDayEl,
-    }, /** @type {any} */ (globalThis).Vue ?? null);
+    }, resolvedVueRuntime);
   }
 
   /** @param {Record<string, any>} analytics */
@@ -164,14 +166,14 @@ export function createActivityPanelsController({ elements, deps }) {
           customRange && customRange.type === "custom"
             ? { start: customRange.start, end: customRange.end }
             : null,
-        /** @param {{ start?: string, end?: string }} range */
-        onSelectRange: range => {
-          if (!range?.start || !range?.end) return;
-          applyCustomRange(range.start, range.end);
-          if (rangeSelect) rangeSelect.value = "custom";
-        },
+      /** @param {{ start?: string, end?: string }} range */
+      onSelectRange: range => {
+        if (!range?.start || !range?.end) return;
+        applyCustomRange(range.start, range.end);
+        if (rangeSelect) rangeSelect.value = "custom";
       },
-      /** @type {any} */ (globalThis).Vue ?? null,
+      },
+      resolvedVueRuntime,
     );
   }
 

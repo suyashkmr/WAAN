@@ -709,6 +709,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
       - [ ] `js/appShell/dashboardRender/activityPanels.js`
+        - [x] Removed ambient Vue runtime discovery from daily/weekly panel rendering; the controller now consumes injected `vueRuntime` from dashboard wiring.
       - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
         - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
         - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.
@@ -743,7 +744,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Removed ambient Vue runtime discovery from weekly activity rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
       - [ ] `js/analytics/polls.js`
         - [x] Removed ambient Vue runtime discovery from polls rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
+      - [ ] `js/analytics/sentiment.js`
+        - [x] Removed ambient Vue runtime discovery from sentiment rendering paths; the renderer now consumes injected Vue runtime from dashboard composition.
       - [ ] `js/relayControls/logStream.js`
+        - [x] Removed ambient Vue runtime discovery from relay-log rendering and moved the connection-label presentation onto controller state rendered through injected Vue runtime.
       - [ ] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
     - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
       - [x] `js/ui/primitives.js`

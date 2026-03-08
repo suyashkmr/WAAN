@@ -79,7 +79,7 @@ function createSentimentCalendarModel(dailyData, formatSentimentScore) {
 }
 
 /**
- * @param {{dailyData: any[], dailyChartEl?: HTMLElement | null, trendNoteEl?: HTMLElement | null, formatSentimentScore: (value: number, precision?: number) => string, totalCount: number, averageScore: number}} params
+ * @param {{dailyData: any[], dailyChartEl?: HTMLElement | null, trendNoteEl?: HTMLElement | null, formatSentimentScore: (value: number, precision?: number) => string, totalCount: number, averageScore: number, vueRuntime?: any}} params
  */
 function renderSentimentTrend({
   dailyData,
@@ -88,9 +88,10 @@ function renderSentimentTrend({
   formatSentimentScore,
   totalCount,
   averageScore,
+  vueRuntime = null,
 }) {
   if (!dailyChartEl) return;
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function") {
     throw new Error("Vue runtime is required for sentiment trend rendering.");
   }
@@ -176,10 +177,11 @@ function renderSentimentTrend({
  * @param {any[]} entries
  * @param {"positive"|"negative"} tone
  * @param {(value: number, precision?: number) => string} formatSentimentScore
+ * @param {any} [vueRuntime]
  */
-function buildSentimentList(listEl, entries, tone, formatSentimentScore) {
+function buildSentimentList(listEl, entries, tone, formatSentimentScore, vueRuntime = null) {
   if (!listEl) return;
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function" || !VueRuntime.Fragment) {
     throw new Error("Vue runtime is required for sentiment participant rendering.");
   }
@@ -219,15 +221,15 @@ function buildSentimentList(listEl, entries, tone, formatSentimentScore) {
 }
 
 /**
- * @param {{participants: any[], positiveListEl?: HTMLElement | null, negativeListEl?: HTMLElement | null, formatSentimentScore: (value: number, precision?: number) => string}} params
+ * @param {{participants: any[], positiveListEl?: HTMLElement | null, negativeListEl?: HTMLElement | null, formatSentimentScore: (value: number, precision?: number) => string, vueRuntime?: any}} params
  */
-function renderSentimentParticipants({ participants, positiveListEl, negativeListEl, formatSentimentScore }) {
+function renderSentimentParticipants({ participants, positiveListEl, negativeListEl, formatSentimentScore, vueRuntime = null }) {
   if (!positiveListEl || !negativeListEl) return;
   const valid = Array.isArray(participants) ? participants.filter(entry => Number.isFinite(entry.average) && entry.count >= 3) : [];
   const positives = valid.filter(entry => entry.average > 0).sort((a, b) => b.average - a.average).slice(0, 5);
   const negatives = valid.filter(entry => entry.average < 0).sort((a, b) => a.average - b.average).slice(0, 5);
-  buildSentimentList(positiveListEl, positives, "positive", formatSentimentScore);
-  buildSentimentList(negativeListEl, negatives, "negative", formatSentimentScore);
+  buildSentimentList(positiveListEl, positives, "positive", formatSentimentScore, vueRuntime);
+  buildSentimentList(negativeListEl, negatives, "negative", formatSentimentScore, vueRuntime);
 }
 
 function resolvePrimeDataView(globalScope = globalThis) {
@@ -247,8 +249,9 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
     negativeListEl,
   } = elements || {};
   const formatSentimentScore = helpers?.formatSentimentScore;
+  const vueRuntime = helpers?.vueRuntime ?? null;
   if (!summaryEl || typeof formatSentimentScore !== "function") return;
-  const VueRuntime = globalThis.Vue;
+  const VueRuntime = vueRuntime;
   if (!VueRuntime || typeof VueRuntime.h !== "function" || typeof VueRuntime.render !== "function") {
     throw new Error("Vue runtime is required for sentiment rendering.");
   }
@@ -332,11 +335,13 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
     formatSentimentScore,
     totalCount,
     averageScore: sentiment?.average ?? 0,
+    vueRuntime,
   });
   renderSentimentParticipants({
     participants: sentiment?.participants || [],
     positiveListEl,
     negativeListEl,
     formatSentimentScore,
+    vueRuntime,
   });
 }

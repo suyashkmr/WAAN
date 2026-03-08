@@ -143,6 +143,8 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       getRemoteChatCount: () => getRemoteChatList().length,
       fetchJson,
       updateStatus,
+      vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
+      globalScope,
     },
   });
   const {

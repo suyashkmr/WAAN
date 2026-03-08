@@ -24,6 +24,8 @@ function createController(overrides = {}) {
     getRemoteChatCount: () => 1,
     fetchJson: async () => ({}),
     updateStatus: () => {},
+    vueRuntime: overrides.vueRuntime,
+    globalScope: overrides.globalScope,
     ...overrides,
   });
 
@@ -53,7 +55,7 @@ describe("relay log stream rendering", () => {
   });
 
   it("renders log entries via Vue runtime", () => {
-    globalThis.Vue = { h, render, Fragment };
+    const vueRuntime = { h, render, Fragment };
 
     let sourceInstance = null;
     class FakeEventSource {
@@ -64,7 +66,7 @@ describe("relay log stream rendering", () => {
     }
     globalThis.EventSource = /** @type {any} */ (FakeEventSource);
 
-    const { controller, logDrawerList, logDrawerConnectionLabel } = createController();
+    const { controller, logDrawerList, logDrawerConnectionLabel } = createController({ vueRuntime });
     logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
     controller.initLogStream();
 
@@ -82,8 +84,8 @@ describe("relay log stream rendering", () => {
 
   it("renders relay logs via PrimeVue DataView when available", () => {
     const PrimeDataView = { name: "PrimeDataViewStub" };
-    globalThis.PrimeVue = { DataView: PrimeDataView };
-    globalThis.Vue = {
+    const globalScope = { PrimeVue: { DataView: PrimeDataView } };
+    const vueRuntime = {
       Fragment: Symbol("Fragment"),
       h: (type, props = {}, children = []) => ({ type, props, children }),
       render: (vnode, container) => {
@@ -113,7 +115,7 @@ describe("relay log stream rendering", () => {
     }
     globalThis.EventSource = /** @type {any} */ (FakeEventSource);
 
-    const { controller, logDrawerList } = createController();
+    const { controller, logDrawerList } = createController({ vueRuntime, globalScope });
     controller.initLogStream();
 
     sourceInstance.onmessage?.({ data: "line one" });
@@ -128,5 +130,27 @@ describe("relay log stream rendering", () => {
     delete process.env.VITEST;
     const { controller } = createController();
     expect(() => controller.openLogDrawer()).toThrow("Vue runtime is required for relay log rendering.");
+  });
+
+  it("does not require Vue just to update the connection label during init", () => {
+    delete process.env.VITEST;
+
+    let sourceInstance = null;
+    class FakeEventSource {
+      constructor() {
+        sourceInstance = this;
+      }
+      close() {}
+    }
+    globalThis.EventSource = /** @type {any} */ (FakeEventSource);
+
+    const { controller, logDrawerConnectionLabel, logDrawerList } = createController();
+
+    expect(() => controller.initLogStream()).not.toThrow();
+    expect(logDrawerConnectionLabel.textContent).toBe("Connecting…");
+
+    sourceInstance.onopen?.();
+    expect(logDrawerConnectionLabel.textContent).toBe("Live log stream");
+    expect(logDrawerList.querySelectorAll(".relay-log-entry")).toHaveLength(0);
   });
 });

@@ -23,6 +23,7 @@ const mocked = vi.hoisted(() => ({
   renderHighlights: vi.fn(),
   renderStatistics: vi.fn(),
   formatSentimentScore: vi.fn(() => "0.0"),
+  createActivityPanelsControllerArgs: [],
 }));
 
 vi.mock("../js/analytics/summary.js", () => ({
@@ -46,20 +47,23 @@ vi.mock("../js/appShell/domCache.js", () => ({
 }));
 
 vi.mock("../js/appShell/dashboardRender/activityPanels.js", () => ({
-  createActivityPanelsController: () => ({
-    renderHourlyPanel: mocked.renderHourlyPanel,
-    renderDailyPanel: mocked.renderDailyPanel,
-    renderWeeklyPanel: mocked.renderWeeklyPanel,
-    renderWeekdayPanel: mocked.renderWeekdayPanel,
-    ensureWeekdayDayFilters: mocked.ensureWeekdayDayFilters,
-    ensureWeekdayHourFilters: mocked.ensureWeekdayHourFilters,
-    syncWeekdayControlsWithState: mocked.syncWeekdayControlsWithState,
-    rerenderHourlyFromState: mocked.rerenderHourlyFromState,
-    rerenderWeekdayFromState: mocked.rerenderWeekdayFromState,
-    ensureDayFilters: mocked.ensureDayFilters,
-    ensureHourFilters: mocked.ensureHourFilters,
-    syncHourlyControlsWithState: mocked.syncHourlyControlsWithState,
-  }),
+  createActivityPanelsController: args => {
+    mocked.createActivityPanelsControllerArgs.push(args);
+    return {
+      renderHourlyPanel: mocked.renderHourlyPanel,
+      renderDailyPanel: mocked.renderDailyPanel,
+      renderWeeklyPanel: mocked.renderWeeklyPanel,
+      renderWeekdayPanel: mocked.renderWeekdayPanel,
+      ensureWeekdayDayFilters: mocked.ensureWeekdayDayFilters,
+      ensureWeekdayHourFilters: mocked.ensureWeekdayHourFilters,
+      syncWeekdayControlsWithState: mocked.syncWeekdayControlsWithState,
+      rerenderHourlyFromState: mocked.rerenderHourlyFromState,
+      rerenderWeekdayFromState: mocked.rerenderWeekdayFromState,
+      ensureDayFilters: mocked.ensureDayFilters,
+      ensureHourFilters: mocked.ensureHourFilters,
+      syncHourlyControlsWithState: mocked.syncHourlyControlsWithState,
+    };
+  },
 }));
 
 vi.mock("../js/appShell/dashboardRender/participantsPanel.js", () => ({
@@ -143,6 +147,7 @@ describe("analytics pipeline", () => {
 describe("dashboard render controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocked.createActivityPanelsControllerArgs.length = 0;
     clearVueBridgeRuntime();
   });
 
@@ -213,6 +218,7 @@ describe("dashboard render controller", () => {
     expect(searchPopulateParticipants).toHaveBeenCalled();
     expect(searchRenderResults).toHaveBeenCalled();
     expect(setDataAvailabilityState).toHaveBeenCalledWith(true);
+    expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.vueRuntime).toBe(globalThis.Vue ?? null);
   });
 
   it("delegates time-of-day panel rendering to Vue dashboard bridge when available", () => {

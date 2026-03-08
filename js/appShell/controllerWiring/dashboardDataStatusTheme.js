@@ -181,6 +181,7 @@ export function createDashboardDataStatusThemeWiring({
       formatNumber: utils.formatNumber,
       formatFloat: utils.formatFloat,
       sanitizeText: utils.sanitizeText,
+      vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
     },
   });
   dashboardControllerApi.setController(createdDashboardRuntimeController);

@@ -27,13 +27,12 @@ describe("sentiment renderer", () => {
   });
 
   it("renders empty sentiment state", () => {
-    globalThis.Vue = { h, render, Fragment };
     const elements = buildElements();
 
     renderSentimentSection({
       sentiment: { totals: { positive: 0, neutral: 0, negative: 0 }, daily: [], participants: [] },
       elements,
-      helpers: { formatSentimentScore },
+      helpers: { formatSentimentScore, vueRuntime: { h, render, Fragment } },
     });
 
     expect(elements.summaryEl.textContent).toContain("No sentiment data for this range.");
@@ -42,7 +41,6 @@ describe("sentiment renderer", () => {
   });
 
   it("renders summary tiles, trend note, and participant lists", () => {
-    globalThis.Vue = { h, render, Fragment };
     const elements = buildElements();
 
     renderSentimentSection({
@@ -59,7 +57,7 @@ describe("sentiment renderer", () => {
         ],
       },
       elements,
-      helpers: { formatSentimentScore },
+      helpers: { formatSentimentScore, vueRuntime: { h, render, Fragment } },
     });
 
     expect(elements.summaryEl.querySelectorAll(".sentiment-tile")).toHaveLength(4);
@@ -103,7 +101,6 @@ describe("sentiment renderer", () => {
     };
     globalThis.PrimeVue = { DataView: PrimeDataView };
     globalThis.primevue = globalThis.PrimeVue;
-    globalThis.Vue = { h, render, Fragment };
     const elements = buildElements();
 
     renderSentimentSection({
@@ -117,7 +114,7 @@ describe("sentiment renderer", () => {
         participants: [],
       },
       elements,
-      helpers: { formatSentimentScore },
+      helpers: { formatSentimentScore, vueRuntime: { h, render, Fragment } },
     });
 
     const primeDataView = elements.summaryEl.querySelector(".prime-data-view");
@@ -144,7 +141,6 @@ describe("sentiment renderer", () => {
     };
     globalThis.PrimeVue = {};
     globalThis.primevue = { DataView: PrimeDataView };
-    globalThis.Vue = { h, render, Fragment };
     const elements = buildElements();
 
     renderSentimentSection({
@@ -155,7 +151,7 @@ describe("sentiment renderer", () => {
         participants: [],
       },
       elements,
-      helpers: { formatSentimentScore },
+      helpers: { formatSentimentScore, vueRuntime: { h, render, Fragment } },
     });
 
     expect(elements.summaryEl.querySelector(".prime-data-view-lowercase")).toBeTruthy();

@@ -44,6 +44,8 @@ export function createRelaySupportControllers({
     getRemoteChatCount: deps.getRemoteChatCount,
     fetchJson: deps.fetchJson,
     updateStatus: deps.updateStatus,
+    vueRuntime: deps.vueRuntime,
+    globalScope: deps.globalScope,
   });
 
   return {

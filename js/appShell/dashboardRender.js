@@ -61,6 +61,7 @@ export function createDashboardRenderController({ elements, deps }) {
     formatNumber,
     formatFloat,
     sanitizeText,
+    vueRuntime = /** @type {any} */ (globalThis).Vue ?? null,
   } = deps;
 
   function resolveDashboardPanelsBridgeForParticipants() {
@@ -92,6 +93,7 @@ export function createDashboardRenderController({ elements, deps }) {
       subscribeAppShellUiState,
       formatNumber,
       formatFloat,
+      vueRuntime,
     },
   });
   const {
@@ -189,7 +191,10 @@ export function createDashboardRenderController({ elements, deps }) {
             positiveListEl: sentimentPositiveList,
             negativeListEl: sentimentNegativeList,
           },
-          helpers: { formatSentimentScore },
+          helpers: {
+            formatSentimentScore,
+            vueRuntime,
+          },
         }),
       currentToken,
       { totalMessages },
@@ -212,7 +217,7 @@ export function createDashboardRenderController({ elements, deps }) {
             summaryEl: messageTypeSummaryEl,
             noteEl: messageTypeNoteEl,
           },
-          vueRuntime: /** @type {any} */ (globalThis).Vue ?? null,
+          vueRuntime,
         })),
       currentToken,
       { totalMessages },
@@ -229,7 +234,7 @@ export function createDashboardRenderController({ elements, deps }) {
             creatorsEl: pollsCreatorsEl,
             noteEl: pollsNote,
           },
-          vueRuntime: /** @type {any} */ (globalThis).Vue ?? null,
+          vueRuntime,
         })),
       currentToken,
       { totalMessages },
