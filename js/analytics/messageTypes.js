@@ -1,4 +1,5 @@
 import { formatFloat } from "../utils.js";
+import { clearContainerForVueRenderOnce } from "../vue/renderMountUtils.js";
 
 export function renderMessageTypesSection({ data, elements = {}, vueRuntime = null } = {}) {
   const { summaryEl, noteEl } = elements;
@@ -10,6 +11,7 @@ export function renderMessageTypesSection({ data, elements = {}, vueRuntime = nu
   const { h, render } = VueRuntime;
 
   const summary = Array.isArray(data?.summary) ? data.summary : [];
+  clearContainerForVueRenderOnce(summaryEl);
 
   if (!summary.length) {
     render(

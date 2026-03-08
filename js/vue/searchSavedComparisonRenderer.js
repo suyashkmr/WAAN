@@ -1,3 +1,5 @@
+import { clearContainerForVueRenderOnce } from "./renderMountUtils.js";
+
 export function renderSavedViewsComparisonWithVue({
   empty = false,
   message = "",
@@ -23,6 +25,7 @@ export function renderSavedViewsComparisonWithVue({
     }))
     : [];
   container.classList.toggle("empty", Boolean(empty));
+  clearContainerForVueRenderOnce(container);
   if (empty) {
     render(h("div", { class: "saved-views-compare-vue" }, [
       h("p", null, String(message || "Pick two saved views to compare their activity side-by-side.")),

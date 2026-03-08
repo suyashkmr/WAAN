@@ -10,6 +10,7 @@ import {
   formatRelayAccount,
 } from "../index.js";
 import { createDashboardViewAdapter } from "./dashboardViewAdapter.js";
+import { createHeroStatusRenderer } from "../../vue/heroStatusRenderer.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -43,6 +44,17 @@ export function createDashboardDataStatusThemeWiring({
   dashboardControllerApi,
   viewAdapter = createDashboardViewAdapter(),
 }) {
+  const heroStatusRenderer = createHeroStatusRenderer({
+    elements: {
+      dashboardRoot: dom.dashboardRoot,
+      heroStatusBadge: dom.heroStatusBadge,
+      heroStatusCopy: dom.heroStatusCopy,
+      heroStatusMetaCopy: dom.heroStatusMetaCopy,
+      heroSyncDot: dom.heroSyncDot,
+      heroMilestoneSteps: dom.heroMilestoneSteps,
+    },
+    vueRuntime: typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue : null,
+  });
   const dataStatusController = createDataStatusController({
     elements: {
       dashboardRoot: dom.dashboardRoot,
@@ -60,6 +72,7 @@ export function createDashboardDataStatusThemeWiring({
       formatNumber: utils.formatNumber,
       notifyRelayReady: /** @param {string} message */ message => dataStatus.updateStatus?.(message, "success"),
       formatStatusTime: () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      heroStatusRenderer,
     },
   });
   const {

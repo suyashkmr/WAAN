@@ -20,6 +20,7 @@ import { createRelayStatusApplyController } from "./relayControls/statusApply.js
 import { createRelayPlatformAdapter } from "./relayControls/platformAdapter.js";
 import { createRelayUiState, setRelayControlsDisabled as applyRelayControlsDisabled } from "./relayControls/controllerState.js";
 import { createRelaySupportControllers } from "./relayControls/controllerSupport.js";
+import { createRelayStatusRenderer } from "./vue/relayStatusRenderer.js";
 import {
   describeRelayStatus,
   formatRelayAccount,
@@ -77,6 +78,17 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     encodeChatSelectorValue,
   } = helpers;
   const relayPlatform = platform ?? createRelayPlatformAdapter({ electronAPI });
+  const relayStatusRenderer = createRelayStatusRenderer({
+    elements: {
+      relayStatusEl,
+      relayAccountEl,
+      relayQrContainer,
+      relayQrImage,
+      relayHelpText,
+    },
+    vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
+    globalScope,
+  });
 
   const relayUiState = createRelayUiState();
   let syncRecoveryActions = () => {};
@@ -260,6 +272,7 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       refreshRemoteChats,
       updateStatus,
       getDataAvailable,
+      relayStatusRenderer,
     },
   });
   ({ applyRelayStatus } = relayStatusApplyController);

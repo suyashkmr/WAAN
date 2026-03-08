@@ -723,11 +723,13 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
         - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
         - [x] Routed relay status application through injected `globalScope`/`now` deps so shell-bridge updates and refresh timing no longer depend on ambient globals.
+        - [x] Moved relay status/account/help/QR presentation behind a dedicated Vue-capable relay-status renderer, so the controller coordinates visible relay-card state instead of painting that surface directly.
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
       - [ ] `js/appShell/dataStatus.js`
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
+        - [x] Moved hero-status badge/copy/meta presentation behind a dedicated Vue-capable hero-status renderer, so the controller coordinates hero view state instead of writing hero text directly.
       - [ ] `js/appShell/themeUi.js`
         - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
       - [ ] `js/vue/dashboardHourlyRoot.js`

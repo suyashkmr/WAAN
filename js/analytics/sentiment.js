@@ -1,5 +1,5 @@
 import { formatNumber, formatFloat, formatDisplayDate } from "../utils.js";
-
+import { clearContainerForVueRenderOnce } from "../vue/renderMountUtils.js";
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -97,6 +97,7 @@ function renderSentimentTrend({
   }
   const { h, render } = VueRuntime;
   dailyChartEl.className = "sentiment-calendar-container";
+  clearContainerForVueRenderOnce(dailyChartEl);
   if (!dailyData?.length) {
     render(h("p", { class: "empty-state" }, "No scored messages to show."), dailyChartEl);
     if (trendNoteEl) trendNoteEl.textContent = "No scored messages for this range.";
@@ -186,6 +187,7 @@ function buildSentimentList(listEl, entries, tone, formatSentimentScore, vueRunt
     throw new Error("Vue runtime is required for sentiment participant rendering.");
   }
   const { h, render, Fragment } = VueRuntime;
+  clearContainerForVueRenderOnce(listEl);
   if (!entries.length) {
     render(
       h(
@@ -256,6 +258,7 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
     throw new Error("Vue runtime is required for sentiment rendering.");
   }
   const { h, render } = VueRuntime;
+  clearContainerForVueRenderOnce(summaryEl);
   const PrimeDataView = resolvePrimeDataView(globalThis);
   const usePrimeDataView = Boolean(PrimeDataView);
   const totals = sentiment?.totals || {};

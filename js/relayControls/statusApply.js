@@ -85,6 +85,7 @@ export function createRelayStatusApplyController({
     refreshRemoteChats,
     updateStatus,
     getDataAvailable,
+    relayStatusRenderer = null,
   } = deps;
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
 
@@ -182,13 +183,22 @@ export function createRelayStatusApplyController({
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);
-      relayStatusEl.textContent = `Relay offline. Open the desktop relay to connect ${brandName}.`;
-      if (relayAccountEl) relayAccountEl.textContent = "";
-      if (relayQrContainer) relayQrContainer.classList.add("hidden");
-      if (relayQrImage) relayQrImage.removeAttribute("src");
-      if (relayHelpText) {
-        relayHelpText.textContent =
-          "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
+      const offlineHelpText =
+        "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
+      relayStatusRenderer?.renderStatusSurface?.({
+        statusText: `Relay offline. Open the desktop relay to connect ${brandName}.`,
+        accountText: "",
+        helpText: offlineHelpText,
+        qrSrc: null,
+      });
+      if (!relayStatusRenderer) {
+        relayStatusEl.textContent = `Relay offline. Open the desktop relay to connect ${brandName}.`;
+        if (relayAccountEl) relayAccountEl.textContent = "";
+        if (relayQrContainer) relayQrContainer.classList.add("hidden");
+        if (relayQrImage) relayQrImage.removeAttribute("src");
+        if (relayHelpText) {
+          relayHelpText.textContent = offlineHelpText;
+        }
       }
       /** @type {{ updateRelayControlButtons?: (payload: any) => void } | null} */
       const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
@@ -223,23 +233,33 @@ export function createRelayStatusApplyController({
     }
 
     const description = describeRelayStatusForUi(status);
-    relayStatusEl.textContent = description.message;
-    if (relayAccountEl) {
-      relayAccountEl.textContent = status.account
-        ? `Logged in as ${formatRelayAccountLabel(status.account)}`
-        : "";
-    }
-    if (relayHelpText) {
-      relayHelpText.textContent =
-        status.status === "running"
-          ? `Your mirrored ${brandName} chats appear under “Loaded chats”. Pick one to view insights.`
-          : "Open Linked Devices on your phone and scan the QR code shown here.";
-    }
-    if (status.lastQr && relayQrContainer && relayQrImage) {
-      relayQrImage.src = status.lastQr;
-      relayQrContainer.classList.remove("hidden");
-    } else if (relayQrContainer) {
-      relayQrContainer.classList.add("hidden");
+    const accountText = status.account
+      ? `Logged in as ${formatRelayAccountLabel(status.account)}`
+      : "";
+    const helpText =
+      status.status === "running"
+        ? `Your mirrored ${brandName} chats appear under “Loaded chats”. Pick one to view insights.`
+        : "Open Linked Devices on your phone and scan the QR code shown here.";
+    relayStatusRenderer?.renderStatusSurface?.({
+      statusText: description.message,
+      accountText,
+      helpText,
+      qrSrc: status.lastQr || null,
+    });
+    if (!relayStatusRenderer) {
+      relayStatusEl.textContent = description.message;
+      if (relayAccountEl) {
+        relayAccountEl.textContent = accountText;
+      }
+      if (relayHelpText) {
+        relayHelpText.textContent = helpText;
+      }
+      if (status.lastQr && relayQrContainer && relayQrImage) {
+        relayQrImage.src = status.lastQr;
+        relayQrContainer.classList.remove("hidden");
+      } else if (relayQrContainer) {
+        relayQrContainer.classList.add("hidden");
+      }
     }
 
     const running = status.status === "running";

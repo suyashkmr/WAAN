@@ -423,4 +423,53 @@ describe("appShell controllers", () => {
     expect(heroStatusMetaCopy.textContent).toContain("Last updated 10:42");
     expect(heroSyncDot.dataset.state).toBe("ready");
   });
+
+  it("dataStatus delegates hero presentation to injected renderer when provided", () => {
+    const heroStatusRenderer = {
+      setDashboardLoadingState: vi.fn(),
+      setDashboardSyncState: vi.fn(),
+      renderSyncMeta: vi.fn(),
+      renderBadge: vi.fn(),
+      renderCopy: vi.fn(),
+      renderMilestones: vi.fn(),
+    };
+
+    const controller = createDataStatusController({
+      elements: {
+        dashboardRoot: document.createElement("main"),
+        heroStatusBadge: document.createElement("span"),
+        heroStatusCopy: document.createElement("span"),
+        heroStatusMetaCopy: document.createElement("span"),
+        heroSyncDot: document.createElement("span"),
+        heroMilestoneSteps: [],
+        datasetEmptyStateManager: { setAvailability: vi.fn() },
+      },
+      deps: {
+        setDatasetEmptyMessage: vi.fn(),
+        savedViewsController: {
+          setDataAvailability: vi.fn(),
+          refreshUI: vi.fn(),
+        },
+        formatRelayAccount: vi.fn(() => "Alice"),
+        formatNumber: vi.fn(value => String(value)),
+        formatStatusTime: vi.fn(() => "10:42"),
+        heroStatusRenderer,
+      },
+    });
+
+    controller.setDashboardLoadingState(true);
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
+
+    expect(heroStatusRenderer.setDashboardLoadingState).toHaveBeenCalledWith(true);
+    expect(heroStatusRenderer.renderBadge).toHaveBeenCalledWith(
+      expect.objectContaining({ text: "Relay connected", state: "ready" }),
+    );
+    expect(heroStatusRenderer.renderCopy).toHaveBeenCalledWith("3 chats indexed. Insights are ready.");
+    expect(heroStatusRenderer.renderSyncMeta).toHaveBeenCalledWith(
+      expect.objectContaining({ state: "ready", message: "Last updated 10:42" }),
+    );
+    expect(heroStatusRenderer.renderMilestones).toHaveBeenCalledWith(
+      expect.objectContaining({ connect: "complete", sync: "complete", ready: "complete" }),
+    );
+  });
 });

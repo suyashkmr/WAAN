@@ -1,5 +1,6 @@
 import { formatNumber, formatFloat, formatDisplayDate } from "../../utils.js";
 import { WEEKDAY_SHORT } from "../../constants.js";
+import { clearContainerForVueRenderOnce } from "../../vue/renderMountUtils.js";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -98,6 +99,7 @@ export function renderDailySection(dailyCounts, elements = {}, vueRuntime = null
   }
   const { h, render, Fragment } = VueRuntime;
   container.classList.add("calendar-chart");
+  clearContainerForVueRenderOnce(container);
 
   if (!Array.isArray(dailyCounts) || !dailyCounts.length) {
     render(h("p", null, "No data yet."), container);

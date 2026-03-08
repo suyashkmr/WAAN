@@ -1,4 +1,5 @@
 import { formatNumber, formatFloat } from "../../utils.js";
+import { clearContainerForVueRenderOnce } from "../../vue/renderMountUtils.js";
 import { renderActionButton } from "../../vue/primevueRenderPrimitives.js";
 
 /**
@@ -60,6 +61,7 @@ export function renderWeeklySection(weeklyData, summary, options = {}, vueRuntim
 
   if (!container) return;
   container.className = "weekly-chart";
+  clearContainerForVueRenderOnce(container);
 
   if (!Array.isArray(weeklyData) || !weeklyData.length) {
     render(h("p", null, "No data yet."), container);

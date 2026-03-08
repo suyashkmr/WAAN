@@ -2,7 +2,7 @@ import { formatDisplayDate, formatNumber, formatTimestampDisplay } from "../util
 import { ensureSavedViewsGalleryActions } from "./searchSavedGalleryActions.js";
 import { renderSavedViewsComparisonWithVue } from "./searchSavedComparisonRenderer.js";
 import { renderActionButton } from "./primevueRenderPrimitives.js";
-
+import { clearContainerForVueRenderOnce } from "./renderMountUtils.js";
 function normalizeActions(value) {
   if (!Array.isArray(value)) return [];
   return value.filter(Boolean).map(action => ({ id: String(action?.id || ""), label: String(action?.label || "Action"), disabled: Boolean(action?.disabled) }));
@@ -25,7 +25,7 @@ export function renderPanelStateWithVue({
   const safeTone = String(tone || "empty");
   const safeTitle = String(title || "");
   const safeMessage = String(message || "");
-
+  clearContainerForVueRenderOnce(container);
   render(
     h("div", {
       class: ["panel-state", "app-empty-state", `panel-state--${safeTone}`],
@@ -71,7 +71,6 @@ function normalizeSearchResults(value) {
       : [],
   }));
 }
-
 export function renderSearchResultsWithVue({
   results = [],
   total = 0,
@@ -106,6 +105,7 @@ export function renderSearchResultsWithVue({
 
   const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
   const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
+  clearContainerForVueRenderOnce(container);
   render(
     h("div", { class: "search-results-vue-list" }, [
       ...(usePrimeDataView
@@ -172,11 +172,12 @@ export function renderSearchInsightsWithVue({
   const safeSummary = normalizeSummary(summary);
   if (!safeSummary || !safeSummary.total) {
     container.classList.add("hidden");
+    clearContainerForVueRenderOnce(container);
     render(null, container);
     return true;
   }
   container.classList.remove("hidden");
-
+  clearContainerForVueRenderOnce(container);
   const hitsItems = safeSummary.hitsPerDay.length ? safeSummary.hitsPerDay : [{ date: "No daily data", count: "—" }];
   const participantItems = safeSummary.topParticipants.length ? safeSummary.topParticipants : [{ sender: "No matches yet", count: "—" }];
   const filtersItems = safeSummary.filters.length ? safeSummary.filters : ["No filters applied"];
@@ -318,9 +319,9 @@ export function renderSavedViewsGalleryWithVue({
         h("span", { style: { width: `${Math.min(100, Math.max(0, card.barWidth))}%` } }),
       ]),
     ]);
-
   const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
   const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
+  clearContainerForVueRenderOnce(container);
 
   render(h(
     "div",

@@ -1,4 +1,5 @@
 import { sanitizeText, formatNumber, formatDisplayDate } from "../utils.js";
+import { clearContainerForVueRenderOnce } from "../vue/renderMountUtils.js";
 
 export function renderPollsSection({ data, elements = {}, vueRuntime = null } = {}) {
   const { listEl, totalsEl, creatorsEl, noteEl } = elements;
@@ -19,6 +20,7 @@ export function renderPollsSection({ data, elements = {}, vueRuntime = null } = 
   if (creatorsEl) creatorsEl.textContent = formatNumber(creators);
 
   const entries = Array.isArray(data?.entries) ? data.entries.slice(0, 5) : [];
+  clearContainerForVueRenderOnce(listEl);
 
   if (!entries.length) {
     if (canRenderWithVue) {
