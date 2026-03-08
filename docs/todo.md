@@ -698,6 +698,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/appShell/eventBindings.js`
         - [x] Removed controller-owned `.stat-download` document scanning; stat export buttons now flow through explicit app-shell refs/runtime config.
         - [x] Routed event-binding bridge ownership checks through injected `globalScope` and removed stale unused toolbar-button refs from the controller wiring surface.
+        - [x] Replaced direct participant filter/preset listeners (`participantsTopSelect`, `participantsSortSelect`, `participantsTimeframeSelect`, `participantPresetButtons`) with a dashboard-bridge action path; participant controls now mount through the Vue dashboard island and dispatch bridge-owned actions instead of controller `addEventListener` bindings.
+        - [ ] Replace direct weekday/time-of-day filter and brush listeners in `eventBindings` with Vue-owned dashboard control interaction contracts; keep controller responsibility limited to state writes/contracts only.
       - [ ] `js/appShell/bootstrap.js`
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`
@@ -730,19 +732,24 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Moved relay status/account/help/QR presentation behind a dedicated Vue-capable relay-status renderer, so the controller coordinates visible relay-card state instead of painting that surface directly.
         - [x] Moved relay banner message/meta and onboarding detail copy behind a dedicated Vue-capable status-view renderer, so the status-view mapper no longer paints those visible text surfaces directly.
         - [x] Hardened relay status renderer fallback behavior so partial renderer objects cannot suppress visible relay-card updates (`js/relayControls/statusApply.js`, `tests/relayStatusApply.test.js`).
+        - [x] Collapsed relay-card status-surface, recovery-action, and control-button presentation behind local renderer/bridge helper paths so `statusApply` no longer duplicates visible DOM/bridge writes inline across offline/running branches (`js/relayControls/statusApply.js`, `tests/relayControls.test.js`, `tests/releaseRelayTransitions.test.js`, `tests/relayStatusApply.test.js`).
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
+        - [ ] Participant filter controls and dashboard weekday/time-of-day filter controls are no longer wired as primary DOM listeners from `eventBindings`.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
       - [ ] `js/appShell/dataStatus.js`
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
         - [x] Moved hero-status badge/copy/meta presentation behind a dedicated Vue-capable hero-status renderer, so the controller coordinates hero view state instead of writing hero text directly.
         - [x] Hardened hero-status renderer fallback behavior so partial renderer objects cannot suppress visible hero updates (`js/appShell/dataStatus.js`, `tests/appShellControllers.test.js`).
         - [x] Replaced ready-celebration DOM readbacks with controller-held hero view state, so hero transitions no longer depend on reading badge/milestone text/state back out of mounted elements (`js/appShell/dataStatus.js`, `tests/dataStatusBootstrapSectionNav.test.js`).
+        - [x] Collapsed repeated hero badge/copy relay-state branches behind local renderer helpers so the controller no longer duplicates visible hero DOM writes across offline/starting/waiting/running paths (`js/appShell/dataStatus.js`, `tests/appShellControllers.test.js`, `tests/dataStatusBootstrapSectionNav.test.js`, `tests/heroStatusRenderer.test.js`).
       - [ ] `js/appShell/themeUi.js`
         - [x] Threaded `documentRef`, `windowRef`, and `storageRef` explicitly from app-shell DOM/runtime wiring into `createThemeUiController(...)`, removing the last ambient browser-global reintroduction in theme controller composition (`js/appShell/domRefs.js`, `js/appShell/domRefGroups.js`, `js/appShell/entryConfig.js`, `js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell.js`, `tests/controllerWiringContracts.test.js`, `tests/domRefs.test.js`).
         - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
       - [ ] `js/vue/dashboardHourlyRoot.js`
         - [x] Moved hourly filter-note/brush-summary/anomaly presentation into hourly Vue state + Vue-rendered sibling surfaces; the hourly bridge no longer mutates those DOM nodes via direct text writes.
+      - [x] `js/vue/dashboardPanelsIsland.js`
+        - [x] Moved weekday filter-note sibling presentation onto the shared Vue `render(...)` meta-text path, so the dashboard bridge no longer updates that visible note with direct `textContent` writes (`js/vue/dashboardPanelsIsland.js`, `tests/dashboardPanelsIsland.test.js`).
       - [ ] `js/vue/shellPrimitivesIsland.js`
         - [x] Moved shell feedback status visibility/tone/exit presentation into reactive Vue state; the status bridge no longer toggles status classes imperatively on the mount node.
       - [ ] `js/analytics/messageTypes.js`

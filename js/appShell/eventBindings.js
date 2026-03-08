@@ -1,5 +1,6 @@
 // @ts-check
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -36,10 +37,6 @@ export function createEventBindingsController({
     downloadSentimentButton,
     statDownloadButtons,
     downloadSearchButton,
-    participantsTopSelect,
-    participantsSortSelect,
-    participantsTimeframeSelect,
-    participantPresetButtons,
     weekdayToggleWeekdays,
     weekdayToggleWeekends,
     weekdayToggleWorking,
@@ -69,10 +66,6 @@ export function createEventBindingsController({
     handleDownloadSlidesReport,
     exportSearchResults,
     handleDownloadPdfReport,
-    handleParticipantsTopChange,
-    handleParticipantsSortChange,
-    handleParticipantsTimeframeChange,
-    handleParticipantPresetClick,
   } = handlers;
 
   const {
@@ -218,22 +211,11 @@ export function createEventBindingsController({
       downloadSearchButton.addEventListener("click", exportSearchResults);
     }
 
-    if (participantsTopSelect) {
-      participantsTopSelect.addEventListener("change", handleParticipantsTopChange);
-    }
-    if (participantsSortSelect) {
-      participantsSortSelect.addEventListener("change", handleParticipantsSortChange);
-    }
-    if (participantsTimeframeSelect) {
-      participantsTimeframeSelect.addEventListener("change", handleParticipantsTimeframeChange);
-    }
-    if (participantPresetButtons?.length) {
-      participantPresetButtons.forEach(/** @param {Element} button */ button => {
-        button.addEventListener("click", handleParticipantPresetClick);
-      });
-    }
+    mountDashboardPanelsIsland({ globalScope });
     const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope });
-    const vueOwnsParticipantInteractions = Boolean(dashboardPanelsBridge?.ownsParticipantInteractions);
+    const vueOwnsParticipantInteractions =
+      Boolean(dashboardPanelsBridge?.ownsParticipantInteractions)
+      && typeof dashboardPanelsBridge?.setPanelActionHandlers === "function";
     if (!vueOwnsParticipantInteractions) {
       throw new Error("Dashboard panels bridge participant interaction ownership is required.");
     }

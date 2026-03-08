@@ -1,5 +1,10 @@
 import { getWeekdayState } from "../state.js";
 import { createParticipantsRoot } from "./dashboardParticipantsRoot.js";
+import {
+  createParticipantControlsRoot,
+  createParticipantQuickFiltersRoot,
+} from "./dashboardParticipantControlsRoot.js";
+import { createHighlightsRoot, normalizeHighlightEntry } from "./dashboardHighlightsRoot.js";
 import { createHourlyRoot, renderHourlyFromPayload } from "./dashboardHourlyRoot.js";
 import { createTimeOfDayModel, createTimeOfDayRoot } from "./dashboardTimeOfDayRoot.js";
 import { createWeekdayModel, createWeekdayRoot } from "./dashboardWeekdayRoot.js";
@@ -8,33 +13,7 @@ import {
   registerVueBridge,
   resolveVueBridge,
 } from "./bridgeRegistry.js";
-import { renderActionButton } from "./primevueRenderPrimitives.js";
-
-function normalizeHighlightEntry(entry) {
-  if (!entry || typeof entry !== "object") return null;
-  const type = String(entry.type || "");
-  const label = String(entry.label || "Highlight");
-  const value = String(entry.value || "-");
-  const descriptor = String(entry.descriptor || "");
-  const key = String(entry.id || entry.key || [type, label, value, descriptor].join("|"));
-  return {
-    key,
-    type,
-    theme: String(entry.theme || ""),
-    label,
-    tooltip: String(entry.tooltip || ""),
-    headline: String(entry.headline || ""),
-    value,
-    descriptor,
-    meta: String(entry.meta || ""),
-    items: Array.isArray(entry.items)
-      ? entry.items.map(item => ({
-          label: String(item?.label || ""),
-          value: String(item?.value || ""),
-        }))
-      : [],
-  };
-}
+import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
 
 export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   const VueRuntime = globalScope?.Vue;
@@ -44,6 +23,8 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
 
   const mountEl = doc.getElementById("highlight-list") || doc.getElementById("highlights-list");
   const participantsMountEl = doc.querySelector("#top-senders tbody");
+  const participantControlsMountEl = doc.querySelector(".participants-controls");
+  const participantQuickFiltersMountEl = doc.querySelector(".participants-quick-filters");
   const timeOfDayMountEl = doc.getElementById("timeofday-chart");
   let hourlyMountEl = doc.getElementById("hourly-chart");
   let weekdayMountEl = doc.getElementById("weekday-chart");
@@ -61,6 +42,11 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     rows: [],
     emptyMessage: "",
     expandedByRowId: {},
+    filters: {
+      topCount: String(doc.getElementById("participants-top-count")?.value || "25"),
+      sortMode: String(doc.getElementById("participants-sort")?.value || "most"),
+      timeframe: String(doc.getElementById("participants-timeframe")?.value || "all"),
+    },
   });
   const hourlyState = reactive({
     model: null,
@@ -75,11 +61,9 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   });
   const PrimeDataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
   const usePrimeDataView = Boolean(PrimeDataView && (typeof PrimeDataView === "function" || typeof PrimeDataView === "object"));
+  const { dispatchPanelAction, setPanelActionHandlers } = createPanelActionDispatcher();
 
-  const iconPath =
-    "M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z";
-
-  function renderHourlyMetaText(container, text) {
+  function renderMetaText(container, text) {
     if (!container) return;
     if (!hourlyMetaMountedEls.has(container)) {
       container.textContent = "";
@@ -112,94 +96,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     );
   }
 
-  const HighlightsRoot = {
-    name: "WaanHighlightsIsland",
-    setup() {
-      const renderHighlightCard = (highlight, index) =>
-        h(
-          "div",
-          {
-            class: ["highlight-card", highlight.type].filter(Boolean).join(" "),
-            "data-accent": highlight.theme || highlight.type || undefined,
-          },
-          [
-            h("div", { class: "highlight-label-row" }, [
-              h("span", { class: "highlight-label" }, highlight.label),
-              highlight.tooltip
-                ? renderActionButton(h, {
-                    type: "button",
-                    className: "info-note-button info-note-inline",
-                    attrs: {
-                      "aria-label": highlight.tooltip,
-                      "aria-describedby": `highlight-note-${index}`,
-                      title: highlight.tooltip,
-                    },
-                    children: [
-                      h(
-                        "svg",
-                        {
-                          viewBox: "0 0 24 24",
-                          "aria-hidden": "true",
-                        },
-                        [h("path", { d: iconPath })],
-                      ),
-                      h(
-                        "span",
-                        {
-                          class: "info-tooltip",
-                          id: `highlight-note-${index}`,
-                          role: "tooltip",
-                        },
-                        highlight.tooltip,
-                      ),
-                    ],
-                  })
-                : null,
-            ]),
-            highlight.headline ? h("p", { class: "highlight-headline" }, highlight.headline) : null,
-            h("span", { class: "highlight-value" }, highlight.value),
-            highlight.descriptor ? h("span", { class: "highlight-descriptor" }, highlight.descriptor) : null,
-            highlight.items.length
-              ? h(
-                  "ol",
-                  { class: "highlight-items" },
-                  highlight.items.map(item =>
-                    h("li", {}, [
-                      h("span", { class: "item-label" }, item.label),
-                      item.value ? h("span", { class: "item-value" }, item.value) : null,
-                    ]),
-                  ),
-                )
-              : null,
-            highlight.meta ? h("span", { class: "highlight-meta" }, highlight.meta) : null,
-          ],
-        );
-
-      return () => {
-        if (!state.highlights.length) {
-          return h("p", { class: "search-results-empty" }, "Highlights will show up after the chat loads.");
-        }
-        return usePrimeDataView
-          ? h(PrimeDataView, {
-              value: state.highlights,
-              dataKey: "key",
-              unstyled: true,
-              "data-ui-runtime": "primevue",
-              pt: {
-                root: { style: "display: contents;" },
-                content: { style: "display: contents;" },
-                list: { style: "display: contents;" },
-              },
-            }, {
-              list: slotProps => {
-                const items = Array.isArray(slotProps?.items) ? slotProps.items : state.highlights;
-                return items.map((highlight, index) => renderHighlightCard(highlight, index));
-              },
-            })
-          : state.highlights.map((highlight, index) => renderHighlightCard(highlight, index));
-      };
-    },
-  };
+  const HighlightsRoot = createHighlightsRoot({ h, state, PrimeDataView, usePrimeDataView, globalScope });
 
   const app = createApp(HighlightsRoot);
   app.mount(mountEl);
@@ -209,6 +106,28 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     const ParticipantsRoot = createParticipantsRoot(h, participantsState);
     createApp(ParticipantsRoot).mount(participantsMountEl);
     participantsMountEl.dataset.vueParticipantsMounted = "true";
+  }
+
+  if (participantControlsMountEl && participantControlsMountEl.dataset.vueParticipantsControlsMounted !== "true") {
+    const ParticipantsControlsRoot = createParticipantControlsRoot(
+      h,
+      participantsState,
+      dispatchPanelAction,
+      globalScope,
+    );
+    createApp(ParticipantsControlsRoot).mount(participantControlsMountEl);
+    participantControlsMountEl.dataset.vueParticipantsControlsMounted = "true";
+  }
+
+  if (participantQuickFiltersMountEl && participantQuickFiltersMountEl.dataset.vueParticipantsQuickFiltersMounted !== "true") {
+    const ParticipantsQuickFiltersRoot = createParticipantQuickFiltersRoot(
+      h,
+      participantsState,
+      dispatchPanelAction,
+      globalScope,
+    );
+    createApp(ParticipantsQuickFiltersRoot).mount(participantQuickFiltersMountEl);
+    participantQuickFiltersMountEl.dataset.vueParticipantsQuickFiltersMounted = "true";
   }
 
   if (timeOfDayMountEl && timeOfDayMountEl.dataset.vueTimeOfDayMounted !== "true") {
@@ -277,6 +196,18 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       return true;
     },
     /**
+     * @param {{ topCount?: number|string, sortMode?: string, timeframe?: string } | null | undefined} filters
+     * @returns {boolean}
+     */
+    syncParticipantControls(filters) {
+      participantsState.filters = {
+        topCount: String(filters?.topCount ?? participantsState.filters.topCount ?? "25"),
+        sortMode: String(filters?.sortMode ?? participantsState.filters.sortMode ?? "most"),
+        timeframe: String(filters?.timeframe ?? participantsState.filters.timeframe ?? "all"),
+      };
+      return true;
+    },
+    /**
      * @param {unknown} analytics
      * @returns {boolean}
      */
@@ -306,9 +237,9 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       const handled = renderHourlyFromPayload(bridgePayload, hourlyState);
       if (!handled) return false;
       const filterNoteEl = /** @type {{ filterNoteEl?: HTMLElement | null }} */ (options).filterNoteEl;
-      renderHourlyMetaText(filterNoteEl, hourlyState.filterNote);
+      renderMetaText(filterNoteEl, hourlyState.filterNote);
       const brushSummaryEl = /** @type {{ brushSummaryEl?: HTMLElement | null }} */ (options).brushSummaryEl;
-      renderHourlyMetaText(brushSummaryEl, hourlyState.brushSummary);
+      renderMetaText(brushSummaryEl, hourlyState.brushSummary);
       const anomaliesEl = /** @type {{ anomaliesEl?: HTMLElement | null }} */ (options).anomaliesEl;
       renderHourlyAnomalies(anomaliesEl);
       return true;
@@ -324,11 +255,10 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       if (!ensureWeekdayMounted(container || weekdayMountEl)) return false;
       const state = getWeekdayState();
       weekdayState.model = createWeekdayModel(state);
-      if (filterNoteEl) {
-        filterNoteEl.textContent = weekdayState.model?.filterNote || "";
-      }
+      renderMetaText(filterNoteEl, weekdayState.model?.filterNote || "");
       return true;
     },
+    setPanelActionHandlers,
     ownsParticipantInteractions: true,
   }, { globalScope });
 }

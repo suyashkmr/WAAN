@@ -75,7 +75,10 @@ function buildParticipantLeaderboard(analytics, entries, participantFilters) {
   return { list: workingList, scopeLabel, scopeRange };
 }
 
-function updateParticipantPresetStates(participantFilters, participantPresetButtons) {
+function updateParticipantPresetStates(participantFilters, participantPresetButtons, dashboardPanelsBridge) {
+  if (typeof dashboardPanelsBridge?.syncParticipantControls === "function") {
+    dashboardPanelsBridge.syncParticipantControls(participantFilters);
+  }
   if (!participantPresetButtons?.length) return;
   participantPresetButtons.forEach(button => {
     const preset = button.dataset.participantsPreset;
@@ -148,7 +151,7 @@ export function renderParticipants({
 
   if (!analytics.top_senders?.length) {
     handleEmptyState("Run the relay and load a chat to see participant details.");
-    updateParticipantPresetStates(participantFilters, participantPresetButtons);
+    updateParticipantPresetStates(participantFilters, participantPresetButtons, dashboardPanelsBridge);
     return;
   }
 
@@ -165,7 +168,7 @@ export function renderParticipants({
     if (participantsNote) {
       participantsNote.textContent = "Adjust the filters to list participants for this view.";
     }
-    updateParticipantPresetStates(participantFilters, participantPresetButtons);
+    updateParticipantPresetStates(participantFilters, participantPresetButtons, dashboardPanelsBridge);
     if (typeof setParticipantView === "function") setParticipantView([]);
     return;
   }
@@ -187,7 +190,7 @@ export function renderParticipants({
   const rowPayload = visible.map((entry, index) => buildParticipantRowData(entry, index));
   dashboardPanelsBridge?.renderParticipantsRows?.(rowPayload);
 
-  updateParticipantPresetStates(participantFilters, participantPresetButtons);
+  updateParticipantPresetStates(participantFilters, participantPresetButtons, dashboardPanelsBridge);
   if (typeof setParticipantView === "function") {
     setParticipantView(visible);
   }

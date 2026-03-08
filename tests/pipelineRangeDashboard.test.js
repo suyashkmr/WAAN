@@ -25,6 +25,10 @@ const mocked = vi.hoisted(() => ({
   formatSentimentScore: vi.fn(() => "0.0"),
   createActivityPanelsControllerArgs: [],
   createActivityPanelsMetaRenderer: vi.fn(() => ({ renderHourlyTopHour: vi.fn() })),
+  applyParticipantTopChange: vi.fn(),
+  applyParticipantSortChange: vi.fn(),
+  applyParticipantTimeframeChange: vi.fn(),
+  applyParticipantPreset: vi.fn(),
 }));
 
 vi.mock("../js/analytics/summary.js", () => ({
@@ -71,10 +75,10 @@ vi.mock("../js/appShell/dashboardRender/participantsPanel.js", () => ({
   createParticipantsPanelController: () => ({
     renderParticipants: mocked.renderParticipants,
   }),
-  applyParticipantTopChange: vi.fn(),
-  applyParticipantSortChange: vi.fn(),
-  applyParticipantTimeframeChange: vi.fn(),
-  applyParticipantPreset: vi.fn(),
+  applyParticipantTopChange: (...args) => mocked.applyParticipantTopChange(...args),
+  applyParticipantSortChange: (...args) => mocked.applyParticipantSortChange(...args),
+  applyParticipantTimeframeChange: (...args) => mocked.applyParticipantTimeframeChange(...args),
+  applyParticipantPreset: (...args) => mocked.applyParticipantPreset(...args),
   toggleParticipantRow: vi.fn(),
 }));
 
@@ -154,6 +158,10 @@ describe("dashboard render controller", () => {
     vi.clearAllMocks();
     mocked.createActivityPanelsControllerArgs.length = 0;
     mocked.createActivityPanelsMetaRenderer.mockClear();
+    mocked.applyParticipantTopChange.mockClear();
+    mocked.applyParticipantSortChange.mockClear();
+    mocked.applyParticipantTimeframeChange.mockClear();
+    mocked.applyParticipantPreset.mockClear();
     clearVueBridgeRuntime();
   });
 
@@ -279,6 +287,81 @@ describe("dashboard render controller", () => {
     });
 
     expect(renderTimeOfDay).toHaveBeenCalledTimes(1);
+  });
+
+  it("registers participant action handlers on the dashboard bridge", () => {
+    /** @type {Record<string, Function>} */
+    let panelActionHandlers = {};
+    installDashboardPanelsVueBridge({
+      setPanelActionHandlers(handlers) {
+        panelActionHandlers = handlers;
+        return true;
+      },
+      syncParticipantControls: vi.fn(),
+      renderTimeOfDay: vi.fn(() => true),
+    });
+    const getDatasetAnalytics = vi.fn(() => ({ top_senders: [] }));
+    const participantFilters = { topCount: 25, sortMode: "most", timeframe: "all" };
+
+    createDashboardRenderController({
+      elements: {
+        summaryEl: document.createElement("div"),
+        sentimentSummaryEl: document.createElement("div"),
+        sentimentTrendNote: document.createElement("div"),
+        sentimentDailyChart: document.createElement("div"),
+        sentimentPositiveList: document.createElement("div"),
+        sentimentNegativeList: document.createElement("div"),
+        messageTypeSummaryEl: document.createElement("div"),
+        messageTypeNoteEl: document.createElement("div"),
+        pollsListEl: document.createElement("div"),
+        pollsTotalEl: document.createElement("div"),
+        pollsCreatorsEl: document.createElement("div"),
+        pollsNote: document.createElement("div"),
+      },
+      deps: {
+        getDatasetLabel: () => "Demo",
+        getDatasetEntries: () => [],
+        getDatasetAnalytics,
+        getCustomRange: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        participantFilters,
+        setParticipantView: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        searchPopulateParticipants: vi.fn(),
+        searchRenderResults: vi.fn(),
+        applyCustomRange: vi.fn(),
+        formatNumber: value => String(value),
+        formatFloat: value => String(value),
+        sanitizeText: text => String(text),
+      },
+    });
+
+    expect(typeof panelActionHandlers["participants:set-top-count"]).toBe("function");
+    expect(typeof panelActionHandlers["participants:set-sort-mode"]).toBe("function");
+    expect(typeof panelActionHandlers["participants:set-timeframe"]).toBe("function");
+    expect(typeof panelActionHandlers["participants:apply-preset"]).toBe("function");
+
+    panelActionHandlers["participants:set-top-count"]("participants:set-top-count", { value: "10" });
+    panelActionHandlers["participants:set-sort-mode"]("participants:set-sort-mode", { value: "quiet" });
+    panelActionHandlers["participants:set-timeframe"]("participants:set-timeframe", { value: "week" });
+    panelActionHandlers["participants:apply-preset"]("participants:apply-preset", { preset: "quiet" });
+
+    expect(mocked.applyParticipantTopChange).toHaveBeenCalledWith(participantFilters, "10");
+    expect(mocked.applyParticipantSortChange).toHaveBeenCalledWith(participantFilters, "quiet");
+    expect(mocked.applyParticipantTimeframeChange).toHaveBeenCalledWith(participantFilters, "week");
+    expect(mocked.applyParticipantPreset).toHaveBeenCalledWith(
+      participantFilters,
+      "quiet",
+      {
+        participantsTopSelect: null,
+        participantsSortSelect: null,
+        participantsTimeframeSelect: null,
+      },
+    );
+    expect(mocked.renderParticipants).toHaveBeenCalledTimes(4);
   });
 });
 

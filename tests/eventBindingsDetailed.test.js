@@ -58,6 +58,7 @@ describe("event bindings detailed", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
         },
       },
     };
@@ -141,11 +142,6 @@ describe("event bindings detailed", () => {
     shellActionHandlers["export.pdf"]?.();
     statA.click();
     statB.click();
-    participantsTopSelect.dispatchEvent(new Event("change"));
-    participantsSortSelect.dispatchEvent(new Event("change"));
-    participantsTimeframeSelect.dispatchEvent(new Event("change"));
-    presetA.click();
-
     expect(handlers.exportParticipants).toHaveBeenCalledTimes(1);
     expect(handlers.exportHourly).toHaveBeenCalledTimes(1);
     expect(handlers.exportDaily).toHaveBeenCalledTimes(1);
@@ -161,10 +157,10 @@ describe("event bindings detailed", () => {
     expect(handlers.handleDownloadPdfReport).toHaveBeenCalledTimes(1);
     expect(handlers.exportMessageSubtype).toHaveBeenCalledWith("links");
     expect(handlers.exportMessageSubtype).toHaveBeenCalledWith("media");
-    expect(handlers.handleParticipantsTopChange).toHaveBeenCalledTimes(1);
-    expect(handlers.handleParticipantsSortChange).toHaveBeenCalledTimes(1);
-    expect(handlers.handleParticipantsTimeframeChange).toHaveBeenCalledTimes(1);
-    expect(handlers.handleParticipantPresetClick).toHaveBeenCalledTimes(1);
+    expect(handlers.handleParticipantsTopChange).not.toHaveBeenCalled();
+    expect(handlers.handleParticipantsSortChange).not.toHaveBeenCalled();
+    expect(handlers.handleParticipantsTimeframeChange).not.toHaveBeenCalled();
+    expect(handlers.handleParticipantPresetClick).not.toHaveBeenCalled();
   });
 
   it("registers toolbar export actions with shell dispatcher when available", () => {
@@ -183,6 +179,7 @@ describe("event bindings detailed", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
         },
       },
     };
@@ -232,6 +229,7 @@ describe("event bindings detailed", () => {
           },
           [VUE_BRIDGE_NAMES.dashboardPanels]: {
             ownsParticipantInteractions: true,
+            setPanelActionHandlers: vi.fn(() => true),
           },
         },
       },
@@ -425,6 +423,7 @@ describe("event bindings detailed", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
         },
       },
     };

@@ -339,6 +339,7 @@ describe("appShell controllers", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
         },
       },
     };

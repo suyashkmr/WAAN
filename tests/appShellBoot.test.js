@@ -37,6 +37,7 @@ describe("appShell boot", () => {
         },
         [VUE_BRIDGE_NAMES.dashboardPanels]: {
           ownsParticipantInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
         },
       },
     };

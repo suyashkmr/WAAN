@@ -70,6 +70,54 @@ export function createDashboardRenderController({ elements, deps }) {
     return resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
   }
 
+  function rerenderParticipantsIfAvailable() {
+    const analytics = getDatasetAnalytics();
+    if (analytics) renderParticipants(analytics);
+  }
+
+  function registerParticipantActionHandlers() {
+    const dashboardPanelsBridge = resolveDashboardPanelsBridgeForParticipants();
+    if (typeof dashboardPanelsBridge?.setPanelActionHandlers !== "function") return;
+    dashboardPanelsBridge.setPanelActionHandlers({
+      "participants:set-top-count": (
+        /** @type {string} */ _actionId,
+        /** @type {{ value?: string } | null | undefined} */ payload,
+      ) => {
+        applyParticipantTopChange(participantFilters, payload?.value);
+        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
+        rerenderParticipantsIfAvailable();
+      },
+      "participants:set-sort-mode": (
+        /** @type {string} */ _actionId,
+        /** @type {{ value?: string } | null | undefined} */ payload,
+      ) => {
+        applyParticipantSortChange(participantFilters, payload?.value);
+        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
+        rerenderParticipantsIfAvailable();
+      },
+      "participants:set-timeframe": (
+        /** @type {string} */ _actionId,
+        /** @type {{ value?: string } | null | undefined} */ payload,
+      ) => {
+        applyParticipantTimeframeChange(participantFilters, payload?.value);
+        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
+        rerenderParticipantsIfAvailable();
+      },
+      "participants:apply-preset": (
+        /** @type {string} */ _actionId,
+        /** @type {{ preset?: string } | null | undefined} */ payload,
+      ) => {
+        applyParticipantPreset(participantFilters, payload?.preset, {
+          participantsTopSelect: null,
+          participantsSortSelect: null,
+          participantsTimeframeSelect: null,
+        });
+        dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
+        rerenderParticipantsIfAvailable();
+      },
+    });
+  }
+
   const participantsPanelController = createParticipantsPanelController({
     elements,
     deps: {
@@ -80,6 +128,7 @@ export function createDashboardRenderController({ elements, deps }) {
     },
   });
   const { renderParticipants } = participantsPanelController;
+  registerParticipantActionHandlers();
 
   const activityPanelsMetaRenderer = createActivityPanelsMetaRenderer({
     elements,
