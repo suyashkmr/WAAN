@@ -24,7 +24,6 @@ function createHandlers() {
     handleParticipantsSortChange: vi.fn(),
     handleParticipantsTimeframeChange: vi.fn(),
     handleParticipantPresetClick: vi.fn(),
-    handleParticipantRowToggle: vi.fn(),
   };
 }
 
@@ -77,7 +76,6 @@ describe("event bindings detailed", () => {
     const participantsTopSelect = document.createElement("select");
     const participantsSortSelect = document.createElement("select");
     const participantsTimeframeSelect = document.createElement("select");
-    const participantsBody = document.createElement("tbody");
     const presetA = document.createElement("button");
     const presetB = document.createElement("button");
 
@@ -121,7 +119,6 @@ describe("event bindings detailed", () => {
         participantsSortSelect,
         participantsTimeframeSelect,
         participantPresetButtons: [presetA, presetB],
-        participantsBody,
       },
       handlers,
       deps,
@@ -416,13 +413,9 @@ describe("event bindings detailed", () => {
     expect(deps.updateHourlyState).toHaveBeenCalledTimes(2);
   });
 
-  it("skips legacy participantsBody click binding when Vue dashboard bridge owns participant interactions", () => {
+  it("does not require legacy participant row-toggle handler wiring when Vue dashboard bridge owns interactions", () => {
     const handlers = createHandlers();
     const deps = createDeps();
-    const participantsBody = document.createElement("tbody");
-    const participantToggle = document.createElement("button");
-    participantToggle.className = "participant-toggle";
-    participantsBody.appendChild(participantToggle);
 
     globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
       bridges: {
@@ -437,13 +430,11 @@ describe("event bindings detailed", () => {
     };
 
     const { initEventHandlers } = createEventBindingsController({
-      elements: { participantsBody },
+      elements: {},
       handlers,
       deps,
     });
 
-    initEventHandlers();
-    participantToggle.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(handlers.handleParticipantRowToggle).not.toHaveBeenCalled();
+    expect(() => initEventHandlers()).not.toThrow();
   });
 });

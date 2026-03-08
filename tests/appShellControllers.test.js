@@ -316,7 +316,6 @@ describe("appShell controllers", () => {
       handleParticipantsSortChange: vi.fn(),
       handleParticipantsTimeframeChange: vi.fn(),
       handleParticipantPresetClick: vi.fn(),
-      handleParticipantRowToggle: vi.fn(),
     };
 
     const deps = {

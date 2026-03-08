@@ -83,7 +83,6 @@ export function createRuntimeHandlers({ controllerWiring, compositionAssembly, s
     handleParticipantsSortChange: controllerWiring.handleParticipantsSortChange,
     handleParticipantsTimeframeChange: controllerWiring.handleParticipantsTimeframeChange,
     handleParticipantPresetClick: controllerWiring.handleParticipantPresetClick,
-    handleParticipantRowToggle: controllerWiring.handleParticipantRowToggle,
     initRelayControls: compositionAssembly.initRelayControls,
     initThemeControls: controllerWiring.initThemeControls,
     setThemePreference: controllerWiring.setThemePreference,

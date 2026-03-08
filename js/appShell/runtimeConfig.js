@@ -47,7 +47,6 @@ export function createRuntimeEventBindings({
       participantsSortSelect: dashboardRefs.participantsSortSelect,
       participantsTimeframeSelect: dashboardRefs.participantsTimeframeSelect,
       participantPresetButtons: dashboardRefs.participantPresetButtons,
-      participantsBody: dashboardRefs.participantsBody,
       weekdayToggleWeekdays: filterRefs.weekdayToggleWeekdays,
       weekdayToggleWeekends: filterRefs.weekdayToggleWeekends,
       weekdayToggleWorking: filterRefs.weekdayToggleWorking,
@@ -80,7 +79,6 @@ export function createRuntimeEventBindings({
       handleParticipantsSortChange: handlers.handleParticipantsSortChange,
       handleParticipantsTimeframeChange: handlers.handleParticipantsTimeframeChange,
       handleParticipantPresetClick: handlers.handleParticipantPresetClick,
-      handleParticipantRowToggle: handlers.handleParticipantRowToggle,
     },
     deps: {
       updateStatus: deps.updateStatus,

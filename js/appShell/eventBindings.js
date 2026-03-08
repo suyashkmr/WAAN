@@ -40,7 +40,6 @@ export function createEventBindingsController({
     participantsSortSelect,
     participantsTimeframeSelect,
     participantPresetButtons,
-    participantsBody,
     weekdayToggleWeekdays,
     weekdayToggleWeekends,
     weekdayToggleWorking,
@@ -74,7 +73,6 @@ export function createEventBindingsController({
     handleParticipantsSortChange,
     handleParticipantsTimeframeChange,
     handleParticipantPresetClick,
-    handleParticipantRowToggle,
   } = handlers;
 
   const {
@@ -239,8 +237,6 @@ export function createEventBindingsController({
     if (!vueOwnsParticipantInteractions) {
       throw new Error("Dashboard panels bridge participant interaction ownership is required.");
     }
-    void participantsBody;
-    void handleParticipantRowToggle;
 
     if (weekdayToggleWeekdays) {
       weekdayToggleWeekdays.addEventListener("change", () => updateWeekdayFilter("weekdays", weekdayToggleWeekdays));
