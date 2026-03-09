@@ -288,19 +288,18 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
   function init() {
     const searchSavedBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
     const searchActionsVueManaged = searchActionsEl?.dataset?.vuePrimitiveMounted === "true";
-    const supportsSearchActionDispatch = Boolean(
-      searchActionsVueManaged
-      && searchSavedBridge
-      && typeof searchSavedBridge.setPanelActionHandlers === "function",
+    const searchFormVueManaged = form?.dataset?.vueSubmitManaged === "true";
+    const canRegisterSearchBridgeHandlers = Boolean(
+      searchSavedBridge && typeof searchSavedBridge.setPanelActionHandlers === "function",
     );
-    if (supportsSearchActionDispatch) {
+    if (canRegisterSearchBridgeHandlers && (searchActionsVueManaged || searchFormVueManaged)) {
       searchSavedBridge.setPanelActionHandlers({
         "search:run-search": () => handleSubmit({ preventDefault() {} }),
         "search:clear-search-filters": () => handleReset({ preventDefault() {} }),
       });
     }
-    if (form) form.addEventListener("submit", handleSubmit);
-    if (resetButton && !supportsSearchActionDispatch) resetButton.addEventListener("click", handleReset);
+    if (form && !searchFormVueManaged) form.addEventListener("submit", handleSubmit);
+    if (resetButton && !searchActionsVueManaged) resetButton.addEventListener("click", handleReset);
     hideSearchProgress();
     applyStateToForm();
     renderResults();

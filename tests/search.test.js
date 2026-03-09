@@ -283,6 +283,20 @@ describe("search controller", () => {
     expect(elements.keywordInput.value).toBe("");
   });
 
+  it("skips native form submit listener when bridge-owned search form submit is mounted", () => {
+    const elements = buildElements();
+    elements.form.dataset.vueSubmitManaged = "true";
+    elements.searchActionsEl.dataset.vuePrimitiveMounted = "true";
+    const bridge = installSearchSavedBridge(elements);
+    const submitSpy = vi.spyOn(elements.form, "addEventListener");
+
+    const controller = createSearchController({ elements, options: { vueRuntime: testVueRuntime } });
+    controller.init();
+
+    expect(bridge.setPanelActionHandlers).toHaveBeenCalled();
+    expect(submitSpy).not.toHaveBeenCalledWith("submit", expect.any(Function));
+  });
+
   it("keeps legacy reset button listener when bridge exists but Vue search actions are not mounted", () => {
     setDatasetEntries([
       {
@@ -300,6 +314,32 @@ describe("search controller", () => {
     const controller = createSearchController({ elements, options: { vueRuntime: testVueRuntime } });
     controller.init();
 
+    elements.keywordInput.value = "reset me";
+    elements.resetButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(elements.keywordInput.value).toBe("");
+  });
+
+  it("keeps legacy reset button listener when only submit is Vue-managed", () => {
+    setDatasetEntries([
+      {
+        type: "message",
+        sender: "Ana",
+        timestamp: "2025-01-02T10:00:00.000Z",
+        message: "hello world",
+      },
+    ]);
+
+    const elements = buildElements();
+    elements.form.dataset.vueSubmitManaged = "true";
+    installSearchSavedBridge(elements, {
+      setPanelActionHandlers: vi.fn(() => true),
+    });
+    const addEventListenerSpy = vi.spyOn(elements.resetButton, "addEventListener");
+
+    const controller = createSearchController({ elements, options: { vueRuntime: testVueRuntime } });
+    controller.init();
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith("click", expect.any(Function));
     elements.keywordInput.value = "reset me";
     elements.resetButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(elements.keywordInput.value).toBe("");

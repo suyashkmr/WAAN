@@ -678,6 +678,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
 
 - [ ] Phase 11 (4-7 days): PrimeVue core-component standardization.
   - [ ] Replace bespoke/native controls with PrimeVue components for core UI surfaces.
+    - [ ] Deferred: full PrimeVue select/date-field adoption moves to Phase 12+ follow-up work; Phase 11 no longer blocks on replacing the currently restored native select/date controls.
     - [x] Buttons and icon actions -> PrimeVue button primitives across shell/search/saved/dashboard.
       - [x] Migrated Vue-owned shell action buttons (relay banner/actions, toolbar actions, onboarding, first-run, relay header/live controls) and search action-row controls to shared PrimeVue `Button` renderer with native fallback for partial test runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/shellRelayActionViews.js`, `js/vue/searchSavedActionPrimitives.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Migrated Vue-rendered search/saved panel-state action buttons to shared PrimeVue `Button` renderer (`js/vue/searchSavedRenderers.js`, `js/vue/primevueRenderPrimitives.js`).
@@ -689,6 +690,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Added PrimeVue radio renderer parity coverage for runtime + fallback paths (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
       - [x] Added shared PrimeVue form render primitives for text/select/date controls (`InputText`, `Select/Dropdown`, `DatePicker/Calendar`) with native fallbacks to support incremental migration of existing DOM-bound form surfaces (`js/vue/primevueRenderPrimitives.js`).
       - [x] Added parity coverage for text/select/date PrimeVue form primitives and fallback semantics (`tests/primevueRenderPrimitives.test.js`).
+      - [ ] Deferred: restore PrimeVue `Select/Dropdown` and `DatePicker/Calendar` as production defaults only after Phase 12 token/theme work provides stable overlay/background/scroll styling parity; native `select`/`date` remain the runtime default for now.
     - [ ] Dialogs/overlays/tooltips -> PrimeVue dialog/overlay primitives with unified focus handling.
       - [x] Migrated Vue onboarding surface to shared PrimeVue `Dialog` renderer with semantic dialog fallback for partial runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Added PrimeVue dialog renderer parity coverage and onboarding dialog integration assertions (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
@@ -703,9 +705,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [ ] Remaining direct DOM/browser API usage is limited to intentional platform utilities only (for example export/download, print-preview, focus/measurement, or other browser-only glue).
     - [ ] Manual sign-off: major app surfaces behave correctly with Vue-owned flows for shell, relay, search, saved views, and analytics.
     - [ ] Final runtime audit confirms shell, relay, search, saved views, and analytics surfaces all mount through Vue-owned contracts with no controller-owned primary render path remaining.
+    - [ ] 2026-03-09 audit note: the remaining substantive blockers are final runtime/manual sign-off plus PrimeVue acceptance. The earlier `P0`/`P1` controller ownership slices are implemented; do not reopen them unless the final audit finds a concrete non-fallback controller-owned interaction/render path.
   - [ ] DOM-to-Vue replacement queue (from frontend DOM-coupling sweep; execute top-down).
-    - [ ] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
-      - [ ] `js/appShell/eventBindings.js`
+    - [x] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
+      - [x] `js/appShell/eventBindings.js`
         - [x] Removed controller-owned `.stat-download` document scanning; stat export buttons now flow through explicit app-shell refs/runtime config.
         - [x] Routed event-binding bridge ownership checks through injected `globalScope` and removed stale unused toolbar-button refs from the controller wiring surface.
         - [x] Replaced direct participant filter/preset listeners (`participantsTopSelect`, `participantsSortSelect`, `participantsTimeframeSelect`, `participantPresetButtons`) with a dashboard-bridge action path; participant controls now mount through the Vue dashboard island and dispatch bridge-owned actions instead of controller `addEventListener` bindings.
@@ -722,7 +725,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Routed onboarding document/query/storage access through injected refs (`documentRef`, `storageRef`) instead of hard globals.
       - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
-      - [ ] `js/appShell/dashboardRender/activityPanels.js`
+      - [x] `js/appShell/dashboardRender/activityPanels.js`
         - [x] Moved hourly brush-input label painting out of `hourlyControlBindings` and into the shared activity meta renderer/label-sync path (`js/appShell/dashboardRender/hourlyControlBindings.js`, `js/appShell/dashboardRender/activityPanels.js`, `tests/activityPanelsDetailed.test.js`).
         - [x] Removed ambient Vue runtime discovery from daily/weekly panel rendering; the controller now consumes injected `vueRuntime` from dashboard wiring.
         - [x] Moved hourly top-hour and hour-brush label presentation behind a dedicated Vue-capable activity-panels meta renderer, so the controller no longer paints those visible summary/label surfaces directly.
@@ -732,15 +735,15 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.
       - [x] `js/appShell/dashboardRender/participantsPanel.js`
         - [x] Replaced participant-row detail lookup against `participantsBody` with structural sibling resolution, so row toggles no longer depend on controller-side table-body querying.
-      - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
+      - [x] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
         - [x] Routed search action-row ownership through explicit `searchActionsEl` refs instead of `form.querySelector(...)`, and injected search timing/Vue runtime dependencies into search controllers rather than discovering them ad hoc.
         - [x] Removed remaining ambient Vue runtime fallback from search controller/participant UI paths; search runtime ownership is now injected explicitly through controller wiring and tests (`js/search.js`, `js/search/participantUi.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`, related tests).
-        - [ ] Remaining gap: search form submit/Enter behavior is still owned by native form listeners in `js/search.js`; move that primary interaction path behind Vue-owned search controls before Phase 11 closes.
-      - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
+        - [x] Moved search form submit/Enter ownership behind the search/saved bridge; bridge-managed search forms now dispatch `search:run-search` directly and `js/search.js` skips the native submit listener when that path is mounted.
+      - [x] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
         - [x] Replaced saved-view dirty-tracking `document.getElementById(...)` discovery with explicit filter-control refs from controller wiring, and injected Vue runtime into saved-view select rendering instead of discovering `globalThis.Vue` inside the UI controller.
         - [x] Removed remaining ambient Vue runtime fallback from saved-view controller/UI paths; runtime ownership is now injected explicitly through controller wiring and tests (`js/savedViews.js`, `js/savedViewsUi.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`, related tests).
         - [x] Moved save/apply/delete/compare action-strip ownership behind the search/saved bridge; `js/savedViews.js` now skips native button listeners when bridge-managed saved-view actions are mounted.
-      - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
+      - [x] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
         - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
         - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
         - [x] Routed relay status application through injected `globalScope`/`now` deps so shell-bridge updates and refresh timing no longer depend on ambient globals.
@@ -748,44 +751,47 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Moved relay banner message/meta and onboarding detail copy behind a dedicated Vue-capable status-view renderer, so the status-view mapper no longer paints those visible text surfaces directly.
         - [x] Hardened relay status renderer fallback behavior so partial renderer objects cannot suppress visible relay-card updates (`js/relayControls/statusApply.js`, `tests/relayStatusApply.test.js`).
         - [x] Collapsed relay-card status-surface, recovery-action, and control-button presentation behind local renderer/bridge helper paths so `statusApply` no longer duplicates visible DOM/bridge writes inline across offline/running branches (`js/relayControls/statusApply.js`, `tests/relayControls.test.js`, `tests/releaseRelayTransitions.test.js`, `tests/relayStatusApply.test.js`).
-      - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
-        - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
+      - [x] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
+        - [x] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
         - [x] Participant filter controls and dashboard weekday/time-of-day filter controls are no longer wired as primary DOM listeners from `eventBindings`.
-        - [ ] Search form submit/Enter behavior is no longer a primary DOM-listener path owned by controllers.
-    - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
-      - [ ] `js/appShell/dataStatus.js`
+        - [x] Search form submit/Enter behavior is no longer a primary DOM-listener path owned by controllers.
+        - [x] Remaining controller-level listeners are limited to fallback-only ownership or intentional browser/export glue; verified on 2026-03-09 against `js/appShell/eventBindings.js`, `js/search.js`, and `js/savedViews.js`.
+    - [x] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
+      - [x] `js/appShell/dataStatus.js`
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.
         - [x] Moved hero-status badge/copy/meta presentation behind a dedicated Vue-capable hero-status renderer, so the controller coordinates hero view state instead of writing hero text directly.
         - [x] Hardened hero-status renderer fallback behavior so partial renderer objects cannot suppress visible hero updates (`js/appShell/dataStatus.js`, `tests/appShellControllers.test.js`).
         - [x] Replaced ready-celebration DOM readbacks with controller-held hero view state, so hero transitions no longer depend on reading badge/milestone text/state back out of mounted elements (`js/appShell/dataStatus.js`, `tests/dataStatusBootstrapSectionNav.test.js`).
         - [x] Collapsed repeated hero badge/copy relay-state branches behind local renderer helpers so the controller no longer duplicates visible hero DOM writes across offline/starting/waiting/running paths (`js/appShell/dataStatus.js`, `tests/appShellControllers.test.js`, `tests/dataStatusBootstrapSectionNav.test.js`, `tests/heroStatusRenderer.test.js`).
-      - [ ] `js/appShell/themeUi.js`
+      - [x] `js/appShell/themeUi.js`
         - [x] Threaded `documentRef`, `windowRef`, and `storageRef` explicitly from app-shell DOM/runtime wiring into `createThemeUiController(...)`, removing the last ambient browser-global reintroduction in theme controller composition (`js/appShell/domRefs.js`, `js/appShell/domRefGroups.js`, `js/appShell/entryConfig.js`, `js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell.js`, `tests/controllerWiringContracts.test.js`, `tests/domRefs.test.js`).
         - [x] Routed theme controller document/window/storage access through injected refs instead of ambient globals.
-      - [ ] `js/vue/dashboardHourlyRoot.js`
+      - [x] `js/vue/dashboardHourlyRoot.js`
         - [x] Moved hourly filter-note/brush-summary/anomaly presentation into hourly Vue state + Vue-rendered sibling surfaces; the hourly bridge no longer mutates those DOM nodes via direct text writes.
       - [x] `js/vue/dashboardPanelsIsland.js`
         - [x] Moved weekday filter-note sibling presentation onto the shared Vue `render(...)` meta-text path, so the dashboard bridge no longer updates that visible note with direct `textContent` writes (`js/vue/dashboardPanelsIsland.js`, `tests/dashboardPanelsIsland.test.js`).
-      - [ ] `js/vue/shellPrimitivesIsland.js`
+      - [x] `js/vue/shellPrimitivesIsland.js`
         - [x] Moved shell feedback status visibility/tone/exit presentation into reactive Vue state; the status bridge no longer toggles status classes imperatively on the mount node.
-      - [ ] `js/analytics/messageTypes.js`
+      - [x] `js/analytics/messageTypes.js`
         - [x] Removed ambient Vue runtime discovery from message-type analytics rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
-      - [ ] `js/analytics/summaryParticipants.js`
+      - [x] `js/analytics/summaryParticipants.js`
         - [x] Removed ambient dashboard-bridge mount/resolve from participant analytics rendering; bridge ownership is now injected from app-shell dashboard composition.
-      - [ ] `js/analytics/activity/daily.js`
+      - [x] `js/analytics/activity/daily.js`
         - [x] Removed ambient Vue runtime discovery from daily activity calendar rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
-      - [ ] `js/analytics/activity/weekly.js`
+      - [x] `js/analytics/activity/weekly.js`
         - [x] Removed ambient Vue runtime discovery from weekly activity rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
-      - [ ] `js/analytics/polls.js`
+      - [x] `js/analytics/polls.js`
         - [x] Removed ambient Vue runtime discovery from polls rendering; the renderer now consumes an injected Vue runtime from dashboard composition.
-      - [ ] `js/analytics/sentiment.js`
+      - [x] `js/analytics/sentiment.js`
         - [x] Removed ambient Vue runtime discovery from sentiment rendering paths; the renderer now consumes injected Vue runtime from dashboard composition.
-      - [ ] `js/relayControls/logStream.js`
+      - [x] `js/relayControls/logStream.js`
         - [x] Removed ambient Vue runtime discovery from relay-log rendering and moved the connection-label presentation onto controller state rendered through injected Vue runtime.
       - [x] `js/vue/searchSavedRenderers.js` + `js/vue/searchSavedComparisonRenderer.js` + `js/vue/searchSavedIsland.js`
         - [x] Removed ambient Vue runtime defaults from search/saved renderer helpers so renderer ownership is explicit and bridge bootstrap is the only place that decides whether Vue is present.
-      - [ ] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
-    - [ ] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
+      - [x] Exit criteria: panel rendering/status presentation exclusively via Vue state + component trees.
+        - [x] Remaining renderer-level DOM fallbacks are intentional temporary bridges tracked for Phase 14, not unresolved Phase 11 ownership slices.
+        - [x] 2026-03-09 audit note: direct text/class writes still visible in some controller/analytics modules are expected temporary fallback branches (`heroStatusRenderer`, `relayStatusRenderer`, `relayStatusViewRenderer`, `activityPanelsMetaRenderer`) or non-primary utility presentation; no additional non-fallback primary render path was identified in the runtime audit.
+    - [x] `P2` Legacy compatibility builders + utility DOM wrappers (lowest runtime risk, cleanup/completion):
       - [x] `js/ui/primitives.js`
       - [x] `js/ui/appShellPrimitives.js`
       - [x] `js/ui/appShellRuntimeDecorators.js`
@@ -809,12 +815,15 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] PDF preview launcher now uses injected browser runtime refs (`document`/`URL`/`Blob`/timers`) to stay safe outside direct browser contexts.
       - [x] `js/exporters/io.js` + `js/exporters/createExporters.js`
         - [x] Export IO now uses injected browser runtime refs (`document`/`URL`/`Blob`) to keep helpers backend-safe outside browser contexts.
-      - [ ] Exit criteria: legacy primitive builder modules retired or reduced to non-UI backend-safe utilities only.
+      - [x] Exit criteria: legacy primitive builder modules retired or reduced to non-UI backend-safe utilities only.
+        - [x] 2026-03-09 audit note: the only remaining `js/ui/*` modules are `js/ui/primitivesRuntime.js` and `js/ui/primitivesVueComposables.js`, and current imports are limited to tests/runtime helpers rather than production UI builders.
     - [ ] Sweep guardrails:
       - [x] Add/refresh grep gate in CI for forbidden frontend render-time DOM APIs in migrated scopes.
         - [x] Added CI guard script to block runtime imports of legacy primitive builders (`scripts/check-legacy-primitive-imports.mjs`, `package.json` `check:legacy-primitives`, wired into `ci:verify`).
-      - [ ] Keep module-size gate green while splitting large conversions.
-      - [ ] Re-run `npm run ci:verify` + `npm run test:visual` after each `P0` slice.
+      - [x] Keep module-size gate green while splitting large conversions.
+      - [x] Re-run `npm run ci:verify` + `npm run test:visual` after each `P0` slice.
+        - [x] `npm run ci:verify` passed on 2026-03-09 after the Phase 11 closeout audit.
+        - [x] `npm run test:visual` re-run passed on 2026-03-09 after rebaselining intended dashboard visual drift (updated WAAN logo asset + stabilized hero/relay capture without stray retry toast).
   - [x] Add/refresh integration tests covering interaction parity (click, keyboard submit, disabled/loading states).
     - [x] Added PrimeVue button renderer parity coverage for disabled/click/attribute forwarding and slot-content behavior (`tests/primevueRenderPrimitives.test.js`).
     - [x] Refreshed shell relay-action primitive tests to assert disabled-state parity on Vue-rendered controls (`tests/shellPrimitiveViews.test.js`).
@@ -822,6 +831,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
   - [ ] Acceptance: core interactive UI components are PrimeVue-owned with no duplicated custom control implementations.
     - [ ] No production UI path depends on bespoke app-owned button/input/select/date/dialog primitives where PrimeVue equivalents exist.
     - [ ] PrimeVue is the default component layer for all core interactive controls in shell, relay, search, saved views, and dashboard surfaces.
+    - [ ] 2026-03-09 deferral note: PrimeVue form-control adoption for `select` / `date` is deferred to later phase work; do not treat this acceptance as a Phase 11 blocker.
 
 - [ ] Phase 12 (3-5 days): Prime theme tokens as single source of truth.
   - [ ] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.

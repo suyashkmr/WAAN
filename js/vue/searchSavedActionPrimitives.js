@@ -20,13 +20,36 @@ function bindPanelActionButton({ button, actionKey, dispatchPanelAction }) {
 
 /**
  * @param {{
+ *   form: HTMLFormElement | null | undefined,
+ *   actionKey: string,
+ *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
+ * }} params
+ */
+function bindPanelActionFormSubmit({ form, actionKey, dispatchPanelAction }) {
+  if (!form || form.dataset.vueSubmitManaged === "true") return;
+  form.addEventListener("submit", event => {
+    event?.preventDefault?.();
+    dispatchPanelAction(actionKey);
+  });
+  form.dataset.vueSubmitManaged = "true";
+  form.dataset.vueManaged = "true";
+}
+
+/**
+ * @param {{
  *   globalScope?: any,
  *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
  * }} params
  */
 export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatchPanelAction }) {
   const VueRuntime = globalScope?.Vue;
+  const form = globalScope?.document?.getElementById?.("advanced-search-form") ?? null;
   const actionsEl = globalScope?.document?.querySelector?.("#advanced-search-form .search-actions");
+  bindPanelActionFormSubmit({
+    form,
+    actionKey: "search:run-search",
+    dispatchPanelAction,
+  });
   if (!VueRuntime || !actionsEl) return;
   if (actionsEl.dataset.vuePrimitiveMounted === "true") return;
   const { createApp, h } = VueRuntime;
@@ -40,10 +63,6 @@ export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatch
           className: "ghost-button",
           id: "run-search",
           text: "Search messages",
-          onClick: event => {
-            event?.preventDefault?.();
-            dispatchPanelAction("search:run-search");
-          },
         }, globalScope),
         renderActionButton(h, {
           type: "button",

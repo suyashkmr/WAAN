@@ -78,6 +78,23 @@ describe("search saved action primitives", () => {
     expect(dispatchPanelAction).toHaveBeenNthCalledWith(2, "search:clear-search-filters");
   });
 
+  it("dispatches search run action from bridge-owned form submit", () => {
+    document.body.innerHTML = `
+      <form id="advanced-search-form">
+        <div class="search-actions"></div>
+      </form>
+    `;
+
+    const dispatchPanelAction = vi.fn();
+    mountSearchActionsPrimitive({ dispatchPanelAction });
+
+    const form = /** @type {HTMLFormElement | null} */ (document.getElementById("advanced-search-form"));
+    expect(form?.dataset.vueSubmitManaged).toBe("true");
+    form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+
+    expect(dispatchPanelAction).toHaveBeenCalledWith("search:run-search");
+  });
+
   it("dispatches saved-view action buttons through the panel dispatcher", () => {
     document.body.innerHTML = `
       <button id="save-view" type="button"></button>
