@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, createApp, h } from "vue";
-import { mountSearchActionsPrimitive } from "../js/vue/searchSavedActionPrimitives.js";
+import {
+  mountSavedViewsActionPrimitives,
+  mountSearchActionsPrimitive,
+} from "../js/vue/searchSavedActionPrimitives.js";
 
 describe("search saved action primitives", () => {
   afterEach(() => {
@@ -73,5 +76,27 @@ describe("search saved action primitives", () => {
 
     expect(dispatchPanelAction).toHaveBeenNthCalledWith(1, "search:run-search");
     expect(dispatchPanelAction).toHaveBeenNthCalledWith(2, "search:clear-search-filters");
+  });
+
+  it("dispatches saved-view action buttons through the panel dispatcher", () => {
+    document.body.innerHTML = `
+      <button id="save-view" type="button"></button>
+      <button id="apply-saved-view" type="button"></button>
+      <button id="delete-saved-view" type="button"></button>
+      <button id="compare-views" type="button"></button>
+    `;
+
+    const dispatchPanelAction = vi.fn();
+    mountSavedViewsActionPrimitives({ dispatchPanelAction });
+
+    document.getElementById("save-view")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    document.getElementById("apply-saved-view")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    document.getElementById("delete-saved-view")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    document.getElementById("compare-views")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(dispatchPanelAction).toHaveBeenNthCalledWith(1, "savedViews:save-view");
+    expect(dispatchPanelAction).toHaveBeenNthCalledWith(2, "savedViews:apply-selected-view");
+    expect(dispatchPanelAction).toHaveBeenNthCalledWith(3, "savedViews:delete-selected-view");
+    expect(dispatchPanelAction).toHaveBeenNthCalledWith(4, "savedViews:compare-views");
   });
 });

@@ -74,6 +74,9 @@ export function createSavedViewsUiController({
     searchSavedBridge.setPanelActionHandlers({
       "savedViews:save-view": () => onPanelAction("save-view"),
       "savedViews:focus-range": () => onPanelAction("focus-range"),
+      "savedViews:apply-selected-view": () => onPanelAction("apply-selected-view"),
+      "savedViews:delete-selected-view": () => onPanelAction("delete-selected-view"),
+      "savedViews:compare-views": () => onPanelAction("compare-views"),
       "savedViews:apply-view": (_actionId, payload) => onPanelAction("apply-view", payload),
     });
   }

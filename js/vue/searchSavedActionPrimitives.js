@@ -3,6 +3,23 @@ import { configurePrimeVueApp } from "./primevueApp.js";
 
 /**
  * @param {{
+ *   button: HTMLElement | null | undefined,
+ *   actionKey: string,
+ *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
+ * }} params
+ */
+function bindPanelActionButton({ button, actionKey, dispatchPanelAction }) {
+  if (!button || button.dataset.vuePrimitiveMounted === "true") return;
+  button.addEventListener("click", event => {
+    event?.preventDefault?.();
+    dispatchPanelAction(actionKey);
+  });
+  button.dataset.vuePrimitiveMounted = "true";
+  button.dataset.vueManaged = "true";
+}
+
+/**
+ * @param {{
  *   globalScope?: any,
  *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
  * }} params
@@ -42,4 +59,34 @@ export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatch
   configurePrimeVueApp(createApp(SearchActionsRoot), globalScope).mount(actionsEl);
   actionsEl.dataset.vuePrimitiveMounted = "true";
   actionsEl.dataset.vueManaged = "true";
+}
+
+/**
+ * @param {{
+ *   globalScope?: any,
+ *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
+ * }} params
+ */
+export function mountSavedViewsActionPrimitives({ globalScope = globalThis, dispatchPanelAction }) {
+  const doc = globalScope?.document ?? null;
+  bindPanelActionButton({
+    button: doc?.getElementById?.("save-view") ?? null,
+    actionKey: "savedViews:save-view",
+    dispatchPanelAction,
+  });
+  bindPanelActionButton({
+    button: doc?.getElementById?.("apply-saved-view") ?? null,
+    actionKey: "savedViews:apply-selected-view",
+    dispatchPanelAction,
+  });
+  bindPanelActionButton({
+    button: doc?.getElementById?.("delete-saved-view") ?? null,
+    actionKey: "savedViews:delete-selected-view",
+    dispatchPanelAction,
+  });
+  bindPanelActionButton({
+    button: doc?.getElementById?.("compare-views") ?? null,
+    actionKey: "savedViews:compare-views",
+    dispatchPanelAction,
+  });
 }

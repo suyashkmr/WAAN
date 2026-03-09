@@ -2,6 +2,7 @@
  * @returns {{
  *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
  *   setPanelActionHandlers: (handlers: Record<string, (actionId: string, payload?: any) => void>) => boolean,
+ *   hasPanelActionHandler: (actionKey: string) => boolean,
  * }}
  */
 export function createPanelActionDispatcher() {
@@ -29,8 +30,16 @@ export function createPanelActionDispatcher() {
     return true;
   }
 
+  /**
+   * @param {string} actionKey
+   */
+  function hasPanelActionHandler(actionKey) {
+    return typeof panelActionHandlers[actionKey] === "function";
+  }
+
   return {
     dispatchPanelAction,
     setPanelActionHandlers,
+    hasPanelActionHandler,
   };
 }

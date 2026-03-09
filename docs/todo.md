@@ -159,6 +159,16 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
 
 - [ ] If a trigger occurs, open a focused refactor task per `docs/engineering-guardrails.md`.
 
+## Commit / Push Checklist
+
+- [ ] Before every `commit and sync`, run `git status --short` and identify the full intended batch.
+- [ ] Do not split a behavior change across multiple commits unless each commit is independently green.
+- [ ] If a fix spans view/island code, controller wiring, state sync, and tests, treat it as one atomic batch unless intermediate commits are proven green.
+- [ ] Run focused tests for the affected flow before committing.
+- [ ] Run `npm run ci:verify` before pushing.
+- [ ] Re-run `git status --short` after validation so no related files are left behind unintentionally.
+- [ ] After pushing, check the GitHub Actions result for the pushed SHA before moving on.
+
 ## Next Wave: Reliability and Quality Gates Hardening
 
 - [ ] Priority execution order (practical recommendations):
@@ -701,13 +711,14 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Replaced direct participant filter/preset listeners (`participantsTopSelect`, `participantsSortSelect`, `participantsTimeframeSelect`, `participantPresetButtons`) with a dashboard-bridge action path; participant controls now mount through the Vue dashboard island and dispatch bridge-owned actions instead of controller `addEventListener` bindings.
         - [x] Replaced direct weekday/time-of-day filter and brush listeners in `eventBindings` with Vue-owned dashboard control interaction contracts; weekday/time-of-day controls now mount through the dashboard bridge and dispatch bridge-owned actions while controller responsibility stays limited to state writes/contracts.
         - [x] Replaced direct shell page-control listeners (`chatSelector`, `rangeSelect`, `customApplyButton`) with shell-bridge action dispatch; page controls now mount through the Vue shell island and dispatch bridge-owned actions while controller fallback only runs when shell page-control ownership is unavailable.
-      - [ ] `js/appShell/bootstrap.js`
+      - [x] `js/appShell/bootstrap.js`
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
-      - [ ] `js/appShell/relayBootstrap.js`
+      - [x] `js/appShell/relayBootstrap.js`
         - [x] Routed relay-bootstrap document/window/bridge access through injected runtime refs (`documentRef`, `windowRef`, `globalScope`) instead of hard globals.
-      - [ ] `js/appShell/sectionNav.js`
+      - [x] `js/appShell/sectionNav.js`
         - [x] Routed section-nav DOM/window/Vue runtime access through injected refs (`documentRef`, `windowRef`, `vueRuntime`) instead of hard globals.
-      - [ ] `js/appShell/onboarding.js`
+        - [x] Moved section-nav link click/focus/Arrow navigation ownership into the Vue render tree; the controller no longer imperatively binds per-link interaction listeners after mount.
+      - [x] `js/appShell/onboarding.js`
         - [x] Routed onboarding document/query/storage access through injected refs (`documentRef`, `storageRef`) instead of hard globals.
       - [x] `js/appShell/domRefs.js` + `js/appShell/domRefGroups.js`
         - [x] `createAppDomRefs` now resolves all selectors from injected `documentRef` instead of hard global `document`; grouped refs remain pure structural mapping.
@@ -716,17 +727,19 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Removed ambient Vue runtime discovery from daily/weekly panel rendering; the controller now consumes injected `vueRuntime` from dashboard wiring.
         - [x] Moved hourly top-hour and hour-brush label presentation behind a dedicated Vue-capable activity-panels meta renderer, so the controller no longer paints those visible summary/label surfaces directly.
         - [x] Replaced direct hourly filter and brush listeners with a dashboard-bridge action path; hourly controls now mount through the Vue dashboard island and dispatch bridge-owned actions while the legacy hourly control binder remains fallback-only when the bridge is absent.
-      - [ ] `js/appShell/dashboardRender/hourlyControlBindings.js`
+      - [x] `js/appShell/dashboardRender/hourlyControlBindings.js`
         - [x] Replaced internal hourly-control `document.getElementById(...)` lookups with explicit app-shell element refs threaded from `domRefs`/`domRefGroups`.
         - [x] Replaced remaining weekday label `document.getElementById(...)` lookups with explicit app-shell refs and threaded them through production controller wiring.
-      - [ ] `js/appShell/dashboardRender/participantsPanel.js`
+      - [x] `js/appShell/dashboardRender/participantsPanel.js`
         - [x] Replaced participant-row detail lookup against `participantsBody` with structural sibling resolution, so row toggles no longer depend on controller-side table-body querying.
       - [ ] `js/search.js` + `js/search/resultsUi.js` + `js/search/participantUi.js` + `js/search/progressUi.js`
         - [x] Routed search action-row ownership through explicit `searchActionsEl` refs instead of `form.querySelector(...)`, and injected search timing/Vue runtime dependencies into search controllers rather than discovering them ad hoc.
         - [x] Removed remaining ambient Vue runtime fallback from search controller/participant UI paths; search runtime ownership is now injected explicitly through controller wiring and tests (`js/search.js`, `js/search/participantUi.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`, related tests).
+        - [ ] Remaining gap: search form submit/Enter behavior is still owned by native form listeners in `js/search.js`; move that primary interaction path behind Vue-owned search controls before Phase 11 closes.
       - [ ] `js/savedViews.js` + `js/savedViewsUi.js` + `js/savedViewsDirtyTracking.js`
         - [x] Replaced saved-view dirty-tracking `document.getElementById(...)` discovery with explicit filter-control refs from controller wiring, and injected Vue runtime into saved-view select rendering instead of discovering `globalThis.Vue` inside the UI controller.
         - [x] Removed remaining ambient Vue runtime fallback from saved-view controller/UI paths; runtime ownership is now injected explicitly through controller wiring and tests (`js/savedViews.js`, `js/savedViewsUi.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`, related tests).
+        - [x] Moved save/apply/delete/compare action-strip ownership behind the search/saved bridge; `js/savedViews.js` now skips native button listeners when bridge-managed saved-view actions are mounted.
       - [ ] `js/relayControls/statusView.js` + `js/relayControls/statusApply.js` + `js/relayControls/syncProgress.js` + `js/relayControls/firstRunSetup.js`
         - [x] Replaced relay first-run/document lookups and sync-progress internal step queries with explicit refs threaded from app-shell/relay composition wiring.
         - [x] Replaced relay onboarding per-step `.querySelector(...)` detail discovery with explicit onboarding detail refs from app-shell DOM wiring.
@@ -737,7 +750,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Collapsed relay-card status-surface, recovery-action, and control-button presentation behind local renderer/bridge helper paths so `statusApply` no longer duplicates visible DOM/bridge writes inline across offline/running branches (`js/relayControls/statusApply.js`, `tests/relayControls.test.js`, `tests/releaseRelayTransitions.test.js`, `tests/relayStatusApply.test.js`).
       - [ ] Exit criteria: no direct `addEventListener`/`querySelector` render ownership in controllers above; interaction flow owned by Vue bridges/composables only.
         - [ ] Relay/status/search/saved/dashboard controllers only coordinate state/contracts; Vue components/bridges own the visible interaction and render flow.
-        - [ ] Participant filter controls and dashboard weekday/time-of-day filter controls are no longer wired as primary DOM listeners from `eventBindings`.
+        - [x] Participant filter controls and dashboard weekday/time-of-day filter controls are no longer wired as primary DOM listeners from `eventBindings`.
+        - [ ] Search form submit/Enter behavior is no longer a primary DOM-listener path owned by controllers.
     - [ ] `P1` Remaining analytics/feedback surfaces (medium risk, visible rendering):
       - [ ] `js/appShell/dataStatus.js`
         - [x] Routed ready-celebration timer/clock access through injected runtime deps (`setTimeoutRef`, `clearTimeoutRef`, `formatStatusTime`) instead of hard global timer/date usage.

@@ -5,16 +5,26 @@ import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeT
 
 function buildElements() {
   const nameInput = document.createElement("input");
+  nameInput.id = "saved-view-name";
   nameInput.placeholder = "Name this view";
   const saveButton = document.createElement("button");
+  saveButton.id = "save-view";
   const listSelect = document.createElement("select");
+  listSelect.id = "saved-view-list";
   const applyButton = document.createElement("button");
+  applyButton.id = "apply-saved-view";
   const deleteButton = document.createElement("button");
+  deleteButton.id = "delete-saved-view";
   const gallery = document.createElement("div");
+  gallery.id = "saved-view-gallery";
   const compareSelectA = document.createElement("select");
+  compareSelectA.id = "compare-view-a";
   const compareSelectB = document.createElement("select");
+  compareSelectB.id = "compare-view-b";
   const compareButton = document.createElement("button");
+  compareButton.id = "compare-views";
   const compareSummaryEl = document.createElement("div");
+  compareSummaryEl.id = "compare-summary";
   const rangeSelect = document.createElement("select");
   const customStartInput = document.createElement("input");
   const customEndInput = document.createElement("input");
@@ -314,6 +324,63 @@ describe("savedViews controller", () => {
 
     expect(dependencies.applyRangeAndRender).toHaveBeenCalledWith("all");
     expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Dispatcher View".', "success");
+  });
+
+  it("skips native saved-view action listeners when bridge-owned buttons are mounted", async () => {
+    const elements = buildElements();
+    document.body.append(
+      elements.saveButton,
+      elements.applyButton,
+      elements.deleteButton,
+      elements.compareButton,
+    );
+    globalThis.Vue = { h, render };
+    const searchSavedIsland = await import("../js/vue/searchSavedIsland.js");
+    searchSavedIsland.mountSearchSavedBridge();
+
+    const dependencies = buildDependencies();
+    const saveSpy = vi.spyOn(elements.saveButton, "addEventListener");
+    const applySpy = vi.spyOn(elements.applyButton, "addEventListener");
+    const deleteSpy = vi.spyOn(elements.deleteButton, "addEventListener");
+    const compareSpy = vi.spyOn(elements.compareButton, "addEventListener");
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+
+    expect(elements.saveButton.dataset.vueManaged).toBe("true");
+    expect(elements.applyButton.dataset.vueManaged).toBe("true");
+    expect(elements.deleteButton.dataset.vueManaged).toBe("true");
+    expect(elements.compareButton.dataset.vueManaged).toBe("true");
+    expect(saveSpy).not.toHaveBeenCalled();
+    expect(applySpy).not.toHaveBeenCalled();
+    expect(deleteSpy).not.toHaveBeenCalled();
+    expect(compareSpy).not.toHaveBeenCalled();
+  });
+
+  it("keeps native saved-view listeners when bridge handlers are not registered", async () => {
+    const elements = buildElements();
+    elements.saveButton.dataset.vueManaged = "true";
+    elements.applyButton.dataset.vueManaged = "true";
+    elements.deleteButton.dataset.vueManaged = "true";
+    elements.compareButton.dataset.vueManaged = "true";
+    installSearchSavedVueBridge({
+      setPanelActionHandlers: vi.fn(() => true),
+      hasPanelActionHandler: vi.fn(() => false),
+    });
+
+    const dependencies = buildDependencies();
+    const saveSpy = vi.spyOn(elements.saveButton, "addEventListener");
+    const applySpy = vi.spyOn(elements.applyButton, "addEventListener");
+    const deleteSpy = vi.spyOn(elements.deleteButton, "addEventListener");
+    const compareSpy = vi.spyOn(elements.compareButton, "addEventListener");
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+
+    expect(saveSpy).toHaveBeenCalledWith("click", expect.any(Function));
+    expect(applySpy).toHaveBeenCalledWith("click", expect.any(Function));
+    expect(deleteSpy).toHaveBeenCalledWith("click", expect.any(Function));
+    expect(compareSpy).toHaveBeenCalledWith("click", expect.any(Function));
   });
 
   it("syncs bridge-owned page controls when applying a saved view", async () => {

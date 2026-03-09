@@ -4,7 +4,10 @@ import {
   resolveVueBridge,
 } from "./bridgeRegistry.js";
 import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
-import { mountSearchActionsPrimitive } from "./searchSavedActionPrimitives.js";
+import {
+  mountSavedViewsActionPrimitives,
+  mountSearchActionsPrimitive,
+} from "./searchSavedActionPrimitives.js";
 import {
   renderPanelStateWithVue,
   renderSearchResultsWithVue,
@@ -21,7 +24,11 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
       && existingBridge.__waanVueSearchBridge === true
       && existingBridge.__runtimeBoundToVue !== true,
   );
-  if (existingBridge && !shouldReplaceExistingBridge) return;
+  if (existingBridge && !shouldReplaceExistingBridge) {
+    mountSearchActionsPrimitive({ globalScope, dispatchPanelAction: actionKey => existingBridge.dispatchPanelAction?.(actionKey) });
+    mountSavedViewsActionPrimitives({ globalScope, dispatchPanelAction: actionKey => existingBridge.dispatchPanelAction?.(actionKey) });
+    return;
+  }
   const doc = globalScope.document ?? null;
   const vueRuntime = globalScope.Vue;
   const hasRenderableVueRuntime = Boolean(
@@ -30,12 +37,14 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
       && typeof vueRuntime.render === "function",
   );
   if (!hasRenderableVueRuntime) return;
-  const { dispatchPanelAction, setPanelActionHandlers } = createPanelActionDispatcher();
+  const { dispatchPanelAction, setPanelActionHandlers, hasPanelActionHandler } = createPanelActionDispatcher();
   mountSearchActionsPrimitive({ globalScope, dispatchPanelAction });
+  mountSavedViewsActionPrimitives({ globalScope, dispatchPanelAction });
 
   registerVueBridge(VUE_BRIDGE_NAMES.searchSaved, {
     __waanVueSearchBridge: true,
     __runtimeBoundToVue: true,
+    dispatchPanelAction,
     renderSearchPanelState(payload = {}) {
       const container = doc?.getElementById?.("search-results-list") ?? null;
       return renderPanelStateWithVue({
@@ -93,6 +102,7 @@ export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
       });
     },
     setPanelActionHandlers,
+    hasPanelActionHandler,
   }, { globalScope });
 }
 

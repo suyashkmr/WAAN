@@ -11,6 +11,7 @@ import {
   bindSavedViewDirtyWatchers,
 } from "./savedViewsDirtyTracking.js";
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
+import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
     nameInput,
@@ -171,6 +172,9 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       onPanelAction: (actionId, payload = null) => {
         if (actionId === "save-view") return handleSaveView();
         if (actionId === "focus-range") rangeSelect?.focus();
+        if (actionId === "apply-selected-view") return handleApplySavedView();
+        if (actionId === "delete-selected-view") return handleDeleteSavedView();
+        if (actionId === "compare-views") return handleCompareViews();
         if (actionId === "apply-view") return applySavedViewById(payload?.viewId);
       },
     },
@@ -180,14 +184,12 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   function resetForNewDataset() {
     clearSavedViews();
     activeViewId = null;
-    lastAppliedViewSignature = null;
-    refreshUI();
+    lastAppliedViewSignature = null; refreshUI();
   }
 
   async function applySavedView(view) {
     const rangeValue = typeof view.rangeData === "object" && view.rangeData ? view.rangeData : view.range;
     const isCustom = typeof rangeValue === "object";
-
     setCurrentRange(isCustom ? "custom" : rangeValue);
     setCustomRange(isCustom ? rangeValue : null);
     syncSavedViewPageControls(syncPageControls, rangeValue);
@@ -302,10 +304,12 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function attachEvents() {
-    if (saveButton) saveButton.addEventListener("click", handleSaveView);
-    if (applyButton) applyButton.addEventListener("click", handleApplySavedView);
-    if (deleteButton) deleteButton.addEventListener("click", handleDeleteSavedView);
-    if (compareButton) compareButton.addEventListener("click", handleCompareViews);
+    if (!supportsBridgeOwnedSavedViewActions({ saveButton, applyButton, deleteButton, compareButton })) {
+      if (saveButton) saveButton.addEventListener("click", handleSaveView);
+      if (applyButton) applyButton.addEventListener("click", handleApplySavedView);
+      if (deleteButton) deleteButton.addEventListener("click", handleDeleteSavedView);
+      if (compareButton) compareButton.addEventListener("click", handleCompareViews);
+    }
 
     const refreshOnStateChange = () => activeViewId && refreshUI();
     bindSavedViewDirtyWatchers({
@@ -333,12 +337,11 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   function setDataAvailabilityState(flag) {
     dataAvailable = Boolean(flag);
     if (nameInput) {
-      nameInput.placeholder = dataAvailable ? placeholderText : "Load a chat first";
-      if (!dataAvailable) nameInput.value = "";
+      nameInput.placeholder = dataAvailable ? placeholderText : "Load a chat first"; if (!dataAvailable) nameInput.value = "";
     }
     updateControlsDisabled();
     refreshUI();
   }
 
-  return { init() { attachEvents(); refreshUI(); }, refreshUI, resetForNewDataset, setDataAvailability: setDataAvailabilityState };
+  return { init() { refreshUI(); attachEvents(); }, refreshUI, resetForNewDataset, setDataAvailability: setDataAvailabilityState };
 }

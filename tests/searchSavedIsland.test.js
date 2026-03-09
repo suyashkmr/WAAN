@@ -96,6 +96,70 @@ describe("search saved island bridge mounting", () => {
     expect(bridge?.__runtimeBoundToVue).toBe(true);
   });
 
+  it("reuses the registered dispatcher when late action buttons appear after initial bridge mount", () => {
+    const fakeWindow = {
+      document,
+      console,
+      Vue: {
+        createApp(root) {
+          return {
+            mount(container) {
+              if (!container) return;
+              container.innerHTML = "";
+              const vnodeList = root.render();
+              const nodes = Array.isArray(vnodeList) ? vnodeList : [vnodeList];
+              nodes.forEach(vnode => {
+                const button = document.createElement("button");
+                Object.entries(vnode?.props || {}).forEach(([key, value]) => {
+                  if (key === "onClick" && typeof value === "function") {
+                    button.addEventListener("click", value);
+                    return;
+                  }
+                  if (key === "class" || key === "className") {
+                    button.className = String(value || "");
+                    return;
+                  }
+                  if (key === "label") {
+                    button.textContent = String(value || "");
+                    return;
+                  }
+                  if (key === "type" || key === "id" || key.startsWith("data-")) {
+                    button.setAttribute(key, String(value));
+                  }
+                });
+                container.appendChild(button);
+              });
+            },
+          };
+        },
+        h: (type, props = {}, children = []) => ({ type, props, children }),
+        render: (vnode, container) => {
+          if (!container) return;
+          if (!vnode) {
+            container.innerHTML = "";
+            return;
+          }
+          container.innerHTML = "<div>rendered</div>";
+        },
+      },
+    };
+
+    mountSearchSavedBridge({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: fakeWindow });
+    const handler = vi.fn();
+    bridge?.setPanelActionHandlers?.({
+      "savedViews:save-view": handler,
+    });
+
+    document.body.insertAdjacentHTML("beforeend", '<button id="save-view" type="button"></button>');
+    mountSearchSavedBridge({ globalScope: fakeWindow });
+
+    const button = document.getElementById("save-view");
+    expect(button?.dataset.vueManaged).toBe("true");
+    button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(handler).toHaveBeenCalledWith("savedViews:save-view", null);
+  });
+
   it("keeps a stable Vue root for saved-view gallery rerenders", () => {
     const fakeWindow = {
       document,
