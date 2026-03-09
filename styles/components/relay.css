@@ -56,7 +56,7 @@
     display: block;
     height: 100%;
     width: 0;
-    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #fff));
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--text-on-strong)));
     transition: width var(--motion-duration-fast) var(--motion-ease-out);
 }
 
@@ -131,7 +131,7 @@
 }
 
 .relay-status-banner[data-status="starting"] .relay-banner-indicator {
-    background: color-mix(in srgb, var(--accent-strong) 84%, #fff);
+    background: color-mix(in srgb, var(--accent-strong) 84%, var(--text-on-strong));
     animation: relayIndicatorPulse 1.9s var(--motion-ease-emphasis) infinite;
 }
 
@@ -161,12 +161,12 @@
 
 .relay-status-banner[data-status="running"] {
     border-color: color-mix(in srgb, var(--success) 35%, var(--glass-border));
-    box-shadow: 0 18px 34px color-mix(in srgb, var(--success) 18%, rgba(5, 7, 16, 0.28));
+    box-shadow: 0 18px 34px color-mix(in srgb, var(--success) 18%, var(--shadow-ink));
 }
 
 .relay-status-banner[data-status="starting"] {
     border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-border));
-    box-shadow: 0 18px 32px color-mix(in srgb, var(--accent) 16%, rgba(5, 7, 16, 0.26));
+    box-shadow: 0 18px 32px color-mix(in srgb, var(--accent) 16%, var(--shadow-ink));
 }
 
 .relay-status-banner[data-status="waiting_qr"] {
@@ -175,7 +175,7 @@
 
 .relay-status-banner[data-status="error"] {
     border-color: color-mix(in srgb, var(--danger) 35%, var(--glass-border));
-    box-shadow: 0 18px 34px color-mix(in srgb, var(--danger) 18%, rgba(5, 7, 16, 0.26));
+    box-shadow: 0 18px 34px color-mix(in srgb, var(--danger) 18%, var(--shadow-ink));
 }
 
 @keyframes relayIndicatorPulse {
@@ -344,7 +344,7 @@
     height: 100vh;
     background: var(--card-bg);
     border-left: 1px solid var(--border);
-    box-shadow: -12px 0 26px rgba(3, 5, 10, 0.32);
+    box-shadow: -12px 0 26px rgb(var(--shadow-ink-rgb) / 0.32);
     transform: translateX(100%);
     transition: transform 0.3s ease;
     display: flex;
@@ -422,5 +422,5 @@
     height: auto;
     border-radius: var(--shape-small);
     margin-bottom: 0.5rem;
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+    filter: drop-shadow(0 10px 20px rgb(var(--shadow-ink-rgb) / 0.25));
 }

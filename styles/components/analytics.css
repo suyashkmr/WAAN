@@ -6,7 +6,7 @@
     --analytics-shell-radius: 1rem;
     --analytics-shell-border: color-mix(in srgb, var(--border) 88%, transparent);
     --analytics-shell-bg: color-mix(in srgb, var(--card-bg) 92%, transparent);
-    --analytics-shell-specular: color-mix(in srgb, var(--edge-specular, rgba(255, 255, 255, 0.12)) 24%, transparent);
+    --analytics-shell-specular: color-mix(in srgb, var(--edge-specular) 24%, transparent);
     --analytics-shell-shadow: var(--shadow-card);
     --analytics-shell-shadow-hover: var(--shadow-card-strong);
 }
@@ -72,7 +72,7 @@
     min-height: 180px;
     background: linear-gradient(160deg,
         color-mix(in srgb, var(--highlight-accent, var(--accent)) 30%, transparent) 0%,
-        rgba(15, 23, 42, 0.72) 65%);
+        color-mix(in srgb, var(--bg-room) 78%, var(--bg-canvas)) 65%);
     border: 1px solid color-mix(in srgb, var(--highlight-accent, var(--accent)) 28%, var(--border));
     box-shadow: var(--analytics-shell-shadow);
     overflow: hidden;
@@ -230,7 +230,7 @@
 .highlight-card .highlight-meta {
     margin-top: auto;
     font-size: 0.75rem;
-    color: rgba(226, 232, 240, 0.75);
+    color: color-mix(in srgb, var(--text) 75%, transparent);
     display: flex;
     align-items: center;
     gap: 0.35rem;
@@ -249,7 +249,7 @@
     gap: 0.25rem;
     list-style-position: inside;
     font-size: 0.85rem;
-    color: rgba(226, 232, 240, 0.92);
+    color: color-mix(in srgb, var(--text) 92%, transparent);
 }
 
 .highlight-card .highlight-items li {
@@ -265,7 +265,7 @@
 
 .highlight-card .highlight-items .item-value {
     font-variant-numeric: tabular-nums;
-    color: rgba(226, 232, 240, 0.8);
+    color: color-mix(in srgb, var(--text) 80%, transparent);
     white-space: nowrap;
     text-align: right;
 }

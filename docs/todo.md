@@ -837,9 +837,12 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
   - [ ] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.
     - [ ] Map existing CSS/token references to Prime theme semantic tokens.
       - [x] Introduced generated Prime-token bridge layer in `styles/prime-theme-bridge.css` (via `scripts/generate-prime-theme-bridge.mjs`) and imported it into the runtime stylesheet stack so legacy WAAN theme aliases can start resolving from Prime-style semantic tokens instead of hard-coded base values.
+      - [x] Migrated `styles.base.css` root/light/dark alias blocks to derive from the generated Prime bridge while preserving existing first-paint light/dark behavior and pre-bridge `surface-tint` / dark container values.
+      - [x] Replaced a first batch of component-skinning literals in `styles/components/analytics.css`, `styles/components/search-saved.css`, `styles/components/analytics-charts.css`, and `styles/components/relay.css` with shared bridge-backed semantic tokens (`--text-on-strong`, `--warning`, `--shadow-*`, `--shape-*`, `--bg-canvas`, `--edge-specular`).
     - [ ] Remove duplicated non-Prime component token definitions where token roles overlap.
     - [ ] Sweep the full codebase for component-facing token usage and migrate every remaining non-Prime component token reference, not just the major shell/dashboard/search surfaces.
     - [ ] Record any intentionally retained non-Prime tokens and justify why they are app-frame/layout tokens instead of component-skinning tokens.
+      - [x] Audit note: current remaining component-local custom properties in `styles/components/*.css` are mostly semantic aliases (`--card-accent`, analytics shell helpers, command-control sizing) rather than parallel raw palette systems; the next sweep should remove or justify each one explicitly.
   - [ ] Ensure light/dark and accessibility contrast remain compliant after token consolidation.
   - [x] Add regression checks for token drift (theme snapshot/contract tests in CI).
     - [x] Added `check:prime-theme-bridge` to verify the generated Prime-token bridge stays in sync with `scripts/generate-prime-theme-bridge.mjs`, and wired it into `npm run ci:verify`.
