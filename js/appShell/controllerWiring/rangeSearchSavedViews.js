@@ -1,5 +1,6 @@
 // @ts-check
 
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
 import { createSearchController } from "../../search.js";
 import { createSavedViewsController } from "../../savedViews.js";
 import {
@@ -31,6 +32,10 @@ export function createRangeSearchSavedViewsWiring({
   callbacks,
   dashboardControllerApi,
 }) {
+  const globalScope = dom.windowRef ?? globalThis;
+  /** @param {Record<string, any>} nextState */
+  const syncPageControls = nextState =>
+    Boolean(resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })?.syncPageControls?.(nextState));
   const chatSelectionController = createChatSelectionController({
     chatSelector: dom.chatSelector,
     brandName: constants.brandName,
@@ -38,6 +43,7 @@ export function createRangeSearchSavedViewsWiring({
     formatDisplayDate: utils.formatDisplayDate,
     getActiveChatId: state.getActiveChatId,
     setActiveChatId: state.setActiveChatId,
+    syncPageControls,
   });
   const {
     encodeChatSelectorValue,
@@ -81,6 +87,7 @@ export function createRangeSearchSavedViewsWiring({
       onRangeApplied: callbacks.syncHeroPillsWithRange,
       nextAnalyticsRequestToken: analyticsRequestTracker.nextToken,
       isAnalyticsRequestCurrent: analyticsRequestTracker.isCurrent,
+      syncPageControls,
     },
   });
   const {
@@ -178,6 +185,7 @@ export function createRangeSearchSavedViewsWiring({
       filterEntriesByRange,
       normalizeRangeValue,
       computeAnalyticsWithWorker,
+      syncPageControls,
       vueRuntime: dom.vueRuntime ?? null,
     },
   });

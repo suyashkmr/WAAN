@@ -26,6 +26,7 @@ import {
   resolveVueBridge,
 } from "./bridgeRegistry.js";
 import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
+import { configurePrimeVueApp } from "./primevueApp.js";
 
 export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   const VueRuntime = globalScope?.Vue;
@@ -100,7 +101,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       dispatchPanelAction,
       globalScope,
     );
-    createApp(ParticipantsControlsRoot).mount(participantControlsMountEl);
+    configurePrimeVueApp(createApp(ParticipantsControlsRoot), globalScope).mount(participantControlsMountEl);
     participantControlsMountEl.dataset.vueParticipantsControlsMounted = "true";
   }
 
@@ -111,7 +112,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       dispatchPanelAction,
       globalScope,
     );
-    createApp(ParticipantsQuickFiltersRoot).mount(participantQuickFiltersMountEl);
+    configurePrimeVueApp(createApp(ParticipantsQuickFiltersRoot), globalScope).mount(participantQuickFiltersMountEl);
     participantQuickFiltersMountEl.dataset.vueParticipantsQuickFiltersMounted = "true";
   }
 
@@ -121,7 +122,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       hourlyControlsState,
       dispatchPanelAction,
     );
-    createApp(HourlyControlsRoot).mount(hourlyControlsMountEl);
+    configurePrimeVueApp(createApp(HourlyControlsRoot), globalScope).mount(hourlyControlsMountEl);
     hourlyControlsMountEl.dataset.vueHourlyControlsMounted = "true";
   }
 
@@ -131,7 +132,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       weekdayControlsState,
       dispatchPanelAction,
     );
-    createApp(WeekdayControlsRoot).mount(weekdayControlsMountEl);
+    configurePrimeVueApp(createApp(WeekdayControlsRoot), globalScope).mount(weekdayControlsMountEl);
     weekdayControlsMountEl.dataset.vueWeekdayControlsMounted = "true";
   }
 
@@ -141,7 +142,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
       timeOfDayControlsState,
       dispatchPanelAction,
     );
-    createApp(TimeOfDayControlsRoot).mount(timeOfDayControlsMountEl);
+    configurePrimeVueApp(createApp(TimeOfDayControlsRoot), globalScope).mount(timeOfDayControlsMountEl);
     timeOfDayControlsMountEl.dataset.vueTimeOfDayControlsMounted = "true";
   }
 

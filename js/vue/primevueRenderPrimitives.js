@@ -119,26 +119,7 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
       label: String(option?.label ?? option?.value ?? ""),
     }))
     : [];
-
-  const PrimeSelect = resolvePrimeVueComponent("Select", globalScope)
-    || resolvePrimeVueComponent("Dropdown", globalScope);
-  if (PrimeSelect) {
-    return h(PrimeSelect, {
-      inputId: id,
-      options: normalizedOptions,
-      optionLabel: "label",
-      optionValue: "value",
-      modelValue: String(value ?? ""),
-      disabled: Boolean(disabled),
-      unstyled: true,
-      "data-ui-runtime": "primevue",
-      "onUpdate:modelValue": nextValue => {
-        if (typeof onChange !== "function") return;
-        onChange({ target: { value: String(nextValue ?? "") } });
-      },
-      ...attrs,
-    });
-  }
+  void globalScope;
 
   return h(
     "select",
@@ -162,29 +143,7 @@ export function renderDateInput(h, options, globalScope = globalThis) {
     attrs = {},
   } = options;
 
-  const PrimeDatePicker = resolvePrimeVueComponent("DatePicker", globalScope)
-    || resolvePrimeVueComponent("Calendar", globalScope);
-  if (PrimeDatePicker) {
-    const hasValue = String(value || "").length > 0;
-    return h(PrimeDatePicker, {
-      inputId: id,
-      modelValue: hasValue ? new Date(`${value}T00:00:00`) : null,
-      dateFormat: "yy-mm-dd",
-      manualInput: false,
-      disabled: Boolean(disabled),
-      unstyled: true,
-      "data-ui-runtime": "primevue",
-      "onUpdate:modelValue": nextValue => {
-        if (typeof onChange !== "function") return;
-        const date = nextValue instanceof Date ? nextValue : null;
-        const normalized = date
-          ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-          : "";
-        onChange({ target: { value: normalized } });
-      },
-      ...attrs,
-    });
-  }
+  void globalScope;
 
   return h("input", {
     type: "date",

@@ -7,11 +7,13 @@ import {
   createRelayHeaderActionsRoot,
   createRelayLiveActionsRoot,
 } from "./shellPrimitiveViews.js";
+import { mountPageControlsPrimitive } from "./shellPageControlsIsland.js";
 import {
   VUE_BRIDGE_NAMES,
   registerVueBridge,
   resolveVueBridge,
 } from "./bridgeRegistry.js";
+import { configurePrimeVueApp } from "./primevueApp.js";
 import { renderActionButton } from "./primevueRenderPrimitives.js";
 
 /**
@@ -42,7 +44,7 @@ function mountRelayBannerPrimitive(globalScope = globalThis) {
     dispatchShellAction(actionId, payload, globalScope),
   );
 
-  const app = createApp(RelayBannerRoot);
+  const app = configurePrimeVueApp(createApp(RelayBannerRoot), globalScope);
   app.mount(bannerEl);
   bannerEl.dataset.vuePrimitiveMounted = "true";
 }
@@ -58,7 +60,7 @@ function mountActionsToolbarPrimitive(globalScope = globalThis) {
     dispatchShellAction(actionId, payload, globalScope),
   );
 
-  const app = createApp(ActionsToolbarRoot);
+  const app = configurePrimeVueApp(createApp(ActionsToolbarRoot), globalScope);
   app.mount(toolbarEl);
   toolbarEl.dataset.vuePrimitiveMounted = "true";
 }
@@ -74,7 +76,7 @@ function mountOnboardingDialogPrimitive(globalScope = globalThis) {
     dispatchShellAction(actionId, payload, globalScope),
   );
 
-  const app = createApp(OnboardingDialogRoot);
+  const app = configurePrimeVueApp(createApp(OnboardingDialogRoot), globalScope);
   app.mount(onboardingEl);
   onboardingEl.dataset.vuePrimitiveMounted = "true";
 }
@@ -89,7 +91,7 @@ function mountFirstRunActionsPrimitive(globalScope = globalThis) {
   const FirstRunActionsRoot = createFirstRunActionsRoot(h, (actionId, payload = null) =>
     dispatchShellAction(actionId, payload, globalScope),
   );
-  createApp(FirstRunActionsRoot).mount(firstRunActionsEl);
+  configurePrimeVueApp(createApp(FirstRunActionsRoot), globalScope).mount(firstRunActionsEl);
   firstRunActionsEl.dataset.vuePrimitiveMounted = "true";
 }
 
@@ -103,7 +105,7 @@ function mountRelayHeaderActionsPrimitive(globalScope = globalThis) {
   const RelayHeaderActionsRoot = createRelayHeaderActionsRoot(h, (actionId, payload = null) =>
     dispatchShellAction(actionId, payload, globalScope),
   );
-  createApp(RelayHeaderActionsRoot).mount(actionsEl);
+  configurePrimeVueApp(createApp(RelayHeaderActionsRoot), globalScope).mount(actionsEl);
   actionsEl.dataset.vuePrimitiveMounted = "true";
 }
 
@@ -117,7 +119,7 @@ function mountRelayLiveActionsPrimitive(globalScope = globalThis) {
   const RelayLiveActionsRoot = createRelayLiveActionsRoot(h, (actionId, payload = null) =>
     dispatchShellAction(actionId, payload, globalScope),
   );
-  createApp(RelayLiveActionsRoot).mount(actionsEl);
+  configurePrimeVueApp(createApp(RelayLiveActionsRoot), globalScope).mount(actionsEl);
   actionsEl.dataset.vuePrimitiveMounted = "true";
 }
 
@@ -226,6 +228,7 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
   const { updateRelayRecoveryActions, updateRelayControlButtons } = createRelayControlsBridgeMethods({
     documentRef: globalScope.document ?? null,
   });
+  const pageControlsBridge = mountPageControlsPrimitive(globalScope);
   /** @type {Record<string, (...args: any[]) => any>} */
   const shellActionHandlers = {};
 
@@ -322,6 +325,8 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     dispatchShellAction: dispatchShellActionBridge,
     setRelayActionHandlers,
     dispatchRelayAction,
+    ownsPageControlInteractions: Boolean(pageControlsBridge?.ownsPageControlInteractions),
+    syncPageControls: nextState => pageControlsBridge?.syncPageControls?.(nextState) ?? false,
   }, { globalScope });
 }
 

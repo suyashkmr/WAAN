@@ -1,4 +1,5 @@
 import { renderActionButton } from "./primevueRenderPrimitives.js";
+import { configurePrimeVueApp } from "./primevueApp.js";
 
 /**
  * @param {{
@@ -38,7 +39,7 @@ export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatch
     },
   };
 
-  createApp(SearchActionsRoot).mount(actionsEl);
+  configurePrimeVueApp(createApp(SearchActionsRoot), globalScope).mount(actionsEl);
   actionsEl.dataset.vuePrimitiveMounted = "true";
   actionsEl.dataset.vueManaged = "true";
 }

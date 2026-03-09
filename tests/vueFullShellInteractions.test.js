@@ -5,6 +5,7 @@ import {
   resolveVueBridge,
 } from "../js/vue/bridgeRegistry.js";
 import { mountVueAppShellRoot, VUE_APP_SHELL_ROOT_KEY } from "../js/vue/appShellRoot.js";
+import { mountPageControlsPrimitive } from "../js/vue/shellPageControlsIsland.js";
 
 function createVueRuntimeStub() {
   /**
@@ -104,6 +105,7 @@ describe("vue full-shell interactions", () => {
       <div id="timeofday-chart"></div>
       <div id="data-status"></div>
       <div id="toast-container"></div>
+      <div class="page-controls"><div class="control-row primary-controls"></div></div>
       <form id="advanced-search-form"><div class="search-actions"></div></form>
       <div id="search-results-list"></div>
       <div id="search-insights"></div>
@@ -133,13 +135,23 @@ describe("vue full-shell interactions", () => {
     const searchBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope: globalThis });
     expect(shellBridge).toBeTruthy();
     expect(searchBridge).toBeTruthy();
+    expect(shellBridge?.ownsPageControlInteractions).toBe(true);
 
     const onThemeSet = vi.fn();
+    const onChatSelect = vi.fn();
     shellBridge?.setShellActionHandlers?.({
       "ui.theme.set": onThemeSet,
+      "page.chat.select": onChatSelect,
     });
     expect(shellBridge?.dispatchShellAction?.("ui.theme.set", { preference: "dark" })).toBe(true);
     expect(onThemeSet).toHaveBeenCalledWith({ preference: "dark" });
+    expect(shellBridge?.syncPageControls?.({
+      chatOptions: [{ value: "remote:chat-1", label: "Chat 1" }],
+      chatValue: "remote:chat-1",
+      chatDisabled: false,
+    })).toBe(true);
+    expect(shellBridge?.dispatchShellAction?.("page.chat.select", { value: "remote:chat-1" })).toBe(true);
+    expect(onChatSelect).toHaveBeenCalledWith({ value: "remote:chat-1" });
     shellBridge?.showStatusMessage?.("Saved", "success", {
       autoHideDelayMs: 9999,
       exitDurationMs: 150,
@@ -160,5 +172,58 @@ describe("vue full-shell interactions", () => {
     expect(button).toBeTruthy();
     button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onClearFilters).toHaveBeenCalledWith("search:clear-search-filters", null);
+  });
+
+  it("reuses mounted page-controls bridge without recursive sync delegation", () => {
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    expect(firstBridge?.syncPageControls?.({
+      chatOptions: [{ value: "remote:chat-1", label: "Chat 1" }],
+      chatValue: "remote:chat-1",
+      chatDisabled: false,
+    })).toBe(true);
+
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          syncPageControls: vi.fn(() => {
+            throw new Error("should not recurse through shell bridge");
+          }),
+        },
+      },
+    };
+
+    const secondBridge = mountPageControlsPrimitive(globalThis);
+    expect(secondBridge).toBe(firstBridge);
+    expect(secondBridge?.syncPageControls?.({ chatValue: "remote:chat-2" })).toBe(true);
+  });
+
+  it("keeps legacy page-control refs live for detached-listener flows", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <select id="global-range"><option value="all">All time</option><option value="30">Last 30 days</option></select>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+    `;
+    const legacyRangeSelect = document.getElementById("global-range");
+    const legacyCustomStart = document.getElementById("custom-start");
+    const changeSpy = vi.fn();
+    const inputSpy = vi.fn();
+    legacyRangeSelect.addEventListener("change", changeSpy);
+    legacyCustomStart.addEventListener("input", inputSpy);
+
+    mountPageControlsPrimitive(globalThis);
+    const rangeSelect = document.querySelector(".page-controls #global-range");
+    rangeSelect.value = "30";
+    rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(legacyRangeSelect.value).toBe("30");
+    expect(changeSpy).toHaveBeenCalledTimes(1);
+
+    const startInput = document.querySelector("#custom-start");
+    startInput.value = "2025-01-05";
+    startInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(legacyCustomStart.value).toBe("2025-01-05");
+    expect(inputSpy).toHaveBeenCalledTimes(1);
   });
 });

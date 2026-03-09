@@ -10,6 +10,7 @@ import {
   captureCurrentViewSignature,
   bindSavedViewDirtyWatchers,
 } from "./savedViewsDirtyTracking.js";
+import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
     nameInput,
@@ -71,6 +72,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     filterEntriesByRange,
     normalizeRangeValue,
     computeAnalyticsWithWorker,
+    syncPageControls = null,
     vueRuntime = null,
   } = dependencies;
 
@@ -188,6 +190,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
 
     setCurrentRange(isCustom ? "custom" : rangeValue);
     setCustomRange(isCustom ? rangeValue : null);
+    syncSavedViewPageControls(syncPageControls, rangeValue);
     if (rangeSelect) rangeSelect.value = isCustom ? "custom" : String(rangeValue);
     showCustomControls(isCustom);
     if (isCustom) {

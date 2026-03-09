@@ -316,6 +316,37 @@ describe("savedViews controller", () => {
     expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Dispatcher View".', "success");
   });
 
+  it("syncs bridge-owned page controls when applying a saved view", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    const dependencies = buildDependencies();
+    dependencies.syncPageControls = vi.fn(() => true);
+    dependencies.getCurrentRange = vi.fn(() => "custom");
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Bridge Applied";
+    elements.saveButton.click();
+
+    const savedView = dependencies.getSavedViews().at(0);
+    dependencies.updateSavedView(savedView.id, {
+      range: "custom",
+      rangeData: { type: "custom", start: "2025-01-02", end: "2025-01-05" },
+    });
+    elements.listSelect.value = savedView.id;
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    expect(dependencies.syncPageControls).toHaveBeenCalledWith({
+      rangeValue: "custom",
+      customVisible: true,
+      customStart: "2025-01-02",
+      customEnd: "2025-01-05",
+    });
+  });
+
   it("does not attach legacy gallery interaction fallback when Vue gallery renderer is unavailable", async () => {
     const elements = buildElements();
     const dependencies = buildDependencies();

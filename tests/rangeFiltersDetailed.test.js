@@ -191,4 +191,44 @@ describe("rangeFilters detailed", () => {
     expect(ctx.rangeSelect.value).toBe("custom");
     expect(ctx.customControls.classList.contains("hidden")).toBe(false);
   });
+
+  it("uses explicit range payload when DOM select is unavailable or stale", async () => {
+    const ctx = buildRangeController({
+      entries: [{ timestamp: "2025-01-01T00:00:00Z" }],
+    });
+
+    ctx.rangeSelect.value = "all";
+    await ctx.controller.handleRangeChange({ target: { value: "7" } });
+
+    expect(ctx.getCurrentRange()).toBe("7");
+    expect(ctx.rangeSelect.value).toBe("7");
+    expect(ctx.deps.setCurrentRange).toHaveBeenCalledWith("7");
+  });
+
+  it("syncs custom range bounds through page controls even without legacy date inputs", () => {
+    const syncPageControls = vi.fn(() => true);
+    const ctx = buildRangeController({
+      entries: [
+        { timestamp: "2025-01-01T00:00:00Z" },
+        { timestamp: "2025-01-03T00:00:00Z" },
+      ],
+      elements: {
+        customStartInput: null,
+        customEndInput: null,
+      },
+      deps: {
+        syncPageControls,
+      },
+    });
+
+    ctx.controller.updateCustomRangeBounds();
+
+    expect(syncPageControls).toHaveBeenCalledWith({
+      customDisabled: false,
+      customMin: "2025-01-01",
+      customMax: "2025-01-03",
+      customStart: "2025-01-01",
+      customEnd: "2025-01-03",
+    });
+  });
 });

@@ -171,33 +171,7 @@ describe("primevue render primitives", () => {
     expect(vnode.props.value).toBe("x");
   });
 
-  it("renders PrimeVue Select and maps model updates to change events", () => {
-    const PrimeSelect = { name: "PrimeSelectStub" };
-    const globalScope = { PrimeVue: { Select: PrimeSelect } };
-    let captured = "";
-    const h = (type, props = {}, children = []) => ({ type, props, children });
-    const vnode = renderSelectInput(h, {
-      id: "search-participant",
-      value: "ana",
-      options: [
-        { value: "", label: "All participants" },
-        { value: "ana", label: "Ana" },
-      ],
-      onChange: event => {
-        captured = String(event?.target?.value || "");
-      },
-    }, globalScope);
-
-    expect(vnode.type).toBe(PrimeSelect);
-    expect(vnode.props.inputId).toBe("search-participant");
-    expect(vnode.props.modelValue).toBe("ana");
-    expect(vnode.props.optionLabel).toBe("label");
-    expect(vnode.props.optionValue).toBe("value");
-    vnode.props["onUpdate:modelValue"]("ben");
-    expect(captured).toBe("ben");
-  });
-
-  it("falls back to native select when PrimeVue Select is unavailable", () => {
+  it("renders native select even when PrimeVue Select is available", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderSelectInput(h, {
       id: "search-participant",
@@ -206,40 +180,19 @@ describe("primevue render primitives", () => {
         { value: "", label: "All participants" },
         { value: "ana", label: "Ana" },
       ],
-    }, { PrimeVue: {} });
+    }, { PrimeVue: { Select: { name: "PrimeSelectStub" } } });
 
     expect(vnode.type).toBe("select");
     expect(vnode.props.id).toBe("search-participant");
     expect(vnode.children).toHaveLength(2);
   });
 
-  it("renders PrimeVue DatePicker and normalizes model updates", () => {
-    const PrimeDatePicker = { name: "PrimeDatePickerStub" };
-    const globalScope = { PrimeVue: { DatePicker: PrimeDatePicker } };
-    let captured = "";
-    const h = (type, props = {}, children = []) => ({ type, props, children });
-    const vnode = renderDateInput(h, {
-      id: "search-start",
-      value: "2026-03-04",
-      onChange: event => {
-        captured = String(event?.target?.value || "");
-      },
-    }, globalScope);
-
-    expect(vnode.type).toBe(PrimeDatePicker);
-    expect(vnode.props.inputId).toBe("search-start");
-    expect(vnode.props["data-ui-runtime"]).toBe("primevue");
-    expect(vnode.props.modelValue instanceof Date).toBe(true);
-    vnode.props["onUpdate:modelValue"](new Date("2026-03-07T00:00:00Z"));
-    expect(captured).toBe("2026-03-07");
-  });
-
-  it("falls back to native date input when PrimeVue DatePicker is unavailable", () => {
+  it("renders native date input even when PrimeVue DatePicker is available", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderDateInput(h, {
       id: "search-end",
       value: "2026-03-10",
-    }, { PrimeVue: {} });
+    }, { PrimeVue: { DatePicker: { name: "PrimeDatePickerStub" } } });
 
     expect(vnode.type).toBe("input");
     expect(vnode.props.type).toBe("date");

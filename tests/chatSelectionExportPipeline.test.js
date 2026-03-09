@@ -4,7 +4,9 @@ import { createChatSelectionController } from "../js/appShell/chatSelection.js";
 import { createExportPipeline } from "../js/appShell/exportPipeline.js";
 
 function createChatSelection(options = {}) {
-  const chatSelector = document.createElement("select");
+  const chatSelector = options.chatSelector === undefined
+    ? document.createElement("select")
+    : options.chatSelector;
   let activeChatId = options.activeChatId ?? "";
 
   const controller = createChatSelectionController({
@@ -18,6 +20,7 @@ function createChatSelection(options = {}) {
     },
     vueRuntime: options.vueRuntime,
     now: options.now,
+    syncPageControls: options.syncPageControls,
   });
 
   return {
@@ -173,6 +176,48 @@ describe("chat selection controller", () => {
     expect(controller.getRemoteChatsLastFetchedAt()).toBe(1234567890);
     expect(chatSelector.options.length).toBe(1);
     expect(chatSelector.options[0].value).toBe("remote:chat-44");
+  });
+
+  it("syncs page controls even when legacy chat select is absent", async () => {
+    const syncPageControls = vi.fn(() => true);
+    const { controller, getActiveChatId } = createChatSelection({
+      chatSelector: null,
+      syncPageControls,
+      now: () => 1234567890,
+    });
+    controller.setRemoteChatList([{ id: "chat-88", name: "Bridge Only", messageCount: 5 }]);
+
+    await controller.refreshChatSelector();
+
+    expect(syncPageControls).toHaveBeenCalledWith({
+      chatOptions: [{ value: "remote:chat-88", label: "Bridge Only · 5 msgs" }],
+      chatValue: "remote:chat-88",
+      chatDisabled: false,
+    });
+    expect(getActiveChatId()).toBe("remote:chat-88");
+  });
+
+  it("preserves disabled lock semantics for bridge-owned chat selection actions", async () => {
+    const syncPageControls = vi.fn(() => true);
+    const { controller } = createChatSelection({
+      chatSelector: null,
+      activeChatId: "remote:chat-1",
+      syncPageControls,
+    });
+    controller.setRemoteChatList([{ id: "chat-2", name: "Bridge Only", messageCount: 5 }]);
+    const loadRemoteChat = vi.fn(async () => {});
+
+    await controller.handleChatSelectionChange(
+      { target: { value: "remote:chat-2" } },
+      {
+        loadRemoteChat,
+        updateStatus: vi.fn(),
+      },
+    );
+
+    expect(loadRemoteChat).toHaveBeenCalledWith("chat-2");
+    expect(syncPageControls).toHaveBeenCalledWith({ chatDisabled: true });
+    expect(syncPageControls).toHaveBeenCalledWith({ chatDisabled: false });
   });
 
   it("fails fast without Vue runtime", async () => {
