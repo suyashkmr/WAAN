@@ -38,10 +38,14 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 ## Frontend Architecture (Current)
 
 - WAAN frontend runtime is Vue 3 island based, with bridge contracts registered in `js/vue/bridgeRegistry.js`.
-- Core migrated surfaces (search results, saved views, dashboard panels, shell status/toast surfaces) render through Vue-owned paths.
+- Phase 11 is complete: primary frontend render and interaction ownership now runs through Vue-owned paths across shell, relay, search, saved views, and dashboard analytics.
+- PrimeVue is adopted selectively in production today:
+  - PrimeVue-backed: buttons, radios, dialog surfaces, and adopted list/data surfaces.
+  - Intentionally native for now: `select` and `date` controls, pending Phase 12+ token/theme consolidation.
 - PrimeVue runtime assets are vendored for packaged/offline reliability:
   - `vendor/vue/vue.global.prod.js`
   - `vendor/primevue/primevue.min.js`
+- Phase 12 has started with a generated Prime token bridge (`styles/prime-theme-bridge.css`) so component-facing theme values can converge on Prime semantics without destabilizing current visuals.
 - Release gates for frontend quality include:
   - `npm run ci:verify`
   - `npm run test:visual`

@@ -2,6 +2,8 @@
 
 The WAAN desktop dashboard now relies on a lightweight token system so UI layers stay cohesive across phases and themes. These tokens live in `styles.base.css` under the `:root` block, with light and dark overrides via `data-color-scheme`.
 
+Phase 12 note: the base token layer is now fed by a generated Prime-token bridge in `styles/prime-theme-bridge.css`, produced by `scripts/generate-prime-theme-bridge.mjs`. `styles.base.css` still contains the WAAN-facing aliases and derived values, but the underlying source values are moving to Prime-style semantic tokens.
+
 ## Phase 10 Architecture Note
 
 - Tokenized styling is consumed by Vue-owned UI surfaces (search/saved/dashboard/status) as the default runtime path.

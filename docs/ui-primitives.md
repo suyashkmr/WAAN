@@ -2,12 +2,15 @@
 
 WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell surfaces.
 
-## Phase 10 Status
+## Current Status
 
-- App-shell runtime ownership is Vue-native via bridge registry contracts (`js/vue/bridgeRegistry.js`).
-- Migrated search/saved/dashboard/status surfaces render through Vue islands without legacy DOM fallback branches.
+- Phase 11 is complete: app-shell runtime ownership is Vue-native via bridge registry contracts (`js/vue/bridgeRegistry.js`).
+- Migrated search/saved/dashboard/status surfaces render through Vue-owned paths for primary production interaction and rendering.
 - Tests include Vue-rendered integration coverage for full-shell, search results, and saved-view interactions.
 - Residual non-runtime compatibility helpers may still exist in isolated modules, but they are not in active production render/event paths.
+- PrimeVue adoption is partial by design:
+  - adopted now: buttons, radios, dialog surfaces, and selected list/data surfaces
+  - deferred to later phase work: production-default `select` / `date` controls
 
 ## Foundation Files
 
@@ -48,4 +51,4 @@ WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell
 - Relay status indicator internals intentionally remain custom (`#relay-status-dot.relay-banner-indicator`) to preserve existing pulse/reduced-motion/high-contrast behavior without extra runtime dependencies.
 - Summary cards, relay controls, and search/saved-view controls now run without Shoelace custom-element proxies.
 - Runtime contract: do not introduce new `sl-*` custom elements in app-shell surfaces; use semantic HTML + Vue/PrimeVue wrappers/composables instead.
-- Phase 8 status: migrated dashboard/search/saved/status surfaces no longer use legacy DOM fallback rendering paths.
+- The current theming transition is tracked in Phase 12: `styles/prime-theme-bridge.css` now feeds Prime-style token values into the WAAN alias layer while full token consolidation is still in progress.

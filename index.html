@@ -1091,9 +1091,11 @@
                     </li>
                     <li>
                         <h3>What UI runtime does WAAN use now?</h3>
-                        <p>WAAN now runs core frontend surfaces through Vue-based rendering (with PrimeVue runtime
-                            assets) so search, saved views, relay status, and analytics panels stay consistent across
-                            browser and packaged app flows.</p>
+                        <p>WAAN now runs core frontend surfaces through Vue 3-based rendering, with vendored PrimeVue
+                            runtime assets for supported component surfaces. Buttons, radios, dialogs, and selected
+                            list views use PrimeVue-backed primitives today, while some form controls such as
+                            drop-downs and date inputs remain native until the Phase 12 token/theme rollout is
+                            complete.</p>
                     </li>
                     <li>
                         <h3>What are saved views?</h3>

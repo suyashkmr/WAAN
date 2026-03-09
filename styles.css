@@ -1,4 +1,5 @@
 @import url("./styles.base.css");
+@import url("./styles/prime-theme-bridge.css");
 @import url("./styles/components/app-shell.css");
 @import url("./styles/components/navigation.css");
 @import url("./styles/components/relay.css");

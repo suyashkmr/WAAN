@@ -4,12 +4,14 @@
 
 Reframe WAAN from a utility dashboard into a conversation command center that feels social, alive, and action-oriented.
 
-## Current Architecture Status (Phase 10)
+## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.
 - Search/saved/dashboard/status surfaces are Vue-owned and verified by integration tests.
 - Legacy bridge-global wiring and lazy remount adapter glue are removed from active runtime paths.
 - Some isolated compatibility helpers may remain in the repo for test/harness support, but they are outside active production render/event pipelines.
+- PrimeVue adoption is intentionally partial today: buttons, radios, dialogs, and selected data-list surfaces are PrimeVue-backed, while `select` / `date` remain native until Phase 12+ token/theme work stabilizes the overlay/form-control skin.
+- Phase 12 has started with a generated Prime-token bridge (`styles/prime-theme-bridge.css`) that now feeds the existing WAAN alias layer.
 - Final release readiness is validated through `ci:verify`, visual regression, accessibility smoke, and perf budgets.
 
 ## Design Principles

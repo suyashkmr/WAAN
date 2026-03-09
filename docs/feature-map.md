@@ -5,7 +5,7 @@
 | `js/appShell.js` | Composition root for the dashboard app. Wires state, controllers, and boot sequence. | Active. Mostly orchestration now; behavior moved into `js/appShell/*` modules. |
 | `js/appShell/index.js` | Barrel export for app-shell controllers/utilities. | Active. Reduces import churn and centralizes module boundaries. |
 | `js/appShell/bootstrap.js` | App startup sequence (`DOMContentLoaded`): init controllers, nav, onboarding, card toggles. | Active; covered by boot smoke test (`tests/appShellBoot.test.js`). |
-| `js/appShell/eventBindings.js` | DOM event registration for filters, exports, participants, and range controls. | Active; covered by controller tests. |
+| `js/appShell/eventBindings.js` | Remaining browser/event glue for exports and fallback-only wiring; primary page/dashboard interactions are now bridge-owned. | Active; covered by controller tests. |
 | `js/appShell/relayBootstrap.js` | Relay control wiring + clear-storage flow + polling/log stream startup. | Active; covered by controller tests. |
 | `js/appShell/datasetLifecycle.js` | Dataset apply pipeline: normalize, fingerprint/cache reset, analytics compute, persist/select, render handoff. | Active; covered by controller + integration tests. |
 | `js/appShell/dataStatus.js` | Dashboard loading/data-availability state + relay hero status messaging. | Active; covered by controller tests. |
