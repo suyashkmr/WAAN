@@ -110,9 +110,9 @@ export function createHighlightsRoot({
             unstyled: true,
             "data-ui-runtime": "primevue",
             pt: {
-              root: { style: "display: contents;" },
-              content: { style: "display: contents;" },
-              list: { style: "display: contents;" },
+              root: { class: "highlight-grid-dataview-root" },
+              content: { class: "highlight-grid-dataview-content" },
+              list: { class: "highlight-grid-dataview-list" },
             },
           }, {
             list: slotProps => {

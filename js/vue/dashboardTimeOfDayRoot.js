@@ -149,8 +149,8 @@ export function createTimeOfDayRoot(h, state) {
                 : null,
               h("svg", { viewBox: `0 0 ${model.svg.width} ${model.svg.height}`, preserveAspectRatio: "none" }, [
                 h("defs", {}, [h("linearGradient", { id: "sparkline-gradient", x1: "0", y1: "0", x2: "0", y2: "1" }, [
-                  h("stop", { offset: "0%", "stop-color": "var(--chart-gradient-top, rgba(34, 211, 238, 0.35))" }),
-                  h("stop", { offset: "100%", "stop-color": "var(--chart-gradient-bottom, rgba(34, 211, 238, 0))" }),
+                  h("stop", { offset: "0%", "stop-color": "var(--chart-gradient-top)" }),
+                  h("stop", { offset: "100%", "stop-color": "var(--chart-gradient-bottom)" }),
                 ])]),
                 model.svg.focusRect ? h("rect", { class: "focus-band", ...model.svg.focusRect }) : null,
                 h("path", { class: "sparkline-fill", d: model.svg.areaPath }),

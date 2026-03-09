@@ -59,7 +59,9 @@ describe("dashboard panels island", () => {
     const dataViewRoot = document.querySelector("#highlight-list .highlights-dataview-prime");
     expect(dataViewRoot).toBeTruthy();
     expect(capturedDataKey).toBe("key");
-    expect(capturedPt?.root?.style).toContain("display: contents");
+    expect(capturedPt?.root?.class).toBe("highlight-grid-dataview-root");
+    expect(capturedPt?.content?.class).toBe("highlight-grid-dataview-content");
+    expect(capturedPt?.list?.class).toBe("highlight-grid-dataview-list");
     expect(document.querySelectorAll("#highlight-list .highlight-card")).toHaveLength(1);
   });
 

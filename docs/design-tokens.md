@@ -88,6 +88,25 @@ Adoption decision (2026-02-25): WAAN keeps Tailwind as a first-class styling lay
 - Avoid hard-coded pixel/rgb values on migrated surfaces unless there is a documented exception in the same PR.
 - Any new state style must support both `data-contrast="high"` and `data-reduce-motion="true"` automatically through tokens.
 
+## Intentional Component-Local Aliases
+
+Phase 12 does not require every component stylesheet to become a flat list of root tokens. A small number of component-local aliases are still acceptable when they are semantic wrappers over the shared token contract rather than a parallel palette system.
+
+Current intentional aliases:
+
+- `--card-accent`
+  - Used to assign a per-card semantic accent to analytics, search, and saved-view surfaces without introducing new raw colors.
+  - Must always resolve to an existing semantic token such as `--accent-primary`, `--accent-secondary`, `--accent-success`, `--accent-warning`, or `--positive`.
+- `--analytics-shell-*`
+  - Used in analytics surfaces as a local shell recipe wrapper for radius, border, background specular treatment, and elevation.
+  - These must stay derived from shared root tokens like `--shape-medium`, `--border`, `--card-bg`, `--edge-specular`, `--shadow-card`, and `--shadow-card-strong`.
+
+Not acceptable:
+
+- component-local aliases that simply restate global control tokens with no semantic transformation
+- component-local raw palette definitions that introduce new independent color/shadow systems
+- render helpers or Vue islands embedding raw visual values instead of consuming the shared token contract
+
 ## Accessibility Toggles
 
 - **Motion: Reduced** → `data-reduce-motion="true"` + `localStorage["waan-reduce-motion"]`. Used by JS helpers so animations and blurs are skipped both in CSS and JS (e.g., collapsible cards avoid animated heights).

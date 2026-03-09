@@ -312,9 +312,9 @@ export function renderSentimentSection({ sentiment, elements, helpers }) {
             unstyled: true,
             "data-ui-runtime": "primevue",
             pt: {
-              root: { style: "display: contents;" },
-              content: { style: "display: contents;" },
-              list: { style: "display: contents;" },
+              root: { class: "sentiment-summary-dataview-root" },
+              content: { class: "sentiment-summary-dataview-content" },
+              list: { class: "sentiment-summary-dataview-list" },
             },
           }, {
             list: slotProps => {

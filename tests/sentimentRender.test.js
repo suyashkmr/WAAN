@@ -119,7 +119,9 @@ describe("sentiment renderer", () => {
 
     const primeDataView = elements.summaryEl.querySelector(".prime-data-view");
     expect(primeDataView?.getAttribute("data-ui-runtime")).toBe("primevue");
-    expect(capturedPt?.root?.style).toContain("display: contents");
+    expect(capturedPt?.root?.class).toBe("sentiment-summary-dataview-root");
+    expect(capturedPt?.content?.class).toBe("sentiment-summary-dataview-content");
+    expect(capturedPt?.list?.class).toBe("sentiment-summary-dataview-list");
     expect(elements.summaryEl.querySelectorAll(".sentiment-tile")).toHaveLength(4);
   });
 
