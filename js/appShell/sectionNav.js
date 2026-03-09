@@ -79,6 +79,28 @@ export function createSectionNavController({
     });
   }
 
+  /**
+   * @param {string} id
+   */
+  function handleSectionNavActivate(id) {
+    setActiveSectionNav(id);
+  }
+
+  /**
+   * @param {string} id
+   * @param {KeyboardEvent} event
+   */
+  function handleSectionNavKeydown(id, event) {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    const index = sectionNavItems.findIndex(entry => entry.id === id);
+    if (index === -1 || !sectionNavItems.length) return;
+    const delta = event.key === "ArrowRight" ? 1 : -1;
+    const nextIndex = (index + delta + sectionNavItems.length) % sectionNavItems.length;
+    const nextEntry = sectionNavItems[nextIndex];
+    if (nextEntry?.link) nextEntry.link.focus();
+  }
+
   function buildSectionNav() {
     if (!containerEl) return;
     decorateToolbarRow(containerEl);
@@ -110,6 +132,9 @@ export function createSectionNavController({
                 href: `#${item.id}`,
                 "data-section-id": item.id,
                 key: item.id,
+                onClick: () => handleSectionNavActivate(item.id),
+                onFocus: () => handleSectionNavActivate(item.id),
+                onKeydown: /** @param {KeyboardEvent} event */ event => handleSectionNavKeydown(item.id, event),
               },
               item.label,
             )),
@@ -195,24 +220,6 @@ export function createSectionNavController({
       const nextId = resolveActiveSectionId();
       if (nextId) setActiveSectionNav(nextId);
     };
-    navItems.forEach(({ link, id }) => {
-      link.addEventListener("click", () => {
-        setActiveSectionNav(id);
-      });
-      link.addEventListener("focus", () => {
-        setActiveSectionNav(id);
-      });
-      link.addEventListener("keydown", /** @param {KeyboardEvent} event */ event => {
-        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-        event.preventDefault();
-        const index = navItems.findIndex(entry => entry.link === link);
-        if (index === -1) return;
-        const delta = event.key === "ArrowRight" ? 1 : -1;
-        const nextIndex = (index + delta + navItems.length) % navItems.length;
-        const nextEntry = navItems[nextIndex];
-        if (nextEntry?.link) nextEntry.link.focus();
-      });
-    });
 
     if (!navItems.length) return;
 
