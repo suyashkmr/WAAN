@@ -109,19 +109,46 @@ export function createEventBindingsController({
       "export.pdf": handleDownloadPdfReport,
       "export.markdown": handleDownloadMarkdownReport,
       "export.slides": handleDownloadSlidesReport,
+      /** @param {Record<string, any> | null | undefined} payload */
+      "page.chat.select": payload =>
+        handleChatSelectionChange({ target: { value: payload?.value || "" } }),
+      /** @param {Record<string, any> | null | undefined} payload */
+      "page.chat.force-select": payload =>
+        handleChatSelectionChange({ target: { value: payload?.value || "" }, force: true }),
+      /** @param {Record<string, any> | null | undefined} payload */
+      "page.range.select": payload => {
+        const value = payload?.value || "";
+        if (rangeSelect && rangeSelect.value !== value) {
+          rangeSelect.value = value;
+        }
+        return handleRangeChange({ target: { value } });
+      },
+      /** @param {Record<string, any> | null | undefined} payload */
+      "page.range.apply-custom": async payload => {
+        const start = payload?.start || customStartInput?.value || "";
+        const end = payload?.end || customEndInput?.value || "";
+        if (!start || !end) {
+          updateStatus("Please pick both a start and end date.", "warning");
+          return;
+        }
+        await applyCustomRange(start, end);
+      },
     });
 
-    if (chatSelector) {
-      chatSelector.addEventListener("change", handleChatSelectionChange);
-      chatSelector.addEventListener("dblclick", handleForcedChatSelection);
-      chatSelector.addEventListener("keydown", handleChatSelectorKeydown);
-    }
-    if (rangeSelect) {
-      rangeSelect.addEventListener("change", handleRangeChange);
-    }
+    const vueOwnsPageControlInteractions = Boolean(shellBridge?.ownsPageControlInteractions);
+    if (!vueOwnsPageControlInteractions) {
+      if (chatSelector) {
+        chatSelector.addEventListener("change", handleChatSelectionChange);
+        chatSelector.addEventListener("dblclick", handleForcedChatSelection);
+        chatSelector.addEventListener("keydown", handleChatSelectorKeydown);
+      }
+      if (rangeSelect) {
+        rangeSelect.addEventListener("change", handleRangeChange);
+      }
 
-    if (customApplyButton) {
-      customApplyButton.addEventListener("click", handleCustomApplyClick);
+      if (customApplyButton) {
+        customApplyButton.addEventListener("click", handleCustomApplyClick);
+      }
     }
 
     if (downloadParticipantsButton) {

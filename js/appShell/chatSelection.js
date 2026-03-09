@@ -14,6 +14,7 @@
  *   setActiveChatId: (value: string) => void,
  *   vueRuntime?: { h?: (...args: any[]) => any, render?: (...args: any[]) => any } | null,
  *   now?: () => number,
+ *   syncPageControls?: ((nextState: Record<string, any>) => boolean) | null,
  * }} params
  */
 export function createChatSelectionController({
@@ -25,6 +26,7 @@ export function createChatSelectionController({
   setActiveChatId,
   vueRuntime = /** @type {any} */ (globalThis)?.Vue ?? null,
   now = () => Date.now(),
+  syncPageControls = null,
 }) {
   const remoteChatState = {
     /** @type {AnyRecord[]} */
@@ -81,7 +83,36 @@ export function createChatSelectionController({
     return remoteChatState.lastFetchedAt;
   }
 
+  /**
+   * @param {boolean} disabled
+   */
+  function syncChatSelectionDisabled(disabled) {
+    if (typeof syncPageControls !== "function") return false;
+    return Boolean(syncPageControls({ chatDisabled: disabled }));
+  }
+
   async function refreshChatSelector() {
+    const chatOptions = getRemoteChatList().length
+      ? getRemoteChatList().map(chat => ({
+        value: encodeChatSelectorValue("remote", chat.id),
+        label: formatRemoteChatLabel(chat),
+      }))
+      : [{ value: "", label: "No chats loaded yet" }];
+    const activeValue = getActiveChatId();
+    const availableValues = chatOptions.map(option => option.value);
+    const resolvedValue = activeValue && availableValues.includes(activeValue)
+      ? activeValue
+      : availableValues[0] || "";
+    if (typeof syncPageControls === "function" && syncPageControls({
+        chatOptions,
+        chatValue: resolvedValue,
+        chatDisabled: !getRemoteChatList().length,
+      })) {
+      if (resolvedValue) {
+        setActiveChatId(resolvedValue);
+      }
+      return;
+    }
     if (!chatSelector) {
       return;
     }
@@ -136,11 +167,6 @@ export function createChatSelectionController({
       throw new Error("Vue runtime is required for chat selector rendering.");
     }
 
-    const activeValue = getActiveChatId();
-    const availableValues = Array.from(chatSelector.options).map(option => option.value);
-    const resolvedValue = activeValue && availableValues.includes(activeValue)
-      ? activeValue
-      : availableValues[0];
     if (resolvedValue) {
       chatSelector.value = resolvedValue;
       setActiveChatId(resolvedValue);
@@ -160,7 +186,10 @@ export function createChatSelectionController({
     if (!forceReload && selectionValue === getActiveChatId()) return;
     const { source, id } = decoded;
     try {
-      target.disabled = true;
+      if (target) {
+        target.disabled = true;
+      }
+      syncChatSelectionDisabled(true);
       if (source === "remote") {
         if (forceReload) {
           await loadRemoteChat(id, { reloaded: true });
@@ -175,7 +204,10 @@ export function createChatSelectionController({
       console.error(error);
       updateStatus("We couldn't switch chats.", "error");
     } finally {
-      target.disabled = false;
+      if (target) {
+        target.disabled = false;
+      }
+      syncChatSelectionDisabled(!getRemoteChatList().length);
     }
   }
 

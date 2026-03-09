@@ -1,8 +1,6 @@
 // @ts-check
 
-/**
- * @typedef {Record<string, any>} AnyRecord
- */
+/** @typedef {Record<string, any>} AnyRecord */
 
 /**
  * @param {{ elements: AnyRecord, deps: AnyRecord }} params
@@ -40,8 +38,13 @@ export function createRangeFiltersController({
     onRangeApplied,
     nextAnalyticsRequestToken,
     isAnalyticsRequestCurrent,
+    syncPageControls = null,
   } = deps;
 
+  function syncPageControlsState(nextState = {}) {
+    if (typeof syncPageControls !== "function") return false;
+    return Boolean(syncPageControls(nextState));
+  }
   /**
    * @param {any} range
    */
@@ -53,7 +56,6 @@ export function createRangeFiltersController({
     }
     return range;
   }
-
   /**
    * @param {any[]} entries
    * @param {any} range
@@ -91,7 +93,6 @@ export function createRangeFiltersController({
       return ts && ts >= start && ts <= end;
     });
   }
-
   /**
    * @param {any} range
    */
@@ -117,11 +118,16 @@ export function createRangeFiltersController({
     const days = Number(range);
     return Number.isFinite(days) ? `last ${days} days` : String(range);
   }
-
   /**
    * @param {boolean} visible
    */
   function showCustomControls(visible) {
+    if (syncPageControlsState({
+      customVisible: Boolean(visible),
+      customDisabled: !visible,
+    })) {
+      return;
+    }
     if (!customControls) return;
     if (visible) {
       customControls.classList.remove("hidden");
@@ -138,9 +144,17 @@ export function createRangeFiltersController({
   }
 
   function updateCustomRangeBounds() {
-    if (!customStartInput || !customEndInput) return;
+    /** @type {Record<string, any>} */
+    const nextPageControlState = {};
     const entries = getDatasetEntries();
     if (!entries.length) {
+      nextPageControlState.customStart = "";
+      nextPageControlState.customEnd = "";
+      nextPageControlState.customDisabled = true;
+      nextPageControlState.customMin = "";
+      nextPageControlState.customMax = "";
+      syncPageControlsState(nextPageControlState);
+      if (!customStartInput || !customEndInput) return;
       customStartInput.value = "";
       customEndInput.value = "";
       customStartInput.disabled = true;
@@ -166,6 +180,9 @@ export function createRangeFiltersController({
       .filter(Boolean)
       .sort((/** @type {any} */ a, /** @type {any} */ b) => Number(a) - Number(b));
     if (!timestamps.length) {
+      nextPageControlState.customDisabled = true;
+      syncPageControlsState(nextPageControlState);
+      if (!customStartInput || !customEndInput) return;
       customStartInput.disabled = true;
       customEndInput.disabled = true;
       if (customApplyButton) customApplyButton.disabled = true;
@@ -174,6 +191,19 @@ export function createRangeFiltersController({
 
     const start = toISODate(timestamps[0]);
     const end = toISODate(timestamps[timestamps.length - 1]);
+    nextPageControlState.customDisabled = false;
+    nextPageControlState.customMin = start;
+    nextPageControlState.customMax = end;
+    const customRange = getCustomRange();
+    if (!customRange || customRange.type !== "custom") {
+      nextPageControlState.customStart = start;
+      nextPageControlState.customEnd = end;
+    } else {
+      nextPageControlState.customStart = customRange.start ?? "";
+      nextPageControlState.customEnd = customRange.end ?? "";
+    }
+    syncPageControlsState(nextPageControlState);
+    if (!customStartInput || !customEndInput) return;
 
     customStartInput.min = start;
     customStartInput.max = end;
@@ -193,14 +223,14 @@ export function createRangeFiltersController({
       searchEndInput.min = start;
       searchEndInput.max = end;
     }
-
-    const customRange = getCustomRange();
     if (!customRange || customRange.type !== "custom") {
       customStartInput.value = start;
       customEndInput.value = end;
+    } else {
+      customStartInput.value = customRange.start ?? "";
+      customEndInput.value = customRange.end ?? "";
     }
   }
-
   /**
    * @param {any} range
    */
@@ -254,11 +284,16 @@ export function createRangeFiltersController({
       }
     }
   }
-
-  async function handleRangeChange() {
-    const value = rangeSelect?.value;
+  /**
+   * @param {{ target?: { value?: string | null } } | null | undefined} [event]
+   */
+  async function handleRangeChange(event) {
+    const value = event?.target?.value ?? rangeSelect?.value;
     if (!value) return;
-
+    if (rangeSelect && rangeSelect.value !== value) {
+      rangeSelect.value = value;
+    }
+    syncPageControlsState({ rangeValue: value });
     if (value === "custom") {
       showCustomControls(true);
       updateStatus("Choose your dates and click Apply.", "info");
@@ -271,7 +306,6 @@ export function createRangeFiltersController({
     await applyRangeAndRender(value);
     onRangeApplied?.();
   }
-
   /**
    * @param {string} start
    * @param {string} end
@@ -292,10 +326,16 @@ export function createRangeFiltersController({
     setCustomRange(range);
     setCurrentRange("custom");
     if (rangeSelect) rangeSelect.value = "custom";
+    syncPageControlsState({
+      rangeValue: "custom",
+      customVisible: true,
+      customDisabled: false,
+      customStart: start,
+      customEnd: end,
+    });
     showCustomControls(true);
     await applyRangeAndRender(range);
   }
-
   return {
     normalizeRangeValue,
     filterEntriesByRange,

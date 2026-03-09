@@ -700,6 +700,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
         - [x] Routed event-binding bridge ownership checks through injected `globalScope` and removed stale unused toolbar-button refs from the controller wiring surface.
         - [x] Replaced direct participant filter/preset listeners (`participantsTopSelect`, `participantsSortSelect`, `participantsTimeframeSelect`, `participantPresetButtons`) with a dashboard-bridge action path; participant controls now mount through the Vue dashboard island and dispatch bridge-owned actions instead of controller `addEventListener` bindings.
         - [x] Replaced direct weekday/time-of-day filter and brush listeners in `eventBindings` with Vue-owned dashboard control interaction contracts; weekday/time-of-day controls now mount through the dashboard bridge and dispatch bridge-owned actions while controller responsibility stays limited to state writes/contracts.
+        - [x] Replaced direct shell page-control listeners (`chatSelector`, `rangeSelect`, `customApplyButton`) with shell-bridge action dispatch; page controls now mount through the Vue shell island and dispatch bridge-owned actions while controller fallback only runs when shell page-control ownership is unavailable.
       - [ ] `js/appShell/bootstrap.js`
         - [x] Routed bootstrap DOM/window/timer access through injected refs (`documentRef`, `windowRef`, RAF, timers) instead of hard globals.
       - [ ] `js/appShell/relayBootstrap.js`

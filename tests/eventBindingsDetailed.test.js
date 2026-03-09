@@ -269,8 +269,8 @@ describe("event bindings detailed", () => {
     });
 
     initEventHandlers();
-    chatSelector.dispatchEvent(new Event("dblclick"));
-    chatSelector.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    shellActionHandlers["page.chat.force-select"]?.({ value: "remote:chat-1" });
+    shellActionHandlers["page.chat.force-select"]?.({ value: "remote:chat-1" });
 
     expect(handlers.handleChatSelectionChange).toHaveBeenCalledTimes(2);
     expect(handlers.handleChatSelectionChange).toHaveBeenNthCalledWith(
@@ -373,6 +373,49 @@ describe("event bindings detailed", () => {
     await Promise.resolve();
 
     expect(deps.updateHourlyState).not.toHaveBeenCalled();
+    expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
+  });
+
+  it("registers page control actions with shell dispatcher", async () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const chatSelector = document.createElement("select");
+    const rangeSelect = document.createElement("select");
+    ["all", "30", "custom"].forEach(value => {
+      const option = document.createElement("option");
+      option.value = value;
+      rangeSelect.appendChild(option);
+    });
+    const customStartInput = document.createElement("input");
+    const customEndInput = document.createElement("input");
+    const customApplyButton = document.createElement("button");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        chatSelector,
+        rangeSelect,
+        customStartInput,
+        customEndInput,
+        customApplyButton,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+
+    shellActionHandlers["page.chat.select"]?.({ value: "remote:chat-2" });
+    shellActionHandlers["page.range.select"]?.({ value: "30" });
+    shellActionHandlers["page.range.apply-custom"]?.({ start: "2025-01-01", end: "2025-01-05" });
+    await Promise.resolve();
+
+    expect(handlers.handleChatSelectionChange).toHaveBeenCalledWith(
+      expect.objectContaining({ target: { value: "remote:chat-2" } }),
+    );
+    expect(handlers.handleRangeChange).toHaveBeenCalledWith(
+      expect.objectContaining({ target: { value: "30" } }),
+    );
+    expect(rangeSelect.value).toBe("30");
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
   });
 
