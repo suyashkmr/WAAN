@@ -95,17 +95,20 @@ Phase 12 does not require every component stylesheet to become a flat list of ro
 Current intentional aliases:
 
 - `--card-accent`
-  - Used to assign a per-card semantic accent to analytics, search, and saved-view surfaces without introducing new raw colors.
+  - Used to assign a per-card semantic accent to analytics surfaces without introducing new raw colors.
   - Must always resolve to an existing semantic token such as `--accent-primary`, `--accent-secondary`, `--accent-success`, `--accent-warning`, or `--positive`.
-- `--analytics-shell-*`
-  - Used in analytics surfaces as a local shell recipe wrapper for radius, border, background specular treatment, and elevation.
-  - These must stay derived from shared root tokens like `--shape-medium`, `--border`, `--card-bg`, `--edge-specular`, `--shadow-card`, and `--shadow-card-strong`.
 
 Not acceptable:
 
 - component-local aliases that simply restate global control tokens with no semantic transformation
 - component-local raw palette definitions that introduce new independent color/shadow systems
 - render helpers or Vue islands embedding raw visual values instead of consuming the shared token contract
+
+Current audit status (2026-03-09):
+
+- component stylesheets no longer carry a parallel raw palette system
+- remaining component-local semantics are narrowed to `--card-accent`
+- remaining raw visual values are confined to the shared base token layer and intentional platform-specific shadow composition, not per-component skinning islands
 
 ## Accessibility Toggles
 

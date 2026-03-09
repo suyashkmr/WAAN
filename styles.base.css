@@ -232,6 +232,18 @@
     --control-radius-pill: var(--shape-full);
     --control-padding-x: 1.05rem;
     --control-padding-x-sm: 0.84rem;
+    --type-data-xs: 0.68rem;
+    --type-data-sm: 0.8rem;
+    --type-data-md: 0.84rem;
+    --type-stat-sm: 0.95rem;
+    --type-stat-md: 1.08rem;
+    --type-stat-lg: 1.15rem;
+    --tracking-label-data: 0.05em;
+    --tracking-label-wide: 0.06em;
+    --tracking-label-table: 0.08em;
+    --leading-stat-tight: 1.15;
+    --leading-data-md: 1.35;
+    --leading-data-lg: 1.38;
     --control-focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
     --control-shadow-rest: 0 8px 18px rgba(8, 9, 16, 0.24);
     --control-shadow-hover: 0 12px 24px color-mix(in srgb, var(--accent) 16%, rgba(6, 8, 18, 0.34));

@@ -75,23 +75,23 @@
 }
 
 .timeofday-summary {
-    font-size: 0.84rem;
+    font-size: var(--type-data-md);
     color: color-mix(in srgb, var(--muted) 88%, var(--text));
-    line-height: 1.38;
+    line-height: var(--leading-data-lg);
 }
 
 .timeofday-sparkline {
     width: 100%;
     min-height: 160px;
     background:
-        linear-gradient(180deg, var(--analytics-shell-specular, color-mix(in srgb, var(--edge-specular) 22%, transparent)) 0%, transparent 52%),
-        color-mix(in srgb, var(--muted) 8%, var(--analytics-shell-bg, transparent));
-    border-radius: var(--analytics-shell-radius, 1rem);
+        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 24%, transparent) 0%, transparent 52%),
+        color-mix(in srgb, var(--muted) 8%, color-mix(in srgb, var(--card-bg) 92%, transparent));
+    border-radius: var(--shape-medium);
     padding: 0.75rem 1rem;
     position: relative;
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 26%, var(--border));
-    box-shadow: var(--analytics-shell-shadow, var(--shadow-card));
+    box-shadow: var(--shadow-card);
 }
 
 .timeofday-sparkline svg {
@@ -143,7 +143,7 @@
 }
 
 .timeofday-sparkline .axis-label {
-    font-size: 0.7rem;
+    font-size: var(--type-label-compact);
     fill: var(--chart-axis-label);
 }
 
@@ -155,13 +155,13 @@
 
 .timeofday-band {
     padding: 0.75rem 0.9rem;
-    border-radius: var(--analytics-shell-radius, 0.95rem);
+    border-radius: var(--shape-medium);
     border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 30%, var(--border));
     background: linear-gradient(135deg, color-mix(in srgb, var(--card-accent, var(--accent)) 13%, transparent) 0%, color-mix(in srgb, var(--muted) 7%, transparent) 100%);
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    box-shadow: var(--analytics-shell-shadow, var(--shadow-card));
+    box-shadow: var(--shadow-card);
 }
 
 .timeofday-band.top {
@@ -170,20 +170,20 @@
 }
 
 .timeofday-band .band-label {
-    font-size: 0.82rem;
+    font-size: var(--type-label-sm);
     font-weight: 600;
     color: color-mix(in srgb, var(--card-accent, var(--accent)) 55%, var(--text));
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-label);
 }
 
 .timeofday-band .band-count {
-    font-size: 1.15rem;
+    font-size: var(--type-stat-lg);
     font-weight: 700;
 }
 
 .timeofday-band .band-share {
-    font-size: 0.76rem;
+    font-size: var(--type-label-xs);
     color: var(--muted);
 }
 
@@ -195,13 +195,13 @@
 
 .timeofday-callout {
     padding: 0.9rem;
-    border-radius: var(--analytics-shell-radius, 0.95rem);
+    border-radius: var(--shape-medium);
     border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 28%, var(--border));
     background: color-mix(in srgb, var(--muted) 7%, transparent);
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    box-shadow: var(--analytics-shell-shadow, var(--shadow-card));
+    box-shadow: var(--shadow-card);
 }
 
 .timeofday-callout.focus {
@@ -210,20 +210,20 @@
 }
 
 .timeofday-callout strong {
-    font-size: 0.95rem;
+    font-size: var(--type-body-md);
 }
 
 .timeofday-callout span {
-    font-size: 0.82rem;
+    font-size: var(--type-body-sm);
     color: var(--muted);
 }
 
 .timeofday-callout .badge {
     align-self: flex-start;
-    font-size: 0.75rem;
+    font-size: var(--type-label-xs);
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
     color: color-mix(in srgb, var(--card-accent, var(--accent)) 65%, var(--text));
-    border-radius: 999px;
+    border-radius: var(--shape-full);
     padding: 0.15rem 0.55rem;
     border: 1px dashed color-mix(in srgb, var(--card-accent, var(--accent)) 40%, transparent);
 }
@@ -232,7 +232,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    font-size: 0.8rem;
+    font-size: var(--type-label-sm);
     color: var(--muted);
     margin-top: 0.3rem;
 }
@@ -246,7 +246,7 @@
 .legend-swatch {
     width: 12px;
     height: 12px;
-    border-radius: 999px;
+    border-radius: var(--shape-full);
     display: inline-block;
     border: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
 }
@@ -321,18 +321,18 @@
     display: flex;
     flex-direction: column;
     gap: 0.22rem;
-    font-size: 0.8rem;
+    font-size: var(--type-data-sm);
     color: var(--muted);
 }
 
 .weekday-label {
     font-weight: 600;
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: var(--type-stat-sm);
 }
 
 .weekday-count {
-    font-size: 1.08rem;
+    font-size: var(--type-stat-md);
     font-weight: 600;
     color: var(--text);
 }
@@ -345,10 +345,10 @@
     align-self: flex-start;
     padding: 0.25rem 0.55rem;
     border-radius: 999px;
-    font-size: 0.7rem;
+    font-size: var(--type-label-xs);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-label-data);
     background: color-mix(in srgb, var(--card-bg) 90%, transparent);
     border: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
 }
@@ -377,15 +377,15 @@
 
 .weekday-heatmap-row.header {
     background: color-mix(in srgb, var(--muted) 18%, transparent);
-    font-size: 0.75rem;
+    font-size: var(--type-label-sm);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-label-wide);
 }
 
 .weekday-heatmap-mobile .heatmap-cell {
     padding: 0.6rem;
     border-bottom: 1px solid color-mix(in srgb, var(--muted) 20%, transparent);
-    font-size: 0.8rem;
+    font-size: var(--type-data-sm);
     display: flex;
     align-items: center;
     justify-content: center;
