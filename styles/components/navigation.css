@@ -33,7 +33,7 @@
     margin: 0;
     padding: var(--section-nav-kicker-pad-y) var(--section-nav-kicker-pad-x);
     font-size: var(--type-label-xs);
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-label-tight);
     text-transform: uppercase;
     color: var(--text-secondary);
     border-radius: var(--shape-full);
@@ -44,13 +44,13 @@
 
 .section-nav a {
     text-decoration: none;
-    font-size: 0.72rem;
+    font-size: var(--type-label-compact);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.035em;
     color: var(--text-secondary);
     padding: var(--section-nav-item-pad-y) var(--section-nav-item-pad-x);
-    border-radius: 999px;
+    border-radius: var(--shape-full);
     transition:
         background var(--motion-duration-fast) var(--motion-ease-out),
         color var(--motion-duration-fast) var(--motion-ease-out),

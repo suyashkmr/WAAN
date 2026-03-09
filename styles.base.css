@@ -95,10 +95,12 @@
     --font-size-lg: 1.25rem;
     --font-size-xl: clamp(1.6rem, 3vw, 3rem);
     --type-label-xs: 0.75rem;
+    --type-label-compact: 0.72rem;
     --type-label-sm: 0.8rem;
     --type-body-sm: 0.9rem;
     --type-body-md: 0.95rem;
     --type-body-lg: 1.02rem;
+    --type-control-sm: 0.85rem;
     --type-title-sm: clamp(1.02rem, 1.2vw, 1.16rem);
     --type-title-md: clamp(1.16rem, 1.7vw, 1.36rem);
     --type-title-lg: clamp(1.55rem, 2.4vw, 1.95rem);
@@ -110,6 +112,7 @@
     --leading-relaxed: 1.65;
     --tracking-tight: -0.015em;
     --tracking-display: -0.02em;
+    --tracking-label-tight: 0.08em;
     --tracking-label: 0.11em;
     --font-weight-regular: 400;
     --font-weight-medium: 500;

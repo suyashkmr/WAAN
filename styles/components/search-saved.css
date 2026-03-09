@@ -3,8 +3,6 @@
     flex-direction: column;
     gap: 1.25rem;
     --card-accent: var(--accent-secondary);
-    --command-control-height: var(--control-height-md);
-    --command-control-radius: var(--control-radius-md);
 }
 
 .saved-views .card-subtitle,
@@ -72,8 +70,8 @@
 .compare-select select,
 .search-control input,
 .search-control select {
-    min-height: var(--command-control-height);
-    border-radius: var(--command-control-radius);
+    min-height: var(--control-height-md);
+    border-radius: var(--control-radius-md);
     border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
     background: color-mix(in srgb, var(--card-bg) 93%, transparent);
     color: var(--text);
@@ -116,8 +114,8 @@
 .saved-view-manage .ghost-button,
 .compare-controls .ghost-button,
 .search-actions .ghost-button {
-    min-height: var(--command-control-height);
-    border-radius: var(--command-control-radius);
+    min-height: var(--control-height-md);
+    border-radius: var(--control-radius-md);
 }
 
 .saved-view-save #save-view {
@@ -429,8 +427,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    --command-control-height: var(--control-height-md);
-    --command-control-radius: var(--control-radius-md);
 }
 
 .search-controls {
@@ -474,8 +470,8 @@
 #saved-views-card .saved-view-actions input,
 #saved-views-card .saved-view-actions select,
 #saved-views-card .saved-view-compare select {
-    min-height: var(--command-control-height, var(--control-height-md));
-    border-radius: var(--command-control-radius, var(--control-radius-md));
+    min-height: var(--control-height-md);
+    border-radius: var(--control-radius-md);
     border-width: 1px;
     border-style: solid;
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
@@ -523,8 +519,8 @@
 
 #search-panel .search-actions .ghost-button,
 #saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button {
-    min-height: var(--command-control-height, var(--control-height-md));
-    border-radius: var(--command-control-radius, var(--control-radius-md));
+    min-height: var(--control-height-md);
+    border-radius: var(--control-radius-md);
     border-color: color-mix(in srgb, var(--border) 80%, transparent);
     background: color-mix(in srgb, var(--card-bg) 90%, transparent);
     color: color-mix(in srgb, var(--text) 94%, transparent);
