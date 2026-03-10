@@ -914,14 +914,14 @@ main > :is(.card, .app-panel-shell).half-span {
 }
 
 :is(.card, .app-panel-shell)[data-accent] {
-    --section-accent-soft: color-mix(in srgb, var(--section-accent, var(--accent)) 16%, transparent);
-    --section-accent-surface: color-mix(in srgb, var(--section-accent, var(--accent)) 11%, var(--card-bg));
-    --section-accent-ring: color-mix(in srgb, var(--section-accent, var(--accent)) 38%, transparent);
-    --section-accent-ink: color-mix(in srgb, var(--section-accent, var(--accent)) 70%, var(--text));
-    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 35%, var(--border));
+    --shell-section-accent-soft: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, transparent);
+    --shell-section-accent-surface: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 11%, var(--card-bg));
+    --shell-section-accent-ring: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 38%, transparent);
+    --shell-section-accent-ink: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 70%, var(--text));
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 35%, var(--border));
     box-shadow: var(--section-card-shadow);
     background-image:
-        radial-gradient(110% 65% at 8% -8%, color-mix(in srgb, var(--section-accent, var(--accent)) 16%, transparent) 0%, transparent 58%),
+        radial-gradient(110% 65% at 8% -8%, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, transparent) 0%, transparent 58%),
         linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
 }
 
@@ -932,7 +932,7 @@ main > :is(.card, .app-panel-shell).half-span {
     pointer-events: none;
     border-radius: inherit;
     opacity: 0;
-    background: linear-gradient(120deg, transparent 20%, color-mix(in srgb, var(--section-accent, var(--accent)) 12%, transparent) 50%, transparent 80%);
+    background: linear-gradient(120deg, transparent 20%, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, transparent) 50%, transparent 80%);
     transform: translateX(-12%);
     transition:
         opacity var(--motion-duration-medium) var(--motion-ease-out),
@@ -940,15 +940,15 @@ main > :is(.card, .app-panel-shell).half-span {
 }
 
 :is(.card, .app-panel-shell)[data-accent] :is(.card-title-group, .app-section-intro) h2 {
-    color: var(--section-accent, var(--text));
+    color: var(--shell-section-accent, var(--text));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .section-icon {
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 30%, transparent);
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 30%, transparent);
     color: var(--md-on-primary);
     box-shadow:
         var(--section-icon-shadow),
-        0 0 0 1px color-mix(in srgb, var(--section-accent, var(--accent)) 40%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 40%, transparent);
     transition:
         transform var(--motion-duration-fast) var(--motion-ease-emphasis),
         box-shadow var(--motion-duration-fast) var(--motion-ease-out),
@@ -970,77 +970,77 @@ main > :is(.card, .app-panel-shell).half-span {
     height: 1px;
     background: linear-gradient(
         90deg,
-        color-mix(in srgb, var(--section-accent, var(--accent)) 50%, transparent),
-        color-mix(in srgb, var(--section-accent, var(--accent)) 18%, transparent) 48%,
+        color-mix(in srgb, var(--shell-section-accent, var(--accent)) 50%, transparent),
+        color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, transparent) 48%,
         transparent 100%
     );
 }
 
 :is(.card, .app-panel-shell)[data-accent] .section-note {
-    color: color-mix(in srgb, var(--section-accent, var(--accent)) 22%, var(--text));
+    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 22%, var(--text));
 }
 
 :is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) .ghost-button:not(.primary):not(.danger) {
-    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 40%, transparent);
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 11%, transparent);
-    color: color-mix(in srgb, var(--section-accent, var(--accent)) 64%, var(--text));
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 40%, transparent);
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 11%, transparent);
+    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 64%, var(--text));
 }
 
 :is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) .ghost-button:not(.primary):not(.danger):hover {
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 19%, transparent);
-    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 56%, transparent);
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 19%, transparent);
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 56%, transparent);
 }
 
 :is(.card, .app-panel-shell)[data-accent] .card-toggle {
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 20%, transparent);
-    color: color-mix(in srgb, var(--section-accent, var(--accent)) 70%, var(--text));
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 20%, transparent);
+    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 70%, var(--text));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .card-toggle:hover,
 :is(.card, .app-panel-shell)[data-accent] .card-toggle:focus-visible {
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 36%, transparent);
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 36%, transparent);
 }
 
 :is(.card, .app-panel-shell)[data-accent] .card-toggle:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--section-accent, var(--accent)) 62%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--shell-section-accent, var(--accent)) 62%, transparent);
     outline-offset: 2px;
 }
 
 :is(.card, .app-panel-shell)[data-accent] .info-note-button {
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 14%, var(--glass-bg));
-    color: color-mix(in srgb, var(--section-accent, var(--accent)) 54%, var(--text));
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 14%, var(--glass-bg));
+    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 54%, var(--text));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .info-note-button:hover,
 :is(.card, .app-panel-shell)[data-accent] .info-note-button:focus-visible {
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 28%, transparent);
-    color: var(--section-accent-ink);
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 28%, transparent);
+    color: var(--shell-section-accent-ink);
 }
 
 :is(.card, .app-panel-shell)[data-accent] .info-note-button:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--section-accent, var(--accent)) 62%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--shell-section-accent, var(--accent)) 62%, transparent);
     outline-offset: 2px;
 }
 
-.card[data-accent="relay"] { --section-accent: var(--accent-primary); }
-.card[data-accent="highlights"] { --section-accent: var(--accent-secondary); }
-.card[data-accent="participants"] { --section-accent: var(--accent-success); }
-.card[data-accent="hourly"] { --section-accent: var(--accent-primary); }
-.card[data-accent="daily"] { --section-accent: var(--accent-secondary); }
-.card[data-accent="weekly"] { --section-accent: var(--accent-warning); }
-.card[data-accent="weekday"] { --section-accent: var(--accent-primary); }
-.card[data-accent="timeofday"] { --section-accent: var(--accent-warning); }
-.card[data-accent="sentiment"] { --section-accent: var(--accent-danger); }
-.card[data-accent="message-types"] { --section-accent: var(--accent-primary); }
-.card[data-accent="polls"] { --section-accent: var(--accent-secondary); }
-.card[data-accent="saved-views"] { --section-accent: var(--accent-secondary); }
-.card[data-accent="search"] { --section-accent: var(--accent-primary); }
-.card[data-accent="faq"] { --section-accent: var(--accent-warning); }
+.card[data-accent="relay"] { --shell-section-accent: var(--accent-primary); }
+.card[data-accent="highlights"] { --shell-section-accent: var(--accent-secondary); }
+.card[data-accent="participants"] { --shell-section-accent: var(--accent-success); }
+.card[data-accent="hourly"] { --shell-section-accent: var(--accent-primary); }
+.card[data-accent="daily"] { --shell-section-accent: var(--accent-secondary); }
+.card[data-accent="weekly"] { --shell-section-accent: var(--accent-warning); }
+.card[data-accent="weekday"] { --shell-section-accent: var(--accent-primary); }
+.card[data-accent="timeofday"] { --shell-section-accent: var(--accent-warning); }
+.card[data-accent="sentiment"] { --shell-section-accent: var(--accent-danger); }
+.card[data-accent="message-types"] { --shell-section-accent: var(--accent-primary); }
+.card[data-accent="polls"] { --shell-section-accent: var(--accent-secondary); }
+.card[data-accent="saved-views"] { --shell-section-accent: var(--accent-secondary); }
+.card[data-accent="search"] { --shell-section-accent: var(--accent-primary); }
+.card[data-accent="faq"] { --shell-section-accent: var(--accent-warning); }
 
 .card:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-shell-hover), 0 0 0 1px color-mix(in srgb, var(--surface-tint) 30%, transparent);
-    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 36%, var(--border));
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 36%, var(--border));
 }
 
 :root[data-color-scheme="dark"] :is(.card, .app-panel-shell) {
@@ -3851,7 +3851,7 @@ body[data-compact="true"] .table-container.scrollable {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in srgb, var(--section-accent, var(--accent)) 20%, transparent);
+    background: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 20%, transparent);
     color: var(--md-on-primary-container);
     font-size: 1rem;
     box-shadow: var(--section-icon-shadow);
@@ -3863,7 +3863,7 @@ body[data-compact="true"] .table-container.scrollable {
     position: absolute;
     inset: -3px;
     border-radius: inherit;
-    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 32%, transparent);
+    border: 1px solid color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 32%, transparent);
     opacity: 0.45;
     pointer-events: none;
 }

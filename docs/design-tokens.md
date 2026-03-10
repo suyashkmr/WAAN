@@ -94,9 +94,7 @@ Phase 12 does not require every component stylesheet to become a flat list of ro
 
 Current intentional aliases:
 
-- `--analytics-accent`
-  - Used only inside migrated analytics stylesheets where panel-specific accent assignment must stay isolated from the shared shell `--section-accent` contract.
-  - Must always resolve to an existing semantic token such as `--accent-primary`, `--accent-secondary`, `--accent-success`, `--accent-warning`, or `--positive`.
+- none in runtime component stylesheets
 
 Not acceptable:
 
@@ -107,13 +105,22 @@ Not acceptable:
 Current audit status (2026-03-09):
 
 - component stylesheets no longer carry a parallel raw palette system
-- analytics surfaces now use a narrowly scoped `--analytics-accent` alias where they need panel-local accent isolation from the shared shell `--section-accent` contract
+- analytics surfaces now use the shared `--section-accent` contract again after shell card chrome was moved onto a separate `--shell-section-accent` variable in `styles.components.css`
 - message-type stat accents are no longer owned by `styles.components.css`; they now resolve through shared base semantic tokens (`--stat-accent-*`) defined in `styles.base.css`
 - shared-shell overlay, tooltip, FAQ card, snackbar, and weekly-bar visual recipes now resolve through base tokens in `styles.base.css`; `styles.components.css` no longer carries those raw shadow/overlay/gradient values inline
 - shared primary/danger button chrome now resolves through base control tokens in `styles.base.css`; `styles.components.css` no longer owns separate default/dark button fill, border, and shadow recipes inline
 - shared-shell card/select/empty-state/footer/stat elevations now resolve through base tokens in `styles.base.css`; `styles.components.css` no longer carries those shadow recipes inline for accent cards, poll items, native selects, notifications, dataset/empty states, summary cards, sticky table headers, stat cards, or footer marks
 - shared-shell hero celebration glints, dark ghost/theme/card-toggle shadows, sentiment/list/summary/stat surface shadows, empty-illustration sheen, table inset sheen, and mobile table-row elevation now also resolve through base tokens instead of inline recipes in `styles.components.css`
-- remaining raw visual values are confined to the shared base token layer and intentional platform-specific shadow composition, not per-component skinning islands
+- remaining raw visual values in runtime UI code are confined to the shared base token layer and intentional platform-specific shadow composition, not per-component skinning islands
+- the remaining raw values in `styles.base.css` are now classified as legitimate foundation definitions rather than migration debt:
+  - base semantic palette and light/dark/high-contrast overrides
+  - alpha-backed semantic helpers such as `--positive-soft` / `--negative-soft`
+  - calendar heatmap intensity levels and their foreground contrast tokens
+  - shared shadow RGB/alpha definitions used by composed shadow tokens
+  - shared logo/footer/backdrop primitives used by the shell chrome
+- remaining raw values outside the runtime token layer are limited to:
+  - print-only overrides in `styles.components.css`
+  - export-only theme definitions in `js/theme.js` and `js/exportDeck/css.js`
 
 ## Accessibility Toggles
 

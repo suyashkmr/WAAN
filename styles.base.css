@@ -317,9 +317,9 @@
     --theme-toggle-checked-shadow-dark: 0 8px 18px color-mix(in srgb, var(--accent) 18%, rgb(var(--shadow-ink-rgb) / 0.52));
     --card-toggle-shadow-dark: 0 6px 12px rgb(var(--shadow-ink-rgb) / 0.42), 0 1px 0 color-mix(in srgb, var(--edge-specular) 24%, transparent) inset;
 
-    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
-    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
-    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
+    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
     --poll-item-shadow: 0 2px 4px rgb(var(--shadow-ink-rgb) / 0.04);
     --native-select-shadow: 0 6px 14px rgb(var(--shadow-ink-rgb) / 0.14);
     --notification-status-shadow: 0 20px 40px rgb(var(--shadow-ink-rgb) / 0.45);
@@ -599,9 +599,9 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
         --button-danger-border-hover: color-mix(in srgb, var(--negative) 70%, transparent);
         --button-danger-fill-hover: color-mix(in srgb, var(--negative) 12%, transparent);
 
-    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
-    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
-    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
+    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
     --poll-item-shadow: 0 2px 4px rgb(var(--shadow-ink-rgb) / 0.04);
     --native-select-shadow: 0 6px 14px rgb(var(--shadow-ink-rgb) / 0.14);
     --notification-status-shadow: 0 20px 40px rgb(var(--shadow-ink-rgb) / 0.45);
@@ -713,9 +713,9 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --button-danger-border-hover: color-mix(in srgb, var(--negative) 70%, transparent);
     --button-danger-fill-hover: color-mix(in srgb, var(--negative) 12%, transparent);
 
-    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
-    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
-    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
+    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
     --poll-item-shadow: 0 2px 4px rgb(var(--shadow-ink-rgb) / 0.04);
     --native-select-shadow: 0 6px 14px rgb(var(--shadow-ink-rgb) / 0.14);
     --notification-status-shadow: 0 20px 40px rgb(var(--shadow-ink-rgb) / 0.45);
@@ -826,9 +826,9 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --button-danger-border-hover: color-mix(in srgb, var(--negative) 70%, transparent);
     --button-danger-fill-hover: color-mix(in srgb, var(--negative) 12%, transparent);
 
-    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
-    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
-    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-card-shadow: 0 18px 40px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, rgb(var(--shadow-ink-rgb) / 0.24));
+    --section-icon-shadow: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 22%, rgb(var(--shadow-ink-rgb) / 0.35));
+    --section-icon-shadow-hover: 0 8px 16px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 24%, rgb(var(--shadow-ink-rgb) / 0.35));
     --poll-item-shadow: 0 2px 4px rgb(var(--shadow-ink-rgb) / 0.04);
     --native-select-shadow: 0 6px 14px rgb(var(--shadow-ink-rgb) / 0.14);
     --notification-status-shadow: 0 20px 40px rgb(var(--shadow-ink-rgb) / 0.45);
@@ -852,7 +852,7 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --button-danger-fill-dark: linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 16%, transparent) 0%, transparent 52%), color-mix(in srgb, var(--negative) 10%, var(--bg-room));
     --button-danger-border-dark-hover: color-mix(in srgb, var(--negative) 76%, transparent);
     --button-danger-fill-dark-hover: linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 18%, transparent) 0%, transparent 52%), color-mix(in srgb, var(--negative) 18%, var(--bg-room));
-    --section-card-shadow-dark: 0 20px 48px color-mix(in srgb, var(--section-accent, var(--accent)) 20%, rgb(var(--shadow-ink-rgb) / 0.64));
+    --section-card-shadow-dark: 0 20px 48px color-mix(in srgb, var(--shell-section-accent, var(--accent)) 20%, rgb(var(--shadow-ink-rgb) / 0.64));
     --bg-depth-spot-1: color-mix(in srgb, var(--accent) 11%, transparent);
     --bg-depth-spot-2: color-mix(in srgb, var(--md-secondary) 9%, transparent);
     --bg-depth-spot-3: color-mix(in srgb, var(--md-tertiary) 8%, transparent);
