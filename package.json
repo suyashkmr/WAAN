@@ -12,7 +12,7 @@
     "build:prime-theme-bridge": "node scripts/generate-prime-theme-bridge.mjs",
     "tailwind:build": "BROWSERSLIST_IGNORE_OLD_DATA=1 tailwindcss -c tailwind.config.cjs -i styles.tailwind.src.css -o styles.tailwind.css --minify",
     "tailwind:watch": "BROWSERSLIST_IGNORE_OLD_DATA=1 tailwindcss -c tailwind.config.cjs -i styles.tailwind.src.css -o styles.tailwind.css --watch",
-    "check:tailwind-adoption": "node scripts/check-tailwind-adoption.mjs",
+    "check:tailwind-layout-only": "node scripts/check-tailwind-layout-only.mjs",
     "check:tailwind-size": "node scripts/check-tailwind-size.mjs",
     "lint": "eslint js apps/server/src",
     "check:unused-exports": "eslint js apps/server/src tests",
@@ -38,11 +38,14 @@
     "release:cut": "node scripts/cut-release.cjs",
     "check:release-notes": "node scripts/validate-release-notes.mjs",
     "verify": "npm run lint && npm test",
-    "ci:verify": "npm run check:artifacts && npm run check:vendor-runtime && npm run check:prime-theme-bridge && npm run check:module-size && npm run check:legacy-primitives && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-adoption && npm run check:appshell-contracts && npm run check:release-reliability && npm run verify && npm run check:circular",
+    "ci:verify": "npm run check:artifacts && npm run check:vendor-runtime && npm run check:prime-theme-bridge && npm run check:module-size && npm run check:legacy-primitives && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-layout-only && npm run check:appshell-contracts && npm run check:release-reliability && npm run verify && npm run check:circular",
     "coverage": "vitest --run --coverage",
     "start": "node serve.js"
   },
   "author": "WAAN",
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT",
   "dependencies": {
     "@primeuix/themes": "^2.0.3",

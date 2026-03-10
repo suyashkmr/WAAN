@@ -1,6 +1,9 @@
 .hero-shell {
     padding: var(--hero-shell-pad-top) var(--hero-shell-pad-x) var(--hero-shell-pad-bottom);
-    background: transparent;
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--shape-large);
+    box-shadow: var(--shadow-card);
     position: relative;
     z-index: 1;
 }

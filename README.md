@@ -56,7 +56,7 @@ Release assets are distributed via GitHub Releases (Apple Silicon DMG + ZIP).
 
 Before running WAAN from Terminal, make sure you have:
 
-- `Node.js` 18 or newer
+- `Node.js` 20 or newer
 - `npm` (comes with Node.js)
 - Node.js downloads: `https://nodejs.org/en/download`
 

@@ -871,14 +871,22 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Visual regression and manual sign-off confirm token consolidation across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts before Phase 12 is marked complete.
 
 - [ ] Phase 13 (2-4 days): Tailwind layout-only constraint.
-  - [ ] Restrict Tailwind usage to layout glue (`display`, `grid/flex`, spacing, responsive utilities).
-  - [ ] Remove utility usage that re-styles component internals (colors, borders, shadows, typography for Prime-owned components).
-  - [ ] Add lint/check script to flag non-layout Tailwind utility usage in component markup.
+  - [x] Restrict Tailwind usage to layout glue (`display`, `grid/flex`, spacing, responsive utilities).
+    - [x] Removed the first batch of runtime skinning utilities from `index.html` (`body`, `section-nav`, `hero-shell`, `hero h1`, `relay-live-card`, `actions-toolbar`) and moved any required preserved styling back onto CSS class hooks.
+  - [x] Remove utility usage that re-styles component internals (colors, borders, shadows, typography for Prime-owned components).
+    - [x] Replaced the runtime shell-skinning Tailwind usage on top-level shell wrappers with class-owned CSS so those surfaces no longer depend on Tailwind color/border/shadow/typography utilities.
+  - [x] Add lint/check script to flag non-layout Tailwind utility usage in component markup.
+    - [x] Added `scripts/check-tailwind-layout-only.mjs` and wired `npm run check:tailwind-layout-only` into `npm run ci:verify`.
   - [ ] Update docs with an explicit styling contract: Prime theme tokens + PrimeVue for component styling, Tailwind for layout composition only.
   - [ ] Acceptance: Tailwind utilities are used for layout orchestration only, not component skinning.
     - [ ] Tailwind no longer overrides PrimeVue-owned component visuals outside intentional layout wrappers.
 
-- [ ] Phase 14 (1-2 days): Final 100% migration sign-off and purge.
+- [ ] Phase 14 (2-4 days): Final 100% migration sign-off, PrimeVue completion, and purge.
+  - [ ] Complete the deferred PrimeVue form-control adoption so the remaining core controls are no longer native fallbacks.
+    - [ ] Restore PrimeVue `Select/Dropdown` as the production default where runtime-native `select` is still used.
+    - [ ] Restore PrimeVue `DatePicker/Calendar` as the production default where runtime-native `input[type="date"]` is still used.
+    - [ ] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
+    - [ ] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
   - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
@@ -889,8 +897,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [ ] `js/vue/relayStatusViewRenderer.js`
     - [ ] `js/vue/activityPanelsMetaRenderer.js`
   - [ ] Re-run `npm run ci:verify`, `npm run test:visual`, and release smoke checks after purge.
-  - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, and onboarding.
+  - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts.
   - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access.
+    - [ ] PrimeVue is the production default for core buttons, radios, dialogs, selects, and date controls.
+    - [ ] No core production UI path depends on app-owned fallback component implementations or native-form temporary defaults.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.

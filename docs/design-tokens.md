@@ -56,7 +56,7 @@ The app respects both system `prefers-reduced-motion` and the in-app toggle. Ena
 
 Tailwind is configured as a thin bridge over CSS variables in `tailwind.config.cjs` so theme switching, high-contrast mode, and reduced-motion mode remain automatic.
 
-Adoption decision (2026-02-25): WAAN keeps Tailwind as a first-class styling layer. Core shell surfaces must retain active token utility usage in `index.html`, enforced by `npm run check:tailwind-adoption` in CI.
+Phase 13 decision (2026-03-10): Tailwind remains available for layout composition only. Runtime markup must not use Tailwind for component skinning; CI enforces this with `npm run check:tailwind-layout-only`.
 
 ### Semantic Color Utilities
 
