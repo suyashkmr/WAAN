@@ -833,8 +833,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Buttons, radios, dialog surfaces, and adopted data-list surfaces are already PrimeVue-owned in production paths.
     - [x] Remaining non-Prime core control adoption work has been deferred to Phase 12+ follow-up work rather than kept as a Phase 11 blocker.
 
-- [ ] Phase 12 (3-5 days): Prime theme tokens as single source of truth.
-  - [ ] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.
+- [x] Phase 12 (3-5 days): Prime theme tokens as single source of truth.
+  - [x] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.
     - [ ] Map existing CSS/token references to Prime theme semantic tokens.
       - [x] Introduced generated Prime-token bridge layer in `styles/prime-theme-bridge.css` (via `scripts/generate-prime-theme-bridge.mjs`) and imported it into the runtime stylesheet stack so legacy WAAN theme aliases can start resolving from Prime-style semantic tokens instead of hard-coded base values.
       - [x] Migrated `styles.base.css` root/light/dark alias blocks to derive from the generated Prime bridge while preserving existing first-paint light/dark behavior and pre-bridge `surface-tint` / dark container values.
@@ -858,15 +858,17 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Shared-shell stylesheet audit note: accent-card, poll-item, native-select, notification, dataset-empty, panel-state, summary-card, sticky-table-header, stat-card, and footer-mark elevation recipes now consume base tokens from `styles.base.css` instead of carrying raw shadow recipes inline in `styles.components.css`.
       - [x] Shared-shell stylesheet audit note: hero celebration glints, dark ghost/theme/card-toggle shadows, sentiment/list/summary/stat surface shadows, empty-illustration sheen, table inset sheen, and mobile table-row elevation now also consume base tokens from `styles.base.css` instead of inline recipes in `styles.components.css`.
       - [x] Foundation-layer audit note: remaining raw values in `styles.base.css` are legitimate base-token definitions (semantic palette, scheme overrides, heatmap levels, shadow RGB/alpha definitions, and shell chrome primitives), while remaining raw values outside the runtime token layer are limited to print-only CSS and export-only theme files.
+      - [x] Shell/content accent audit note: shell card chrome now consistently resolves from `--shell-section-accent` (including shared section-card/icon shadow tokens and section-icon descendants), while analytics/content surfaces use `--section-accent` directly; no remaining shell descendant reads the content accent by mistake.
   - [x] Ensure light/dark and accessibility contrast remain compliant after token consolidation.
     - [x] `npm run test:accessibility-smoke` passed on 2026-03-10 after the Phase 12 token sweep, including reduced-motion/high-contrast toggles and keyboard focusability for migrated controls.
     - [x] `npm run test:visual` passed on 2026-03-10 after a targeted time-of-day baseline refresh for the stable 1px `section-timeofday` height drift on desktop/mobile.
   - [x] Add regression checks for token drift (theme snapshot/contract tests in CI).
     - [x] Added `check:prime-theme-bridge` to verify the generated Prime-token bridge stays in sync with `scripts/generate-prime-theme-bridge.mjs`, and wired it into `npm run ci:verify`.
-  - [ ] Acceptance: component-level color/typography/shape/elevation values resolve from Prime theme tokens by default.
+  - [x] Acceptance: component-level color/typography/shape/elevation values resolve from Prime theme tokens by default.
     - [x] Prime theme tokens are the sole source of truth for component skinning; any remaining custom CSS tokens are limited to app layout/brand framing only.
     - [x] Whole-codebase audit confirms there are no parallel component-skinning token systems left in runtime code, stylesheets, or Vue render helpers.
-    - [ ] Visual regression and manual sign-off confirm token consolidation across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts before Phase 12 is marked complete.
+    - [x] Runtime accent contracts are split cleanly: shell chrome uses `--shell-section-accent`, panel/content visuals use `--section-accent`, and shared shadow tokens follow the same separation.
+    - [x] Visual regression and manual sign-off confirm token consolidation across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts before Phase 12 is marked complete.
 
 - [ ] Phase 13 (2-4 days): Tailwind layout-only constraint.
   - [ ] Restrict Tailwind usage to layout glue (`display`, `grid/flex`, spacing, responsive utilities).

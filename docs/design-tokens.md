@@ -106,6 +106,7 @@ Current audit status (2026-03-09):
 
 - component stylesheets no longer carry a parallel raw palette system
 - analytics surfaces now use the shared `--section-accent` contract again after shell card chrome was moved onto a separate `--shell-section-accent` variable in `styles.components.css`
+- shell card chrome is now consistently sourced from `--shell-section-accent`, including shared section-card and section-icon shadow tokens in `styles.base.css` plus descendant shell icon halo/fill rules in `styles.components.css`, so analytics-local `--section-accent` overrides no longer leak into shell chrome
 - message-type stat accents are no longer owned by `styles.components.css`; they now resolve through shared base semantic tokens (`--stat-accent-*`) defined in `styles.base.css`
 - shared-shell overlay, tooltip, FAQ card, snackbar, and weekly-bar visual recipes now resolve through base tokens in `styles.base.css`; `styles.components.css` no longer carries those raw shadow/overlay/gradient values inline
 - shared primary/danger button chrome now resolves through base control tokens in `styles.base.css`; `styles.components.css` no longer owns separate default/dark button fill, border, and shadow recipes inline
