@@ -94,20 +94,25 @@ Phase 12 does not require every component stylesheet to become a flat list of ro
 
 Current intentional aliases:
 
-- `--card-accent`
-  - Used to assign a per-card semantic accent to analytics surfaces without introducing new raw colors.
+- `--analytics-accent`
+  - Used only inside migrated analytics stylesheets where panel-specific accent assignment must stay isolated from the shared shell `--section-accent` contract.
   - Must always resolve to an existing semantic token such as `--accent-primary`, `--accent-secondary`, `--accent-success`, `--accent-warning`, or `--positive`.
 
 Not acceptable:
 
-- component-local aliases that simply restate global control tokens with no semantic transformation
+- component-local aliases that simply restate global or shared-shell tokens with no semantic transformation
 - component-local raw palette definitions that introduce new independent color/shadow systems
 - render helpers or Vue islands embedding raw visual values instead of consuming the shared token contract
 
 Current audit status (2026-03-09):
 
 - component stylesheets no longer carry a parallel raw palette system
-- remaining component-local semantics are narrowed to `--card-accent`
+- analytics surfaces now use a narrowly scoped `--analytics-accent` alias where they need panel-local accent isolation from the shared shell `--section-accent` contract
+- message-type stat accents are no longer owned by `styles.components.css`; they now resolve through shared base semantic tokens (`--stat-accent-*`) defined in `styles.base.css`
+- shared-shell overlay, tooltip, FAQ card, snackbar, and weekly-bar visual recipes now resolve through base tokens in `styles.base.css`; `styles.components.css` no longer carries those raw shadow/overlay/gradient values inline
+- shared primary/danger button chrome now resolves through base control tokens in `styles.base.css`; `styles.components.css` no longer owns separate default/dark button fill, border, and shadow recipes inline
+- shared-shell card/select/empty-state/footer/stat elevations now resolve through base tokens in `styles.base.css`; `styles.components.css` no longer carries those shadow recipes inline for accent cards, poll items, native selects, notifications, dataset/empty states, summary cards, sticky table headers, stat cards, or footer marks
+- shared-shell hero celebration glints, dark ghost/theme/card-toggle shadows, sentiment/list/summary/stat surface shadows, empty-illustration sheen, table inset sheen, and mobile table-row elevation now also resolve through base tokens instead of inline recipes in `styles.components.css`
 - remaining raw visual values are confined to the shared base token layer and intentional platform-specific shadow composition, not per-component skinning islands
 
 ## Accessibility Toggles

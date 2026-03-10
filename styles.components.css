@@ -61,9 +61,9 @@
     border-radius: 26px;
     padding: 0.4rem;
     background:
-        radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.35)),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
-    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.45), 0 18px 48px rgba(8, 10, 26, 0.5);
+        radial-gradient(circle at 40% 20%, var(--logo-shell-radial-start), var(--logo-shell-radial-end)),
+        linear-gradient(145deg, var(--logo-shell-linear-start), var(--logo-shell-linear-end));
+    box-shadow: var(--logo-shell-inset-shadow), var(--logo-shell-float-shadow);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -80,7 +80,7 @@
     border-radius: 20px;
     display: block;
     object-fit: contain;
-    filter: drop-shadow(0 12px 28px rgba(8, 10, 26, 0.4));
+    filter: var(--logo-mark-shadow);
     transition:
         transform var(--motion-duration-medium) var(--motion-ease-emphasis),
         filter var(--motion-duration-medium) var(--motion-ease-out);
@@ -156,9 +156,9 @@
     background: color-mix(in srgb, var(--accent) 12%, var(--card-bg));
     font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.065em;
+    letter-spacing: var(--tracking-label-badge);
     text-transform: uppercase;
-    box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 24%, rgba(4, 8, 20, 0.5));
+    box-shadow: var(--status-badge-shadow);
     transition:
         border-color var(--motion-duration-fast) var(--motion-ease-out),
         background var(--motion-duration-fast) var(--motion-ease-out),
@@ -170,7 +170,7 @@
     border-color: color-mix(in srgb, var(--muted) 42%, transparent);
     background: color-mix(in srgb, var(--muted) 14%, var(--card-bg));
     color: color-mix(in srgb, var(--muted) 86%, var(--text));
-    box-shadow: 0 8px 18px color-mix(in srgb, var(--muted) 20%, rgba(4, 8, 20, 0.45));
+    box-shadow: var(--status-badge-shadow-muted);
 }
 
 .hero-status-badge[data-state="starting"] {
@@ -179,7 +179,7 @@
         linear-gradient(120deg, color-mix(in srgb, var(--accent) 18%, transparent) 0%, color-mix(in srgb, var(--accent) 30%, transparent) 50%, color-mix(in srgb, var(--accent) 16%, transparent) 100%);
     background-size: 180% 100%;
     color: color-mix(in srgb, var(--accent) 82%, var(--text));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--accent) 24%, rgba(4, 8, 20, 0.48));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent), var(--status-badge-shadow-accent);
     animation: hero-status-wave 1.6s linear infinite;
 }
 
@@ -187,21 +187,21 @@
     border-color: color-mix(in srgb, var(--warning) 58%, transparent);
     background: color-mix(in srgb, var(--warning) 18%, var(--card-bg));
     color: color-mix(in srgb, var(--warning) 76%, var(--text));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning) 24%, transparent), 0 14px 26px color-mix(in srgb, var(--warning) 24%, rgba(4, 8, 20, 0.45));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning) 24%, transparent), var(--status-badge-shadow-warning);
 }
 
 .hero-status-badge[data-state="syncing"] {
     border-color: color-mix(in srgb, var(--accent) 62%, transparent);
     background: color-mix(in srgb, var(--accent) 22%, var(--card-bg));
     color: color-mix(in srgb, var(--accent) 84%, var(--text));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 16px 30px color-mix(in srgb, var(--accent) 26%, rgba(4, 8, 20, 0.48));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), var(--status-badge-shadow-sync);
 }
 
 .hero-status-badge[data-state="ready"] {
     border-color: color-mix(in srgb, var(--success) 60%, transparent);
     background: color-mix(in srgb, var(--success) 18%, var(--card-bg));
     color: color-mix(in srgb, var(--success) 72%, var(--text));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--success) 30%, rgba(4, 8, 20, 0.5));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent), var(--status-badge-shadow-success);
 }
 
 .hero-status-badge.hero-status-badge-ready {
@@ -315,7 +315,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(110deg, transparent 0%, color-mix(in srgb, #ffffff 65%, transparent) 50%, transparent 100%);
+    background: var(--hero-ready-sweep-glint);
     transform: translateX(-120%);
     animation: hero-ready-sweep 0.75s ease-out;
     pointer-events: none;
@@ -341,10 +341,10 @@
         box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 0%, transparent);
     }
     55% {
-        box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 22%, transparent), 0 16px 30px color-mix(in srgb, var(--success) 30%, rgba(4, 8, 20, 0.5));
+        box-shadow: var(--hero-ready-glow-mid);
     }
     100% {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent), 0 14px 28px color-mix(in srgb, var(--success) 30%, rgba(4, 8, 20, 0.5));
+        box-shadow: var(--hero-ready-glow-end);
     }
 }
 
@@ -395,12 +395,12 @@
 
 .hero-blurb:hover .hero-logo {
     transform: translateY(calc(var(--motion-distance-xs) * -1)) rotate(-1deg);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.42), 0 18px 40px rgba(5, 7, 16, 0.42);
+    box-shadow: inset 0 1px 1px color-mix(in srgb, var(--logo-shell-radial-start) 44%, transparent), var(--logo-shell-hover-shadow);
 }
 
 .hero-blurb:hover .brand-mark {
     transform: scale(1.03) rotate(1deg);
-    filter: drop-shadow(0 14px 30px rgba(8, 10, 26, 0.34));
+    filter: var(--logo-mark-hover-shadow);
 }
 
 #global-progress {
@@ -667,9 +667,7 @@
         linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 20%, transparent) 0%, transparent 48%),
         color-mix(in srgb, var(--bg-room) 96%, transparent);
     color: color-mix(in srgb, var(--text) 92%, var(--muted));
-    box-shadow:
-        0 10px 22px rgba(2, 6, 16, 0.52),
-        0 1px 0 color-mix(in srgb, var(--edge-specular) 32%, transparent) inset;
+    box-shadow: var(--ghost-button-shadow-dark);
 }
 
 :root[data-color-scheme="dark"] .ghost-button:hover {
@@ -677,18 +675,14 @@
         linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 26%, transparent) 0%, transparent 52%),
         color-mix(in srgb, var(--accent) 14%, var(--bg-room));
     border-color: color-mix(in srgb, var(--accent) 56%, transparent);
-    box-shadow:
-        0 14px 28px color-mix(in srgb, var(--accent) 18%, rgba(2, 6, 16, 0.62)),
-        0 1px 0 color-mix(in srgb, var(--edge-specular) 38%, transparent) inset;
+    box-shadow: var(--ghost-button-shadow-dark-hover);
 }
 
 :root[data-color-scheme="dark"] .ghost-button:active {
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent) 0%, transparent 56%),
         color-mix(in srgb, var(--accent) 18%, var(--bg-room));
-    box-shadow:
-        0 7px 14px color-mix(in srgb, var(--accent) 16%, rgba(2, 6, 16, 0.55)),
-        0 1px 0 color-mix(in srgb, var(--edge-specular) 22%, transparent) inset;
+    box-shadow: var(--ghost-button-shadow-dark-active);
 }
 
 :root[data-color-scheme="dark"] .ghost-button[aria-pressed="true"] {
@@ -696,37 +690,27 @@
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 24%, transparent) 0%, transparent 56%),
         color-mix(in srgb, var(--accent) 26%, transparent);
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--accent) 38%, transparent),
-        0 12px 26px color-mix(in srgb, var(--accent) 16%, rgba(2, 6, 16, 0.58));
+    box-shadow: var(--ghost-button-shadow-dark-pressed);
 }
 
 :root[data-color-scheme="dark"] .ghost-button.primary {
-    border-color: color-mix(in srgb, var(--accent) 72%, transparent);
-    background:
-        linear-gradient(170deg, color-mix(in srgb, #ffffff 12%, var(--accent)) 0%, color-mix(in srgb, var(--accent) 82%, #16304a) 54%, color-mix(in srgb, var(--accent) 68%, #0a1424) 100%);
-    box-shadow:
-        0 14px 28px color-mix(in srgb, var(--accent) 28%, rgba(2, 6, 16, 0.64)),
-        0 1px 0 color-mix(in srgb, #ffffff 26%, transparent) inset;
+    border-color: var(--button-primary-border-dark);
+    background: var(--button-primary-fill-dark);
+    box-shadow: var(--button-primary-shadow-dark), var(--button-primary-dark-inset);
 }
 
 :root[data-color-scheme="dark"] .ghost-button.primary:hover {
-    background:
-        linear-gradient(170deg, color-mix(in srgb, #ffffff 15%, var(--accent)) 0%, color-mix(in srgb, var(--accent) 88%, #1a3654) 56%, color-mix(in srgb, var(--accent) 72%, #0a1424) 100%);
+    background: var(--button-primary-fill-dark-hover);
 }
 
 :root[data-color-scheme="dark"] .ghost-button.danger {
-    border-color: color-mix(in srgb, var(--negative) 56%, transparent);
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 16%, transparent) 0%, transparent 52%),
-        color-mix(in srgb, var(--negative) 10%, var(--bg-room));
+    border-color: var(--button-danger-border-dark);
+    background: var(--button-danger-fill-dark);
 }
 
 :root[data-color-scheme="dark"] .ghost-button.danger:hover {
-    border-color: color-mix(in srgb, var(--negative) 76%, transparent);
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 18%, transparent) 0%, transparent 52%),
-        color-mix(in srgb, var(--negative) 18%, var(--bg-room));
+    border-color: var(--button-danger-border-dark-hover);
+    background: var(--button-danger-fill-dark-hover);
 }
 
 :root[data-color-scheme="dark"] .actions-toolbar {
@@ -735,9 +719,7 @@
 }
 
 :root[data-color-scheme="dark"] .actions-toolbar .ghost-button {
-    box-shadow:
-        0 8px 18px rgba(2, 6, 16, 0.5),
-        0 1px 0 color-mix(in srgb, var(--edge-specular) 30%, transparent) inset;
+    box-shadow: var(--toolbar-ghost-button-shadow-dark);
 }
 
 :root[data-color-scheme="dark"] .theme-toggle {
@@ -745,9 +727,7 @@
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 16%, transparent) 0%, transparent 54%),
         color-mix(in srgb, var(--card-bg) 96%, transparent);
-    box-shadow:
-        0 8px 18px rgba(2, 6, 16, 0.45),
-        0 1px 0 color-mix(in srgb, var(--edge-specular) 26%, transparent) inset;
+    box-shadow: var(--theme-toggle-shadow-dark);
 }
 
 :root[data-color-scheme="dark"] .theme-toggle input:checked + label {
@@ -755,14 +735,12 @@
         linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 22%, transparent) 0%, transparent 54%),
         color-mix(in srgb, var(--accent) 28%, transparent);
     border-color: color-mix(in srgb, var(--accent) 62%, transparent);
-    box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 18%, rgba(2, 6, 16, 0.52));
+    box-shadow: var(--theme-toggle-checked-shadow-dark);
 }
 
 :root[data-color-scheme="dark"] .card-toggle {
     border-color: color-mix(in srgb, var(--edge-strong) 70%, transparent);
-    box-shadow:
-        0 6px 12px rgba(2, 6, 16, 0.42),
-        0 1px 0 color-mix(in srgb, var(--edge-specular) 24%, transparent) inset;
+    box-shadow: var(--card-toggle-shadow-dark);
 }
 
 #log-drawer-toggle[data-has-unread="true"]::after {
@@ -941,7 +919,7 @@ main > :is(.card, .app-panel-shell).half-span {
     --section-accent-ring: color-mix(in srgb, var(--section-accent, var(--accent)) 38%, transparent);
     --section-accent-ink: color-mix(in srgb, var(--section-accent, var(--accent)) 70%, var(--text));
     border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 35%, var(--border));
-    box-shadow: 0 18px 40px color-mix(in srgb, var(--section-accent, var(--accent)) 18%, rgba(5, 7, 16, 0.24));
+    box-shadow: var(--section-card-shadow);
     background-image:
         radial-gradient(110% 65% at 8% -8%, color-mix(in srgb, var(--section-accent, var(--accent)) 16%, transparent) 0%, transparent 58%),
         linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
@@ -969,7 +947,7 @@ main > :is(.card, .app-panel-shell).half-span {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 30%, transparent);
     color: var(--md-on-primary);
     box-shadow:
-        0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 22%, rgba(6, 10, 20, 0.35)),
+        var(--section-icon-shadow),
         0 0 0 1px color-mix(in srgb, var(--section-accent, var(--accent)) 40%, transparent);
     transition:
         transform var(--motion-duration-fast) var(--motion-ease-emphasis),
@@ -1072,7 +1050,7 @@ main > :is(.card, .app-panel-shell).half-span {
 
 :root[data-color-scheme="dark"] :is(.card, .app-panel-shell)[data-accent] {
     box-shadow:
-        0 20px 48px color-mix(in srgb, var(--section-accent, var(--accent)) 20%, rgba(3, 6, 15, 0.64)),
+        var(--section-card-shadow-dark),
         0 2px 0 color-mix(in srgb, var(--edge-specular) 28%, transparent) inset;
 }
 
@@ -1091,7 +1069,7 @@ main > :is(.card, .app-panel-shell).half-span {
 
 :is(.card, .app-panel-shell):hover .section-icon {
     transform: translateY(calc(var(--motion-distance-xs) * -1)) scale(1.04);
-    box-shadow: 0 8px 16px color-mix(in srgb, var(--section-accent, var(--accent)) 24%, rgba(6, 10, 20, 0.35));
+    box-shadow: var(--section-icon-shadow-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1300,14 +1278,14 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .ghost-button.primary {
-    background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 84%, white) 0%, var(--accent) 62%, color-mix(in srgb, var(--accent) 86%, #1d1d2e) 100%);
+    background: var(--button-primary-fill);
     color: var(--md-on-primary);
-    border-color: color-mix(in srgb, var(--accent) 70%, transparent);
-    box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 22%, rgba(8, 12, 24, 0.4));
+    border-color: var(--button-primary-border);
+    box-shadow: var(--button-primary-shadow);
 }
 
 .ghost-button.primary:hover {
-    background: color-mix(in srgb, var(--accent) 85%, white);
+    background: var(--button-primary-fill-hover);
     color: var(--md-on-primary);
 }
 
@@ -1382,13 +1360,13 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .ghost-button.danger {
-    border-color: rgba(255, 127, 157, 0.45);
+    border-color: var(--button-danger-border);
     color: var(--negative);
 }
 
 .ghost-button.danger:hover {
-    border-color: rgba(255, 127, 157, 0.7);
-    background: rgba(255, 127, 157, 0.12);
+    border-color: var(--button-danger-border-hover);
+    background: var(--button-danger-fill-hover);
 }
 
 .info-note-button {
@@ -1439,7 +1417,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border: 1px solid var(--border);
     border-radius: 0.85rem;
     color: var(--text);
-    box-shadow: 0 18px 36px rgba(5, 6, 16, 0.55);
+    box-shadow: var(--tooltip-shadow);
     opacity: 0;
     transform: translateY(-4px);
     pointer-events: none;
@@ -1537,7 +1515,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--sentiment-tile-shadow);
 }
 
 .sentiment-tile.positive {
@@ -1915,7 +1893,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     flex-direction: column;
     gap: 0.3rem;
     background: color-mix(in srgb, var(--card-bg) 90%, transparent);
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--sentiment-list-item-shadow);
 }
 
 .sentiment-list li.empty-state {
@@ -1982,7 +1960,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     display: flex;
     flex-direction: column;
     gap: 0.28rem;
-    box-shadow: 0 8px 20px rgba(9, 14, 24, 0.1);
+    box-shadow: var(--summary-block-shadow);
 }
 
 .summary-label {
@@ -2007,10 +1985,10 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 #message-types .stat {
-    --stat-accent-soft: color-mix(in srgb, var(--stat-accent-color) 11%, color-mix(in srgb, var(--muted) 10%, transparent));
+    --stat-accent-soft: color-mix(in srgb, var(--stat-accent) 11%, color-mix(in srgb, var(--muted) 10%, transparent));
     background: linear-gradient(154deg, var(--stat-accent-soft) 0%, color-mix(in srgb, var(--muted) 6%, transparent) 86%);
-    border-color: color-mix(in srgb, var(--stat-accent-color) 26%, var(--border));
-    box-shadow: 0 8px 16px rgba(9, 14, 26, 0.11);
+    border-color: color-mix(in srgb, var(--stat-accent) 26%, var(--border));
+    box-shadow: var(--message-stat-shadow);
 }
 
 #summary {
@@ -2018,51 +1996,51 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 }
 
 .stat[data-stat="media"] {
-    --stat-accent-color: #38bdf8;
+    --stat-accent: var(--stat-accent-media);
 }
 
 .stat[data-stat="link"] {
-    --stat-accent-color: #2563eb;
+    --stat-accent: var(--stat-accent-link);
 }
 
 .stat[data-stat="poll"] {
-    --stat-accent-color: #a855f7;
+    --stat-accent: var(--stat-accent-poll);
 }
 
 .stat[data-stat="join"] {
-    --stat-accent-color: #22c55e;
+    --stat-accent: var(--stat-accent-join);
 }
 
 .stat[data-stat="added"] {
-    --stat-accent-color: #14b8a6;
+    --stat-accent: var(--stat-accent-added);
 }
 
 .stat[data-stat="left"] {
-    --stat-accent-color: #f97316;
+    --stat-accent: var(--stat-accent-left);
 }
 
 .stat[data-stat="removed"] {
-    --stat-accent-color: #ef4444;
+    --stat-accent: var(--stat-accent-removed);
 }
 
 .stat[data-stat="changed"] {
-    --stat-accent-color: #8b5cf6;
+    --stat-accent: var(--stat-accent-changed);
 }
 
 .stat[data-stat="other"] {
-    --stat-accent-color: #94a3b8;
+    --stat-accent: var(--stat-accent-other);
 }
 
 .stat[data-stat="join-requests"] {
-    --stat-accent-color: #0ea5e9;
+    --stat-accent: var(--stat-accent-join-requests);
 }
 
 .stat[data-stat="avg-chars"] {
-    --stat-accent-color: #ec4899;
+    --stat-accent: var(--stat-accent-avg-chars);
 }
 
 .stat[data-stat="avg-words"] {
-    --stat-accent-color: #facc15;
+    --stat-accent: var(--stat-accent-avg-words);
 }
 
 .message-type-summary {
@@ -2181,7 +2159,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 
 .weekly-bar.selected .weekly-bar-fill {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    box-shadow: var(--weekly-bar-selected-ring);
 }
 
 .weekly-bar-value {
@@ -2203,7 +2181,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 .weekly-bar-fill {
     width: 100%;
     border-radius: 0.82rem;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 84%, #ffffff), color-mix(in srgb, var(--accent) 72%, #2a3342));
+    background: linear-gradient(180deg, var(--weekly-bar-fill-start), var(--weekly-bar-fill-end));
     border: 1px solid color-mix(in srgb, var(--accent) 46%, transparent);
     transition: height 0.2s ease, filter 0.2s ease;
 }
@@ -2293,7 +2271,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border: 1px solid var(--glass-border);
     color: var(--muted);
     font-size: 0.9rem;
-    box-shadow: 0 18px 32px rgba(12, 16, 32, 0.35);
+    box-shadow: var(--status-snackbar-shadow);
     min-width: 260px;
     max-width: 420px;
     display: inline-flex;
@@ -2437,7 +2415,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border-radius: 0.75rem;
     padding: 1rem 1.25rem;
     background: var(--card-bg);
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+    box-shadow: var(--poll-item-shadow);
 }
 
 .poll-item-title {
@@ -2493,7 +2471,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     padding: 0.42rem 2rem 0.42rem 0.8rem;
     font-size: 0.9rem;
     line-height: 1.2;
-    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.14);
+    box-shadow: var(--native-select-shadow);
     background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
         linear-gradient(135deg, var(--muted) 50%, transparent 50%);
     background-position: calc(100% - 1.1rem) calc(50% - 0.35rem),
@@ -2518,7 +2496,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
 .notifications-panel .status {
     width: 100%;
     pointer-events: auto;
-    box-shadow: 0 20px 40px rgba(4, 6, 12, 0.45);
+    box-shadow: var(--notification-status-shadow);
 }
 
 .page-actions .ghost-button {
@@ -2573,7 +2551,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     background: color-mix(in srgb, var(--glass-bg) 92%, transparent);
     border: 1px solid var(--glass-border);
     border-radius: var(--shape-large);
-    box-shadow: 0 18px 40px rgba(6, 10, 20, 0.18);
+    box-shadow: var(--dataset-empty-shadow);
     backdrop-filter: blur(var(--glass-blur));
 }
 
@@ -2665,7 +2643,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     width: 96px;
     height: 96px;
     border-radius: 28px;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 65%),
+    background: var(--empty-illustration-highlight),
         color-mix(in srgb, var(--accent) 18%, transparent);
     overflow: hidden;
     flex-shrink: 0;
@@ -2721,7 +2699,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     align-items: center;
     gap: 0.75rem;
     backdrop-filter: blur(var(--glass-blur));
-    box-shadow: 0 15px 30px rgba(7, 10, 20, 0.25);
+    box-shadow: var(--empty-state-shadow);
 }
 
 .empty-state.small {
@@ -2733,7 +2711,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border-radius: var(--shape-large);
     padding: 1rem 1.1rem;
     background: color-mix(in srgb, var(--glass-bg) 94%, transparent);
-    box-shadow: 0 14px 30px rgba(6, 10, 22, 0.2);
+    box-shadow: var(--panel-state-shadow);
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
@@ -2814,7 +2792,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
     border-radius: 1.1rem;
     padding: 1.5rem;
-    box-shadow: 0 12px 26px rgba(9, 13, 24, 0.14);
+    box-shadow: var(--summary-card-shadow);
 }
 
 .summary-card h3 {
@@ -2854,7 +2832,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     border-radius: 0.95rem;
     border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
     background: color-mix(in srgb, var(--card-bg) 96%, transparent);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 8%, transparent);
+    box-shadow: var(--table-scrollable-inset-highlight);
 }
 
 .table-container.scrollable table {
@@ -3021,7 +2999,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     background: color-mix(in srgb, var(--card-bg) 94%, transparent);
     z-index: 3;
     backdrop-filter: blur(8px);
-    box-shadow: 0 1px 0 var(--border), 0 8px 14px rgba(4, 8, 18, 0.18);
+    box-shadow: var(--table-sticky-shadow);
 }
 
 .table-th-label {
@@ -3189,10 +3167,10 @@ tbody tr:focus-within {
 
 .stat {
     position: relative;
-    --stat-accent-color: var(--stat-accent-color, var(--accent));
-    --stat-accent-soft: color-mix(in srgb, var(--stat-accent-color) 16%, color-mix(in srgb, var(--muted) 12%, transparent));
+    --stat-accent: var(--stat-accent, var(--accent));
+    --stat-accent-soft: color-mix(in srgb, var(--stat-accent) 16%, color-mix(in srgb, var(--muted) 12%, transparent));
     background: linear-gradient(154deg, var(--stat-accent-soft) 0%, color-mix(in srgb, var(--muted) 7%, transparent) 82%);
-    border: 1px solid color-mix(in srgb, var(--stat-accent-color) 35%, var(--border));
+    border: 1px solid color-mix(in srgb, var(--stat-accent) 35%, var(--border));
     border-radius: 0.95rem;
     padding: 1rem 1.1rem;
     display: flex;
@@ -3200,7 +3178,7 @@ tbody tr:focus-within {
     gap: 0.5rem;
     align-items: flex-start;
     text-align: left;
-    box-shadow: 0 10px 20px rgba(9, 14, 26, 0.14);
+    box-shadow: var(--stat-card-shadow);
 }
 
 .stat .stat-download {
@@ -3223,17 +3201,17 @@ tbody tr:focus-within {
     height: 12px;
     border-radius: 999px;
     background:
-        radial-gradient(circle at 12% 82%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%),
-        linear-gradient(135deg, color-mix(in srgb, var(--stat-accent-color) 80%, transparent) 0%, color-mix(in srgb, var(--stat-accent-color) 40%, transparent) 100%);
+        var(--stat-value-sheen),
+        linear-gradient(135deg, color-mix(in srgb, var(--stat-accent) 80%, transparent) 0%, color-mix(in srgb, var(--stat-accent) 40%, transparent) 100%);
     opacity: 0.82;
     transform: skewX(-14deg);
-    box-shadow: inset 0 -6px 10px color-mix(in srgb, var(--stat-accent-color) 30%, rgba(15, 23, 42, 0.15));
+    box-shadow: var(--stat-value-inset-shadow);
 }
 
 .stat-label {
     display: block;
     font-size: 0.92rem;
-    color: color-mix(in srgb, var(--stat-accent-color) 26%, var(--muted));
+    color: color-mix(in srgb, var(--stat-accent) 26%, var(--muted));
 }
 
 footer {
@@ -3261,9 +3239,9 @@ footer {
     border-radius: 12px;
     padding: 2px;
     background:
-        radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3)),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
-    box-shadow: 0 8px 18px rgba(7, 10, 20, 0.35);
+        radial-gradient(circle at 40% 20%, var(--footer-mark-radial-start), var(--footer-mark-radial-end)),
+        linear-gradient(145deg, var(--footer-mark-linear-start), var(--footer-mark-linear-end));
+    box-shadow: var(--footer-mark-shadow);
 }
 
 .footer-brand p {
@@ -3624,7 +3602,7 @@ footer {
         border: 1px solid var(--border);
         border-radius: 0.9rem;
         background: var(--card-bg);
-        box-shadow: 0 8px 18px rgba(8, 12, 22, 0.12);
+        box-shadow: var(--mobile-table-row-shadow);
     }
 
     table tbody td {
@@ -3751,7 +3729,7 @@ body[data-compact="true"] .table-container.scrollable {
 .onboarding-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(4, 6, 12, 0.7);
+    background: var(--overlay-backdrop);
     display: none;
     align-items: center;
     justify-content: center;
@@ -3768,7 +3746,7 @@ body[data-compact="true"] .table-container.scrollable {
     border-radius: var(--shape-large);
     padding: 1.75rem;
     border: 1px solid var(--border);
-    box-shadow: 0 35px 65px rgba(6, 10, 20, 0.4);
+    box-shadow: var(--modal-panel-shadow);
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
@@ -3801,7 +3779,7 @@ body[data-compact="true"] .table-container.scrollable {
 .onboarding-highlight {
     position: relative;
     z-index: 210;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent), 0 0 30px rgba(8, 16, 40, 0.6);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent), var(--focus-glow-accent-strong);
     border-radius: var(--shape-medium);
 }
 .faq-list {
@@ -3819,14 +3797,14 @@ body[data-compact="true"] .table-container.scrollable {
     border: 1px solid var(--border);
     border-radius: var(--shape-large);
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
-    box-shadow: 0 12px 28px rgba(8, 10, 24, 0.18);
+    box-shadow: var(--faq-card-shadow);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .faq-list li:hover,
 .faq-list li:focus-within {
     transform: translateY(-2px);
-    box-shadow: 0 18px 38px rgba(8, 10, 24, 0.24);
+    box-shadow: var(--faq-card-shadow-hover);
 }
 
 .faq-illustration {
@@ -3876,7 +3854,7 @@ body[data-compact="true"] .table-container.scrollable {
     background: color-mix(in srgb, var(--section-accent, var(--accent)) 20%, transparent);
     color: var(--md-on-primary-container);
     font-size: 1rem;
-    box-shadow: 0 8px 16px rgba(5, 7, 16, 0.35);
+    box-shadow: var(--section-icon-shadow);
     line-height: 0;
 }
 
