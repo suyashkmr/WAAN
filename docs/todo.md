@@ -870,16 +870,18 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Runtime accent contracts are split cleanly: shell chrome uses `--shell-section-accent`, panel/content visuals use `--section-accent`, and shared shadow tokens follow the same separation.
     - [x] Visual regression and manual sign-off confirm token consolidation across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts before Phase 12 is marked complete.
 
-- [ ] Phase 13 (2-4 days): Tailwind layout-only constraint.
+- [x] Phase 13 (2-4 days): Tailwind layout-only constraint.
   - [x] Restrict Tailwind usage to layout glue (`display`, `grid/flex`, spacing, responsive utilities).
     - [x] Removed the first batch of runtime skinning utilities from `index.html` (`body`, `section-nav`, `hero-shell`, `hero h1`, `relay-live-card`, `actions-toolbar`) and moved any required preserved styling back onto CSS class hooks.
   - [x] Remove utility usage that re-styles component internals (colors, borders, shadows, typography for Prime-owned components).
     - [x] Replaced the runtime shell-skinning Tailwind usage on top-level shell wrappers with class-owned CSS so those surfaces no longer depend on Tailwind color/border/shadow/typography utilities.
   - [x] Add lint/check script to flag non-layout Tailwind utility usage in component markup.
     - [x] Added `scripts/check-tailwind-layout-only.mjs` and wired `npm run check:tailwind-layout-only` into `npm run ci:verify`.
-  - [ ] Update docs with an explicit styling contract: Prime theme tokens + PrimeVue for component styling, Tailwind for layout composition only.
-  - [ ] Acceptance: Tailwind utilities are used for layout orchestration only, not component skinning.
-    - [ ] Tailwind no longer overrides PrimeVue-owned component visuals outside intentional layout wrappers.
+  - [x] Update docs with an explicit styling contract: Prime theme tokens + PrimeVue for component styling, Tailwind for layout composition only.
+    - [x] `docs/design-tokens.md` now defines the runtime styling contract, enumerates allowed Tailwind layout categories, and records the CI guard coverage for runtime class assignment patterns.
+  - [x] Acceptance: Tailwind utilities are used for layout orchestration only, not component skinning.
+    - [x] `npm run check:tailwind-layout-only` passes with runtime markup classified as layout glue only.
+    - [x] Tailwind no longer overrides PrimeVue-owned component visuals outside intentional layout wrappers.
 
 - [ ] Phase 14 (2-4 days): Final 100% migration sign-off, PrimeVue completion, and purge.
   - [ ] Complete the deferred PrimeVue form-control adoption so the remaining core controls are no longer native fallbacks.

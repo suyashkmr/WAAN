@@ -58,6 +58,28 @@ Tailwind is configured as a thin bridge over CSS variables in `tailwind.config.c
 
 Phase 13 decision (2026-03-10): Tailwind remains available for layout composition only. Runtime markup must not use Tailwind for component skinning; CI enforces this with `npm run check:tailwind-layout-only`.
 
+Runtime styling contract:
+
+- Prime theme tokens plus WAAN base aliases own component colors, borders, shadows, typography, and shape.
+- PrimeVue and class-owned CSS own component chrome and interaction visuals.
+- Tailwind in runtime markup is limited to layout orchestration only:
+  - display
+  - grid/flex structure
+  - spacing
+  - sizing
+  - overflow
+  - positioning/z-index
+  - responsive layout variants
+- Tailwind must not be used in runtime markup for:
+  - colors
+  - borders/rings/outlines
+  - shadows
+  - gradients
+  - typography casing/tracking/leading/font styling
+  - blur/transition/animation skinning
+
+`npm run check:tailwind-layout-only` is the release gate for this contract and scans runtime HTML plus JS/Vue class assignment patterns (`class=`, `class:`, `className:`, `.className =`, `classList.*(...)`, `setAttribute("class", ...)`).
+
 ### Semantic Color Utilities
 
 - `bg-surface-base`, `bg-surface-raised`, `bg-surface-raisedStrong`, `bg-surface-glass`
