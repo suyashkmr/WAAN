@@ -73,6 +73,8 @@ describe("appShell integration", () => {
       },
     });
 
+    const syncPageControls = vi.fn(() => true);
+
     const datasetLifecycle = createDatasetLifecycleController({
       elements: { rangeSelect },
       deps: {
@@ -116,6 +118,7 @@ describe("appShell integration", () => {
         resetSavedViewsForNewDataset: vi.fn(),
         resetSearchState: vi.fn(),
         populateSearchParticipants: vi.fn(),
+        syncPageControls,
       },
     });
 
@@ -147,6 +150,11 @@ describe("appShell integration", () => {
     expect(renderDashboard).toHaveBeenCalledWith(expect.objectContaining({ total_messages: 2 }));
     expect(activeChatId).toBeNull();
     expect(currentRange).toBe("all");
+    expect(syncPageControls).toHaveBeenCalledWith({
+      rangeValue: "all",
+      customStart: "",
+      customEnd: "",
+    });
 
     rangeSelect.value = "1";
     await rangeController.handleRangeChange();

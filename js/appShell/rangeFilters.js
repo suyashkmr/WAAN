@@ -5,10 +5,7 @@
 /**
  * @param {{ elements: AnyRecord, deps: AnyRecord }} params
  */
-export function createRangeFiltersController({
-  elements,
-  deps,
-}) {
+export function createRangeFiltersController({ elements, deps }) {
   const {
     rangeSelect,
     customControls,
@@ -153,13 +150,6 @@ export function createRangeFiltersController({
       nextPageControlState.customDisabled = true;
       nextPageControlState.customMin = "";
       nextPageControlState.customMax = "";
-      syncPageControlsState(nextPageControlState);
-      if (!customStartInput || !customEndInput) return;
-      customStartInput.value = "";
-      customEndInput.value = "";
-      customStartInput.disabled = true;
-      customEndInput.disabled = true;
-      if (customApplyButton) customApplyButton.disabled = true;
       if (searchStartInput) {
         searchStartInput.value = "";
         searchStartInput.disabled = true;
@@ -172,6 +162,13 @@ export function createRangeFiltersController({
         searchEndInput.min = "";
         searchEndInput.max = "";
       }
+      const pageControlsHandled = syncPageControlsState(nextPageControlState);
+      if (pageControlsHandled || !customStartInput || !customEndInput) return;
+      customStartInput.value = "";
+      customEndInput.value = "";
+      customStartInput.disabled = true;
+      customEndInput.disabled = true;
+      if (customApplyButton) customApplyButton.disabled = true;
       return;
     }
 
@@ -181,8 +178,10 @@ export function createRangeFiltersController({
       .sort((/** @type {any} */ a, /** @type {any} */ b) => Number(a) - Number(b));
     if (!timestamps.length) {
       nextPageControlState.customDisabled = true;
-      syncPageControlsState(nextPageControlState);
-      if (!customStartInput || !customEndInput) return;
+      if (searchStartInput) searchStartInput.disabled = true;
+      if (searchEndInput) searchEndInput.disabled = true;
+      const pageControlsHandled = syncPageControlsState(nextPageControlState);
+      if (pageControlsHandled || !customStartInput || !customEndInput) return;
       customStartInput.disabled = true;
       customEndInput.disabled = true;
       if (customApplyButton) customApplyButton.disabled = true;
@@ -202,17 +201,6 @@ export function createRangeFiltersController({
       nextPageControlState.customStart = customRange.start ?? "";
       nextPageControlState.customEnd = customRange.end ?? "";
     }
-    syncPageControlsState(nextPageControlState);
-    if (!customStartInput || !customEndInput) return;
-
-    customStartInput.min = start;
-    customStartInput.max = end;
-    customEndInput.min = start;
-    customEndInput.max = end;
-    customStartInput.disabled = false;
-    customEndInput.disabled = false;
-    if (customApplyButton) customApplyButton.disabled = false;
-
     if (searchStartInput) {
       searchStartInput.disabled = false;
       searchStartInput.min = start;
@@ -223,6 +211,17 @@ export function createRangeFiltersController({
       searchEndInput.min = start;
       searchEndInput.max = end;
     }
+    const pageControlsHandled = syncPageControlsState(nextPageControlState);
+    if (pageControlsHandled || !customStartInput || !customEndInput) return;
+
+    customStartInput.min = start;
+    customStartInput.max = end;
+    customEndInput.min = start;
+    customEndInput.max = end;
+    customStartInput.disabled = false;
+    customEndInput.disabled = false;
+    if (customApplyButton) customApplyButton.disabled = false;
+
     if (!customRange || customRange.type !== "custom") {
       customStartInput.value = start;
       customEndInput.value = end;
@@ -290,10 +289,10 @@ export function createRangeFiltersController({
   async function handleRangeChange(event) {
     const value = event?.target?.value ?? rangeSelect?.value;
     if (!value) return;
-    if (rangeSelect && rangeSelect.value !== value) {
+    const pageControlsHandled = syncPageControlsState({ rangeValue: value });
+    if (!pageControlsHandled && rangeSelect && rangeSelect.value !== value) {
       rangeSelect.value = value;
     }
-    syncPageControlsState({ rangeValue: value });
     if (value === "custom") {
       showCustomControls(true);
       updateStatus("Choose your dates and click Apply.", "info");
@@ -325,14 +324,14 @@ export function createRangeFiltersController({
     const range = { type: "custom", start, end };
     setCustomRange(range);
     setCurrentRange("custom");
-    if (rangeSelect) rangeSelect.value = "custom";
-    syncPageControlsState({
+    const pageControlsHandled = syncPageControlsState({
       rangeValue: "custom",
       customVisible: true,
       customDisabled: false,
       customStart: start,
       customEnd: end,
     });
+    if (!pageControlsHandled && rangeSelect) rangeSelect.value = "custom";
     showCustomControls(true);
     await applyRangeAndRender(range);
   }

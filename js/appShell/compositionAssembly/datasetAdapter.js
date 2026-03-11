@@ -32,6 +32,7 @@ export function createDatasetLifecycleCompositionAdapter({ dom, state, utils, wi
       resetSavedViewsForNewDataset: () => wiring.savedViewsController.resetForNewDataset(),
       resetSearchState: () => wiring.searchController.resetState(),
       populateSearchParticipants: () => wiring.searchController.populateParticipants(),
+      syncPageControls: wiring.syncPageControls,
     },
   };
 }

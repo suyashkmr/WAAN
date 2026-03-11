@@ -43,7 +43,13 @@ export function createDatasetLifecycleController({ elements, deps }) {
     resetSavedViewsForNewDataset,
     resetSearchState,
     populateSearchParticipants,
+    syncPageControls = null,
   } = deps;
+
+  function syncPageControlsState(nextState = {}) {
+    if (typeof syncPageControls !== "function") return false;
+    return Boolean(syncPageControls(nextState));
+  }
 
   /**
    * @param {AnyRecord[]} entries
@@ -80,6 +86,11 @@ export function createDatasetLifecycleController({ elements, deps }) {
     setDatasetLabel(label);
     setCurrentRange("all");
     setCustomRange(null);
+    syncPageControlsState({
+      rangeValue: "all",
+      customStart: "",
+      customEnd: "",
+    });
     if (rangeSelect) rangeSelect.value = "all";
     resetHourlyFilters();
     resetWeekdayFilters();

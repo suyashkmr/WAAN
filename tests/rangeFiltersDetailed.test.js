@@ -231,4 +231,41 @@ describe("rangeFilters detailed", () => {
       customEnd: "2025-01-03",
     });
   });
+
+  it("treats bridged page controls as the primary writer when sync succeeds", async () => {
+    const syncPageControls = vi.fn(() => true);
+    const ctx = buildRangeController({
+      entries: [
+        { timestamp: "2025-01-01T00:00:00Z" },
+        { timestamp: "2025-01-03T00:00:00Z" },
+      ],
+      deps: {
+        syncPageControls,
+      },
+    });
+
+    ctx.rangeSelect.value = "all";
+    await ctx.controller.handleRangeChange({ target: { value: "7" } });
+    expect(syncPageControls).toHaveBeenCalledWith({ rangeValue: "7" });
+    expect(ctx.rangeSelect.value).toBe("all");
+
+    ctx.customStartInput.value = "stale-start";
+    ctx.customEndInput.value = "stale-end";
+    ctx.controller.updateCustomRangeBounds();
+    expect(syncPageControls).toHaveBeenCalledWith({
+      customDisabled: false,
+      customMin: "2025-01-01",
+      customMax: "2025-01-03",
+      customStart: "2025-01-01",
+      customEnd: "2025-01-03",
+    });
+    expect(ctx.customStartInput.value).toBe("stale-start");
+    expect(ctx.customEndInput.value).toBe("stale-end");
+    expect(ctx.searchStartInput.disabled).toBe(false);
+    expect(ctx.searchStartInput.min).toBe("2025-01-01");
+    expect(ctx.searchStartInput.max).toBe("2025-01-03");
+    expect(ctx.searchEndInput.disabled).toBe(false);
+    expect(ctx.searchEndInput.min).toBe("2025-01-01");
+    expect(ctx.searchEndInput.max).toBe("2025-01-03");
+  });
 });

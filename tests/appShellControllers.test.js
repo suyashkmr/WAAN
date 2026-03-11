@@ -53,6 +53,7 @@ describe("appShell controllers", () => {
       resetSavedViewsForNewDataset: vi.fn(),
       resetSearchState: vi.fn(),
       populateSearchParticipants: vi.fn(),
+      syncPageControls: vi.fn(() => true),
     };
 
     const { applyEntriesToApp } = createDatasetLifecycleController({
@@ -71,6 +72,11 @@ describe("appShell controllers", () => {
 
     expect(deps.setCurrentRange).toHaveBeenCalledWith("all");
     expect(deps.setCustomRange).toHaveBeenCalledWith(null);
+    expect(deps.syncPageControls).toHaveBeenCalledWith({
+      rangeValue: "all",
+      customStart: "",
+      customEnd: "",
+    });
     expect(rangeSelect.value).toBe("all");
     expect(deps.setActiveChatId).not.toHaveBeenCalled();
     expect(deps.renderDashboard).toHaveBeenCalledWith(analytics);
