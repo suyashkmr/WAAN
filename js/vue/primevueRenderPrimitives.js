@@ -126,7 +126,6 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
     attrs = {},
     preserveNativeElement = false,
     visibleInputId = "",
-    forceNative = false,
   } = options;
 
   const normalizedOptions = Array.isArray(selectOptions)
@@ -136,10 +135,8 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
     }))
     : [];
 
-  const PrimeSelect = forceNative
-    ? null
-    : (resolvePrimeVueComponent("Select", globalScope) ??
-      resolvePrimeVueComponent("Dropdown", globalScope));
+  const PrimeSelect = resolvePrimeVueComponent("Select", globalScope) ??
+    resolvePrimeVueComponent("Dropdown", globalScope);
   if (PrimeSelect) {
     const { componentAttrs, wrapperAttrs } = splitComponentAttrs(attrs);
     const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
@@ -208,9 +205,8 @@ export function renderDateInput(h, options, globalScope = globalThis) {
     attrs = {},
     preserveNativeElement = false,
     visibleInputId = "",
-    forceNative = false,
   } = options;
-  const PrimeDatePicker = forceNative ? null : resolvePrimeVueComponent("DatePicker", globalScope);
+  const PrimeDatePicker = resolvePrimeVueComponent("DatePicker", globalScope);
   const PrimeCalendar = PrimeDatePicker ? null : resolvePrimeVueComponent("Calendar", globalScope);
   const PrimeDateComponent = PrimeDatePicker ?? PrimeCalendar;
   if (PrimeDateComponent) {

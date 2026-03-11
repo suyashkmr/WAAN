@@ -893,6 +893,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Page custom-range controls (`#custom-start`, `#custom-end`) now use PrimeVue-visible bridged date fields while preserving the native date inputs required by existing DOM/event contracts (`js/vue/shellPageControlsIsland.js`, `js/vue/primeDateBridge.js`).
     - [ ] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
     - [ ] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
+      - [x] Page-control seed rendering no longer relies on `forceNative`; `js/vue/shellPageControlsView.js` now renders explicit native controls directly, so the remaining primitive fallback debt is isolated to the shared no-PrimeVue branch rather than an active runtime caller override.
   - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.

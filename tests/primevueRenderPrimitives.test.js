@@ -221,21 +221,6 @@ describe("primevue render primitives", () => {
     expect(vnode.children[1].props.inputId).toBe("global-range--primevue");
   });
 
-  it("can force the native select path even when PrimeVue is available", () => {
-    const PrimeSelect = { name: "PrimeSelectStub" };
-    const globalScope = { PrimeVue: { Select: PrimeSelect }, document: { body: { nodeType: 1 } } };
-    const h = (type, props = {}, children = []) => ({ type, props, children });
-    const vnode = renderSelectInput(h, {
-      id: "chat-selector",
-      forceNative: true,
-      value: "chat-1",
-      options: [{ value: "chat-1", label: "Chat 1" }],
-    }, globalScope);
-
-    expect(vnode.type).toBe("select");
-    expect(vnode.props.id).toBe("chat-selector");
-  });
-
   it("renders PrimeVue Select and maps model updates to change events", () => {
     const PrimeSelect = { name: "PrimeSelectStub" };
     let captured = "";
@@ -369,21 +354,6 @@ describe("primevue render primitives", () => {
     expect(vnode.children[0].props.class).toBe("waan-native-bridge-control");
     expect(vnode.children[1].type).toBe(PrimeDatePicker);
     expect(vnode.children[1].props.inputId).toBe("custom-start--primevue");
-  });
-
-  it("can force the native date path even when PrimeVue is available", () => {
-    const PrimeDatePicker = { name: "PrimeDatePickerStub" };
-    const globalScope = { PrimeVue: { DatePicker: PrimeDatePicker }, document: { body: { nodeType: 1 } } };
-    const h = (type, props = {}, children = []) => ({ type, props, children });
-    const vnode = renderDateInput(h, {
-      id: "custom-start",
-      forceNative: true,
-      value: "2026-03-10",
-    }, globalScope);
-
-    expect(vnode.type).toBe("input");
-    expect(vnode.props.type).toBe("date");
-    expect(vnode.props.id).toBe("custom-start");
   });
 
   it("falls back to native select and date inputs when PrimeVue controls are unavailable", () => {

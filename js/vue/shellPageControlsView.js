@@ -1,4 +1,30 @@
-import { renderActionButton, renderDateInput, renderSelectInput } from "./primevueRenderPrimitives.js";
+import { renderActionButton } from "./primevueRenderPrimitives.js";
+
+function renderNativeSelect(h, { id, value = "", options = [], disabled = false, onChange, attrs = {} }) {
+  return h(
+    "select",
+    {
+      id,
+      disabled: Boolean(disabled),
+      value: value == null ? "" : String(value),
+      ...(onChange ? { onChange } : {}),
+      ...attrs,
+    },
+    options.map(option =>
+      h("option", { value: option?.value == null ? "" : String(option.value) }, String(option?.label ?? option?.value ?? ""))),
+  );
+}
+
+function renderNativeDateInput(h, { id, value = "", disabled = false, onChange, attrs = {} }) {
+  return h("input", {
+    type: "date",
+    id,
+    value: value == null ? "" : String(value),
+    disabled: Boolean(disabled),
+    ...(onChange ? { onChange } : {}),
+    ...attrs,
+  });
+}
 
 /**
  * @param {any} h
@@ -39,9 +65,8 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
       return [
         h("label", { class: "control dataset-control", for: "chat-selector" }, [
           h("span", "Loaded chats"),
-          renderSelectInput(h, {
+          renderNativeSelect(h, {
             id: "chat-selector",
-            forceNative: true,
             value: state.chatValue || "",
             options: chatOptions.length > 0 ? chatOptions : [{ value: "", label: "No chats loaded yet" }],
             disabled: Boolean(state.chatDisabled ?? chatOptions.length === 0),
@@ -71,9 +96,8 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
           [
             h("span", "Custom dates"),
             h("div", { class: "custom-range-inputs" }, [
-              renderDateInput(h, {
+              renderNativeDateInput(h, {
                 id: "custom-start",
-                forceNative: true,
                 value: state.customStart || "",
                 disabled: customDisabled,
                 onChange: event => {
@@ -86,9 +110,8 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
                 },
               }, globalScope),
               h("span", { class: "range-separator" }, "to"),
-              renderDateInput(h, {
+              renderNativeDateInput(h, {
                 id: "custom-end",
-                forceNative: true,
                 value: state.customEnd || "",
                 disabled: customDisabled,
                 onChange: event => {
@@ -117,9 +140,8 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
         ),
         h("label", { class: "control period-control", for: "global-range" }, [
           h("span", "Time range"),
-          renderSelectInput(h, {
+          renderNativeSelect(h, {
             id: "global-range",
-            forceNative: true,
             value: state.rangeValue || "all",
             options: rangeOptions,
             onChange: event => {
