@@ -521,6 +521,92 @@ describe("vue full-shell interactions", () => {
     expect(onRangeSelect).toHaveBeenCalledWith({ value: "180" });
   });
 
+  it("does not mirror native change events for the bridged chat selector", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector">
+          <option value="">No chats loaded yet</option>
+          <option value="remote:chat-1">Chat 1</option>
+        </select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range">
+          <option value="all">All time</option>
+        </select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    mountVueAppShellRoot({ globalScope: globalThis });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    const onChatSelect = vi.fn();
+    shellBridge?.setShellActionHandlers?.({
+      "page.chat.select": onChatSelect,
+    });
+
+    mountPageControlsPrimitive(globalThis);
+
+    const legacyChatSelect = document.getElementById("chat-selector");
+    const legacyChangeSpy = vi.fn();
+    legacyChatSelect?.addEventListener("change", legacyChangeSpy);
+
+    const visibleChatSelect = document.getElementById("chat-selector--primevue");
+    visibleChatSelect.selectedIndex = 1;
+    visibleChatSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(legacyChatSelect?.value).toBe("remote:chat-1");
+    expect(legacyChangeSpy).not.toHaveBeenCalled();
+    expect(onChatSelect).toHaveBeenCalledWith({ value: "remote:chat-1" });
+  });
+
+  it("dispatches custom date draft actions through the visible PrimeVue date controls", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="">No chats loaded yet</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="custom">Custom range</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" value="2025-01-01" />
+        <input id="custom-end" value="2025-01-02" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    mountVueAppShellRoot({ globalScope: globalThis });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    const onSetCustomStart = vi.fn();
+    const onSetCustomEnd = vi.fn();
+    shellBridge?.setShellActionHandlers?.({
+      "page.range.set-custom-start": onSetCustomStart,
+      "page.range.set-custom-end": onSetCustomEnd,
+    });
+
+    mountPageControlsPrimitive(globalThis);
+
+    const visibleStartInput = document.getElementById("custom-start--primevue");
+    const visibleEndInput = document.getElementById("custom-end--primevue");
+    expect(visibleStartInput).toBeTruthy();
+    expect(visibleEndInput).toBeTruthy();
+
+    visibleStartInput.value = "2025-01-05";
+    visibleStartInput.dispatchEvent(new Event("change", { bubbles: true }));
+    visibleEndInput.value = "2025-01-07";
+    visibleEndInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(onSetCustomStart).toHaveBeenCalledWith({ value: "2025-01-05" });
+    expect(onSetCustomEnd).toHaveBeenCalledWith({ value: "2025-01-07" });
+  });
+
   it("renders and upgrades empty page-control containers without losing the retry path", () => {
     const controlsEl = document.querySelector(".page-controls .primary-controls");
     controlsEl.innerHTML = "";

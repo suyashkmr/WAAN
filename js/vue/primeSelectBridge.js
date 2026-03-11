@@ -86,6 +86,7 @@ function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, vis
  *   visibleInputId?: string,
  *   attrs?: Record<string, any>,
  *   onValueChange?: ((value: string) => void) | null,
+ *   mirrorNativeEvents?: boolean,
  *   vueRuntime?: any,
  *   globalScope?: any,
  * }} params
@@ -100,6 +101,7 @@ export function syncPrimeSelectBridge({
   visibleInputId = "",
   attrs: inputAttrs = {},
   onValueChange = null,
+  mirrorNativeEvents = true,
   vueRuntime = null,
   globalScope = globalThis,
 }) {
@@ -156,8 +158,10 @@ export function syncPrimeSelectBridge({
             state.value = String(nextValue ?? "");
             selectEl.value = state.value;
             onValueChange?.(state.value);
-            dispatchNativeMirrorEvent(selectEl, "input");
-            dispatchNativeMirrorEvent(selectEl, "change");
+            if (mirrorNativeEvents) {
+              dispatchNativeMirrorEvent(selectEl, "input");
+              dispatchNativeMirrorEvent(selectEl, "change");
+            }
           },
         }, globalScope);
       },

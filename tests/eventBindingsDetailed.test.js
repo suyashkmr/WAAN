@@ -513,4 +513,46 @@ describe("event bindings detailed", () => {
     expect(rangeSelect.dataset.eventBindingsPageControlBound).toBe("true");
     expect(customApplyButton.dataset.eventBindingsPageControlBound).toBe("true");
   });
+
+  it("updates preserved custom date refs from shell draft-range actions", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const customStartInput = document.createElement("input");
+    const customEndInput = document.createElement("input");
+
+    const shellActionHandlers = {};
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(nextHandlers => {
+            Object.assign(shellActionHandlers, nextHandlers);
+          }),
+          dispatchShellAction: vi.fn(),
+          ownsPageControlInteractions: true,
+        },
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
+          ownsActivityFilterInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
+        },
+      },
+    };
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        customStartInput,
+        customEndInput,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+
+    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-01-05" });
+    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-01-07" });
+
+    expect(customStartInput.value).toBe("2025-01-05");
+    expect(customEndInput.value).toBe("2025-01-07");
+  });
 });

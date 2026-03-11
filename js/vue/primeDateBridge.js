@@ -57,6 +57,7 @@ function dispatchNativeMirrorEvent(inputEl, type) {
  *   max?: string,
  *   preserveNativeId?: boolean,
  *   visibleInputId?: string,
+ *   onValueChange?: ((value: string) => void) | null,
  *   vueRuntime?: any,
  *   globalScope?: any,
  * }} params
@@ -70,6 +71,7 @@ export function syncPrimeDateBridge({
   max = "",
   preserveNativeId = false,
   visibleInputId = "",
+  onValueChange = null,
   vueRuntime = null,
   globalScope = globalThis,
 }) {
@@ -124,6 +126,7 @@ export function syncPrimeDateBridge({
             const nextValue = event?.target?.value ?? "";
             state.value = String(nextValue ?? "");
             inputEl.value = state.value;
+            onValueChange?.(state.value);
             dispatchNativeMirrorEvent(inputEl, "input");
             dispatchNativeMirrorEvent(inputEl, "change");
           },

@@ -900,7 +900,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] hidden native bridge preservation in `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`
       - [ ] empty-container bootstrap seeding in `js/vue/shellPageControlsView.js`
       - [ ] any non-test runtime callers still depending on direct native form refs as the primary source of truth
-        - [ ] Current remaining audit targets are intentional compatibility paths in `js/appShell/chatSelection.js`, `js/appShell/rangeFilters.js`, `js/savedViews.js`, `js/appShell/dashboardRender/participantsPanel.js`, and `js/appShell/datasetLifecycle.js`; these still mirror state through preserved native refs and must be either purged or explicitly justified before Phase 14 closes.
+        - [x] `js/appShell/chatSelection.js`, `js/appShell/rangeFilters.js`, `js/savedViews.js`, `js/appShell/dashboardRender/participantsPanel.js`, and `js/appShell/datasetLifecycle.js` now treat bridged PrimeVue controls as the primary visible writer; preserved native refs remain compatibility mirrors only when the bridge does not own the update.
+        - [ ] Current remaining production compatibility debt is concentrated in the bridge scaffolding itself (`js/vue/primeSelectBridge.js`, `js/vue/primeDateBridge.js`) rather than those controller callers.
       - [x] Saved-view dirty-state refresh no longer depends on native `change` / `input` listeners; it now follows canonical app-shell UI-state subscriptions instead of preserved page-control refs (`js/savedViewsDirtyTracking.js`, `js/savedViews.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`).
       - [x] Removed the dead participant-interactions runtime wiring path; dashboard participant interactions now flow only through the dashboard Vue bridge instead of inert app-shell handler plumbing (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell/runtimeConfig.js`, `js/appShell/assemblyWiring.js`).
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
@@ -912,7 +913,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] `js/ui/primitivesRuntime.js`
       - [ ] `js/ui/primitivesVueComposables.js`
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
-    - [ ] Current blocker: page controls still preserve hidden native form elements and an empty-container native seed path before PrimeVue upgrade; this keeps the runtime safe, but it is not yet the final no-temporary-default end-state.
+    - [ ] Current blocker: page controls still preserve hidden native form elements via `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`, and the empty-container bootstrap seed remains in `js/vue/shellPageControlsView.js`. The default `index.html` runtime no longer depends on controller-owned native selects as the primary visible controls, but these compatibility paths still keep the end-state short of the final no-temporary-default target.
   - [ ] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
     - [ ] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is still tracked under the open Phase 11 `P0`/`P1` tasks and final runtime audit acceptance above.
     - [x] `js/vue/heroStatusRenderer.js`

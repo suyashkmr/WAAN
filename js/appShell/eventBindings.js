@@ -156,6 +156,18 @@ export function createEventBindingsController({
         }
         await applyCustomRange(start, end);
       },
+      /** @param {Record<string, any> | null | undefined} payload */
+      "page.range.set-custom-start": payload => {
+        if (customStartInput) {
+          customStartInput.value = payload?.value || "";
+        }
+      },
+      /** @param {Record<string, any> | null | undefined} payload */
+      "page.range.set-custom-end": payload => {
+        if (customEndInput) {
+          customEndInput.value = payload?.value || "";
+        }
+      },
     });
 
     const vueOwnsPageControlInteractions = Boolean(shellBridge?.ownsPageControlInteractions);
