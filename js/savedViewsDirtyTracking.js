@@ -25,11 +25,19 @@ export function captureCurrentViewSignature({
   getCustomRange,
   getHourlyState,
   getWeekdayState,
+  rangeSelect,
+  customStartInput,
+  customEndInput,
 }) {
-  const range = getCurrentRange();
+  const draftRangeValue = rangeSelect?.value ?? null;
+  const range = draftRangeValue || getCurrentRange();
   const customRange = getCustomRange();
-  const rangeData = range === "custom" && customRange
-    ? { type: "custom", start: customRange.start ?? "", end: customRange.end ?? "" }
+  const rangeData = range === "custom"
+    ? {
+        type: "custom",
+        start: customStartInput?.value ?? customRange?.start ?? "",
+        end: customEndInput?.value ?? customRange?.end ?? "",
+      }
     : range;
   const hourly = getHourlyState();
   const weekday = getWeekdayState();
@@ -42,25 +50,65 @@ export function captureCurrentViewSignature({
   });
 }
 
-export function bindSavedViewDirtyWatchers({
+export function subscribeSavedViewDirtyState({
+  subscribeAppShellUiState,
   rangeSelect,
   customStartInput,
   customEndInput,
-  filterControls = [],
   onStateChange,
 }) {
-  if (typeof onStateChange !== "function") return;
-  const controls = [
-    rangeSelect,
-    customStartInput,
-    customEndInput,
-    ...(Array.isArray(filterControls) ? filterControls : []),
-  ];
-  controls.forEach(control => {
-    if (!control) return;
-    control.addEventListener("change", onStateChange);
-    control.addEventListener("input", onStateChange);
-  });
+  if (typeof onStateChange !== "function") {
+    return () => {};
+  }
+  const unsubscribers = [];
+  if (typeof subscribeAppShellUiState === "function") {
+    unsubscribers.push(
+      subscribeAppShellUiState(event => {
+        const type = event?.type || "";
+        if (
+          type === "filters.range.current" ||
+          type === "filters.range.custom" ||
+          type === "filters.hourly" ||
+          type === "filters.weekday"
+        ) {
+          onStateChange();
+        }
+      }),
+    );
+  }
+
+  const handleDraftRangeChange = () => onStateChange();
+
+  const handleDraftCustomInput = () => onStateChange();
+
+  if (rangeSelect) {
+    rangeSelect.addEventListener("change", handleDraftRangeChange);
+    unsubscribers.push(() => {
+      rangeSelect.removeEventListener("change", handleDraftRangeChange);
+    });
+  }
+
+  if (customStartInput) {
+    customStartInput.addEventListener("input", handleDraftCustomInput);
+    customStartInput.addEventListener("change", handleDraftCustomInput);
+    unsubscribers.push(() => {
+      customStartInput.removeEventListener("input", handleDraftCustomInput);
+      customStartInput.removeEventListener("change", handleDraftCustomInput);
+    });
+  }
+
+  if (customEndInput) {
+    customEndInput.addEventListener("input", handleDraftCustomInput);
+    customEndInput.addEventListener("change", handleDraftCustomInput);
+    unsubscribers.push(() => {
+      customEndInput.removeEventListener("input", handleDraftCustomInput);
+      customEndInput.removeEventListener("change", handleDraftCustomInput);
+    });
+  }
+
+  return () => {
+    unsubscribers.forEach(unsubscribe => unsubscribe?.());
+  };
 }
 
 export { createStateSignature };

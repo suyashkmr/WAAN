@@ -22,7 +22,6 @@ describe("barrel exports", () => {
     expect(typeof appShellBarrel.createAnalyticsPipeline).toBe("function");
     expect(typeof appShellBarrel.createKeyboardShortcutsController).toBe("function");
     expect(typeof appShellBarrel.createDataStatusController).toBe("function");
-    expect(typeof appShellBarrel.createParticipantInteractionsController).toBe("function");
     expect(typeof appShellBarrel.createBusyRuntimeController).toBe("function");
     expect(typeof appShellBarrel.fetchJson).toBe("function");
     expect(typeof appShellBarrel.formatRelayAccount).toBe("function");

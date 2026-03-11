@@ -11,12 +11,7 @@ import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
 import { createActivityPanelsMetaRenderer } from "../vue/activityPanelsMetaRenderer.js";
 import {
-  applyParticipantPreset,
-  applyParticipantSortChange,
-  applyParticipantTimeframeChange,
-  applyParticipantTopChange,
   createParticipantsPanelController,
-  toggleParticipantRow,
 } from "./dashboardRender/participantsPanel.js";
 import { createHighlightsStatsController } from "./dashboardRender/highlightsStats.js";
 import { logPerfDuration, measurePerfSync } from "../perf.js";
@@ -304,11 +299,3 @@ export function createDashboardRenderController({ elements, deps }) {
     syncHourlyControlsWithState,
   };
 }
-
-export {
-  applyParticipantTopChange,
-  applyParticipantSortChange,
-  applyParticipantTimeframeChange,
-  applyParticipantPreset,
-  toggleParticipantRow,
-};

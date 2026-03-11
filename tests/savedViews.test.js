@@ -49,6 +49,7 @@ function buildElements() {
 function buildDependencies() {
   const views = [];
   let compareSelection = { primary: null, secondary: null };
+  let appShellSubscriber = null;
 
   return {
     getDatasetEntries: vi.fn(() => [
@@ -117,6 +118,13 @@ function buildDependencies() {
     updateStatus: vi.fn(),
     filterEntriesByRange: vi.fn(entries => entries),
     normalizeRangeValue: vi.fn(value => value),
+    subscribeAppShellUiState: vi.fn(subscriber => {
+      appShellSubscriber = subscriber;
+      return vi.fn();
+    }),
+    emitAppShellUiState: event => {
+      appShellSubscriber?.(event);
+    },
     vueRuntime: { h, render, Fragment },
   };
 }
@@ -524,10 +532,95 @@ describe("savedViews controller", () => {
     );
 
     currentRange = "custom";
-    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    elements.rangeSelect.value = "custom";
+    dependencies.emitAppShellUiState({ type: "filters.range.current" });
     const dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
     expect(dirtyCard).toBeTruthy();
     expect(dirtyCard?.textContent).toContain("Unsaved changes");
+  });
+
+  it("marks the active saved view dirty while custom range edits are still in progress", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All";
+    const customOption = document.createElement("option");
+    customOption.value = "custom";
+    customOption.textContent = "Custom";
+    elements.rangeSelect.append(allOption, customOption);
+
+    const dependencies = buildDependencies();
+    dependencies.getCurrentRange = vi.fn(() => "all");
+    dependencies.getCustomRange = vi.fn(() => null);
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Custom draft";
+    elements.saveButton.click();
+    elements.listSelect.value = "view-1";
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
+
+    elements.rangeSelect.value = "custom";
+    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    let dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
+    expect(dirtyCard).toBeTruthy();
+
+    elements.customStartInput.value = "2025-01-02";
+    elements.customStartInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
+    expect(dirtyCard).toBeTruthy();
+    expect(dirtyCard?.textContent).toContain("Unsaved changes");
+  });
+
+  it("clears the dirty indicator when a custom draft is reverted to the saved range", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All";
+    const ninetyOption = document.createElement("option");
+    ninetyOption.value = "90";
+    ninetyOption.textContent = "Last 90 days";
+    const customOption = document.createElement("option");
+    customOption.value = "custom";
+    customOption.textContent = "Custom";
+    elements.rangeSelect.append(allOption, ninetyOption, customOption);
+
+    const dependencies = buildDependencies();
+    dependencies.getCurrentRange = vi.fn(() => "90");
+    dependencies.getCustomRange = vi.fn(() => null);
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Quarter";
+    elements.saveButton.click();
+    elements.listSelect.value = "view-1";
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
+
+    elements.rangeSelect.value = "custom";
+    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    elements.customStartInput.value = "2025-01-02";
+    elements.customStartInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeTruthy();
+
+    elements.rangeSelect.value = "90";
+    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
   });
 
   it("hydrates missing saved-view snapshots through analytics worker path", async () => {

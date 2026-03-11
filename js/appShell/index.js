@@ -9,7 +9,6 @@ export { createRangeFiltersController } from "./rangeFilters.js";
 export { createAnalyticsPipeline } from "./analyticsPipeline.js";
 export { createKeyboardShortcutsController } from "./keyboardShortcuts.js";
 export { createDataStatusController } from "./dataStatus.js";
-export { createParticipantInteractionsController } from "./participantInteractions.js";
 export { createBusyRuntimeController, fetchJson, formatRelayAccount } from "./sharedRuntime.js";
 export {
   COMPACT_STORAGE_KEY,

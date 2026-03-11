@@ -8,7 +8,7 @@ import { createSavedViewsUiController } from "./savedViewsUi.js";
 import {
   createStateSignature,
   captureCurrentViewSignature,
-  bindSavedViewDirtyWatchers,
+  subscribeSavedViewDirtyState,
 } from "./savedViewsDirtyTracking.js";
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
@@ -57,18 +57,6 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     ensureWeekdayDayFilters,
     ensureWeekdayHourFilters,
     syncWeekdayControlsWithState,
-    filterWeekdays,
-    filterWeekends,
-    filterWorking,
-    filterOffhours,
-    hourlyBrushStartInput,
-    hourlyBrushEndInput,
-    weekdayToggleWeekdays,
-    weekdayToggleWeekends,
-    weekdayToggleWorking,
-    weekdayToggleOffhours,
-    weekdayHourStartInput,
-    weekdayHourEndInput,
     describeRange,
     updateStatus,
     filterEntriesByRange,
@@ -76,6 +64,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     computeAnalyticsWithWorker,
     syncPageControls = null,
     vueRuntime = null,
+    subscribeAppShellUiState = null,
   } = dependencies;
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
@@ -90,6 +79,9 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       getCustomRange,
       getHourlyState,
       getWeekdayState,
+      rangeSelect,
+      customStartInput,
+      customEndInput,
     }) !== lastAppliedViewSignature;
   }
 
@@ -313,24 +305,11 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     }
 
     const refreshOnStateChange = () => activeViewId && refreshUI();
-    bindSavedViewDirtyWatchers({
+    subscribeSavedViewDirtyState({
+      subscribeAppShellUiState,
       rangeSelect,
       customStartInput,
       customEndInput,
-      filterControls: [
-        filterWeekdays,
-        filterWeekends,
-        filterWorking,
-        filterOffhours,
-        hourlyBrushStartInput,
-        hourlyBrushEndInput,
-        weekdayToggleWeekdays,
-        weekdayToggleWeekends,
-        weekdayToggleWorking,
-        weekdayToggleOffhours,
-        weekdayHourStartInput,
-        weekdayHourEndInput,
-      ],
       onStateChange: refreshOnStateChange,
     });
   }

@@ -96,12 +96,6 @@ vi.mock("../js/appShell/index.js", () => ({
     updateHeroRelayStatus: h.updateHeroRelayStatus,
     getDataAvailable: h.getDataAvailable,
   })),
-  createParticipantInteractionsController: vi.fn(() => ({
-    handleParticipantsTopChange: vi.fn(),
-    handleParticipantsSortChange: vi.fn(),
-    handleParticipantsTimeframeChange: vi.fn(),
-    handleParticipantPresetClick: vi.fn(),
-  })),
   createExportFilterSummary: vi.fn(() => h.getExportFilterSummary),
   createDashboardRuntime: h.createDashboardRuntime,
   createThemeUiController: vi.fn(() => h.themeUiController),
@@ -260,18 +254,7 @@ describe("controllerWiring contracts", () => {
     const savedViewsConfig = h.createSavedViewsController.mock.calls[0]?.[0];
     expect(savedViewsConfig?.dependencies).toEqual(
       expect.objectContaining({
-        filterWeekdays: dom.filterWeekdays,
-        filterWeekends: dom.filterWeekends,
-        filterWorking: dom.filterWorking,
-        filterOffhours: dom.filterOffhours,
-        hourlyBrushStartInput: dom.hourlyBrushStartInput,
-        hourlyBrushEndInput: dom.hourlyBrushEndInput,
-        weekdayToggleWeekdays: dom.weekdayToggleWeekdays,
-        weekdayToggleWeekends: dom.weekdayToggleWeekends,
-        weekdayToggleWorking: dom.weekdayToggleWorking,
-        weekdayToggleOffhours: dom.weekdayToggleOffhours,
-        weekdayHourStartInput: dom.weekdayHourStartInput,
-        weekdayHourEndInput: dom.weekdayHourEndInput,
+        subscribeAppShellUiState: state.subscribeAppShellUiState,
         vueRuntime: dom.vueRuntime ?? null,
       }),
     );

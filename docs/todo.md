@@ -900,9 +900,11 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [ ] hidden native bridge preservation in `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`
       - [ ] empty-container bootstrap seeding in `js/vue/shellPageControlsView.js`
       - [ ] any non-test runtime callers still depending on direct native form refs as the primary source of truth
-        - [ ] Current remaining audit targets are intentional compatibility paths in `js/appShell/chatSelection.js`, `js/appShell/rangeFilters.js`, `js/savedViews.js`, `js/savedViewsDirtyTracking.js`, `js/appShell/dashboardRender/participantsPanel.js`, and `js/appShell/datasetLifecycle.js`; these still mirror state through preserved native refs and must be either purged or explicitly justified before Phase 14 closes.
+        - [ ] Current remaining audit targets are intentional compatibility paths in `js/appShell/chatSelection.js`, `js/appShell/rangeFilters.js`, `js/savedViews.js`, `js/appShell/dashboardRender/participantsPanel.js`, and `js/appShell/datasetLifecycle.js`; these still mirror state through preserved native refs and must be either purged or explicitly justified before Phase 14 closes.
+      - [x] Saved-view dirty-state refresh no longer depends on native `change` / `input` listeners; it now follows canonical app-shell UI-state subscriptions instead of preserved page-control refs (`js/savedViewsDirtyTracking.js`, `js/savedViews.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`).
       - [x] Removed the dead participant-interactions runtime wiring path; dashboard participant interactions now flow only through the dashboard Vue bridge instead of inert app-shell handler plumbing (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell/runtimeConfig.js`, `js/appShell/assemblyWiring.js`).
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
+    - [x] Removed the runtime-dead `js/appShell/participantInteractions.js` helper and its production barrel export; dashboard participant interactions are now owned only by the dashboard Vue bridge/runtime path.
     - [ ] Current known compatibility helpers still referenced and therefore not yet purgeable:
       - [ ] `js/vue/shellPageControlsView.js`
       - [ ] `js/vue/primeSelectBridge.js`
