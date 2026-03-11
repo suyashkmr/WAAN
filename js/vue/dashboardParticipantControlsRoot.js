@@ -25,6 +25,7 @@ export function createParticipantControlsRoot(h, participantsState, dispatchPane
           h("span", null, "Show Top"),
           renderSelectInput(h, {
             id: "participants-top-count",
+            forceNative: true,
             value: participantsState.filters.topCount,
             options: topOptions,
             onChange: event => {
@@ -38,6 +39,7 @@ export function createParticipantControlsRoot(h, participantsState, dispatchPane
           h("span", null, "Sort"),
           renderSelectInput(h, {
             id: "participants-sort",
+            forceNative: true,
             value: participantsState.filters.sortMode,
             options: sortOptions,
             onChange: event => {
@@ -51,6 +53,7 @@ export function createParticipantControlsRoot(h, participantsState, dispatchPane
           h("span", null, "Timeframe"),
           renderSelectInput(h, {
             id: "participants-timeframe",
+            forceNative: true,
             value: participantsState.filters.timeframe,
             options: timeframeOptions,
             onChange: event => {

@@ -78,8 +78,10 @@ describe("dashboard panels island", () => {
     const fakeWindow = {
       document,
       console,
+      PrimeVue: { Select: { name: "PrimeSelectStub" } },
       Vue: await import("vue"),
     };
+    fakeWindow.primevue = fakeWindow.PrimeVue;
 
     mountDashboardPanelsIsland({ globalScope: fakeWindow });
     const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope: fakeWindow });
@@ -139,6 +141,12 @@ describe("dashboard panels island", () => {
     bridge?.syncParticipantControls?.({ topCount: 10, sortMode: "quiet", timeframe: "week" });
     await fakeWindow.Vue.nextTick();
 
+    expect(document.getElementById("participants-top-count")?.tagName).toBe("SELECT");
+    expect(document.getElementById("participants-sort")?.tagName).toBe("SELECT");
+    expect(document.getElementById("participants-timeframe")?.tagName).toBe("SELECT");
+    expect(document.getElementById("participants-top-count--primevue")).toBeFalsy();
+    expect(document.getElementById("participants-sort--primevue")).toBeFalsy();
+    expect(document.getElementById("participants-timeframe--primevue")).toBeFalsy();
     const topCountSelect = document.getElementById("participants-top-count");
     expect(topCountSelect?.value).toBe("10");
     topCountSelect?.dispatchEvent(new Event("change"));

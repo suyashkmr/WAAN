@@ -114,7 +114,12 @@ describe("vue full-shell interactions", () => {
     `;
     const runtime = createVueRuntimeStub();
     globalThis.Vue = runtime;
-    globalThis.PrimeVue = { Config: {}, Card: {} };
+    globalThis.PrimeVue = {
+      Config: {},
+      Card: {},
+      Select: { name: "PrimeSelectStub" },
+      DatePicker: { name: "PrimeDatePickerStub" },
+    };
     globalThis.primevue = globalThis.PrimeVue;
   });
 
@@ -225,5 +230,28 @@ describe("vue full-shell interactions", () => {
 
     expect(legacyCustomStart.value).toBe("2025-01-05");
     expect(inputSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves native page-control ids when PrimeVue runtime is available", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <select id="chat-selector"><option value="">No chats loaded yet</option></select>
+      <select id="global-range"><option value="all">All time</option><option value="30">Last 30 days</option></select>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    mountPageControlsPrimitive(globalThis);
+
+    expect(document.getElementById("chat-selector")?.tagName).toBe("SELECT");
+    expect(document.getElementById("global-range")?.tagName).toBe("SELECT");
+    expect(document.getElementById("custom-start")?.tagName).toBe("INPUT");
+    expect(document.getElementById("custom-end")?.tagName).toBe("INPUT");
+    expect(document.getElementById("chat-selector--primevue")).toBeFalsy();
+    expect(document.getElementById("global-range--primevue")).toBeFalsy();
+    expect(document.getElementById("custom-start--primevue")).toBeFalsy();
+    expect(document.getElementById("custom-end--primevue")).toBeFalsy();
   });
 });

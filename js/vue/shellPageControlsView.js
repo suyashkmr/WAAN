@@ -1,8 +1,4 @@
-import {
-  renderActionButton,
-  renderDateInput,
-  renderSelectInput,
-} from "./primevueRenderPrimitives.js";
+import { renderActionButton, renderDateInput, renderSelectInput } from "./primevueRenderPrimitives.js";
 
 /**
  * @param {any} h
@@ -31,10 +27,11 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
       const customVisible = Boolean(state.customVisible);
       const customDisabled = Boolean(state.customDisabled);
       return [
-        h("label", { class: "control dataset-control" }, [
+        h("label", { class: "control dataset-control", for: "chat-selector" }, [
           h("span", "Loaded chats"),
           renderSelectInput(h, {
             id: "chat-selector",
+            forceNative: true,
             value: state.chatValue || "",
             options: chatOptions,
             disabled: Boolean(state.chatDisabled),
@@ -66,6 +63,7 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
             h("div", { class: "custom-range-inputs" }, [
               renderDateInput(h, {
                 id: "custom-start",
+                forceNative: true,
                 value: state.customStart || "",
                 disabled: customDisabled,
                 onChange: event => {
@@ -80,6 +78,7 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
               h("span", { class: "range-separator" }, "to"),
               renderDateInput(h, {
                 id: "custom-end",
+                forceNative: true,
                 value: state.customEnd || "",
                 disabled: customDisabled,
                 onChange: event => {
@@ -106,10 +105,11 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
             ]),
           ],
         ),
-        h("label", { class: "control period-control" }, [
+        h("label", { class: "control period-control", for: "global-range" }, [
           h("span", "Time range"),
           renderSelectInput(h, {
             id: "global-range",
+            forceNative: true,
             value: state.rangeValue || "all",
             options: rangeOptions,
             onChange: event => {
