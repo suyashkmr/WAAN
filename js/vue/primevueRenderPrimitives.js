@@ -207,6 +207,7 @@ export function renderDateInput(h, options, globalScope = globalThis) {
     onChange,
     attrs = {},
     preserveNativeElement = false,
+    visibleInputId = "",
     forceNative = false,
   } = options;
   const PrimeDatePicker = forceNative ? null : resolvePrimeVueComponent("DatePicker", globalScope);
@@ -215,7 +216,7 @@ export function renderDateInput(h, options, globalScope = globalThis) {
   if (PrimeDateComponent) {
     const { min, max, ...restAttrs } = attrs;
     const usesCalendarFallback = Boolean(PrimeCalendar);
-    const visibleInputId = resolvePrimeVisibleInputId(id, preserveNativeElement);
+    const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
     return h(
       "div",
       { class: "waan-prime-date-host" },
@@ -234,7 +235,7 @@ export function renderDateInput(h, options, globalScope = globalThis) {
           })
           : null,
         h(PrimeDateComponent, {
-          inputId: visibleInputId,
+          inputId: resolvedVisibleInputId,
           modelValue: normalizePrimeDateModelValue(value, usesCalendarFallback),
           ...(usesCalendarFallback ? {} : { updateModelType: "string" }),
           dateFormat: "yy-mm-dd",

@@ -325,11 +325,12 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     dispatchShellAction: dispatchShellActionBridge,
     setRelayActionHandlers,
     dispatchRelayAction,
-    ownsPageControlInteractions: Boolean(pageControlsBridge?.ownsPageControlInteractions),
+    get ownsPageControlInteractions() {
+      return Boolean(pageControlsBridge?.ownsPageControlInteractions);
+    },
     syncPageControls: nextState => pageControlsBridge?.syncPageControls?.(nextState) ?? false,
   }, { globalScope });
 }
-
 export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   if (typeof globalScope?.document === "undefined") return;
   mountRelayBannerPrimitive(globalScope);
