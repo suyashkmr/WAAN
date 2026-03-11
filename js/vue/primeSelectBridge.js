@@ -101,7 +101,7 @@ export function syncPrimeSelectBridge({
   visibleInputId = "",
   attrs: inputAttrs = {},
   onValueChange = null,
-  mirrorNativeEvents = true,
+  mirrorNativeEvents = false,
   vueRuntime = null,
   globalScope = globalThis,
 }) {

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Fragment, h, render } from "vue";
 
 import { createSearchParticipantUiController } from "../js/search/participantUi.js";
@@ -139,6 +139,49 @@ describe("search participant UI rendering", () => {
 
     expect(participantSelect.value).toBe("Ana");
     expect(bridgeState?.value).toBe("Ana");
+  });
+
+  it("does not emit mirrored native change events for the bridged participant select", () => {
+    const participantSelect = document.createElement("select");
+    participantSelect.id = "search-participant";
+    document.body.appendChild(participantSelect);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    let latestRoot = null;
+    const nativeChangeListener = vi.fn();
+    participantSelect.addEventListener("change", nativeChangeListener);
+    const vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        latestRoot = root;
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.children?.[0]?.props?.["data-ui-runtime"] || vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+
+    const controller = createSearchParticipantUiController({
+      participantSelect,
+      getEntries: () => [{ type: "message", sender: "Ana" }],
+      getDatasetFingerprint: () => "fp-1",
+      getSearchState: () => ({ query: { participant: "" } }),
+      buildParticipantOptionsCacheKey: ({ datasetFingerprint }) => datasetFingerprint,
+      vueRuntime,
+    });
+
+    controller.populateParticipants();
+
+    const vnode = latestRoot.render();
+    vnode.children[0].props["onUpdate:modelValue"]("Ana");
+
+    expect(participantSelect.value).toBe("Ana");
+    expect(nativeChangeListener).not.toHaveBeenCalled();
   });
 
   it("clears stale participant selection before syncing the PrimeVue bridge", () => {

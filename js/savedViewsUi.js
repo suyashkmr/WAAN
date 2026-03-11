@@ -162,6 +162,7 @@ export function createSavedViewsUiController({
       options: optionModels,
       value: select.value,
       disabled: !dataAvailableGetter(),
+      mirrorNativeEvents: false,
       vueRuntime,
     });
     if (select.value && !views.some(view => view.id === select.value)) {

@@ -103,7 +103,6 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   }
 
   if (participantControlsMountEl && participantControlsMountEl.dataset.vueParticipantsControlsMounted !== "true") {
-    participantControlBridge.bindListeners();
     participantControlBridge.sync();
     participantControlsMountEl.dataset.vueParticipantsControlsMounted = "true";
   }

@@ -215,6 +215,8 @@ describe("dashboard panels island", () => {
     await fakeWindow.Vue.nextTick();
 
     const nativeSelect = /** @type {HTMLSelectElement | null} */ (document.getElementById("participants-top-count"));
+    const nativeChangeListener = vi.fn();
+    nativeSelect?.addEventListener("change", nativeChangeListener);
     expect(nativeSelect?.tagName).toBe("SELECT");
     expect(nativeSelect?.classList.contains("hidden")).toBe(true);
     expect(document.querySelectorAll("#participants-top-count")).toHaveLength(1);
@@ -226,6 +228,7 @@ describe("dashboard panels island", () => {
     await fakeWindow.Vue.nextTick();
 
     expect(nativeSelect?.value).toBe("10");
+    expect(nativeChangeListener).not.toHaveBeenCalled();
     expect(topCountHandler).toHaveBeenCalledWith({ value: "10" });
   });
 

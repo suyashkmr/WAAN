@@ -73,7 +73,7 @@ export function syncPrimeDateBridge({
   preserveNativeId = false,
   visibleInputId = "",
   onValueChange = null,
-  mirrorNativeEvents = true,
+  mirrorNativeEvents = false,
   vueRuntime = null,
   globalScope = globalThis,
 }) {

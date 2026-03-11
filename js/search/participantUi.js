@@ -58,6 +58,7 @@ export function createSearchParticipantUiController({
       options: optionModels,
       value: participantSelect.value,
       disabled: datasetEmpty,
+      mirrorNativeEvents: false,
       vueRuntime,
     });
     participantOptionsCacheKey = nextCacheKey;
@@ -73,6 +74,7 @@ export function createSearchParticipantUiController({
       })),
       value: participantSelect.value,
       disabled: participantSelect.disabled,
+      mirrorNativeEvents: false,
       vueRuntime,
     });
   }

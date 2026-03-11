@@ -68,20 +68,18 @@ export function createDashboardParticipantControlBridge({
     selectEl: /** @type {HTMLSelectElement | null} */ (doc.getElementById(config.id)),
   }));
 
-  function bindListeners() {
-    configs.forEach(({ selectEl, actionId, setState }) => {
-      if (!selectEl || selectEl.dataset.vueParticipantsBridgeBound === "true") return;
-      selectEl.addEventListener("change", () => {
-        const nextValue = String(selectEl.value || "");
-        setState(participantsState.filters, nextValue);
-        dispatchPanelAction(actionId, { value: nextValue });
-      });
-      selectEl.dataset.vueParticipantsBridgeBound = "true";
+  function bindFallbackListener(selectEl, actionId, setState) {
+    if (!selectEl || selectEl.dataset.vueParticipantsBridgeBound === "true") return;
+    selectEl.addEventListener("change", () => {
+      const nextValue = String(selectEl.value || "");
+      setState(participantsState.filters, nextValue);
+      dispatchPanelAction(actionId, { value: nextValue });
     });
+    selectEl.dataset.vueParticipantsBridgeBound = "true";
   }
 
   function sync(filters = participantsState.filters) {
-    configs.forEach(({ selectEl, options, getValue }) => {
+    configs.forEach(({ selectEl, options, getValue, actionId, setState }) => {
       if (!selectEl) return;
       ensureNativeOptions(selectEl, options);
       const nextValue = getValue(filters);
@@ -96,6 +94,11 @@ export function createDashboardParticipantControlBridge({
         disabled: false,
         preserveNativeId: true,
         visibleInputId: `${selectEl.id}--primevue`,
+        mirrorNativeEvents: false,
+        onValueChange: value => {
+          setState(participantsState.filters, value);
+          dispatchPanelAction(actionId, { value });
+        },
         vueRuntime,
         globalScope,
       });
@@ -105,12 +108,13 @@ export function createDashboardParticipantControlBridge({
           value: selectEl.value,
           disabled: false,
         });
+        return;
       }
+      bindFallbackListener(selectEl, actionId, setState);
     });
   }
 
   return {
-    bindListeners,
     sync,
   };
 }
