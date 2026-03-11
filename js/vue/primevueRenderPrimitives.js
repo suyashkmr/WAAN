@@ -125,6 +125,7 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
     onChange,
     attrs = {},
     preserveNativeElement = false,
+    visibleInputId = "",
     forceNative = false,
   } = options;
 
@@ -141,7 +142,7 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
       resolvePrimeVueComponent("Dropdown", globalScope));
   if (PrimeSelect) {
     const { componentAttrs, wrapperAttrs } = splitComponentAttrs(attrs);
-    const visibleInputId = resolvePrimeVisibleInputId(id, preserveNativeElement);
+    const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
     return h(
       "div",
       {
@@ -164,7 +165,7 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
           )
           : null,
         h(PrimeSelect, {
-          inputId: visibleInputId,
+          inputId: resolvedVisibleInputId,
           modelValue: normalizePrimitiveValue(value),
           options: normalizedOptions,
           optionLabel: "label",

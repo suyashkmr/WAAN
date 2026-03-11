@@ -340,9 +340,9 @@ describe("savedViews controller", () => {
     expect(elements.compareSelectA.id).toBe("compare-view-a--native");
     expect(elements.compareSelectB.id).toBe("compare-view-b--native");
     expect(elements.listSelect.classList.contains("hidden")).toBe(true);
-    expect(document.getElementById("saved-view-list--primevue")).toBeTruthy();
-    expect(document.getElementById("compare-view-a--primevue")).toBeTruthy();
-    expect(document.getElementById("compare-view-b--primevue")).toBeTruthy();
+    expect(elements.listSelect.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(elements.compareSelectA.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(elements.compareSelectB.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
     expect(elements.listSelect.__waanPrimeSelectBridge?.state?.value).toBe("view-1");
   });
 

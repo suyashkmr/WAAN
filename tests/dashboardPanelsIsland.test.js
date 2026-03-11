@@ -144,16 +144,89 @@ describe("dashboard panels island", () => {
     expect(document.getElementById("participants-top-count")?.tagName).toBe("SELECT");
     expect(document.getElementById("participants-sort")?.tagName).toBe("SELECT");
     expect(document.getElementById("participants-timeframe")?.tagName).toBe("SELECT");
-    expect(document.getElementById("participants-top-count--primevue")).toBeFalsy();
-    expect(document.getElementById("participants-sort--primevue")).toBeFalsy();
-    expect(document.getElementById("participants-timeframe--primevue")).toBeFalsy();
     const topCountSelect = document.getElementById("participants-top-count");
     expect(topCountSelect?.value).toBe("10");
+    expect(document.querySelectorAll("#participants-top-count")).toHaveLength(1);
+    expect(document.querySelector('label[for="participants-top-count"]')).toBeTruthy();
     topCountSelect?.dispatchEvent(new Event("change"));
     await fakeWindow.Vue.nextTick();
 
     expect(topCountHandler).toHaveBeenCalledWith({ value: "10" });
     expect(document.querySelector('[data-participants-preset="quiet"]')?.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("bridges participant selects through PrimeVue while preserving native dashboard refs", async () => {
+    document.body.innerHTML = `
+      <div id="highlight-list"></div>
+      <div class="participants-controls">
+        <label class="control-group" for="participants-top-count">
+          <span>Show Top</span>
+          <select id="participants-top-count"><option value="25" selected>25</option><option value="10">10</option></select>
+        </label>
+        <label class="control-group" for="participants-sort">
+          <span>Sort</span>
+          <select id="participants-sort"><option value="most" selected>Most active</option></select>
+        </label>
+        <label class="control-group" for="participants-timeframe">
+          <span>Timeframe</span>
+          <select id="participants-timeframe"><option value="all" selected>All time</option></select>
+        </label>
+      </div>
+      <div class="participants-quick-filters"></div>
+      <table id="top-senders"><tbody></tbody></table>
+      <div id="timeofday-chart"></div>
+      <div id="hourly-chart"></div>
+      <div id="weekday-chart"></div>
+    `;
+
+    const PrimeSelect = {
+      name: "PrimeSelectStub",
+      inheritAttrs: false,
+      props: ["inputId", "modelValue"],
+      setup(props, { attrs }) {
+        return () =>
+          h(
+            "button",
+            {
+              id: props.inputId,
+              class: "p-select",
+              onClick: () => attrs["onUpdate:modelValue"]?.("10"),
+            },
+            String(props.modelValue || ""),
+          );
+      },
+    };
+
+    const fakeWindow = {
+      document,
+      console,
+      PrimeVue: { Select: PrimeSelect },
+      Vue: await import("vue"),
+    };
+    fakeWindow.primevue = fakeWindow.PrimeVue;
+
+    mountDashboardPanelsIsland({ globalScope: fakeWindow });
+    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope: fakeWindow });
+    const topCountHandler = vi.fn();
+    bridge?.setPanelActionHandlers?.({
+      "participants:set-top-count": (_actionId, payload) => topCountHandler(payload),
+    });
+    bridge?.syncParticipantControls?.({ topCount: 25, sortMode: "most", timeframe: "all" });
+    await fakeWindow.Vue.nextTick();
+
+    const nativeSelect = /** @type {HTMLSelectElement | null} */ (document.getElementById("participants-top-count"));
+    expect(nativeSelect?.tagName).toBe("SELECT");
+    expect(nativeSelect?.classList.contains("hidden")).toBe(true);
+    expect(document.querySelectorAll("#participants-top-count")).toHaveLength(1);
+    expect(document.querySelector('label[for="participants-top-count--primevue"]')).toBeTruthy();
+    const visibleSelect = /** @type {HTMLButtonElement | null} */ (document.getElementById("participants-top-count--primevue"));
+    expect(visibleSelect).toBeTruthy();
+
+    visibleSelect?.click();
+    await fakeWindow.Vue.nextTick();
+
+    expect(nativeSelect?.value).toBe("10");
+    expect(topCountHandler).toHaveBeenCalledWith({ value: "10" });
   });
 
   it("renders hourly, weekday, and time-of-day controls through the dashboard bridge and dispatches actions", async () => {

@@ -8,9 +8,9 @@ import {
 import { createDashboardMetaRenderHelpers } from "./dashboardPanelsMetaHelpers.js";
 import { createParticipantsRoot } from "./dashboardParticipantsRoot.js";
 import {
-  createParticipantControlsRoot,
   createParticipantQuickFiltersRoot,
 } from "./dashboardParticipantControlsRoot.js";
+import { createDashboardParticipantControlBridge } from "./dashboardParticipantControlBridge.js";
 import {
   createHourlyControlsRoot,
   createWeekdayControlsRoot,
@@ -84,6 +84,14 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
 
   const HighlightsRoot = createHighlightsRoot({ h, state, PrimeDataView, usePrimeDataView, globalScope });
 
+  const participantControlBridge = createDashboardParticipantControlBridge({
+    doc,
+    participantsState,
+    dispatchPanelAction,
+    vueRuntime: VueRuntime,
+    globalScope,
+  });
+
   const app = createApp(HighlightsRoot);
   app.mount(mountEl);
   mountEl.dataset.vueHighlightsMounted = "true";
@@ -95,13 +103,8 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
   }
 
   if (participantControlsMountEl && participantControlsMountEl.dataset.vueParticipantsControlsMounted !== "true") {
-    const ParticipantsControlsRoot = createParticipantControlsRoot(
-      h,
-      participantsState,
-      dispatchPanelAction,
-      globalScope,
-    );
-    configurePrimeVueApp(createApp(ParticipantsControlsRoot), globalScope).mount(participantControlsMountEl);
+    participantControlBridge.bindListeners();
+    participantControlBridge.sync();
     participantControlsMountEl.dataset.vueParticipantsControlsMounted = "true";
   }
 
@@ -221,6 +224,7 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
         sortMode: String(filters?.sortMode ?? participantsState.filters.sortMode ?? "most"),
         timeframe: String(filters?.timeframe ?? participantsState.filters.timeframe ?? "all"),
       };
+      participantControlBridge.sync(participantsState.filters);
       return true;
     },
     /**

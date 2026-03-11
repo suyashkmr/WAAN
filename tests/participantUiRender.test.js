@@ -93,7 +93,8 @@ describe("search participant UI rendering", () => {
     expect(participantSelect.id).toBe("search-participant--native");
     expect(participantSelect.classList.contains("hidden")).toBe(true);
     expect(participantSelect.dataset.primevueManaged).toBe("true");
-    expect(document.getElementById("search-participant--primevue")).toBeTruthy();
+    expect(participantSelect.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(participantSelect.__waanPrimeSelectBridge?.mountEl).toBe(participantSelect.nextElementSibling);
   });
 
   it("keeps bridged participant state in sync after user selection", () => {

@@ -2,7 +2,7 @@ import { configurePrimeVueApp } from "./primevueApp.js";
 import { renderSelectInput } from "./primevueRenderPrimitives.js";
 
 function createBridgeMountId(inputId) {
-  return `${inputId}--primevue`;
+  return `${inputId}--mount`;
 }
 
 function getVueRuntime(vueRuntime, globalScope) {
@@ -29,12 +29,12 @@ function ensureBridgeMount(selectEl, inputId) {
   return mount;
 }
 
-function hideNativeSelect(selectEl, inputId) {
+function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
   if (!selectEl) return;
   if (!selectEl.dataset.primevueLegacyId) {
     selectEl.dataset.primevueLegacyId = selectEl.id || inputId;
   }
-  if (selectEl.id === inputId) {
+  if (!preserveNativeId && selectEl.id === inputId) {
     selectEl.id = `${inputId}--native`;
   }
   selectEl.classList.add("hidden");
@@ -48,12 +48,27 @@ function dispatchNativeMirrorEvent(selectEl, type) {
   selectEl.dispatchEvent(new EventCtor(type, { bubbles: true }));
 }
 
+function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, visibleInputId = "") {
+  if (!preserveNativeId || !selectEl?.ownerDocument || !inputId) return;
+  const nextFor = visibleInputId || `${inputId}--primevue`;
+  const labels = selectEl.ownerDocument.querySelectorAll(`label[for="${inputId}"]`);
+  labels.forEach(label => {
+    if (!(label instanceof HTMLLabelElement)) return;
+    if (!label.dataset.primevueLegacyFor) {
+      label.dataset.primevueLegacyFor = inputId;
+    }
+    label.htmlFor = nextFor;
+  });
+}
+
 /**
  * @param {{
  *   selectEl: HTMLSelectElement | null | undefined,
  *   options: Array<{ value: string, label: string }>,
  *   value?: string,
  *   disabled?: boolean,
+ *   preserveNativeId?: boolean,
+ *   visibleInputId?: string,
  *   vueRuntime?: any,
  *   globalScope?: any,
  * }} params
@@ -64,12 +79,15 @@ export function syncPrimeSelectBridge({
   options,
   value = "",
   disabled = false,
+  preserveNativeId = false,
+  visibleInputId = "",
   vueRuntime = null,
   globalScope = globalThis,
 }) {
   if (!selectEl) return false;
   const VueRuntime = getVueRuntime(vueRuntime, globalScope);
   const inputId = selectEl.dataset.primevueInputId || selectEl.id || `prime-select-${Math.random().toString(36).slice(2)}`;
+  const resolvedVisibleInputId = visibleInputId || (preserveNativeId ? `${inputId}--primevue` : inputId);
   selectEl.dataset.primevueInputId = inputId;
   const hasPrimeVue = Boolean(
     (globalScope?.PrimeVue || globalScope?.primevue)?.Select ||
@@ -92,11 +110,17 @@ export function syncPrimeSelectBridge({
     const Root = {
       name: "PrimeSelectBridgeField",
       render() {
+        const attrs = {
+          class: "prime-select-bridge-field",
+          ...(preserveNativeId ? { "data-bridge-visible-input-id": resolvedVisibleInputId } : {}),
+        };
         return renderSelectInput(VueRuntime.h, {
           id: inputId,
+          attrs,
           value: state.value,
           options: state.options,
           disabled: state.disabled,
+          visibleInputId: resolvedVisibleInputId,
           onChange: event => {
             const nextValue = event?.target?.value ?? "";
             state.value = String(nextValue ?? "");
@@ -104,14 +128,12 @@ export function syncPrimeSelectBridge({
             dispatchNativeMirrorEvent(selectEl, "input");
             dispatchNativeMirrorEvent(selectEl, "change");
           },
-          attrs: {
-            class: "prime-select-bridge-field",
-          },
         }, globalScope);
       },
     };
     configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(mountEl);
-    hideNativeSelect(selectEl, inputId);
+    hideNativeSelect(selectEl, inputId, preserveNativeId);
+    syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
     bridge = { state, mountEl };
     storeBridgeState(selectEl, bridge);
   }
@@ -119,7 +141,8 @@ export function syncPrimeSelectBridge({
   bridge.state.options = Array.isArray(options) ? options : [];
   bridge.state.value = value == null ? "" : String(value);
   bridge.state.disabled = Boolean(disabled);
-  hideNativeSelect(selectEl, inputId);
+  hideNativeSelect(selectEl, inputId, preserveNativeId);
+  syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
   return true;
 }
 
