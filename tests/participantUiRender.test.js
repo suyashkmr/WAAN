@@ -90,11 +90,11 @@ describe("search participant UI rendering", () => {
 
     controller.populateParticipants();
 
-    expect(participantSelect.id).toBe("search-participant--native");
-    expect(participantSelect.classList.contains("hidden")).toBe(true);
-    expect(participantSelect.dataset.primevueManaged).toBe("true");
-    expect(participantSelect.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(participantSelect.__waanPrimeSelectBridge?.mountEl).toBe(participantSelect.nextElementSibling);
+    expect(participantSelect.id).toBe("search-participant");
+    expect(participantSelect.isConnected).toBe(false);
+    expect(participantSelect.dataset.primevueManaged).toBe("detached");
+    expect(participantSelect.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(participantSelect.__waanPrimeSelectBridge?.mountEl?.isConnected).toBe(true);
   });
 
   it("keeps bridged participant state in sync after user selection", () => {

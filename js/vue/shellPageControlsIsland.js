@@ -110,7 +110,6 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       disabled: chatSelector.disabled,
       preserveNativeId: true,
       visibleInputId: "chat-selector--primevue",
-      mirrorNativeEvents: false,
       attrs: {
         onDblclick: () => {
           if (!chatSelector.value) return;
@@ -147,7 +146,6 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       disabled: rangeSelect.disabled,
       preserveNativeId: true,
       visibleInputId: "global-range--primevue",
-      mirrorNativeEvents: false,
       onValueChange: value => {
         dispatchShellAction("page.range.select", { value: value || "all" }, globalScope);
       },
@@ -174,7 +172,6 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       max: customStartInput.max,
       preserveNativeId: true,
       visibleInputId: "custom-start--primevue",
-      mirrorNativeEvents: false,
       onValueChange: value => {
         dispatchShellAction("page.range.set-custom-start", { value }, globalScope);
       },
@@ -203,7 +200,6 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       max: customEndInput.max,
       preserveNativeId: true,
       visibleInputId: "custom-end--primevue",
-      mirrorNativeEvents: false,
       onValueChange: value => {
         dispatchShellAction("page.range.set-custom-end", { value }, globalScope);
       },

@@ -13,6 +13,7 @@ import {
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
 import { syncSavedViewListSelection } from "./savedViewsSelectBridgeSync.js";
+import { readPrimeSelectBridgeValue } from "./vue/primeSelectBridge.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
     nameInput,
@@ -233,7 +234,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   async function handleApplySavedView() {
-    const id = listSelect?.value;
+    const id = readPrimeSelectBridgeValue(listSelect);
     if (!id) {
       updateStatus("Choose a saved view to use.", "warning");
       return;
@@ -248,7 +249,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function handleDeleteSavedView() {
-    const id = listSelect?.value;
+    const id = readPrimeSelectBridgeValue(listSelect);
     if (!id) {
       updateStatus("Choose a saved view to remove.", "warning");
       return;
@@ -269,8 +270,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   }
 
   function handleCompareViews() {
-    const primaryId = compareSelectA?.value;
-    const secondaryId = compareSelectB?.value;
+    const primaryId = readPrimeSelectBridgeValue(compareSelectA);
+    const secondaryId = readPrimeSelectBridgeValue(compareSelectB);
     if (!primaryId || !secondaryId) {
       updateStatus("Pick two saved views to compare.", "warning");
       return;

@@ -13,11 +13,20 @@ function resolveBridgeState(selectEl) {
   return /** @type {any} */ (selectEl).__waanPrimeSelectBridge ?? null;
 }
 
+export function readPrimeSelectBridgeValue(selectEl) {
+  if (!selectEl) return "";
+  const bridge = resolveBridgeState(selectEl);
+  if (bridge?.state) {
+    return bridge.state.value == null ? "" : String(bridge.state.value);
+  }
+  return selectEl.value ?? "";
+}
+
 function storeBridgeState(selectEl, state) {
   /** @type {any} */ (selectEl).__waanPrimeSelectBridge = state;
 }
 
-function ensureBridgeMount(selectEl, inputId) {
+function ensureBridgeMount(selectEl, inputId, preserveNativeId = false) {
   const ownerDocument = selectEl?.ownerDocument ?? null;
   if (!ownerDocument) return null;
   const existingMount = ownerDocument.getElementById(createBridgeMountId(inputId));
@@ -25,11 +34,21 @@ function ensureBridgeMount(selectEl, inputId) {
   const mount = ownerDocument.createElement("div");
   mount.id = createBridgeMountId(inputId);
   mount.className = "prime-select-bridge";
-  const wrappingLabel = selectEl.parentElement instanceof HTMLLabelElement ? selectEl.parentElement : null;
-  if (wrappingLabel) {
-    wrappingLabel.insertBefore(mount, selectEl);
+  if (preserveNativeId) {
+    const wrappingLabel = selectEl.parentElement instanceof HTMLLabelElement ? selectEl.parentElement : null;
+    if (wrappingLabel) {
+      wrappingLabel.insertBefore(mount, selectEl);
+    } else {
+      selectEl.insertAdjacentElement("afterend", mount);
+    }
   } else {
-    selectEl.insertAdjacentElement("afterend", mount);
+    if (selectEl.parentNode) {
+      selectEl.replaceWith(mount);
+    } else if (ownerDocument.body) {
+      ownerDocument.body.appendChild(mount);
+    } else {
+      return null;
+    }
   }
   return mount;
 }
@@ -45,6 +64,10 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
   if (!selectEl.dataset.primevueLegacyId) {
     selectEl.dataset.primevueLegacyId = selectEl.id || inputId;
   }
+  if (!preserveNativeId && !selectEl.isConnected) {
+    selectEl.dataset.primevueManaged = "detached";
+    return;
+  }
   if (!preserveNativeId && selectEl.id === inputId) {
     selectEl.id = `${inputId}--native`;
   }
@@ -53,14 +76,6 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
   selectEl.setAttribute("aria-hidden", "true");
   selectEl.tabIndex = -1;
   selectEl.dataset.primevueManaged = "true";
-}
-
-function dispatchNativeMirrorEvent(selectEl, type) {
-  const EventCtor = selectEl?.ownerDocument?.defaultView?.Event ?? Event;
-  if (!selectEl) return;
-  selectEl.dataset.primevueMirrorDispatch = "true";
-  selectEl.dispatchEvent(new EventCtor(type, { bubbles: true }));
-  delete selectEl.dataset.primevueMirrorDispatch;
 }
 
 function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, visibleInputId = "") {
@@ -86,7 +101,6 @@ function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, vis
  *   visibleInputId?: string,
  *   attrs?: Record<string, any>,
  *   onValueChange?: ((value: string) => void) | null,
- *   mirrorNativeEvents?: boolean,
  *   vueRuntime?: any,
  *   globalScope?: any,
  * }} params
@@ -101,7 +115,6 @@ export function syncPrimeSelectBridge({
   visibleInputId = "",
   attrs: inputAttrs = {},
   onValueChange = null,
-  mirrorNativeEvents = false,
   vueRuntime = null,
   globalScope = globalThis,
 }) {
@@ -123,7 +136,7 @@ export function syncPrimeSelectBridge({
 
   let bridge = resolveBridgeState(selectEl);
   if (!bridge) {
-    const mountEl = ensureBridgeMount(selectEl, inputId);
+    const mountEl = ensureBridgeMount(selectEl, inputId, preserveNativeId);
     if (!mountEl) return false;
     const state = VueRuntime.reactive
       ? VueRuntime.reactive({
@@ -158,10 +171,6 @@ export function syncPrimeSelectBridge({
             state.value = String(nextValue ?? "");
             selectEl.value = state.value;
             onValueChange?.(state.value);
-            if (mirrorNativeEvents) {
-              dispatchNativeMirrorEvent(selectEl, "input");
-              dispatchNativeMirrorEvent(selectEl, "change");
-            }
           },
         }, globalScope);
       },

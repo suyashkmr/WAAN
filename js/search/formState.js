@@ -1,3 +1,5 @@
+import { readPrimeSelectBridgeValue, syncPrimeSelectBridgeValue } from "../vue/primeSelectBridge.js";
+
 export function applySearchStateToInputs({
   state,
   keywordInput,
@@ -7,7 +9,12 @@ export function applySearchStateToInputs({
 }) {
   if (!state) return;
   if (keywordInput) keywordInput.value = state.query.text ?? "";
-  if (participantSelect) participantSelect.value = state.query.participant ?? "";
+  if (participantSelect) {
+    syncPrimeSelectBridgeValue({
+      selectEl: participantSelect,
+      value: state.query.participant ?? "",
+    });
+  }
   if (startInput) startInput.value = state.query.start ?? "";
   if (endInput) endInput.value = state.query.end ?? "";
 }
@@ -20,7 +27,7 @@ export function readSearchQueryFromInputs({
 }) {
   return {
     text: keywordInput?.value.trim() ?? "",
-    participant: participantSelect?.value ?? "",
+    participant: readPrimeSelectBridgeValue(participantSelect),
     start: startInput?.value ?? "",
     end: endInput?.value ?? "",
   };
@@ -33,7 +40,12 @@ export function resetSearchInputs({
   endInput,
 }) {
   if (keywordInput) keywordInput.value = "";
-  if (participantSelect) participantSelect.value = "";
+  if (participantSelect) {
+    syncPrimeSelectBridgeValue({
+      selectEl: participantSelect,
+      value: "",
+    });
+  }
   if (startInput) startInput.value = "";
   if (endInput) endInput.value = "";
 }

@@ -354,13 +354,15 @@ describe("savedViews controller", () => {
     elements.nameInput.value = "Baseline";
     elements.saveButton.click();
 
-    expect(elements.listSelect.id).toBe("saved-view-list--native");
-    expect(elements.compareSelectA.id).toBe("compare-view-a--native");
-    expect(elements.compareSelectB.id).toBe("compare-view-b--native");
-    expect(elements.listSelect.classList.contains("hidden")).toBe(true);
-    expect(elements.listSelect.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(elements.compareSelectA.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(elements.compareSelectB.nextElementSibling?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(elements.listSelect.id).toBe("saved-view-list");
+    expect(elements.compareSelectA.id).toBe("compare-view-a");
+    expect(elements.compareSelectB.id).toBe("compare-view-b");
+    expect(elements.listSelect.isConnected).toBe(false);
+    expect(elements.compareSelectA.isConnected).toBe(false);
+    expect(elements.compareSelectB.isConnected).toBe(false);
+    expect(elements.listSelect.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(elements.compareSelectA.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(elements.compareSelectB.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
     expect(elements.listSelect.__waanPrimeSelectBridge?.state?.value).toBe("view-1");
   });
 
@@ -675,6 +677,110 @@ describe("savedViews controller", () => {
         }),
       }),
     );
+  });
+
+  it("uses bridged saved-view select state even when the hidden native select is stale", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    document.body.append(
+      elements.nameInput,
+      elements.saveButton,
+      elements.listSelect,
+      elements.applyButton,
+      elements.deleteButton,
+      elements.gallery,
+      elements.compareSelectA,
+      elements.compareSelectB,
+      elements.compareButton,
+      elements.compareSummaryEl,
+    );
+    const dependencies = buildDependencies();
+    dependencies.vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "View 1";
+    elements.saveButton.click();
+    elements.nameInput.value = "View 2";
+    elements.saveButton.click();
+
+    elements.listSelect.value = "";
+    elements.listSelect.__waanPrimeSelectBridge.state.value = "view-2";
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    expect(dependencies.updateSavedView).toHaveBeenCalledWith(
+      "view-2",
+      expect.objectContaining({ lastAppliedAt: expect.any(String) }),
+    );
+  });
+
+  it("uses bridged compare select state even when the hidden native selects are stale", () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    document.body.append(
+      elements.nameInput,
+      elements.saveButton,
+      elements.listSelect,
+      elements.applyButton,
+      elements.deleteButton,
+      elements.gallery,
+      elements.compareSelectA,
+      elements.compareSelectB,
+      elements.compareButton,
+      elements.compareSummaryEl,
+    );
+    const dependencies = buildDependencies();
+    dependencies.vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "View 1";
+    elements.saveButton.click();
+    elements.nameInput.value = "View 2";
+    elements.saveButton.click();
+
+    elements.compareSelectA.value = "";
+    elements.compareSelectB.value = "";
+    elements.compareSelectA.__waanPrimeSelectBridge.state.value = "view-1";
+    elements.compareSelectB.__waanPrimeSelectBridge.state.value = "view-2";
+    elements.compareButton.click();
+
+    expect(dependencies.setCompareSelection).toHaveBeenLastCalledWith("view-1", "view-2");
   });
 
   it("falls back to sync snapshot hydration when analytics worker fails", async () => {

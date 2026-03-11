@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Fragment, h, render } from "vue";
 import { createSearchController } from "../js/search.js";
 import {
+  getSearchState,
   setDatasetEntries,
   resetSearchState,
   setStatusCallback,
@@ -408,6 +409,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
+    installSearchSavedBridge(elements);
     elements.participantSelect.id = "search-participant";
     document.body.appendChild(elements.participantSelect);
     globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
@@ -434,6 +436,7 @@ describe("search controller", () => {
     };
 
     const controller = createSearchController({ elements, options: { vueRuntime: bridgeVueRuntime } });
+    controller.init();
     controller.populateParticipants();
 
     setSearchQuery({ text: "", participant: "Ben", start: "", end: "" });
@@ -444,5 +447,48 @@ describe("search controller", () => {
     controller.resetState();
     expect(elements.participantSelect.value).toBe("");
     expect(elements.participantSelect.__waanPrimeSelectBridge.state.value).toBe("");
+  });
+
+  it("submits using bridged participant state even when the hidden native select is stale", async () => {
+    setDatasetEntries([
+      { type: "message", sender: "Ana", message: "alpha" },
+      { type: "message", sender: "Ben", message: "beta" },
+    ]);
+
+    const elements = buildElements();
+    installSearchSavedBridge(elements);
+    elements.participantSelect.id = "search-participant";
+    document.body.appendChild(elements.participantSelect);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    const bridgeVueRuntime = {
+      h,
+      reactive(value) {
+        return value;
+      },
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+      render,
+      Fragment,
+    };
+
+    const controller = createSearchController({ elements, options: { vueRuntime: bridgeVueRuntime } });
+    controller.init();
+    controller.populateParticipants();
+    elements.participantSelect.value = "";
+    elements.participantSelect.__waanPrimeSelectBridge.state.value = "Ben";
+
+    elements.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+
+    expect(getSearchState().query.participant).toBe("Ben");
   });
 });

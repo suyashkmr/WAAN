@@ -9,7 +9,11 @@ import {
   buildSavedViewCardModel,
 } from "./savedViewsCards.js";
 import { buildSavedViewsComparisonPayload } from "./savedViewsComparisonPayload.js";
-import { syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./vue/primeSelectBridge.js";
+import {
+  readPrimeSelectBridgeValue,
+  syncPrimeSelectBridge,
+  syncPrimeSelectBridgeValue,
+} from "./vue/primeSelectBridge.js";
 
 export function createSavedViewsUiController({
   elements,
@@ -137,7 +141,7 @@ export function createSavedViewsUiController({
 
   function populateSavedSelect(select, views, selectedId, placeholder) {
     if (!select) return;
-    const previous = selectedId ?? select.value;
+    const previous = selectedId ?? readPrimeSelectBridgeValue(select);
     const optionModels = [
       { value: "", label: placeholder },
       ...views.map(view => ({
@@ -162,7 +166,6 @@ export function createSavedViewsUiController({
       options: optionModels,
       value: select.value,
       disabled: !dataAvailableGetter(),
-      mirrorNativeEvents: false,
       vueRuntime,
     });
     if (select.value && !views.some(view => view.id === select.value)) {
@@ -205,7 +208,7 @@ export function createSavedViewsUiController({
     const views = getSavedViews();
     const compareSelection = getCompareSelection();
 
-    populateSavedSelect(listSelect, views, listSelect?.value, "Choose a saved view…");
+    populateSavedSelect(listSelect, views, readPrimeSelectBridgeValue(listSelect), "Choose a saved view…");
     populateSavedSelect(compareSelectA, views, compareSelection.primary, "Select view A…");
     populateSavedSelect(compareSelectB, views, compareSelection.secondary, "Select view B…");
 

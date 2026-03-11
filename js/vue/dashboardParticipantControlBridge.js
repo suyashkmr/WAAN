@@ -94,7 +94,6 @@ export function createDashboardParticipantControlBridge({
         disabled: false,
         preserveNativeId: true,
         visibleInputId: `${selectEl.id}--primevue`,
-        mirrorNativeEvents: false,
         onValueChange: value => {
           setState(participantsState.filters, value);
           dispatchPanelAction(actionId, { value });
