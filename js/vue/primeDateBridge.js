@@ -43,11 +43,6 @@ function hideNativeInput(inputEl, inputId, preserveNativeId = false) {
   inputEl.dataset.primevueManaged = "true";
 }
 
-function dispatchNativeMirrorEvent(inputEl, type) {
-  const EventCtor = inputEl?.ownerDocument?.defaultView?.Event ?? Event;
-  inputEl.dispatchEvent(new EventCtor(type, { bubbles: true }));
-}
-
 /**
  * @param {{
  *   inputEl: HTMLInputElement | null | undefined,
@@ -58,7 +53,6 @@ function dispatchNativeMirrorEvent(inputEl, type) {
  *   preserveNativeId?: boolean,
  *   visibleInputId?: string,
  *   onValueChange?: ((value: string) => void) | null,
- *   mirrorNativeEvents?: boolean,
  *   vueRuntime?: any,
  *   globalScope?: any,
  * }} params
@@ -73,7 +67,6 @@ export function syncPrimeDateBridge({
   preserveNativeId = false,
   visibleInputId = "",
   onValueChange = null,
-  mirrorNativeEvents = false,
   vueRuntime = null,
   globalScope = globalThis,
 }) {
@@ -129,10 +122,6 @@ export function syncPrimeDateBridge({
             state.value = String(nextValue ?? "");
             inputEl.value = state.value;
             onValueChange?.(state.value);
-            if (mirrorNativeEvents) {
-              dispatchNativeMirrorEvent(inputEl, "input");
-              dispatchNativeMirrorEvent(inputEl, "change");
-            }
           },
         }, globalScope);
       },
