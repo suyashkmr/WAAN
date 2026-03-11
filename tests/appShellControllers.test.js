@@ -312,10 +312,6 @@ describe("appShell controllers", () => {
       handleDownloadSlidesReport: vi.fn(),
       exportSearchResults: vi.fn(),
       handleDownloadPdfReport: vi.fn(),
-      handleParticipantsTopChange: vi.fn(),
-      handleParticipantsSortChange: vi.fn(),
-      handleParticipantsTimeframeChange: vi.fn(),
-      handleParticipantPresetClick: vi.fn(),
     };
 
     const deps = {

@@ -3,7 +3,6 @@
 import { EXPORT_THEME_STYLES } from "../../theme.js";
 import {
   createDataStatusController,
-  createParticipantInteractionsController,
   createExportFilterSummary,
   createDashboardRuntime,
   createThemeUiController,
@@ -94,25 +93,6 @@ export function createDashboardDataStatusThemeWiring({
     sortMode: dom.participantsSortSelect?.value ?? "most",
     timeframe: dom.participantsTimeframeSelect?.value ?? "all",
   };
-  const participantInteractionsController = createParticipantInteractionsController({
-    elements: {
-      participantsTopSelect: dom.participantsTopSelect,
-      participantsSortSelect: dom.participantsSortSelect,
-      participantsTimeframeSelect: dom.participantsTimeframeSelect,
-      participantsBody: dom.participantsBody,
-    },
-    deps: {
-      participantFilters,
-      getDatasetAnalytics: state.getDatasetAnalytics,
-      renderParticipants: dashboardControllerApi.renderParticipants,
-    },
-  });
-  const {
-    handleParticipantsTopChange,
-    handleParticipantsSortChange,
-    handleParticipantsTimeframeChange,
-    handleParticipantPresetClick,
-  } = participantInteractionsController;
 
   const getExportFilterSummary = createExportFilterSummary({
     normalizeRangeValue: rangeApi.normalizeRangeValue,
@@ -218,10 +198,6 @@ export function createDashboardDataStatusThemeWiring({
     setDataAvailabilityState,
     updateHeroRelayStatus,
     getDataAvailable,
-    handleParticipantsTopChange,
-    handleParticipantsSortChange,
-    handleParticipantsTimeframeChange,
-    handleParticipantPresetClick,
     getExportFilterSummary,
     getParticipantView,
     initThemeControls,
