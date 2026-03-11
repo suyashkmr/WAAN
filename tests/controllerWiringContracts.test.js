@@ -292,4 +292,141 @@ describe("controllerWiring contracts", () => {
       }),
     );
   });
+
+  it("skips hero renderer construction when vue runtime is unavailable", async () => {
+    const appShellIndex = await import("../js/appShell/index.js");
+    const heroStatusRendererModule = await import("../js/vue/heroStatusRenderer.js");
+
+    const createDataStatusControllerSpy = vi.spyOn(appShellIndex, "createDataStatusController");
+    const createHeroStatusRendererSpy = vi.spyOn(heroStatusRendererModule, "createHeroStatusRenderer");
+
+    const dom = {
+      chatSelector: document.createElement("select"),
+      rangeSelect: document.createElement("select"),
+      customControls: document.createElement("div"),
+      customStartInput: document.createElement("input"),
+      customEndInput: document.createElement("input"),
+      customApplyButton: document.createElement("button"),
+      filterWeekdays: document.createElement("input"),
+      filterWeekends: document.createElement("input"),
+      filterWorking: document.createElement("input"),
+      filterOffhours: document.createElement("input"),
+      hourlyBrushStartInput: document.createElement("input"),
+      hourlyBrushEndInput: document.createElement("input"),
+      hourlyBrushStartLabel: document.createElement("span"),
+      hourlyBrushEndLabel: document.createElement("span"),
+      weekdayToggleWeekdays: document.createElement("input"),
+      weekdayToggleWeekends: document.createElement("input"),
+      weekdayToggleWorking: document.createElement("input"),
+      weekdayToggleOffhours: document.createElement("input"),
+      weekdayHourStartInput: document.createElement("input"),
+      weekdayHourEndInput: document.createElement("input"),
+      weekdayHourStartLabel: document.createElement("span"),
+      weekdayHourEndLabel: document.createElement("span"),
+      searchForm: document.createElement("form"),
+      searchKeywordInput: document.createElement("input"),
+      searchParticipantSelect: document.createElement("select"),
+      searchStartInput: document.createElement("input"),
+      searchEndInput: document.createElement("input"),
+      searchActionsEl: document.createElement("div"),
+      resetSearchButton: document.createElement("button"),
+      searchResultsSummary: document.createElement("div"),
+      searchResultsList: document.createElement("div"),
+      searchInsightsEl: document.createElement("div"),
+      searchProgressEl: document.createElement("div"),
+      searchProgressTrack: document.createElement("div"),
+      searchProgressBar: document.createElement("div"),
+      searchProgressLabel: document.createElement("div"),
+      savedViewNameInput: document.createElement("input"),
+      saveViewButton: document.createElement("button"),
+      savedViewList: document.createElement("select"),
+      applySavedViewButton: document.createElement("button"),
+      deleteSavedViewButton: document.createElement("button"),
+      savedViewGallery: document.createElement("div"),
+      compareViewASelect: document.createElement("select"),
+      compareViewBSelect: document.createElement("select"),
+      compareViewsButton: document.createElement("button"),
+      compareSummaryEl: document.createElement("div"),
+      dashboardRoot: document.createElement("main"),
+      documentRef: document,
+      windowRef: window,
+      storageRef: localStorage,
+      vueRuntime: null,
+      heroStatusBadge: document.createElement("span"),
+      heroStatusCopy: document.createElement("span"),
+      heroStatusMetaCopy: document.createElement("span"),
+      heroSyncDot: document.createElement("span"),
+      heroMilestoneSteps: [],
+      participantsTopSelect: document.createElement("select"),
+      participantsSortSelect: document.createElement("select"),
+      participantsTimeframeSelect: document.createElement("select"),
+      participantsBody: document.createElement("tbody"),
+      summaryEl: document.createElement("section"),
+      participantsNote: document.createElement("div"),
+      participantPresetButtons: [],
+      themeToggleInputs: [],
+    };
+
+    const state = {
+      listChatDatasets: vi.fn(() => []),
+      getActiveChatId: vi.fn(() => ""),
+      setActiveChatId: vi.fn(),
+      getDatasetEntries: vi.fn(() => []),
+      getDatasetLabel: vi.fn(() => "Demo"),
+      setCurrentRange: vi.fn(),
+      setCustomRange: vi.fn(),
+      getCustomRange: vi.fn(() => null),
+      getCachedAnalytics: vi.fn(() => null),
+      setCachedAnalytics: vi.fn(),
+      setDatasetAnalytics: vi.fn(),
+      updateStatus: vi.fn(),
+      getDatasetAnalytics: vi.fn(() => ({})),
+      getCurrentRange: vi.fn(() => "all"),
+      addSavedView: vi.fn(),
+      getSavedViews: vi.fn(() => []),
+      updateSavedView: vi.fn(),
+      removeSavedView: vi.fn(),
+      clearSavedViews: vi.fn(),
+      getCompareSelection: vi.fn(() => null),
+      setCompareSelection: vi.fn(),
+      getHourlyState: vi.fn(() => ({ filters: {}, brush: { start: 0, end: 23 } })),
+      updateHourlyState: vi.fn(),
+      getWeekdayState: vi.fn(() => ({ dayFilter: "all", hourRange: [0, 23] })),
+      updateWeekdayState: vi.fn(),
+      subscribeAppShellUiState: vi.fn(() => () => {}),
+    };
+
+    createAppControllerWiring({
+      dom,
+      state,
+      utils: {
+        formatNumber: value => String(value),
+        formatFloat: value => String(value),
+        sanitizeText: value => String(value),
+        formatDisplayDate: value => String(value),
+        getTimestamp: () => Date.now(),
+        toISODate: () => "2026-01-01",
+      },
+      constants: {
+        brandName: "WAAN",
+        searchResultLimit: 25,
+      },
+      callbacks: {
+        syncHeroPillsWithRange: vi.fn(),
+      },
+      dataStatus: {
+        datasetEmptyStateManager: { setAvailability: vi.fn() },
+        setDatasetEmptyMessage: vi.fn(),
+      },
+    });
+
+    expect(createHeroStatusRendererSpy).not.toHaveBeenCalled();
+    expect(createDataStatusControllerSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deps: expect.objectContaining({
+          heroStatusRenderer: null,
+        }),
+      }),
+    );
+  });
 });

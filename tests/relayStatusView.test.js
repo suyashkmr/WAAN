@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { h, render } from "vue";
 import { updateRelayBanner, updateRelayOnboarding } from "../js/relayControls/statusView.js";
+import { createRelayStatusViewRenderer } from "../js/vue/relayStatusViewRenderer.js";
 
 function createBannerElements() {
   const relayBannerEl = document.createElement("section");
@@ -27,6 +29,37 @@ function createOnboardingSteps() {
 }
 
 describe("relay status view mapping", () => {
+  it("requires a Vue runtime with h/render", () => {
+    const renderer = createRelayStatusViewRenderer({
+        elements: createBannerElements(),
+        vueRuntime: null,
+      });
+
+    expect(() => renderer.renderBanner({ message: "x", meta: "y" })).toThrow(
+      "createRelayStatusViewRenderer requires a Vue runtime with h/render",
+    );
+  });
+
+  it("renders banner and onboarding copy through Vue", () => {
+    const { relayBannerMessage, relayBannerMeta } = createBannerElements();
+    const { details } = createOnboardingSteps();
+    const renderer = createRelayStatusViewRenderer({
+      elements: {
+        relayBannerMessage,
+        relayBannerMeta,
+        relayOnboardingStepDetails: details,
+      },
+      vueRuntime: { h, render },
+    });
+
+    renderer.renderBanner({ message: "Relay running", meta: "Sync pending" });
+    renderer.renderOnboardingDetail("start", "Relay is running.", details.start);
+
+    expect(relayBannerMessage.textContent).toBe("Relay running");
+    expect(relayBannerMeta.textContent).toBe("Sync pending");
+    expect(details.start?.textContent).toBe("Relay is running.");
+  });
+
   it("renders offline fallback when status is missing", () => {
     const { relayBannerEl, relayBannerMessage, relayBannerMeta } = createBannerElements();
 

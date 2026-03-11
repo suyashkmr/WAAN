@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { h, render } from "vue";
 import { clearVueBridgeRuntime, installDashboardPanelsVueBridge } from "./vueBridgeTestUtils.js";
 
 vi.mock("../js/analytics/activity.js", () => ({
@@ -7,6 +8,7 @@ vi.mock("../js/analytics/activity.js", () => ({
 }));
 
 import { createActivityPanelsController } from "../js/appShell/dashboardRender/activityPanels.js";
+import { createActivityPanelsMetaRenderer } from "../js/vue/activityPanelsMetaRenderer.js";
 import {
   renderWeeklySection,
 } from "../js/analytics/activity.js";
@@ -82,6 +84,33 @@ describe("activityPanels detailed", () => {
     document.body.innerHTML = "";
     vi.clearAllMocks();
     clearVueBridgeRuntime();
+  });
+
+  it("requires a Vue runtime with h/render", () => {
+    const elements = baseElements();
+    const renderer = createActivityPanelsMetaRenderer({
+      elements,
+      vueRuntime: null,
+    });
+
+    expect(() => renderer.renderHourlyTopHour("Sun 09:00 · 4 msgs")).toThrow(
+      "createActivityPanelsMetaRenderer requires a Vue runtime with h/render",
+    );
+  });
+
+  it("renders hourly metadata through Vue", () => {
+    const elements = baseElements();
+    const renderer = createActivityPanelsMetaRenderer({
+      elements,
+      vueRuntime: { h, render },
+    });
+
+    renderer.renderHourlyTopHour("Sun 09:00 · 4 msgs");
+    renderer.renderHourlyBrushLabels({ start: "05:00", end: "19:00" });
+
+    expect(elements.hourlyTopHourEl.textContent).toBe("Sun 09:00 · 4 msgs");
+    expect(elements.hourlyBrushStartLabel.textContent).toBe("05:00");
+    expect(elements.hourlyBrushEndLabel.textContent).toBe("19:00");
   });
 
   it("renders hourly summary for empty and populated top-hour states", () => {

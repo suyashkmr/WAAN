@@ -3,12 +3,11 @@
 import { clearContainerForVueRenderOnce } from "./renderMountUtils.js";
 
 /**
- * @param {{ elements: Record<string, any>, vueRuntime?: any, globalScope?: any }} params
+ * @param {{ elements: Record<string, any>, vueRuntime: any }} params
  */
 export function createActivityPanelsMetaRenderer({
   elements,
-  vueRuntime = null,
-  globalScope = globalThis,
+  vueRuntime,
 }) {
   const {
     hourlyTopHourEl,
@@ -21,8 +20,11 @@ export function createActivityPanelsMetaRenderer({
   } = elements;
 
   function getVueRuntime() {
-    const candidate = vueRuntime ?? /** @type {any} */ (globalScope)?.Vue ?? null;
-    return candidate && typeof candidate.h === "function" && typeof candidate.render === "function" ? candidate : null;
+    const canRender = Boolean(vueRuntime && typeof vueRuntime.h === "function" && typeof vueRuntime.render === "function");
+    if (!canRender) {
+      throw new Error("createActivityPanelsMetaRenderer requires a Vue runtime with h/render");
+    }
+    return vueRuntime;
   }
 
   /**
@@ -32,10 +34,6 @@ export function createActivityPanelsMetaRenderer({
   function renderText(el, text) {
     if (!el) return;
     const runtime = getVueRuntime();
-    if (!runtime) {
-      el.textContent = text;
-      return;
-    }
     const { h, render } = runtime;
     clearContainerForVueRenderOnce(el);
     render(text ? h("span", null, text) : null, el);

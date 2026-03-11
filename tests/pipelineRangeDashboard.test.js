@@ -236,8 +236,8 @@ describe("dashboard render controller", () => {
     expect(searchPopulateParticipants).toHaveBeenCalled();
     expect(searchRenderResults).toHaveBeenCalled();
     expect(setDataAvailabilityState).toHaveBeenCalledWith(true);
-    expect(mocked.createActivityPanelsMetaRenderer).toHaveBeenCalledTimes(1);
-    expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.activityPanelsMetaRenderer).toBeTruthy();
+    expect(mocked.createActivityPanelsMetaRenderer).not.toHaveBeenCalled();
+    expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.activityPanelsMetaRenderer).toBe(null);
     expect(mocked.createActivityPanelsControllerArgs[0]?.deps?.vueRuntime).toBe(null);
   });
 

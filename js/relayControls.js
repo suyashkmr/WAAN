@@ -79,26 +79,30 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     encodeChatSelectorValue,
   } = helpers;
   const relayPlatform = platform ?? createRelayPlatformAdapter({ electronAPI });
-  const relayStatusRenderer = createRelayStatusRenderer({
-    elements: {
-      relayStatusEl,
-      relayAccountEl,
-      relayQrContainer,
-      relayQrImage,
-      relayHelpText,
-    },
-    vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
-    globalScope,
-  });
-  const relayStatusViewRenderer = createRelayStatusViewRenderer({
-    elements: {
-      relayBannerMessage,
-      relayBannerMeta,
-      relayOnboardingStepDetails: elements.relayOnboardingStepDetails ?? null,
-    },
-    vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
-    globalScope,
-  });
+  const vueRuntime = /** @type {any} */ (globalScope)?.Vue ?? null;
+  const canRenderWithVue = Boolean(vueRuntime && typeof vueRuntime.h === "function" && typeof vueRuntime.render === "function");
+  const relayStatusRenderer = canRenderWithVue
+    ? createRelayStatusRenderer({
+        elements: {
+          relayStatusEl,
+          relayAccountEl,
+          relayQrContainer,
+          relayQrImage,
+          relayHelpText,
+        },
+        vueRuntime,
+      })
+    : null;
+  const relayStatusViewRenderer = canRenderWithVue
+    ? createRelayStatusViewRenderer({
+        elements: {
+          relayBannerMessage,
+          relayBannerMeta,
+          relayOnboardingStepDetails: elements.relayOnboardingStepDetails ?? null,
+        },
+        vueRuntime,
+      })
+    : null;
 
   const relayUiState = createRelayUiState();
   let syncRecoveryActions = () => {};
@@ -165,7 +169,7 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       getRemoteChatCount: () => getRemoteChatList().length,
       fetchJson,
       updateStatus,
-      vueRuntime: /** @type {any} */ (globalScope)?.Vue ?? null,
+      vueRuntime,
       globalScope,
     },
   });

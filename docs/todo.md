@@ -899,10 +899,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
   - [ ] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
     - [ ] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is still tracked under the open Phase 11 `P0`/`P1` tasks and final runtime audit acceptance above.
-    - [ ] `js/vue/heroStatusRenderer.js`
-    - [ ] `js/vue/relayStatusRenderer.js`
-    - [ ] `js/vue/relayStatusViewRenderer.js`
-    - [ ] `js/vue/activityPanelsMetaRenderer.js`
+    - [x] `js/vue/heroStatusRenderer.js`
+    - [x] `js/vue/relayStatusRenderer.js`
+    - [x] `js/vue/relayStatusViewRenderer.js`
+    - [x] `js/vue/activityPanelsMetaRenderer.js`
   - [ ] Re-run `npm run ci:verify`, `npm run test:visual`, and release smoke checks after purge.
   - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts.
   - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access.

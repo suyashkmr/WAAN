@@ -108,10 +108,13 @@ export function createDashboardRenderController({ elements, deps }) {
   });
   const { renderParticipants } = participantsPanelController;
 
-  const activityPanelsMetaRenderer = createActivityPanelsMetaRenderer({
-    elements,
-    vueRuntime,
-  });
+  const canRenderWithVue = Boolean(vueRuntime && typeof vueRuntime.h === "function" && typeof vueRuntime.render === "function");
+  const activityPanelsMetaRenderer = canRenderWithVue
+    ? createActivityPanelsMetaRenderer({
+        elements,
+        vueRuntime,
+      })
+    : null;
 
   const activityPanelsController = createActivityPanelsController({
     elements,

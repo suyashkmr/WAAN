@@ -73,32 +73,18 @@ describe("heroStatusRenderer", () => {
     expect(heroStatusMetaCopy.textContent).toBe("Last updated 12:18");
   });
 
-  it("falls back to direct text writes when Vue runtime is absent", () => {
-    const heroStatusBadge = document.createElement("span");
-    const heroStatusCopy = document.createElement("span");
-    const heroStatusMetaCopy = document.createElement("span");
-    const heroSyncDot = document.createElement("span");
-
-    const renderer = createHeroStatusRenderer({
-      elements: {
-        heroStatusBadge,
-        heroStatusCopy,
-        heroStatusMetaCopy,
-        heroSyncDot,
-        heroMilestoneSteps: [],
-      },
-      vueRuntime: null,
-      globalScope: {},
-    });
-
-    renderer.renderBadge({ text: "Not connected", state: "offline" });
-    renderer.renderCopy("Open Relay Controls.");
-    renderer.renderSyncMeta({ state: "idle", message: "Awaiting relay." });
-
-    expect(heroStatusBadge.textContent).toBe("Not connected");
-    expect(heroStatusBadge.dataset.state).toBe("offline");
-    expect(heroStatusCopy.textContent).toBe("Open Relay Controls.");
-    expect(heroStatusMetaCopy.textContent).toBe("Awaiting relay.");
-    expect(heroSyncDot.dataset.state).toBe("idle");
+  it("requires a Vue runtime with h/render", () => {
+    expect(() =>
+      createHeroStatusRenderer({
+        elements: {
+          heroStatusBadge: document.createElement("span"),
+          heroStatusCopy: document.createElement("span"),
+          heroStatusMetaCopy: document.createElement("span"),
+          heroSyncDot: document.createElement("span"),
+          heroMilestoneSteps: [],
+        },
+        vueRuntime: null,
+      }).renderBadge({ text: "Not connected", state: "offline" }),
+    ).toThrow(/requires a Vue runtime/);
   });
 });

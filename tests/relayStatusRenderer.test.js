@@ -37,38 +37,24 @@ describe("relayStatusRenderer", () => {
     expect(relayQrContainer.classList.contains("hidden")).toBe(false);
   });
 
-  it("falls back to direct DOM writes when Vue is unavailable", () => {
-    const relayStatusEl = document.createElement("div");
-    const relayAccountEl = document.createElement("div");
-    const relayQrContainer = document.createElement("div");
-    const relayQrImage = document.createElement("img");
-    relayQrImage.setAttribute("src", "data:image/png;base64,old");
-    const relayHelpText = document.createElement("div");
-
-    const renderer = createRelayStatusRenderer({
-      elements: {
-        relayStatusEl,
-        relayAccountEl,
-        relayQrContainer,
-        relayQrImage,
-        relayHelpText,
-      },
-      vueRuntime: null,
-      globalScope: {},
-    });
-
-    renderer.renderStatusSurface({
-      statusText: "Relay offline.",
-      accountText: "",
-      helpText: "Press Connect.",
-      qrSrc: null,
-    });
-
-    expect(relayStatusEl.textContent).toBe("Relay offline.");
-    expect(relayAccountEl.textContent).toBe("");
-    expect(relayHelpText.textContent).toBe("Press Connect.");
-    expect(relayQrImage.hasAttribute("src")).toBe(false);
-    expect(relayQrContainer.classList.contains("hidden")).toBe(true);
+  it("requires a Vue runtime with h/render", () => {
+    expect(() =>
+      createRelayStatusRenderer({
+        elements: {
+          relayStatusEl: document.createElement("div"),
+          relayAccountEl: document.createElement("div"),
+          relayQrContainer: document.createElement("div"),
+          relayQrImage: document.createElement("img"),
+          relayHelpText: document.createElement("div"),
+        },
+        vueRuntime: null,
+      }).renderStatusSurface({
+        statusText: "Relay offline.",
+        accountText: "",
+        helpText: "Press Connect.",
+        qrSrc: null,
+      }),
+    ).toThrow(/requires a Vue runtime/);
   });
 
   it("clears pre-rendered relay placeholder text on first Vue mount", () => {

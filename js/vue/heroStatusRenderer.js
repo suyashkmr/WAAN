@@ -7,12 +7,11 @@ import { clearContainerForVueRenderOnce } from "./renderMountUtils.js";
  */
 
 /**
- * @param {{ elements: AnyRecord, vueRuntime?: any, globalScope?: any }} params
+ * @param {{ elements: AnyRecord, vueRuntime: any }} params
  */
 export function createHeroStatusRenderer({
   elements,
-  vueRuntime = null,
-  globalScope = globalThis,
+  vueRuntime,
 }) {
   const {
     dashboardRoot,
@@ -24,9 +23,11 @@ export function createHeroStatusRenderer({
   } = elements;
 
   function getVueRuntime() {
-    const candidate = vueRuntime ?? /** @type {any} */ (globalScope)?.Vue ?? null;
-    const canRender = Boolean(candidate && typeof candidate.h === "function" && typeof candidate.render === "function");
-    return canRender ? candidate : null;
+    const canRender = Boolean(vueRuntime && typeof vueRuntime.h === "function" && typeof vueRuntime.render === "function");
+    if (!canRender) {
+      throw new Error("createHeroStatusRenderer requires a Vue runtime with h/render");
+    }
+    return vueRuntime;
   }
 
   /**
@@ -36,10 +37,6 @@ export function createHeroStatusRenderer({
   function renderText(el, text) {
     if (!el) return;
     const runtime = getVueRuntime();
-    if (!runtime) {
-      el.textContent = text;
-      return;
-    }
     const { h, render } = runtime;
     clearContainerForVueRenderOnce(el);
     render(text ? h("span", null, text) : null, el);

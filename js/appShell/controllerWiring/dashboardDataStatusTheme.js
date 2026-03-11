@@ -44,17 +44,22 @@ export function createDashboardDataStatusThemeWiring({
   dashboardControllerApi,
   viewAdapter = createDashboardViewAdapter(),
 }) {
-  const heroStatusRenderer = createHeroStatusRenderer({
-    elements: {
-      dashboardRoot: dom.dashboardRoot,
-      heroStatusBadge: dom.heroStatusBadge,
-      heroStatusCopy: dom.heroStatusCopy,
-      heroStatusMetaCopy: dom.heroStatusMetaCopy,
-      heroSyncDot: dom.heroSyncDot,
-      heroMilestoneSteps: dom.heroMilestoneSteps,
-    },
-    vueRuntime: dom.vueRuntime ?? null,
-  });
+  const canRenderHeroStatusWithVue = Boolean(
+    dom.vueRuntime && typeof dom.vueRuntime.h === "function" && typeof dom.vueRuntime.render === "function",
+  );
+  const heroStatusRenderer = canRenderHeroStatusWithVue
+    ? createHeroStatusRenderer({
+        elements: {
+          dashboardRoot: dom.dashboardRoot,
+          heroStatusBadge: dom.heroStatusBadge,
+          heroStatusCopy: dom.heroStatusCopy,
+          heroStatusMetaCopy: dom.heroStatusMetaCopy,
+          heroSyncDot: dom.heroSyncDot,
+          heroMilestoneSteps: dom.heroMilestoneSteps,
+        },
+        vueRuntime: dom.vueRuntime,
+      })
+    : null;
   const dataStatusController = createDataStatusController({
     elements: {
       dashboardRoot: dom.dashboardRoot,
