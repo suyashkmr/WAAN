@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   createHighlightsStatsController,
 } from "../js/appShell/dashboardRender/highlightsStats.js";
@@ -15,6 +15,17 @@ describe("dashboardRender modules", () => {
   beforeEach(() => {
     clearVueBridgeRuntime();
   });
+
+  function buildParticipantSelect(optionValues = []) {
+    const select = document.createElement("select");
+    optionValues.forEach(value => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+    return select;
+  }
 
   it("highlightsStats skips DOM fallback rendering when dashboard bridge is unavailable", () => {
     const highlightList = document.createElement("div");
@@ -110,9 +121,12 @@ describe("dashboardRender modules", () => {
 
   it("participant helpers update filters and presets", () => {
     const filters = { topCount: 0, sortMode: "most", timeframe: "all" };
-    const participantsTopSelect = document.createElement("select");
-    const participantsSortSelect = document.createElement("select");
-    const participantsTimeframeSelect = document.createElement("select");
+    const participantsTopSelect = buildParticipantSelect(["0", "5", "10", "25"]);
+    const participantsSortSelect = buildParticipantSelect(["most", "quiet"]);
+    const participantsTimeframeSelect = buildParticipantSelect(["all", "week"]);
+    participantsTopSelect.value = "0";
+    participantsSortSelect.value = "most";
+    participantsTimeframeSelect.value = "all";
 
     applyParticipantTopChange(filters, "25");
     applyParticipantSortChange(filters, "quiet");
@@ -130,6 +144,9 @@ describe("dashboardRender modules", () => {
     expect(filters.topCount).toBe(5);
     expect(filters.sortMode).toBe("most");
     expect(filters.timeframe).toBe("week");
+    expect(participantsTopSelect.value).toBe("5");
+    expect(participantsSortSelect.value).toBe("most");
+    expect(participantsTimeframeSelect.value).toBe("week");
 
     applyParticipantPreset(filters, "quiet", {
       participantsTopSelect,
@@ -139,6 +156,36 @@ describe("dashboardRender modules", () => {
     expect(filters.topCount).toBe(5);
     expect(filters.sortMode).toBe("quiet");
     expect(filters.timeframe).toBe("all");
+    expect(participantsTopSelect.value).toBe("5");
+    expect(participantsSortSelect.value).toBe("quiet");
+    expect(participantsTimeframeSelect.value).toBe("all");
+  });
+
+  it("participant presets prefer bridge sync when available", () => {
+    const filters = { topCount: 0, sortMode: "most", timeframe: "all" };
+    const participantsTopSelect = buildParticipantSelect(["0", "5", "10", "25"]);
+    const participantsSortSelect = buildParticipantSelect(["most", "quiet"]);
+    const participantsTimeframeSelect = buildParticipantSelect(["all", "week"]);
+    participantsTopSelect.value = "0";
+    participantsSortSelect.value = "most";
+    participantsTimeframeSelect.value = "all";
+    const syncParticipantControls = vi.fn(() => true);
+
+    applyParticipantPreset(filters, "top-week", {
+      participantsTopSelect,
+      participantsSortSelect,
+      participantsTimeframeSelect,
+      syncParticipantControls,
+    });
+
+    expect(syncParticipantControls).toHaveBeenCalledWith({
+      topCount: 5,
+      sortMode: "most",
+      timeframe: "week",
+    });
+    expect(participantsTopSelect.value).toBe("0");
+    expect(participantsSortSelect.value).toBe("most");
+    expect(participantsTimeframeSelect.value).toBe("all");
   });
 
   it("toggleParticipantRow expands and collapses detail rows", () => {

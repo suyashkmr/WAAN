@@ -90,8 +90,9 @@ export function registerDashboardPanelActionHandlers({
         participantsTopSelect: null,
         participantsSortSelect: null,
         participantsTimeframeSelect: null,
+        syncParticipantControls: nextState =>
+          Boolean(dashboardPanelsBridge?.syncParticipantControls?.(nextState)),
       });
-      dashboardPanelsBridge?.syncParticipantControls?.(participantFilters);
       rerenderParticipantsIfAvailable();
     },
     "hourly:set-day-filter": (

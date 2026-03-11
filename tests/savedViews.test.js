@@ -4,12 +4,22 @@ import { createSavedViewsController } from "../js/savedViews.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
 function buildElements() {
+  const buildSelect = values => {
+    const select = document.createElement("select");
+    values.forEach(value => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+    return select;
+  };
   const nameInput = document.createElement("input");
   nameInput.id = "saved-view-name";
   nameInput.placeholder = "Name this view";
   const saveButton = document.createElement("button");
   saveButton.id = "save-view";
-  const listSelect = document.createElement("select");
+  const listSelect = buildSelect([""]);
   listSelect.id = "saved-view-list";
   const applyButton = document.createElement("button");
   applyButton.id = "apply-saved-view";
@@ -17,15 +27,15 @@ function buildElements() {
   deleteButton.id = "delete-saved-view";
   const gallery = document.createElement("div");
   gallery.id = "saved-view-gallery";
-  const compareSelectA = document.createElement("select");
+  const compareSelectA = buildSelect([""]);
   compareSelectA.id = "compare-view-a";
-  const compareSelectB = document.createElement("select");
+  const compareSelectB = buildSelect([""]);
   compareSelectB.id = "compare-view-b";
   const compareButton = document.createElement("button");
   compareButton.id = "compare-views";
   const compareSummaryEl = document.createElement("div");
   compareSummaryEl.id = "compare-summary";
-  const rangeSelect = document.createElement("select");
+  const rangeSelect = buildSelect(["all", "30", "90", "180", "365", "custom"]);
   const customStartInput = document.createElement("input");
   const customEndInput = document.createElement("input");
 
@@ -451,6 +461,9 @@ describe("savedViews controller", () => {
 
     controller.init();
     controller.setDataAvailability(true);
+    elements.rangeSelect.value = "all";
+    elements.customStartInput.value = "stale-start";
+    elements.customEndInput.value = "stale-end";
 
     elements.nameInput.value = "Bridge Applied";
     elements.saveButton.click();
@@ -470,6 +483,9 @@ describe("savedViews controller", () => {
       customStart: "2025-01-02",
       customEnd: "2025-01-05",
     });
+    expect(elements.rangeSelect.value).toBe("all");
+    expect(elements.customStartInput.value).toBe("stale-start");
+    expect(elements.customEndInput.value).toBe("stale-end");
   });
 
   it("does not attach legacy gallery interaction fallback when Vue gallery renderer is unavailable", async () => {

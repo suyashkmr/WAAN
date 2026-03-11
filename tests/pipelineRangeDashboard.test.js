@@ -363,6 +363,7 @@ describe("dashboard render controller", () => {
         participantsTopSelect: null,
         participantsSortSelect: null,
         participantsTimeframeSelect: null,
+        syncParticipantControls: expect.any(Function),
       },
     );
     expect(mocked.renderParticipants).toHaveBeenCalledTimes(4);

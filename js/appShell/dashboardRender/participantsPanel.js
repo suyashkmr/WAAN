@@ -75,29 +75,57 @@ export function applyParticipantTimeframeChange(participantFilters, value) {
 /**
  * @param {AnyRecord} participantFilters
  * @param {string | undefined} preset
- * @param {{ participantsTopSelect: HTMLSelectElement | null | undefined, participantsSortSelect: HTMLSelectElement | null | undefined, participantsTimeframeSelect: HTMLSelectElement | null | undefined }} controls
+ * @param {{
+ *   participantsTopSelect: HTMLSelectElement | null | undefined,
+ *   participantsSortSelect: HTMLSelectElement | null | undefined,
+ *   participantsTimeframeSelect: HTMLSelectElement | null | undefined,
+ *   syncParticipantControls?: ((nextState: Record<string, any>) => boolean) | null | undefined,
+ * }} controls
  */
 export function applyParticipantPreset(participantFilters, preset, controls) {
-  const { participantsTopSelect, participantsSortSelect, participantsTimeframeSelect } = controls;
+  const {
+    participantsTopSelect,
+    participantsSortSelect,
+    participantsTimeframeSelect,
+    syncParticipantControls = null,
+  } = controls;
   if (!preset) return;
 
+  /** @param {Record<string, any>} nextState */
+  const syncControls = nextState =>
+    typeof syncParticipantControls === "function" && Boolean(syncParticipantControls(nextState));
+
   if (preset === "top-week") {
-    if (participantsTopSelect) participantsTopSelect.value = "5";
-    if (participantsSortSelect) participantsSortSelect.value = "most";
-    if (participantsTimeframeSelect) participantsTimeframeSelect.value = "week";
     participantFilters.topCount = 5;
     participantFilters.sortMode = "most";
     participantFilters.timeframe = "week";
+    const bridged = syncControls({
+      topCount: participantFilters.topCount,
+      sortMode: participantFilters.sortMode,
+      timeframe: participantFilters.timeframe,
+    });
+    if (!bridged) {
+      if (participantsTopSelect) participantsTopSelect.value = "5";
+      if (participantsSortSelect) participantsSortSelect.value = "most";
+      if (participantsTimeframeSelect) participantsTimeframeSelect.value = "week";
+    }
     return;
   }
 
   if (preset === "quiet") {
-    if (participantsTopSelect) participantsTopSelect.value = "5";
-    if (participantsSortSelect) participantsSortSelect.value = "quiet";
-    if (participantsTimeframeSelect) participantsTimeframeSelect.value = "all";
     participantFilters.topCount = 5;
     participantFilters.sortMode = "quiet";
     participantFilters.timeframe = "all";
+    const bridged = syncControls({
+      topCount: participantFilters.topCount,
+      sortMode: participantFilters.sortMode,
+      timeframe: participantFilters.timeframe,
+    });
+    if (!bridged) {
+      if (participantsTopSelect) participantsTopSelect.value = "5";
+      if (participantsSortSelect) participantsSortSelect.value = "quiet";
+      if (participantsTimeframeSelect) participantsTimeframeSelect.value = "all";
+    }
   }
 }
 

@@ -185,10 +185,10 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     const isCustom = typeof rangeValue === "object";
     setCurrentRange(isCustom ? "custom" : rangeValue);
     setCustomRange(isCustom ? rangeValue : null);
-    syncSavedViewPageControls(syncPageControls, rangeValue);
-    if (rangeSelect) rangeSelect.value = isCustom ? "custom" : String(rangeValue);
+    const pageControlsHandled = syncSavedViewPageControls(syncPageControls, rangeValue);
+    if (!pageControlsHandled && rangeSelect) rangeSelect.value = isCustom ? "custom" : String(rangeValue);
     showCustomControls(isCustom);
-    if (isCustom) {
+    if (isCustom && !pageControlsHandled) {
       if (customStartInput) customStartInput.value = rangeValue.start ?? "";
       if (customEndInput) customEndInput.value = rangeValue.end ?? "";
     }
