@@ -356,23 +356,23 @@ describe("primevue render primitives", () => {
     expect(vnode.children[1].props.inputId).toBe("custom-start--primevue");
   });
 
-  it("falls back to native select and date inputs when PrimeVue controls are unavailable", () => {
+  it("requires PrimeVue select/date components at runtime", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
-    const selectNode = renderSelectInput(h, {
-      id: "native-select",
-      value: "all",
-      options: [{ value: "all", label: "All time" }],
-    }, { PrimeVue: {} });
-    const dateNode = renderDateInput(h, {
-      id: "native-date",
-      value: "2026-03-10",
-    }, { PrimeVue: {} });
 
-    expect(selectNode.type).toBe("select");
-    expect(selectNode.props.id).toBe("native-select");
-    expect(dateNode.type).toBe("input");
-    expect(dateNode.props.type).toBe("date");
-    expect(dateNode.props.id).toBe("native-date");
+    expect(() =>
+      renderSelectInput(h, {
+        id: "native-select",
+        value: "all",
+        options: [{ value: "all", label: "All time" }],
+      }, { PrimeVue: {} }),
+    ).toThrow(/PrimeVue Select\/Dropdown/);
+
+    expect(() =>
+      renderDateInput(h, {
+        id: "native-date",
+        value: "2026-03-10",
+      }, { PrimeVue: {} }),
+    ).toThrow(/PrimeVue DatePicker\/Calendar/);
   });
 
   it("renders PrimeVue Dialog container when runtime component is available", () => {

@@ -137,62 +137,51 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
 
   const PrimeSelect = resolvePrimeVueComponent("Select", globalScope) ??
     resolvePrimeVueComponent("Dropdown", globalScope);
-  if (PrimeSelect) {
-    const { componentAttrs, wrapperAttrs } = splitComponentAttrs(attrs);
-    const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
-    return h(
-      "div",
-      {
-        class: "waan-prime-select-host",
-        ...wrapperAttrs,
-      },
-      [
-        preserveNativeElement
-          ? h(
-            "select",
-            {
-              id,
-              class: "waan-native-bridge-control",
-              disabled: Boolean(disabled),
-              value: normalizePrimitiveValue(value),
-              "aria-hidden": "true",
-              tabindex: -1,
-            },
-            normalizedOptions.map(option => h("option", { value: option.value }, option.label)),
-          )
-          : null,
-        h(PrimeSelect, {
-          inputId: resolvedVisibleInputId,
-          modelValue: normalizePrimitiveValue(value),
-          options: normalizedOptions,
-          optionLabel: "label",
-          optionValue: "value",
-          disabled: Boolean(disabled),
-          appendTo: resolveOverlayTarget(globalScope),
-          panelClass: "waan-prime-control-overlay waan-prime-select-overlay",
-          scrollHeight: "18rem",
-          unstyled: true,
-          "data-ui-runtime": "primevue",
-          "onUpdate:modelValue": nextValue => {
-            if (typeof onChange !== "function") return;
-            onChange({ target: { value: normalizePrimitiveValue(nextValue) } });
-          },
-          ...componentAttrs,
-        }),
-      ].filter(Boolean),
-    );
+  if (!PrimeSelect) {
+    throw new Error("renderSelectInput requires PrimeVue Select/Dropdown at runtime");
   }
-
+  const { componentAttrs, wrapperAttrs } = splitComponentAttrs(attrs);
+  const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
   return h(
-    "select",
+    "div",
     {
-      id,
-      disabled: Boolean(disabled),
-      value: normalizePrimitiveValue(value),
-      ...(onChange ? { onChange } : {}),
-      ...attrs,
+      class: "waan-prime-select-host",
+      ...wrapperAttrs,
     },
-    normalizedOptions.map(option => h("option", { value: option.value }, option.label)),
+    [
+      preserveNativeElement
+        ? h(
+          "select",
+          {
+            id,
+            class: "waan-native-bridge-control",
+            disabled: Boolean(disabled),
+            value: normalizePrimitiveValue(value),
+            "aria-hidden": "true",
+            tabindex: -1,
+          },
+          normalizedOptions.map(option => h("option", { value: option.value }, option.label)),
+        )
+        : null,
+      h(PrimeSelect, {
+        inputId: resolvedVisibleInputId,
+        modelValue: normalizePrimitiveValue(value),
+        options: normalizedOptions,
+        optionLabel: "label",
+        optionValue: "value",
+        disabled: Boolean(disabled),
+        appendTo: resolveOverlayTarget(globalScope),
+        panelClass: "waan-prime-control-overlay waan-prime-select-overlay",
+        scrollHeight: "18rem",
+        unstyled: true,
+        "data-ui-runtime": "primevue",
+        "onUpdate:modelValue": nextValue => {
+          if (typeof onChange !== "function") return;
+          onChange({ target: { value: normalizePrimitiveValue(nextValue) } });
+        },
+        ...componentAttrs,
+      }),
+    ].filter(Boolean),
   );
 }
 
@@ -209,59 +198,51 @@ export function renderDateInput(h, options, globalScope = globalThis) {
   const PrimeDatePicker = resolvePrimeVueComponent("DatePicker", globalScope);
   const PrimeCalendar = PrimeDatePicker ? null : resolvePrimeVueComponent("Calendar", globalScope);
   const PrimeDateComponent = PrimeDatePicker ?? PrimeCalendar;
-  if (PrimeDateComponent) {
-    const { min, max, ...restAttrs } = attrs;
-    const usesCalendarFallback = Boolean(PrimeCalendar);
-    const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
-    return h(
-      "div",
-      { class: "waan-prime-date-host" },
-      [
-        preserveNativeElement
-          ? h("input", {
-            type: "date",
-            id,
-            class: "waan-native-bridge-control",
-            value: normalizePrimitiveValue(value),
-            disabled: Boolean(disabled),
-            min: normalizePrimitiveValue(min),
-            max: normalizePrimitiveValue(max),
-            "aria-hidden": "true",
-            tabindex: -1,
-          })
-          : null,
-        h(PrimeDateComponent, {
-          inputId: resolvedVisibleInputId,
-          modelValue: normalizePrimeDateModelValue(value, usesCalendarFallback),
-          ...(usesCalendarFallback ? {} : { updateModelType: "string" }),
-          dateFormat: "yy-mm-dd",
-          appendTo: resolveOverlayTarget(globalScope),
-          manualInput: true,
-          showIcon: false,
-          disabled: Boolean(disabled),
-          minDate: toBoundedDate(min),
-          maxDate: toBoundedDate(max),
-          panelClass: "waan-prime-control-overlay waan-prime-datepicker-overlay",
-          unstyled: true,
-          "data-ui-runtime": "primevue",
-          "onUpdate:modelValue": nextValue => {
-            if (typeof onChange !== "function") return;
-            onChange({ target: { value: formatDateAsIsoLocal(nextValue) } });
-          },
-          ...restAttrs,
-        }),
-      ].filter(Boolean),
-    );
+  if (!PrimeDateComponent) {
+    throw new Error("renderDateInput requires PrimeVue DatePicker/Calendar at runtime");
   }
-
-  return h("input", {
-    type: "date",
-    id,
-    value: normalizePrimitiveValue(value),
-    disabled: Boolean(disabled),
-    ...(onChange ? { onChange } : {}),
-    ...attrs,
-  });
+  const { min, max, ...restAttrs } = attrs;
+  const usesCalendarFallback = Boolean(PrimeCalendar);
+  const resolvedVisibleInputId = visibleInputId || resolvePrimeVisibleInputId(id, preserveNativeElement);
+  return h(
+    "div",
+    { class: "waan-prime-date-host" },
+    [
+      preserveNativeElement
+        ? h("input", {
+          type: "date",
+          id,
+          class: "waan-native-bridge-control",
+          value: normalizePrimitiveValue(value),
+          disabled: Boolean(disabled),
+          min: normalizePrimitiveValue(min),
+          max: normalizePrimitiveValue(max),
+          "aria-hidden": "true",
+          tabindex: -1,
+        })
+        : null,
+      h(PrimeDateComponent, {
+        inputId: resolvedVisibleInputId,
+        modelValue: normalizePrimeDateModelValue(value, usesCalendarFallback),
+        ...(usesCalendarFallback ? {} : { updateModelType: "string" }),
+        dateFormat: "yy-mm-dd",
+        appendTo: resolveOverlayTarget(globalScope),
+        manualInput: true,
+        showIcon: false,
+        disabled: Boolean(disabled),
+        minDate: toBoundedDate(min),
+        maxDate: toBoundedDate(max),
+        panelClass: "waan-prime-control-overlay waan-prime-datepicker-overlay",
+        unstyled: true,
+        "data-ui-runtime": "primevue",
+        "onUpdate:modelValue": nextValue => {
+          if (typeof onChange !== "function") return;
+          onChange({ target: { value: formatDateAsIsoLocal(nextValue) } });
+        },
+        ...restAttrs,
+      }),
+    ].filter(Boolean),
+  );
 }
 
 export function renderDialogContainer(h, options = {}, globalScope = globalThis) {
