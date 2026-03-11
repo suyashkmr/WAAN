@@ -891,19 +891,36 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Restore PrimeVue `DatePicker/Calendar` as the production default where runtime-native `input[type="date"]` is still used.
       - [x] Shared render primitives default back to PrimeVue date controls with existing `YYYY-MM-DD` controller contract preserved (`js/vue/primevueRenderPrimitives.js`).
       - [x] Page custom-range controls (`#custom-start`, `#custom-end`) now use PrimeVue-visible bridged date fields while preserving the native date inputs required by existing DOM/event contracts (`js/vue/shellPageControlsIsland.js`, `js/vue/primeDateBridge.js`).
-    - [ ] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
+    - [x] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
+      - [x] Verified on 2026-03-11 via `npm run test:visual:update -- tests/visual/dashboard.visual.spec.js`, `npm run test:visual`, and manual overlay fixes in `styles.components.css`; PrimeVue select/date overlays now render with opaque backgrounds, bounded scroll containers, and body-level portal targets.
     - [ ] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
       - [x] Page-control seed rendering no longer relies on `forceNative`; `js/vue/shellPageControlsView.js` now renders explicit native controls directly, so the remaining primitive fallback debt is isolated to the shared no-PrimeVue branch rather than an active runtime caller override.
   - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
+    - [ ] Remaining explicit audit focus:
+      - [ ] hidden native bridge preservation in `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`
+      - [ ] empty-container bootstrap seeding in `js/vue/shellPageControlsView.js`
+      - [ ] any non-test runtime callers still depending on direct native form refs as the primary source of truth
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
+    - [ ] Current known compatibility helpers still referenced and therefore not yet purgeable:
+      - [ ] `js/vue/shellPageControlsView.js`
+      - [ ] `js/vue/primeSelectBridge.js`
+      - [ ] `js/vue/primeDateBridge.js`
+      - [ ] `js/ui/primitivesRuntime.js`
+      - [ ] `js/ui/primitivesVueComposables.js`
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
+    - [ ] Current blocker: page controls still preserve hidden native form elements and an empty-container native seed path before PrimeVue upgrade; this keeps the runtime safe, but it is not yet the final no-temporary-default end-state.
   - [ ] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
     - [ ] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is still tracked under the open Phase 11 `P0`/`P1` tasks and final runtime audit acceptance above.
     - [x] `js/vue/heroStatusRenderer.js`
     - [x] `js/vue/relayStatusRenderer.js`
     - [x] `js/vue/relayStatusViewRenderer.js`
     - [x] `js/vue/activityPanelsMetaRenderer.js`
-  - [ ] Re-run `npm run ci:verify`, `npm run test:visual`, and release smoke checks after purge.
+  - [x] Re-run `npm run ci:verify`, `npm run test:visual`, and release smoke checks after purge.
+    - [x] Verified on 2026-03-11:
+      - [x] `npm run ci:verify`
+      - [x] `npm run test:visual`
+      - [x] `npm run test:accessibility-smoke`
+      - [x] `npm run check:perf-budgets`
   - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts.
   - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access.
     - [ ] PrimeVue is the production default for core buttons, radios, dialogs, selects, and date controls.

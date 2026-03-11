@@ -85,11 +85,15 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await page.addStyleTag({
       content: `*,
 *::before,
-*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }`,
+*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
+#data-status,
+#toast-container { display: none !important; opacity: 0 !important; pointer-events: none !important; }`,
     });
     await page.evaluate(() => {
       const status = document.getElementById("data-status");
       if (status) status.classList.remove("is-active", "is-exiting");
+      const toastContainer = document.getElementById("toast-container");
+      if (toastContainer) toastContainer.replaceChildren();
 
       const heroBadge = document.getElementById("hero-status-badge");
       const heroCopy = document.getElementById("hero-status-copy");
