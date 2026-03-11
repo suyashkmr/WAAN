@@ -23,9 +23,19 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
     name: "ShellPageControlsRoot",
     render() {
       const chatOptions = Array.isArray(state.chatOptions) ? state.chatOptions : [];
-      const rangeOptions = Array.isArray(state.rangeOptions) ? state.rangeOptions : [];
+      const rangeOptions = Array.isArray(state.rangeOptions) && state.rangeOptions.length > 0
+        ? state.rangeOptions
+        : [
+          { value: "all", label: "All time" },
+          { value: "30", label: "Last 30 days" },
+          { value: "90", label: "Last 90 days" },
+          { value: "180", label: "Last 180 days" },
+          { value: "365", label: "Last 365 days" },
+          { value: "custom", label: "Custom range" },
+        ];
       const customVisible = Boolean(state.customVisible);
       const customDisabled = Boolean(state.customDisabled);
+
       return [
         h("label", { class: "control dataset-control", for: "chat-selector" }, [
           h("span", "Loaded chats"),
@@ -33,8 +43,8 @@ export function createShellPageControlsRoot(h, state, onAction, globalScope = gl
             id: "chat-selector",
             forceNative: true,
             value: state.chatValue || "",
-            options: chatOptions,
-            disabled: Boolean(state.chatDisabled),
+            options: chatOptions.length > 0 ? chatOptions : [{ value: "", label: "No chats loaded yet" }],
+            disabled: Boolean(state.chatDisabled ?? chatOptions.length === 0),
             onChange: event => {
               state.chatValue = event?.target?.value || "";
               onAction("page.chat.select", { value: state.chatValue });

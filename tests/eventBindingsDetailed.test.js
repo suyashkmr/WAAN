@@ -471,4 +471,46 @@ describe("event bindings detailed", () => {
 
     expect(() => initEventHandlers()).not.toThrow();
   });
+
+  it("ignores bridge-mirrored native page-control change events after fallback listeners were bound", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const chatSelector = document.createElement("select");
+    chatSelector.innerHTML = '<option value="">None</option><option value="remote:chat-1">Chat 1</option>';
+    const rangeSelect = document.createElement("select");
+    rangeSelect.innerHTML = '<option value="all">All time</option><option value="180">Last 180 days</option>';
+    const customApplyButton = document.createElement("button");
+    const customStartInput = document.createElement("input");
+    const customEndInput = document.createElement("input");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        chatSelector,
+        rangeSelect,
+        customApplyButton,
+        customStartInput,
+        customEndInput,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+
+    chatSelector.dataset.primevueMirrorDispatch = "true";
+    chatSelector.value = "remote:chat-1";
+    chatSelector.dispatchEvent(new Event("change", { bubbles: true }));
+    delete chatSelector.dataset.primevueMirrorDispatch;
+
+    rangeSelect.dataset.primevueMirrorDispatch = "true";
+    rangeSelect.value = "180";
+    rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    delete rangeSelect.dataset.primevueMirrorDispatch;
+
+    expect(handlers.handleChatSelectionChange).not.toHaveBeenCalled();
+    expect(handlers.handleRangeChange).not.toHaveBeenCalled();
+    expect(chatSelector.dataset.eventBindingsPageControlBound).toBe("true");
+    expect(rangeSelect.dataset.eventBindingsPageControlBound).toBe("true");
+    expect(customApplyButton.dataset.eventBindingsPageControlBound).toBe("true");
+  });
 });

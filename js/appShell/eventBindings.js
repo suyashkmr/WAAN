@@ -69,6 +69,29 @@ export function createEventBindingsController({
   }
 
   /**
+   * @param {{ target?: { dataset?: Record<string, string | undefined> } } | null | undefined} event
+   */
+  function isBridgeMirroredEvent(event) {
+    return event?.target?.dataset?.primevueMirrorDispatch === "true";
+  }
+
+  /**
+   * @param {any} event
+   */
+  function handleNativeChatSelectionChange(event) {
+    if (isBridgeMirroredEvent(event)) return;
+    return handleChatSelectionChange(event);
+  }
+
+  /**
+   * @param {any} event
+   */
+  function handleNativeRangeChange(event) {
+    if (isBridgeMirroredEvent(event)) return;
+    return handleRangeChange(event);
+  }
+
+  /**
    * @param {KeyboardEvent} event
    */
   function handleChatSelectorKeydown(event) {
@@ -138,16 +161,19 @@ export function createEventBindingsController({
     const vueOwnsPageControlInteractions = Boolean(shellBridge?.ownsPageControlInteractions);
     if (!vueOwnsPageControlInteractions) {
       if (chatSelector) {
-        chatSelector.addEventListener("change", handleChatSelectionChange);
+        chatSelector.addEventListener("change", handleNativeChatSelectionChange);
         chatSelector.addEventListener("dblclick", handleForcedChatSelection);
         chatSelector.addEventListener("keydown", handleChatSelectorKeydown);
+        chatSelector.dataset.eventBindingsPageControlBound = "true";
       }
       if (rangeSelect) {
-        rangeSelect.addEventListener("change", handleRangeChange);
+        rangeSelect.addEventListener("change", handleNativeRangeChange);
+        rangeSelect.dataset.eventBindingsPageControlBound = "true";
       }
 
       if (customApplyButton) {
         customApplyButton.addEventListener("click", handleCustomApplyClick);
+        customApplyButton.dataset.eventBindingsPageControlBound = "true";
       }
     }
 

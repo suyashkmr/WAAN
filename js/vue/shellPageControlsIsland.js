@@ -1,14 +1,19 @@
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./bridgeRegistry.js";
-import { configurePrimeVueApp } from "./primevueApp.js";
+import { syncPrimeDateBridge, syncPrimeDateBridgeValue } from "./primeDateBridge.js";
+import { syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./primeSelectBridge.js";
 import { createShellPageControlsRoot } from "./shellPageControlsView.js";
+import { configurePrimeVueApp } from "./primevueApp.js";
+import { ensureSelectOptions, extractSelectOptions } from "./shellPageControlsUtils.js";
 
 const PAGE_CONTROLS_BRIDGE_KEY = "__waanPageControlsBridge";
 
-function dispatchLegacyEvent(element, type) {
-  if (!element) return;
-  const view = element.ownerDocument?.defaultView ?? globalThis;
-  const EventCtor = view?.Event ?? Event;
-  element.dispatchEvent(new EventCtor(type, { bubbles: true }));
+function dispatchShellAction(actionId, payload = null, globalScope = globalThis) {
+  const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
+  if (shellBridge?.dispatchShellAction) {
+    shellBridge.dispatchShellAction(actionId, payload);
+    return true;
+  }
+  return Boolean(shellBridge?.dispatchRelayAction?.(actionId, payload));
 }
 
 function syncLegacyPageControlRefs(legacyRefs, nextState = {}) {
@@ -20,11 +25,17 @@ function syncLegacyPageControlRefs(legacyRefs, nextState = {}) {
     customEndInput,
     customApplyButton,
   } = legacyRefs;
+  if (Array.isArray(nextState.chatOptions) && chatSelector) {
+    ensureSelectOptions(chatSelector, nextState.chatOptions);
+  }
   if (Object.prototype.hasOwnProperty.call(nextState, "chatValue") && chatSelector) {
     chatSelector.value = nextState.chatValue ?? "";
   }
   if (Object.prototype.hasOwnProperty.call(nextState, "chatDisabled") && chatSelector) {
     chatSelector.disabled = Boolean(nextState.chatDisabled);
+  }
+  if (Array.isArray(nextState.rangeOptions) && rangeSelect) {
+    ensureSelectOptions(rangeSelect, nextState.rangeOptions);
   }
   if (Object.prototype.hasOwnProperty.call(nextState, "rangeValue") && rangeSelect) {
     rangeSelect.value = nextState.rangeValue ?? "all";
@@ -55,18 +66,155 @@ function syncLegacyPageControlRefs(legacyRefs, nextState = {}) {
   }
 }
 
-export function mountPageControlsPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
-  const controlsEl = globalScope?.document?.querySelector?.(".page-controls .primary-controls");
-  if (!VueRuntime || !controlsEl) return null;
-  if (controlsEl.dataset.vuePrimitiveMounted === "true") {
-    return controlsEl[PAGE_CONTROLS_BRIDGE_KEY] ?? {
-      ownsPageControlInteractions: true,
-      syncPageControls: () => false,
-    };
+function bindPageControlListeners(legacyRefs, globalScope) {
+  const {
+    customApplyButton,
+  } = legacyRefs;
+
+  if (customApplyButton && customApplyButton.dataset.vuePageControlBound !== "true") {
+    if (customApplyButton.dataset.eventBindingsPageControlBound !== "true") {
+      customApplyButton.addEventListener("click", () => {
+        dispatchShellAction(
+          "page.range.apply-custom",
+          {
+            start: legacyRefs.customStartInput?.value || "",
+            end: legacyRefs.customEndInput?.value || "",
+          },
+          globalScope,
+        );
+      });
+      customApplyButton.dataset.vuePageControlBound = "true";
+    }
   }
-  const { createApp, h, reactive } = VueRuntime;
-  const legacyRefs = {
+}
+
+function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
+  const {
+    chatSelector,
+    rangeSelect,
+    customStartInput,
+    customEndInput,
+  } = legacyRefs;
+
+  let ownsInteractions = true;
+  let foundBridgeableControl = false;
+
+  if (chatSelector) {
+    foundBridgeableControl = true;
+    const bridged = syncPrimeSelectBridge({
+      selectEl: chatSelector,
+      options: extractSelectOptions(chatSelector),
+      value: chatSelector.value,
+      disabled: chatSelector.disabled,
+      preserveNativeId: true,
+      visibleInputId: "chat-selector--primevue",
+      attrs: {
+        onDblclick: () => {
+          if (!chatSelector.value) return;
+          dispatchShellAction("page.chat.force-select", { value: chatSelector.value }, globalScope);
+        },
+        onKeydown: event => {
+          if (event?.key !== "Enter" || !chatSelector.value) return;
+          event.preventDefault?.();
+          dispatchShellAction("page.chat.force-select", { value: chatSelector.value }, globalScope);
+        },
+      },
+      onValueChange: value => {
+        dispatchShellAction("page.chat.select", { value }, globalScope);
+      },
+      globalScope,
+    });
+    if (bridged) {
+      syncPrimeSelectBridgeValue({
+        selectEl: chatSelector,
+        value: chatSelector.value,
+        disabled: chatSelector.disabled,
+      });
+    } else {
+      ownsInteractions = false;
+    }
+  }
+
+  if (rangeSelect) {
+    foundBridgeableControl = true;
+    const bridged = syncPrimeSelectBridge({
+      selectEl: rangeSelect,
+      options: extractSelectOptions(rangeSelect),
+      value: rangeSelect.value,
+      disabled: rangeSelect.disabled,
+      preserveNativeId: true,
+      visibleInputId: "global-range--primevue",
+      onValueChange: value => {
+        dispatchShellAction("page.range.select", { value: value || "all" }, globalScope);
+      },
+      globalScope,
+    });
+    if (bridged) {
+      syncPrimeSelectBridgeValue({
+        selectEl: rangeSelect,
+        value: rangeSelect.value,
+        disabled: rangeSelect.disabled,
+      });
+    } else {
+      ownsInteractions = false;
+    }
+  }
+
+  if (customStartInput) {
+    foundBridgeableControl = true;
+    const bridged = syncPrimeDateBridge({
+      inputEl: customStartInput,
+      value: customStartInput.value,
+      disabled: customStartInput.disabled,
+      min: customStartInput.min,
+      max: customStartInput.max,
+      preserveNativeId: true,
+      visibleInputId: "custom-start--primevue",
+      globalScope,
+    });
+    if (bridged) {
+      syncPrimeDateBridgeValue({
+        inputEl: customStartInput,
+        value: customStartInput.value,
+        disabled: customStartInput.disabled,
+        min: customStartInput.min,
+        max: customStartInput.max,
+      });
+    } else {
+      ownsInteractions = false;
+    }
+  }
+
+  if (customEndInput) {
+    foundBridgeableControl = true;
+    const bridged = syncPrimeDateBridge({
+      inputEl: customEndInput,
+      value: customEndInput.value,
+      disabled: customEndInput.disabled,
+      min: customEndInput.min,
+      max: customEndInput.max,
+      preserveNativeId: true,
+      visibleInputId: "custom-end--primevue",
+      globalScope,
+    });
+    if (bridged) {
+      syncPrimeDateBridgeValue({
+        inputEl: customEndInput,
+        value: customEndInput.value,
+        disabled: customEndInput.disabled,
+        min: customStartInput?.min ?? customEndInput.min,
+        max: customEndInput.max,
+      });
+    } else {
+      ownsInteractions = false;
+    }
+  }
+
+  return foundBridgeableControl && ownsInteractions;
+}
+
+function resolveLegacyPageControlRefs(controlsEl) {
+  return {
     chatSelector: controlsEl.querySelector?.("#chat-selector") ?? null,
     rangeSelect: controlsEl.querySelector?.("#global-range") ?? null,
     customControls: controlsEl.querySelector?.("#custom-range-controls") ?? null,
@@ -74,68 +222,107 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
     customEndInput: controlsEl.querySelector?.("#custom-end") ?? null,
     customApplyButton: controlsEl.querySelector?.("#apply-custom-range") ?? null,
   };
-  const pageControlsState = reactive({
-    chatOptions: [{ value: "", label: "No chats loaded yet" }],
-    chatValue: "",
-    chatDisabled: true,
-    rangeOptions: [
-      { value: "all", label: "All time" },
-      { value: "30", label: "Last 30 days" },
-      { value: "90", label: "Last 90 days" },
-      { value: "180", label: "Last 180 days" },
-      { value: "365", label: "Last 365 days" },
-      { value: "custom", label: "Custom range" },
-    ],
-    rangeValue: "all",
-    customVisible: false,
-    customStart: "",
-    customEnd: "",
-    customDisabled: true,
-    customMin: "",
-    customMax: "",
-  });
-  controlsEl.textContent = "";
-  controlsEl.dataset.vueManaged = "true";
-  const PageControlsRoot = createShellPageControlsRoot(
-    h,
-    pageControlsState,
-    (actionId, payload = null) => {
-      if (actionId === "page.chat.select") {
-        syncLegacyPageControlRefs(legacyRefs, { chatValue: payload?.value ?? "" });
-        dispatchLegacyEvent(legacyRefs.chatSelector, "change");
-      } else if (actionId === "page.range.select") {
-        syncLegacyPageControlRefs(legacyRefs, { rangeValue: payload?.value ?? "all" });
-        dispatchLegacyEvent(legacyRefs.rangeSelect, "change");
-      } else if (actionId === "page.range.set-custom-start") {
-        syncLegacyPageControlRefs(legacyRefs, { customStart: payload?.value ?? "" });
-        dispatchLegacyEvent(legacyRefs.customStartInput, "input");
-        dispatchLegacyEvent(legacyRefs.customStartInput, "change");
-        return;
-      } else if (actionId === "page.range.set-custom-end") {
-        syncLegacyPageControlRefs(legacyRefs, { customEnd: payload?.value ?? "" });
-        dispatchLegacyEvent(legacyRefs.customEndInput, "input");
-        dispatchLegacyEvent(legacyRefs.customEndInput, "change");
-        return;
-      }
-      const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
-      if (shellBridge?.dispatchShellAction) {
-        shellBridge.dispatchShellAction(actionId, payload);
-        return;
-      }
-      shellBridge?.dispatchRelayAction?.(actionId, payload);
-    },
+}
+
+function ensureLegacyPageControlsRendered(controlsEl, globalScope = globalThis) {
+  if (!controlsEl) return false;
+  const existingRefs = resolveLegacyPageControlRefs(controlsEl);
+  if (existingRefs.chatSelector || existingRefs.rangeSelect || existingRefs.customStartInput || existingRefs.customEndInput) {
+    return true;
+  }
+
+  const VueRuntime = globalScope?.Vue ?? null;
+  if (!VueRuntime || typeof VueRuntime.createApp !== "function" || typeof VueRuntime.h !== "function") {
+    return false;
+  }
+
+  const state = VueRuntime.reactive
+    ? VueRuntime.reactive({
+      chatOptions: [{ value: "", label: "No chats loaded yet" }],
+      chatValue: "",
+      chatDisabled: true,
+      rangeOptions: [
+        { value: "all", label: "All time" },
+        { value: "30", label: "Last 30 days" },
+        { value: "90", label: "Last 90 days" },
+        { value: "180", label: "Last 180 days" },
+        { value: "365", label: "Last 365 days" },
+        { value: "custom", label: "Custom range" },
+      ],
+      rangeValue: "all",
+      customVisible: false,
+      customStart: "",
+      customEnd: "",
+      customDisabled: false,
+      customMin: "",
+      customMax: "",
+    })
+    : {
+      chatOptions: [{ value: "", label: "No chats loaded yet" }],
+      chatValue: "",
+      chatDisabled: true,
+      rangeOptions: [
+        { value: "all", label: "All time" },
+        { value: "30", label: "Last 30 days" },
+        { value: "90", label: "Last 90 days" },
+        { value: "180", label: "Last 180 days" },
+        { value: "365", label: "Last 365 days" },
+        { value: "custom", label: "Custom range" },
+      ],
+      rangeValue: "all",
+      customVisible: false,
+      customStart: "",
+      customEnd: "",
+      customDisabled: false,
+      customMin: "",
+      customMax: "",
+    };
+
+  const Root = createShellPageControlsRoot(
+    VueRuntime.h,
+    state,
+    (actionId, payload = null) => dispatchShellAction(actionId, payload, globalScope),
     globalScope,
   );
-  configurePrimeVueApp(createApp(PageControlsRoot), globalScope).mount(controlsEl);
-  controlsEl.dataset.vuePrimitiveMounted = "true";
-  const pageControlsBridge = {
-    ownsPageControlInteractions: true,
+  controlsEl.textContent = "";
+  configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(controlsEl);
+  controlsEl.dataset.vueManaged = "page-controls";
+  return true;
+}
+
+export function mountPageControlsPrimitive(globalScope = globalThis) {
+  const controlsEl = globalScope?.document?.querySelector?.(".page-controls .primary-controls");
+  if (!controlsEl) return null;
+  const existingBridge = controlsEl[PAGE_CONTROLS_BRIDGE_KEY] ?? null;
+  if (controlsEl.dataset.vuePrimitiveMounted === "true") {
+    return existingBridge ?? {
+      ownsPageControlInteractions: false,
+      syncPageControls: () => false,
+    };
+  }
+
+  const pageControlsBridge = existingBridge ?? {
+    ownsPageControlInteractions: false,
     syncPageControls(nextState = {}) {
+      const legacyRefs = resolveLegacyPageControlRefs(controlsEl);
       syncLegacyPageControlRefs(legacyRefs, nextState);
-      Object.assign(pageControlsState, nextState);
-      return true;
+      const ownsInteractions = syncPrimePageControls(legacyRefs, globalScope);
+      pageControlsBridge.ownsPageControlInteractions = ownsInteractions;
+      return ownsInteractions;
     },
   };
   controlsEl[PAGE_CONTROLS_BRIDGE_KEY] = pageControlsBridge;
+
+  ensureLegacyPageControlsRendered(controlsEl, globalScope);
+  const legacyRefs = resolveLegacyPageControlRefs(controlsEl);
+  const ownsPageControlInteractions = syncPrimePageControls(legacyRefs, globalScope);
+  pageControlsBridge.ownsPageControlInteractions = ownsPageControlInteractions;
+  if (ownsPageControlInteractions) {
+    bindPageControlListeners(legacyRefs, globalScope);
+    controlsEl.dataset.vueManaged = "true";
+    controlsEl.dataset.vuePrimitiveMounted = "true";
+    return pageControlsBridge;
+  }
+
   return pageControlsBridge;
 }

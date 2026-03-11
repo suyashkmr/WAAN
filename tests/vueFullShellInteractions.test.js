@@ -8,6 +8,15 @@ import { mountVueAppShellRoot, VUE_APP_SHELL_ROOT_KEY } from "../js/vue/appShell
 import { mountPageControlsPrimitive } from "../js/vue/shellPageControlsIsland.js";
 
 function createVueRuntimeStub() {
+  function normalizeDateValue(value) {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    return value == null ? "" : String(value);
+  }
   /**
    * @param {any} vnode
    * @returns {Node}
@@ -26,6 +35,40 @@ function createVueRuntimeStub() {
     }
     const type = vnode?.type;
     if (typeof type !== "string") {
+      if (type && typeof type === "object") {
+        const props = vnode?.props || {};
+        if (props.inputId && props.optionLabel && props.optionValue) {
+          const el = document.createElement("select");
+          el.id = String(props.inputId);
+          el.className = "p-select";
+          (props.options || []).forEach(option => {
+            const optionEl = document.createElement("option");
+            optionEl.value = String(option?.[props.optionValue] ?? "");
+            optionEl.textContent = String(option?.[props.optionLabel] ?? "");
+            el.appendChild(optionEl);
+          });
+          el.value = String(props.modelValue ?? "");
+          el.disabled = Boolean(props.disabled);
+          el.addEventListener("change", event => {
+            props["onUpdate:modelValue"]?.(event.target.value);
+          });
+          return el;
+        }
+        if (props.inputId) {
+          const el = document.createElement("input");
+          el.id = String(props.inputId);
+          el.type = "date";
+          el.className = "p-datepicker";
+          el.value = normalizeDateValue(props.modelValue);
+          el.disabled = Boolean(props.disabled);
+          el.min = normalizeDateValue(props.minDate);
+          el.max = normalizeDateValue(props.maxDate);
+          el.addEventListener("change", event => {
+            props["onUpdate:modelValue"]?.(event.target.value);
+          });
+          return el;
+        }
+      }
       return document.createComment("unsupported-vnode");
     }
     const el = document.createElement(type);
@@ -224,7 +267,7 @@ describe("vue full-shell interactions", () => {
     expect(legacyRangeSelect.value).toBe("30");
     expect(changeSpy).toHaveBeenCalledTimes(1);
 
-    const startInput = document.querySelector("#custom-start");
+    const startInput = document.querySelector("#custom-start--primevue");
     startInput.value = "2025-01-05";
     startInput.dispatchEvent(new Event("change", { bubbles: true }));
 
@@ -249,9 +292,250 @@ describe("vue full-shell interactions", () => {
     expect(document.getElementById("global-range")?.tagName).toBe("SELECT");
     expect(document.getElementById("custom-start")?.tagName).toBe("INPUT");
     expect(document.getElementById("custom-end")?.tagName).toBe("INPUT");
-    expect(document.getElementById("chat-selector--primevue")).toBeFalsy();
-    expect(document.getElementById("global-range--primevue")).toBeFalsy();
-    expect(document.getElementById("custom-start--primevue")).toBeFalsy();
-    expect(document.getElementById("custom-end--primevue")).toBeFalsy();
+    expect(document.getElementById("chat-selector--primevue")).toBeTruthy();
+    expect(document.getElementById("global-range--primevue")).toBeTruthy();
+    expect(document.getElementById("custom-start--primevue")).toBeTruthy();
+    expect(document.getElementById("custom-end--primevue")).toBeTruthy();
+    expect(document.getElementById("chat-selector")?.classList.contains("hidden")).toBe(true);
+    expect(document.getElementById("global-range")?.classList.contains("hidden")).toBe(true);
+    expect(document.getElementById("custom-start")?.classList.contains("hidden")).toBe(true);
+    expect(document.getElementById("custom-end")?.classList.contains("hidden")).toBe(true);
+  });
+
+  it("preserves visible chat force-select interactions in PrimeVue bridge mode", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      <select id="global-range"><option value="all">All time</option></select>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    mountVueAppShellRoot({ globalScope: globalThis });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    const onForceSelect = vi.fn();
+    shellBridge?.setShellActionHandlers?.({
+      "page.chat.force-select": onForceSelect,
+    });
+
+    const visibleChatSelect = document.getElementById("chat-selector--primevue");
+    expect(visibleChatSelect).toBeTruthy();
+
+    visibleChatSelect?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    visibleChatSelect?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+
+    expect(onForceSelect).toHaveBeenCalledTimes(2);
+    expect(onForceSelect).toHaveBeenNthCalledWith(1, { value: "remote:chat-1" });
+    expect(onForceSelect).toHaveBeenNthCalledWith(2, { value: "remote:chat-1" });
+  });
+
+  it("mounts bridged page selects ahead of hidden native selects inside wrapping labels", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="all">All time</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    mountPageControlsPrimitive(globalThis);
+
+    const chatLabel = document.querySelector("label.dataset-control");
+    const rangeLabel = document.querySelector("label.period-control");
+    expect(chatLabel?.querySelector(".prime-select-bridge")).toBeTruthy();
+    expect(rangeLabel?.querySelector(".prime-select-bridge")).toBeTruthy();
+    expect(chatLabel?.children[1]?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(rangeLabel?.children[1]?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(chatLabel?.querySelector("#chat-selector")).toBeNull();
+    expect(rangeLabel?.querySelector("#global-range")).toBeNull();
+    expect(chatLabel?.nextElementSibling?.id).toBe("chat-selector");
+    expect(rangeLabel?.nextElementSibling?.id).toBe("global-range");
+    expect(chatLabel?.nextElementSibling?.classList.contains("hidden")).toBe(true);
+    expect(rangeLabel?.nextElementSibling?.classList.contains("hidden")).toBe(true);
+  });
+
+  it("keeps page controls on native fallback ownership when PrimeVue is unavailable", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <select id="chat-selector"><option value="">No chats loaded yet</option></select>
+      <select id="global-range"><option value="all">All time</option><option value="30">Last 30 days</option></select>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+    delete globalThis.PrimeVue;
+    delete globalThis.primevue;
+
+    const bridge = mountPageControlsPrimitive(globalThis);
+
+    expect(bridge?.ownsPageControlInteractions).toBe(false);
+    expect(document.getElementById("chat-selector--primevue")).toBeNull();
+    expect(document.getElementById("global-range--primevue")).toBeNull();
+    expect(document.getElementById("custom-start--primevue")).toBeNull();
+    expect(document.getElementById("custom-end--primevue")).toBeNull();
+    expect(document.getElementById("chat-selector")?.classList.contains("hidden")).toBe(false);
+    expect(document.querySelector(".page-controls .primary-controls")?.dataset.vuePrimitiveMounted).not.toBe("true");
+  });
+
+  it("retries page-control bridge mount after an early no-PrimeVue fallback", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="all">All time</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+    delete globalThis.PrimeVue;
+    delete globalThis.primevue;
+
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    expect(firstBridge?.ownsPageControlInteractions).toBe(false);
+    expect(document.getElementById("chat-selector--primevue")).toBeNull();
+
+    globalThis.PrimeVue = {
+      Config: {},
+      Select: { name: "PrimeSelectStub" },
+      DatePicker: { name: "PrimeDatePickerStub" },
+    };
+    globalThis.primevue = globalThis.PrimeVue;
+
+    const secondBridge = mountPageControlsPrimitive(globalThis);
+    expect(secondBridge?.ownsPageControlInteractions).toBe(true);
+    expect(document.getElementById("chat-selector--primevue")).toBeTruthy();
+    expect(document.querySelector(".page-controls .primary-controls")?.dataset.vuePrimitiveMounted).toBe("true");
+  });
+
+  it("updates the shell bridge ownership after a retry upgrades page controls", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="all">All time</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+    delete globalThis.PrimeVue;
+    delete globalThis.primevue;
+
+    mountVueAppShellRoot({ globalScope: globalThis });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    expect(shellBridge?.ownsPageControlInteractions).toBe(false);
+
+    globalThis.PrimeVue = {
+      Config: {},
+      Select: { name: "PrimeSelectStub" },
+      DatePicker: { name: "PrimeDatePickerStub" },
+    };
+    globalThis.primevue = globalThis.PrimeVue;
+
+    const upgradedBridge = mountPageControlsPrimitive(globalThis);
+    expect(upgradedBridge?.ownsPageControlInteractions).toBe(true);
+    expect(shellBridge?.ownsPageControlInteractions).toBe(true);
+  });
+
+  it("dispatches chat and range actions through the visible PrimeVue controls after a retry upgrade", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector">
+          <option value="">No chats loaded yet</option>
+          <option value="remote:chat-1">Chat 1</option>
+        </select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range">
+          <option value="all">All time</option>
+          <option value="180">Last 180 days</option>
+        </select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+    delete globalThis.PrimeVue;
+    delete globalThis.primevue;
+
+    mountVueAppShellRoot({ globalScope: globalThis });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    const onChatSelect = vi.fn();
+    const onRangeSelect = vi.fn();
+    shellBridge?.setShellActionHandlers?.({
+      "page.chat.select": onChatSelect,
+      "page.range.select": onRangeSelect,
+    });
+
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    expect(firstBridge?.ownsPageControlInteractions).toBe(false);
+
+    globalThis.PrimeVue = {
+      Config: {},
+      Select: { name: "PrimeSelectStub" },
+      DatePicker: { name: "PrimeDatePickerStub" },
+    };
+    globalThis.primevue = globalThis.PrimeVue;
+
+    mountPageControlsPrimitive(globalThis);
+
+    const visibleChatSelect = document.getElementById("chat-selector--primevue");
+    const visibleRangeSelect = document.getElementById("global-range--primevue");
+    expect(visibleChatSelect).toBeTruthy();
+    expect(visibleRangeSelect).toBeTruthy();
+
+    visibleChatSelect.selectedIndex = 1;
+    expect(visibleChatSelect.value).toBe("remote:chat-1");
+    visibleChatSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    visibleRangeSelect.selectedIndex = 1;
+    expect(visibleRangeSelect.value).toBe("180");
+    visibleRangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(onChatSelect).toHaveBeenCalledWith({ value: "remote:chat-1" });
+    expect(onRangeSelect).toHaveBeenCalledWith({ value: "180" });
+  });
+
+  it("renders and upgrades empty page-control containers without losing the retry path", () => {
+    const controlsEl = document.querySelector(".page-controls .primary-controls");
+    controlsEl.innerHTML = "";
+
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    expect(firstBridge?.ownsPageControlInteractions).toBe(true);
+    expect(document.getElementById("chat-selector--primevue")).toBeTruthy();
+    expect(controlsEl?.dataset.vuePrimitiveMounted).toBe("true");
+    expect(firstBridge?.syncPageControls?.({
+      chatOptions: [{ value: "remote:chat-1", label: "Chat 1" }],
+      chatValue: "remote:chat-1",
+      chatDisabled: false,
+    })).toBe(true);
+    expect(document.getElementById("chat-selector")?.value).toBe("remote:chat-1");
+    const rangeOptions = Array.from(document.getElementById("global-range")?.options || []).map(option => option.value);
+    expect(rangeOptions).toEqual(["all", "30", "90", "180", "365", "custom"]);
   });
 });

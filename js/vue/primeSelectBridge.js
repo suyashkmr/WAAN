@@ -25,8 +25,19 @@ function ensureBridgeMount(selectEl, inputId) {
   const mount = ownerDocument.createElement("div");
   mount.id = createBridgeMountId(inputId);
   mount.className = "prime-select-bridge";
-  selectEl.insertAdjacentElement("afterend", mount);
+  const wrappingLabel = selectEl.parentElement instanceof HTMLLabelElement ? selectEl.parentElement : null;
+  if (wrappingLabel) {
+    wrappingLabel.insertBefore(mount, selectEl);
+  } else {
+    selectEl.insertAdjacentElement("afterend", mount);
+  }
   return mount;
+}
+
+function detachHiddenSelectFromWrappingLabel(selectEl) {
+  if (!(selectEl?.parentElement instanceof HTMLLabelElement)) return;
+  const wrappingLabel = selectEl.parentElement;
+  wrappingLabel.insertAdjacentElement("afterend", selectEl);
 }
 
 function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
@@ -37,6 +48,7 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
   if (!preserveNativeId && selectEl.id === inputId) {
     selectEl.id = `${inputId}--native`;
   }
+  detachHiddenSelectFromWrappingLabel(selectEl);
   selectEl.classList.add("hidden");
   selectEl.setAttribute("aria-hidden", "true");
   selectEl.tabIndex = -1;
@@ -45,7 +57,10 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
 
 function dispatchNativeMirrorEvent(selectEl, type) {
   const EventCtor = selectEl?.ownerDocument?.defaultView?.Event ?? Event;
+  if (!selectEl) return;
+  selectEl.dataset.primevueMirrorDispatch = "true";
   selectEl.dispatchEvent(new EventCtor(type, { bubbles: true }));
+  delete selectEl.dataset.primevueMirrorDispatch;
 }
 
 function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, visibleInputId = "") {
@@ -69,6 +84,8 @@ function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, vis
  *   disabled?: boolean,
  *   preserveNativeId?: boolean,
  *   visibleInputId?: string,
+ *   attrs?: Record<string, any>,
+ *   onValueChange?: ((value: string) => void) | null,
  *   vueRuntime?: any,
  *   globalScope?: any,
  * }} params
@@ -81,6 +98,8 @@ export function syncPrimeSelectBridge({
   disabled = false,
   preserveNativeId = false,
   visibleInputId = "",
+  attrs: inputAttrs = {},
+  onValueChange = null,
   vueRuntime = null,
   globalScope = globalThis,
 }) {
@@ -105,18 +124,29 @@ export function syncPrimeSelectBridge({
     const mountEl = ensureBridgeMount(selectEl, inputId);
     if (!mountEl) return false;
     const state = VueRuntime.reactive
-      ? VueRuntime.reactive({ options: [], value: "", disabled: false })
-      : { options: [], value: "", disabled: false };
+      ? VueRuntime.reactive({
+        options: Array.isArray(options) ? options : [],
+        value: value == null ? "" : String(value),
+        disabled: Boolean(disabled),
+      })
+      : {
+        options: Array.isArray(options) ? options : [],
+        value: value == null ? "" : String(value),
+        disabled: Boolean(disabled),
+      };
     const Root = {
       name: "PrimeSelectBridgeField",
       render() {
-        const attrs = {
+        const wrapperAttrs = {
           class: "prime-select-bridge-field",
           ...(preserveNativeId ? { "data-bridge-visible-input-id": resolvedVisibleInputId } : {}),
         };
         return renderSelectInput(VueRuntime.h, {
           id: inputId,
-          attrs,
+          attrs: {
+            ...inputAttrs,
+            ...wrapperAttrs,
+          },
           value: state.value,
           options: state.options,
           disabled: state.disabled,
@@ -125,6 +155,7 @@ export function syncPrimeSelectBridge({
             const nextValue = event?.target?.value ?? "";
             state.value = String(nextValue ?? "");
             selectEl.value = state.value;
+            onValueChange?.(state.value);
             dispatchNativeMirrorEvent(selectEl, "input");
             dispatchNativeMirrorEvent(selectEl, "change");
           },
