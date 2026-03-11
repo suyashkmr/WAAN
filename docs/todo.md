@@ -894,26 +894,26 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
       - [x] Verified on 2026-03-11 via `npm run test:visual:update -- tests/visual/dashboard.visual.spec.js`, `npm run test:visual`, and manual overlay fixes in `styles.components.css`; PrimeVue select/date overlays now render with opaque backgrounds, bounded scroll containers, and body-level portal targets.
     - [ ] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
-      - [x] Page-control seed rendering no longer relies on `forceNative`; `js/vue/shellPageControlsView.js` now renders explicit native controls directly, so the remaining primitive fallback debt is isolated to the shared no-PrimeVue branch rather than an active runtime caller override.
+      - [x] Page-control seed rendering no longer relies on `forceNative`; the empty-container seed path is now direct native DOM creation inside `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`, so the remaining primitive fallback debt is isolated to the shared no-PrimeVue branch rather than an active runtime caller override.
   - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
     - [ ] Remaining explicit audit focus:
       - [ ] hidden native bridge preservation in `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`
-      - [ ] empty-container bootstrap seeding in `js/vue/shellPageControlsView.js`
+      - [x] empty-container bootstrap seeding is no longer a separate compatibility helper; the seed path now lives directly in `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`
       - [ ] any non-test runtime callers still depending on direct native form refs as the primary source of truth
         - [x] `js/appShell/chatSelection.js`, `js/appShell/rangeFilters.js`, `js/savedViews.js`, `js/appShell/dashboardRender/participantsPanel.js`, and `js/appShell/datasetLifecycle.js` now treat bridged PrimeVue controls as the primary visible writer; preserved native refs remain compatibility mirrors only when the bridge does not own the update.
-        - [ ] Current remaining production compatibility debt is concentrated in the bridge scaffolding itself (`js/vue/primeSelectBridge.js`, `js/vue/primeDateBridge.js`) rather than those controller callers.
+        - [ ] Current remaining production compatibility debt is concentrated in the bridge scaffolding itself (`js/vue/primeSelectBridge.js`, `js/vue/primeDateBridge.js`) rather than those controller callers; page-control shell actions now own draft updates directly, and hidden native refs are increasingly passive compatibility mirrors.
       - [x] Saved-view dirty-state refresh no longer depends on native `change` / `input` listeners; it now follows canonical app-shell UI-state subscriptions instead of preserved page-control refs (`js/savedViewsDirtyTracking.js`, `js/savedViews.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`).
       - [x] Removed the dead participant-interactions runtime wiring path; dashboard participant interactions now flow only through the dashboard Vue bridge instead of inert app-shell handler plumbing (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell/runtimeConfig.js`, `js/appShell/assemblyWiring.js`).
   - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
     - [x] Removed the runtime-dead `js/appShell/participantInteractions.js` helper and its production barrel export; dashboard participant interactions are now owned only by the dashboard Vue bridge/runtime path.
     - [ ] Current known compatibility helpers still referenced and therefore not yet purgeable:
-      - [ ] `js/vue/shellPageControlsView.js`
       - [ ] `js/vue/primeSelectBridge.js`
       - [ ] `js/vue/primeDateBridge.js`
+      - [x] `js/vue/shellPageControlsView.js` (removed; empty-container seeding now lives in `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`)
       - [ ] `js/ui/primitivesRuntime.js`
       - [ ] `js/ui/primitivesVueComposables.js`
   - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
-    - [ ] Current blocker: page controls still preserve hidden native form elements via `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`, and the empty-container bootstrap seed remains in `js/vue/shellPageControlsView.js`. The default `index.html` runtime no longer depends on controller-owned native selects as the primary visible controls, but these compatibility paths still keep the end-state short of the final no-temporary-default target.
+    - [ ] Current blocker: page controls still preserve hidden native form elements via `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`. The default `index.html` runtime no longer depends on controller-owned native selects as the primary visible controls, and the old separate seed helper has been removed, but the preserved hidden native refs still keep the end-state short of the final no-temporary-default target.
   - [ ] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
     - [ ] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is still tracked under the open Phase 11 `P0`/`P1` tasks and final runtime audit acceptance above.
     - [x] `js/vue/heroStatusRenderer.js`

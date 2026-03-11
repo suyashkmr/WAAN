@@ -1,9 +1,11 @@
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./bridgeRegistry.js";
 import { syncPrimeDateBridge, syncPrimeDateBridgeValue } from "./primeDateBridge.js";
 import { syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./primeSelectBridge.js";
-import { createShellPageControlsRoot } from "./shellPageControlsView.js";
-import { configurePrimeVueApp } from "./primevueApp.js";
-import { ensureSelectOptions, extractSelectOptions } from "./shellPageControlsUtils.js";
+import {
+  ensureSelectOptions,
+  extractSelectOptions,
+  renderLegacyPageControlsSeed,
+} from "./shellPageControlsUtils.js";
 
 const PAGE_CONTROLS_BRIDGE_KEY = "__waanPageControlsBridge";
 
@@ -145,6 +147,7 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       disabled: rangeSelect.disabled,
       preserveNativeId: true,
       visibleInputId: "global-range--primevue",
+      mirrorNativeEvents: false,
       onValueChange: value => {
         dispatchShellAction("page.range.select", { value: value || "all" }, globalScope);
       },
@@ -171,6 +174,7 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       max: customStartInput.max,
       preserveNativeId: true,
       visibleInputId: "custom-start--primevue",
+      mirrorNativeEvents: false,
       onValueChange: value => {
         dispatchShellAction("page.range.set-custom-start", { value }, globalScope);
       },
@@ -199,6 +203,7 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       max: customEndInput.max,
       preserveNativeId: true,
       visibleInputId: "custom-end--primevue",
+      mirrorNativeEvents: false,
       onValueChange: value => {
         dispatchShellAction("page.range.set-custom-end", { value }, globalScope);
       },
@@ -237,64 +242,7 @@ function ensureLegacyPageControlsRendered(controlsEl, globalScope = globalThis) 
   if (existingRefs.chatSelector || existingRefs.rangeSelect || existingRefs.customStartInput || existingRefs.customEndInput) {
     return true;
   }
-
-  const VueRuntime = globalScope?.Vue ?? null;
-  if (!VueRuntime || typeof VueRuntime.createApp !== "function" || typeof VueRuntime.h !== "function") {
-    return false;
-  }
-
-  const state = VueRuntime.reactive
-    ? VueRuntime.reactive({
-      chatOptions: [{ value: "", label: "No chats loaded yet" }],
-      chatValue: "",
-      chatDisabled: true,
-      rangeOptions: [
-        { value: "all", label: "All time" },
-        { value: "30", label: "Last 30 days" },
-        { value: "90", label: "Last 90 days" },
-        { value: "180", label: "Last 180 days" },
-        { value: "365", label: "Last 365 days" },
-        { value: "custom", label: "Custom range" },
-      ],
-      rangeValue: "all",
-      customVisible: false,
-      customStart: "",
-      customEnd: "",
-      customDisabled: false,
-      customMin: "",
-      customMax: "",
-    })
-    : {
-      chatOptions: [{ value: "", label: "No chats loaded yet" }],
-      chatValue: "",
-      chatDisabled: true,
-      rangeOptions: [
-        { value: "all", label: "All time" },
-        { value: "30", label: "Last 30 days" },
-        { value: "90", label: "Last 90 days" },
-        { value: "180", label: "Last 180 days" },
-        { value: "365", label: "Last 365 days" },
-        { value: "custom", label: "Custom range" },
-      ],
-      rangeValue: "all",
-      customVisible: false,
-      customStart: "",
-      customEnd: "",
-      customDisabled: false,
-      customMin: "",
-      customMax: "",
-    };
-
-  const Root = createShellPageControlsRoot(
-    VueRuntime.h,
-    state,
-    (actionId, payload = null) => dispatchShellAction(actionId, payload, globalScope),
-    globalScope,
-  );
-  controlsEl.textContent = "";
-  configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(controlsEl);
-  controlsEl.dataset.vueManaged = "page-controls";
-  return true;
+  return renderLegacyPageControlsSeed(controlsEl, globalScope);
 }
 
 export function mountPageControlsPrimitive(globalScope = globalThis) {

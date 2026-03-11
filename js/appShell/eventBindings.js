@@ -76,6 +76,18 @@ export function createEventBindingsController({
   }
 
   /**
+   * @param {HTMLElement | null | undefined} element
+   * @param {"input" | "change"} type
+   */
+  function dispatchBridgeMirroredEvent(element, type) {
+    if (!element) return;
+    const EventCtor = element.ownerDocument?.defaultView?.Event ?? Event;
+    element.dataset.primevueMirrorDispatch = "true";
+    element.dispatchEvent(new EventCtor(type, { bubbles: true }));
+    delete element.dataset.primevueMirrorDispatch;
+  }
+
+  /**
    * @param {any} event
    */
   function handleNativeChatSelectionChange(event) {
@@ -144,6 +156,8 @@ export function createEventBindingsController({
         if (rangeSelect && rangeSelect.value !== value) {
           rangeSelect.value = value;
         }
+        dispatchBridgeMirroredEvent(rangeSelect, "input");
+        dispatchBridgeMirroredEvent(rangeSelect, "change");
         return handleRangeChange({ target: { value } });
       },
       /** @param {Record<string, any> | null | undefined} payload */
@@ -160,12 +174,16 @@ export function createEventBindingsController({
       "page.range.set-custom-start": payload => {
         if (customStartInput) {
           customStartInput.value = payload?.value || "";
+          dispatchBridgeMirroredEvent(customStartInput, "input");
+          dispatchBridgeMirroredEvent(customStartInput, "change");
         }
       },
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.set-custom-end": payload => {
         if (customEndInput) {
           customEndInput.value = payload?.value || "";
+          dispatchBridgeMirroredEvent(customEndInput, "input");
+          dispatchBridgeMirroredEvent(customEndInput, "change");
         }
       },
     });

@@ -404,6 +404,9 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
+    const rangeChangeSpy = vi.fn();
+    rangeSelect.addEventListener("change", rangeChangeSpy);
+
     shellActionHandlers["page.chat.select"]?.({ value: "remote:chat-2" });
     shellActionHandlers["page.range.select"]?.({ value: "30" });
     shellActionHandlers["page.range.apply-custom"]?.({ start: "2025-01-01", end: "2025-01-05" });
@@ -416,6 +419,7 @@ describe("event bindings detailed", () => {
       expect.objectContaining({ target: { value: "30" } }),
     );
     expect(rangeSelect.value).toBe("30");
+    expect(rangeChangeSpy).toHaveBeenCalledTimes(1);
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
   });
 
@@ -549,10 +553,23 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
+    const startInputSpy = vi.fn();
+    const startChangeSpy = vi.fn();
+    const endInputSpy = vi.fn();
+    const endChangeSpy = vi.fn();
+    customStartInput.addEventListener("input", startInputSpy);
+    customStartInput.addEventListener("change", startChangeSpy);
+    customEndInput.addEventListener("input", endInputSpy);
+    customEndInput.addEventListener("change", endChangeSpy);
+
     shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-01-05" });
     shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-01-07" });
 
     expect(customStartInput.value).toBe("2025-01-05");
     expect(customEndInput.value).toBe("2025-01-07");
+    expect(startInputSpy).toHaveBeenCalledTimes(1);
+    expect(startChangeSpy).toHaveBeenCalledTimes(1);
+    expect(endInputSpy).toHaveBeenCalledTimes(1);
+    expect(endChangeSpy).toHaveBeenCalledTimes(1);
   });
 });

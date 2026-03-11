@@ -245,7 +245,7 @@ describe("vue full-shell interactions", () => {
     expect(secondBridge?.syncPageControls?.({ chatValue: "remote:chat-2" })).toBe(true);
   });
 
-  it("keeps legacy page-control refs live for detached-listener flows", () => {
+  it("keeps legacy page-control refs live for bridge sync flows", () => {
     document.querySelector(".page-controls .primary-controls").innerHTML = `
       <select id="global-range"><option value="all">All time</option><option value="30">Last 30 days</option></select>
       <div id="custom-range-controls">
@@ -255,24 +255,15 @@ describe("vue full-shell interactions", () => {
     `;
     const legacyRangeSelect = document.getElementById("global-range");
     const legacyCustomStart = document.getElementById("custom-start");
-    const changeSpy = vi.fn();
-    const inputSpy = vi.fn();
-    legacyRangeSelect.addEventListener("change", changeSpy);
-    legacyCustomStart.addEventListener("input", inputSpy);
+    const bridge = mountPageControlsPrimitive(globalThis);
+    bridge?.syncPageControls?.({
+      rangeValue: "30",
+      customVisible: true,
+      customStart: "2025-01-05",
+    });
 
-    mountPageControlsPrimitive(globalThis);
-    const rangeSelect = document.querySelector(".page-controls #global-range");
-    rangeSelect.value = "30";
-    rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
     expect(legacyRangeSelect.value).toBe("30");
-    expect(changeSpy).toHaveBeenCalledTimes(1);
-
-    const startInput = document.querySelector("#custom-start--primevue");
-    startInput.value = "2025-01-05";
-    startInput.dispatchEvent(new Event("change", { bubbles: true }));
-
     expect(legacyCustomStart.value).toBe("2025-01-05");
-    expect(inputSpy).toHaveBeenCalledTimes(1);
   });
 
   it("preserves native page-control ids when PrimeVue runtime is available", () => {
