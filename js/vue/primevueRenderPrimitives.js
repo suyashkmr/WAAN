@@ -6,6 +6,56 @@ function resolvePrimeVueComponent(componentName, globalScope = globalThis) {
   return null;
 }
 
+function normalizePrimitiveValue(value) {
+  return value == null ? "" : String(value);
+}
+
+function toBoundedDate(value) {
+  if (!value) return undefined;
+  const normalizedValue = String(value);
+  const isoDateMatch = normalizedValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const date = isoDateMatch
+    ? new Date(
+        Number(isoDateMatch[1]),
+        Number(isoDateMatch[2]) - 1,
+        Number(isoDateMatch[3]),
+      )
+    : new Date(normalizedValue);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function formatDateAsIsoLocal(value) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : toBoundedDate(value);
+  if (!date || Number.isNaN(date.getTime())) return normalizePrimitiveValue(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function normalizePrimeDateModelValue(value, prefersDateObject = false) {
+  if (prefersDateObject) return toBoundedDate(value) ?? null;
+  return normalizePrimitiveValue(value);
+}
+
+
+function splitComponentAttrs(attrs = {}) {
+  const componentAttrs = { ...attrs };
+  const wrapperAttrs = {};
+  Object.entries(attrs || {}).forEach(([key, value]) => {
+    if (/^on[A-Z]/.test(key)) {
+      wrapperAttrs[key] = value;
+      delete componentAttrs[key];
+    }
+  });
+  return { componentAttrs, wrapperAttrs };
+}
+
+function resolveOverlayTarget(globalScope = globalThis) {
+  return globalScope?.document?.body ?? undefined;
+}
+
 export function renderActionButton(h, options = {}, globalScope = globalThis) {
   const {
     id = "",
@@ -115,18 +165,49 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
 
   const normalizedOptions = Array.isArray(selectOptions)
     ? selectOptions.map(option => ({
-      value: String(option?.value ?? ""),
+      value: normalizePrimitiveValue(option?.value),
       label: String(option?.label ?? option?.value ?? ""),
     }))
     : [];
-  void globalScope;
+
+  const PrimeSelect =
+    resolvePrimeVueComponent("Select", globalScope) ??
+    resolvePrimeVueComponent("Dropdown", globalScope);
+  if (PrimeSelect) {
+    const { componentAttrs, wrapperAttrs } = splitComponentAttrs(attrs);
+    return h(
+      "div",
+      {
+        class: "waan-prime-select-host",
+        ...wrapperAttrs,
+      },
+      [h(PrimeSelect, {
+        inputId: id,
+        modelValue: normalizePrimitiveValue(value),
+        options: normalizedOptions,
+        optionLabel: "label",
+        optionValue: "value",
+        disabled: Boolean(disabled),
+        appendTo: resolveOverlayTarget(globalScope),
+        panelClass: "waan-prime-control-overlay waan-prime-select-overlay",
+        scrollHeight: "18rem",
+        unstyled: true,
+        "data-ui-runtime": "primevue",
+        "onUpdate:modelValue": nextValue => {
+          if (typeof onChange !== "function") return;
+          onChange({ target: { value: normalizePrimitiveValue(nextValue) } });
+        },
+        ...componentAttrs,
+      })],
+    );
+  }
 
   return h(
     "select",
     {
       id,
       disabled: Boolean(disabled),
-      value: String(value ?? ""),
+      value: normalizePrimitiveValue(value),
       ...(onChange ? { onChange } : {}),
       ...attrs,
     },
@@ -142,13 +223,38 @@ export function renderDateInput(h, options, globalScope = globalThis) {
     onChange,
     attrs = {},
   } = options;
-
-  void globalScope;
+  const PrimeDatePicker = resolvePrimeVueComponent("DatePicker", globalScope);
+  const PrimeCalendar = PrimeDatePicker ? null : resolvePrimeVueComponent("Calendar", globalScope);
+  const PrimeDateComponent = PrimeDatePicker ?? PrimeCalendar;
+  if (PrimeDateComponent) {
+    const { min, max, ...restAttrs } = attrs;
+    const usesCalendarFallback = Boolean(PrimeCalendar);
+    return h(PrimeDateComponent, {
+      inputId: id,
+      modelValue: normalizePrimeDateModelValue(value, usesCalendarFallback),
+      ...(usesCalendarFallback ? {} : { updateModelType: "string" }),
+      dateFormat: "yy-mm-dd",
+      appendTo: resolveOverlayTarget(globalScope),
+      manualInput: true,
+      showIcon: false,
+      disabled: Boolean(disabled),
+      minDate: toBoundedDate(min),
+      maxDate: toBoundedDate(max),
+      panelClass: "waan-prime-control-overlay waan-prime-datepicker-overlay",
+      unstyled: true,
+      "data-ui-runtime": "primevue",
+      "onUpdate:modelValue": nextValue => {
+        if (typeof onChange !== "function") return;
+        onChange({ target: { value: formatDateAsIsoLocal(nextValue) } });
+      },
+      ...restAttrs,
+    });
+  }
 
   return h("input", {
     type: "date",
     id,
-    value: String(value || ""),
+    value: normalizePrimitiveValue(value),
     disabled: Boolean(disabled),
     ...(onChange ? { onChange } : {}),
     ...attrs,

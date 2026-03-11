@@ -9,12 +9,12 @@ import {
   buildSavedViewCardModel,
 } from "./savedViewsCards.js";
 import { buildSavedViewsComparisonPayload } from "./savedViewsComparisonPayload.js";
+import { syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./vue/primeSelectBridge.js";
 
 export function createSavedViewsUiController({
   elements,
   deps,
 }) {
-  const vueMountedSelects = new WeakSet();
   const {
     nameInput,
     saveButton,
@@ -138,42 +138,32 @@ export function createSavedViewsUiController({
   function populateSavedSelect(select, views, selectedId, placeholder) {
     if (!select) return;
     const previous = selectedId ?? select.value;
-    const VueRuntime = /** @type {any} */ (vueRuntime);
-    const canRenderWithVue = Boolean(
-      VueRuntime &&
-      typeof VueRuntime.h === "function" &&
-      typeof VueRuntime.render === "function" &&
-      VueRuntime.Fragment,
-    );
-    if (canRenderWithVue) {
-      const { h, render, Fragment } = VueRuntime;
-      if (!vueMountedSelects.has(select)) {
-        select.textContent = "";
-        vueMountedSelects.add(select);
-      }
-      render(
-        h(
-          Fragment,
-          null,
-          [
-            h("option", { value: "", key: "__placeholder" }, placeholder),
-            ...views.map(view =>
-              h(
-                "option",
-                {
-                  value: view.id,
-                  selected: view.id === previous,
-                  key: view.id,
-                },
-                `${view.name} · ${view.rangeLabel}`,
-              )),
-          ],
-        ),
-        select,
-      );
-    } else {
-      throw new Error("Vue runtime is required for saved view select rendering.");
+    const optionModels = [
+      { value: "", label: placeholder },
+      ...views.map(view => ({
+        value: view.id,
+        label: `${view.name} · ${view.rangeLabel}`,
+      })),
+    ];
+    select.textContent = "";
+    optionModels.forEach(option => {
+      const optionEl = select.ownerDocument.createElement("option");
+      optionEl.value = option.value;
+      optionEl.textContent = option.label;
+      select.appendChild(optionEl);
+    });
+    const targetValue = previous ?? "";
+    select.value = targetValue;
+    if (select.value !== targetValue) {
+      select.value = "";
     }
+    syncPrimeSelectBridge({
+      selectEl: select,
+      options: optionModels,
+      value: select.value,
+      disabled: !dataAvailableGetter(),
+      vueRuntime,
+    });
     if (select.value && !views.some(view => view.id === select.value)) {
       select.value = "";
     }
@@ -239,8 +229,16 @@ export function createSavedViewsUiController({
     }
 
     setCompareSelection(primary, secondary);
-    if (compareSelectA) compareSelectA.value = primary ?? "";
-    if (compareSelectB) compareSelectB.value = secondary ?? "";
+    syncPrimeSelectBridgeValue({
+      selectEl: compareSelectA,
+      value: primary ?? "",
+      disabled: !dataAvailableGetter(),
+    });
+    syncPrimeSelectBridgeValue({
+      selectEl: compareSelectB,
+      value: secondary ?? "",
+      disabled: !dataAvailableGetter(),
+    });
 
     renderComparisonSummary();
     renderSavedViewGallery(views);

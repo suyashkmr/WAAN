@@ -178,6 +178,8 @@ describe("savedViews controller", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     clearVueBridgeRuntime();
+    delete globalThis.PrimeVue;
+    document.body.innerHTML = "";
   });
 
   it("disables controls when no dataset is available", () => {
@@ -294,6 +296,54 @@ describe("savedViews controller", () => {
     expect(comparisonSpy).toHaveBeenCalled();
     expect(elements.gallery.querySelector(".saved-view-card")).toBeNull();
     expect(elements.compareSummaryEl.textContent).toBe("");
+  });
+
+  it("mounts PrimeVue-managed saved-view selects while keeping native refs for controllers", () => {
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    const elements = buildElements();
+    document.body.append(
+      elements.nameInput,
+      elements.saveButton,
+      elements.listSelect,
+      elements.applyButton,
+      elements.deleteButton,
+      elements.gallery,
+      elements.compareSelectA,
+      elements.compareSelectB,
+      elements.compareButton,
+      elements.compareSummaryEl,
+    );
+    const dependencies = buildDependencies();
+    dependencies.vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+    elements.nameInput.value = "Baseline";
+    elements.saveButton.click();
+
+    expect(elements.listSelect.id).toBe("saved-view-list--native");
+    expect(elements.compareSelectA.id).toBe("compare-view-a--native");
+    expect(elements.compareSelectB.id).toBe("compare-view-b--native");
+    expect(elements.listSelect.classList.contains("hidden")).toBe(true);
+    expect(document.getElementById("saved-view-list--primevue")).toBeTruthy();
+    expect(document.getElementById("compare-view-a--primevue")).toBeTruthy();
+    expect(document.getElementById("compare-view-b--primevue")).toBeTruthy();
+    expect(elements.listSelect.__waanPrimeSelectBridge?.state?.value).toBe("view-1");
   });
 
   it("routes saved-view apply actions through Vue panel dispatcher when available", async () => {

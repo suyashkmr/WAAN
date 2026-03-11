@@ -12,6 +12,7 @@ import {
 } from "./savedViewsDirtyTracking.js";
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
+import { syncSavedViewListSelection } from "./savedViewsSelectBridgeSync.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
     nameInput,
@@ -234,7 +235,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     }
     const record = addSavedView(view);
     refreshUI();
-    if (listSelect) listSelect.value = record.id;
+    syncSavedViewListSelection(listSelect, record.id, dataAvailable);
     if (nameInput) nameInput.value = "";
     updateStatus(`Saved view "${name}".`, "success");
   }
@@ -267,7 +268,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     }
     refreshUI();
     renderComparisonSummary();
-    if (listSelect) listSelect.value = "";
+    syncSavedViewListSelection(listSelect, "", dataAvailable);
     if (activeViewId === id) {
       activeViewId = null;
       lastAppliedViewSignature = null;
@@ -300,7 +301,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       return;
     }
     await applySavedView(view);
-    if (listSelect) listSelect.value = viewId;
+    syncSavedViewListSelection(listSelect, viewId, dataAvailable);
   }
 
   function attachEvents() {

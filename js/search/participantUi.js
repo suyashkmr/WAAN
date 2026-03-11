@@ -1,3 +1,5 @@
+import { syncPrimeSelectBridge } from "../vue/primeSelectBridge.js";
+
 export function createSearchParticipantUiController({
   participantSelect,
   getEntries,
@@ -7,8 +9,6 @@ export function createSearchParticipantUiController({
   vueRuntime = null,
 }) {
   let participantOptionsCacheKey = "";
-  let vueMounted = false;
-
   function populateParticipants() {
     if (!participantSelect) return;
     const entries = getEntries();
@@ -32,38 +32,49 @@ export function createSearchParticipantUiController({
     const selected = getSearchState()?.query.participant ?? "";
     const options = Array.from(senders).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
     const previousValue = participantSelect.value;
-    const VueRuntime = /** @type {any} */ (vueRuntime);
-    const canRenderWithVue = Boolean(
-      VueRuntime &&
-      typeof VueRuntime.h === "function" &&
-      typeof VueRuntime.render === "function" &&
-      VueRuntime.Fragment,
-    );
-    if (canRenderWithVue) {
-      const { h, render, Fragment } = VueRuntime;
-      if (!vueMounted) {
-        participantSelect.textContent = "";
-        vueMounted = true;
-      }
-      const optionNodes = [
-        h("option", { value: "" }, "All participants"),
-        ...options.map(sender => h("option", { value: sender, key: sender }, sender)),
-      ];
-      if (selected && !options.includes(selected)) {
-        optionNodes.push(h("option", { value: selected, key: `selected:${selected}` }, selected));
-      }
-      render(h(Fragment, null, optionNodes), participantSelect);
-    } else {
-      throw new Error("Vue runtime is required for search participant rendering.");
+    const optionModels = [
+      { value: "", label: "All participants" },
+      ...options.map(sender => ({ value: sender, label: sender })),
+    ];
+    if (selected && !options.includes(selected)) {
+      optionModels.push({ value: selected, label: selected });
     }
-
+    participantSelect.textContent = "";
+    optionModels.forEach(option => {
+      const optionEl = participantSelect.ownerDocument.createElement("option");
+      optionEl.value = option.value;
+      optionEl.textContent = option.label;
+      participantSelect.appendChild(optionEl);
+    });
     const targetValue = selected || previousValue || "";
     participantSelect.value = targetValue;
     if (participantSelect.value !== targetValue) {
       participantSelect.value = "";
     }
-    participantSelect.disabled = options.length === 0;
+    const datasetEmpty = options.length === 0;
+    participantSelect.disabled = datasetEmpty;
+    syncPrimeSelectBridge({
+      selectEl: participantSelect,
+      options: optionModels,
+      value: participantSelect.value,
+      disabled: datasetEmpty,
+      vueRuntime,
+    });
     participantOptionsCacheKey = nextCacheKey;
+  }
+
+  function syncParticipantBridgeState() {
+    if (!participantSelect) return false;
+    return syncPrimeSelectBridge({
+      selectEl: participantSelect,
+      options: Array.from(participantSelect.options).map(option => ({
+        value: option.value,
+        label: option.textContent ?? option.value,
+      })),
+      value: participantSelect.value,
+      disabled: participantSelect.disabled,
+      vueRuntime,
+    });
   }
 
   function resetParticipantOptionsCache() {
@@ -73,5 +84,6 @@ export function createSearchParticipantUiController({
   return {
     populateParticipants,
     resetParticipantOptionsCache,
+    syncParticipantBridgeState,
   };
 }

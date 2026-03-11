@@ -52,7 +52,9 @@ describe("saved views select rendering", () => {
     if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
     else delete process.env.VITEST;
     delete globalThis.Vue;
+    delete globalThis.PrimeVue;
     vi.restoreAllMocks();
+    document.body.innerHTML = "";
   });
 
   it("renders list/compare options via Vue and clears prefilled static options", () => {
@@ -80,12 +82,47 @@ describe("saved views select rendering", () => {
     expect(compareSelectB.value).toBe("v2");
   });
 
-  it("fails fast without Vue runtime outside Vitest fallback mode", () => {
+  it("re-syncs bridged compare selects after assigning default comparison values", () => {
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    const vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+    const views = [
+      { id: "v1", name: "Baseline", rangeLabel: "all" },
+      { id: "v2", name: "Recent", rangeLabel: "last 30" },
+    ];
+    const { controller, compareSelectA, compareSelectB } = buildController({ views, vueRuntime });
+    document.body.append(compareSelectA, compareSelectB);
+
+    controller.refreshUI();
+
+    expect(compareSelectA.value).toBe("v1");
+    expect(compareSelectB.value).toBe("v2");
+    expect(compareSelectA.__waanPrimeSelectBridge?.state?.value).toBe("v1");
+    expect(compareSelectB.__waanPrimeSelectBridge?.state?.value).toBe("v2");
+  });
+
+  it("keeps native saved-view select rendering when PrimeVue bridge is unavailable", () => {
     delete process.env.VITEST;
-    const { controller } = buildController({
+    const { controller, listSelect, compareSelectA, compareSelectB } = buildController({
       views: [{ id: "v1", name: "Baseline", rangeLabel: "all" }],
     });
 
-    expect(() => controller.refreshUI()).toThrow("Vue runtime is required for saved view select rendering.");
+    expect(() => controller.refreshUI()).not.toThrow();
+    expect(Array.from(listSelect.options).map(option => option.value)).toEqual(["", "v1"]);
+    expect(Array.from(compareSelectA.options).map(option => option.value)).toEqual(["", "v1"]);
+    expect(Array.from(compareSelectB.options).map(option => option.value)).toEqual(["", "v1"]);
   });
 });

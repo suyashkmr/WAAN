@@ -171,7 +171,37 @@ describe("primevue render primitives", () => {
     expect(vnode.props.value).toBe("x");
   });
 
-  it("renders native select even when PrimeVue Select is available", () => {
+  it("preserves non-change select handlers via the PrimeVue host wrapper", () => {
+    const PrimeSelect = { name: "PrimeSelectStub" };
+    const globalScope = { PrimeVue: { Select: PrimeSelect }, document: { body: { nodeType: 1 } } };
+    const onDblclick = vi.fn();
+    const onKeydown = vi.fn();
+    const h = (type, props = {}, children = []) => ({ type, props, children });
+    const vnode = renderSelectInput(h, {
+      id: "chat-selector",
+      value: "chat-1",
+      options: [
+        { value: "", label: "Loaded chats" },
+        { value: "chat-1", label: "Chat 1" },
+      ],
+      attrs: {
+        onDblclick,
+        onKeydown,
+      },
+    }, globalScope);
+
+    expect(vnode.type).toBe("div");
+    expect(vnode.props.onDblclick).toBe(onDblclick);
+    expect(vnode.props.onKeydown).toBe(onKeydown);
+    expect(vnode.children[0].type).toBe(PrimeSelect);
+    expect(vnode.children[0].props.onDblclick).toBeUndefined();
+    expect(vnode.children[0].props.onKeydown).toBeUndefined();
+  });
+
+  it("renders PrimeVue Select and maps model updates to change events", () => {
+    const PrimeSelect = { name: "PrimeSelectStub" };
+    let captured = "";
+    const globalScope = { PrimeVue: { Select: PrimeSelect }, document: { body: { nodeType: 1 } } };
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderSelectInput(h, {
       id: "search-participant",
@@ -180,24 +210,119 @@ describe("primevue render primitives", () => {
         { value: "", label: "All participants" },
         { value: "ana", label: "Ana" },
       ],
-    }, { PrimeVue: { Select: { name: "PrimeSelectStub" } } });
+      onChange: event => {
+        captured = String(event?.target?.value || "");
+      },
+    }, globalScope);
 
-    expect(vnode.type).toBe("select");
-    expect(vnode.props.id).toBe("search-participant");
-    expect(vnode.children).toHaveLength(2);
+    expect(vnode.type).toBe("div");
+    expect(vnode.props.class).toBe("waan-prime-select-host");
+    expect(vnode.children[0].type).toBe(PrimeSelect);
+    expect(vnode.children[0].props.inputId).toBe("search-participant");
+    expect(vnode.children[0].props.optionLabel).toBe("label");
+    expect(vnode.children[0].props.optionValue).toBe("value");
+    expect(vnode.children[0].props.appendTo).toBe(globalScope.document.body);
+    expect(vnode.children[0].props.panelClass).toContain("waan-prime-select-overlay");
+    expect(vnode.children[0].props["data-ui-runtime"]).toBe("primevue");
+    vnode.children[0].props["onUpdate:modelValue"]("ana");
+    expect(captured).toBe("ana");
   });
 
-  it("renders native date input even when PrimeVue DatePicker is available", () => {
+  it("renders PrimeVue DatePicker and maps ISO bounds + model updates", () => {
+    const PrimeDatePicker = { name: "PrimeDatePickerStub" };
+    let captured = "";
+    const globalScope = { PrimeVue: { DatePicker: PrimeDatePicker }, document: { body: { nodeType: 1 } } };
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderDateInput(h, {
       id: "search-end",
       value: "2026-03-10",
-    }, { PrimeVue: { DatePicker: { name: "PrimeDatePickerStub" } } });
+      onChange: event => {
+        captured = String(event?.target?.value || "");
+      },
+      attrs: {
+        min: "2026-01-01",
+        max: "2026-12-31",
+      },
+    }, globalScope);
 
-    expect(vnode.type).toBe("input");
-    expect(vnode.props.type).toBe("date");
-    expect(vnode.props.id).toBe("search-end");
-    expect(vnode.props.value).toBe("2026-03-10");
+    expect(vnode.type).toBe(PrimeDatePicker);
+    expect(vnode.props.inputId).toBe("search-end");
+    expect(vnode.props.modelValue).toBe("2026-03-10");
+    expect(vnode.props.updateModelType).toBe("string");
+    expect(vnode.props.dateFormat).toBe("yy-mm-dd");
+    expect(vnode.props.appendTo).toBe(globalScope.document.body);
+    expect(vnode.props.panelClass).toContain("waan-prime-datepicker-overlay");
+    expect(vnode.props.minDate instanceof Date).toBe(true);
+    expect(vnode.props.maxDate instanceof Date).toBe(true);
+    expect(vnode.props["data-ui-runtime"]).toBe("primevue");
+    vnode.props["onUpdate:modelValue"]("2026-03-21");
+    expect(captured).toBe("2026-03-21");
+  });
+
+  it("normalizes PrimeVue Calendar fallback to local ISO values", () => {
+    const PrimeCalendar = { name: "PrimeCalendarStub" };
+    let captured = "";
+    const h = (type, props = {}, children = []) => ({ type, props, children });
+    const vnode = renderDateInput(h, {
+      id: "search-start",
+      value: "2026-03-10",
+      onChange: event => {
+        captured = String(event?.target?.value || "");
+      },
+      attrs: {
+        min: "2026-03-01",
+        max: "2026-03-31",
+      },
+    }, { PrimeVue: { Calendar: PrimeCalendar } });
+
+    expect(vnode.type).toBe(PrimeCalendar);
+    expect(vnode.props.modelValue instanceof Date).toBe(true);
+    expect(vnode.props.updateModelType).toBeUndefined();
+    expect(vnode.props.modelValue.getFullYear()).toBe(2026);
+    expect(vnode.props.modelValue.getMonth()).toBe(2);
+    expect(vnode.props.modelValue.getDate()).toBe(10);
+
+    vnode.props["onUpdate:modelValue"](new Date(2026, 2, 21));
+    expect(captured).toBe("2026-03-21");
+  });
+
+  it("parses ISO date bounds in local calendar time", () => {
+    const PrimeDatePicker = { name: "PrimeDatePickerStub" };
+    const h = (type, props = {}, children = []) => ({ type, props, children });
+    const vnode = renderDateInput(h, {
+      id: "search-start",
+      value: "2026-01-15",
+      attrs: {
+        min: "2026-01-01",
+        max: "2026-01-31",
+      },
+    }, { PrimeVue: { DatePicker: PrimeDatePicker } });
+
+    expect(vnode.props.minDate.getFullYear()).toBe(2026);
+    expect(vnode.props.minDate.getMonth()).toBe(0);
+    expect(vnode.props.minDate.getDate()).toBe(1);
+    expect(vnode.props.maxDate.getFullYear()).toBe(2026);
+    expect(vnode.props.maxDate.getMonth()).toBe(0);
+    expect(vnode.props.maxDate.getDate()).toBe(31);
+  });
+
+  it("falls back to native select and date inputs when PrimeVue controls are unavailable", () => {
+    const h = (type, props = {}, children = []) => ({ type, props, children });
+    const selectNode = renderSelectInput(h, {
+      id: "native-select",
+      value: "all",
+      options: [{ value: "all", label: "All time" }],
+    }, { PrimeVue: {} });
+    const dateNode = renderDateInput(h, {
+      id: "native-date",
+      value: "2026-03-10",
+    }, { PrimeVue: {} });
+
+    expect(selectNode.type).toBe("select");
+    expect(selectNode.props.id).toBe("native-select");
+    expect(dateNode.type).toBe("input");
+    expect(dateNode.props.type).toBe("date");
+    expect(dateNode.props.id).toBe("native-date");
   });
 
   it("renders PrimeVue Dialog container when runtime component is available", () => {

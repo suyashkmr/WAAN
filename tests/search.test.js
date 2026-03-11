@@ -400,4 +400,49 @@ describe("search controller", () => {
 
     expect(elements.resultsListEl.querySelectorAll(".search-result")).toHaveLength(1);
   });
+
+  it("syncs the bridged participant select after programmatic state updates and resets", () => {
+    setDatasetEntries([
+      { type: "message", sender: "Ana", message: "x" },
+      { type: "message", sender: "Ben", message: "y" },
+    ]);
+
+    const elements = buildElements();
+    elements.participantSelect.id = "search-participant";
+    document.body.appendChild(elements.participantSelect);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    const bridgeStates = [];
+    const bridgeVueRuntime = {
+      h,
+      reactive(value) {
+        bridgeStates.push(value);
+        return value;
+      },
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+      render,
+      Fragment,
+    };
+
+    const controller = createSearchController({ elements, options: { vueRuntime: bridgeVueRuntime } });
+    controller.populateParticipants();
+
+    setSearchQuery({ text: "", participant: "Ben", start: "", end: "" });
+    controller.applyStateToForm();
+    expect(elements.participantSelect.value).toBe("Ben");
+    expect(elements.participantSelect.__waanPrimeSelectBridge.state.value).toBe("Ben");
+
+    controller.resetState();
+    expect(elements.participantSelect.value).toBe("");
+    expect(elements.participantSelect.__waanPrimeSelectBridge.state.value).toBe("");
+  });
 });

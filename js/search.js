@@ -93,7 +93,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     buildParticipantOptionsCacheKey,
     vueRuntime,
   });
-  const { populateParticipants, resetParticipantOptionsCache } = participantUiController;
+  const { populateParticipants, resetParticipantOptionsCache, syncParticipantBridgeState } = participantUiController;
   const resultsUiController = createSearchResultsUiController({
     resultsSummaryEl,
     resultsListEl,
@@ -133,6 +133,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
       startInput,
       endInput,
     });
+    syncParticipantBridgeState();
   }
 
   function getEntries() {
@@ -269,6 +270,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
       startInput,
       endInput,
     });
+    syncParticipantBridgeState();
     resetResultsRenderCache();
     clearStateOverride();
     resetParticipantOptionsCache();

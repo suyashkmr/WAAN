@@ -60,15 +60,24 @@
     gap: 0.4rem;
 }
 
+.saved-view-manage .prime-select-bridge,
+.compare-select .prime-select-bridge,
+.search-control .prime-select-bridge {
+    width: 100%;
+}
+
 .saved-view-manage select {
     min-width: 200px;
 }
 
 .saved-view-save input[type="text"],
 .saved-view-manage select,
+.saved-view-manage .prime-select-bridge .p-select,
 .compare-select select,
+.compare-select .prime-select-bridge .p-select,
 .search-control input,
-.search-control select {
+.search-control select,
+.search-control .prime-select-bridge .p-select {
     min-height: var(--control-height-md);
     border-radius: var(--control-radius-md);
     border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
@@ -82,17 +91,23 @@
 
 .saved-view-save input[type="text"]:hover,
 .saved-view-manage select:hover,
+.saved-view-manage .prime-select-bridge .p-select:hover,
 .compare-select select:hover,
+.compare-select .prime-select-bridge .p-select:hover,
 .search-control input:hover,
-.search-control select:hover {
+.search-control select:hover,
+.search-control .prime-select-bridge .p-select:hover {
     border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
 }
 
 .saved-view-save input[type="text"]:focus,
 .saved-view-manage select:focus,
+.saved-view-manage .prime-select-bridge .p-select:focus-within,
 .compare-select select:focus,
+.compare-select .prime-select-bridge .p-select:focus-within,
 .search-control input:focus,
-.search-control select:focus {
+.search-control select:focus,
+.search-control .prime-select-bridge .p-select:focus-within {
     outline: none;
     border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -101,9 +116,12 @@
 
 .saved-view-save input[type="text"]:disabled,
 .saved-view-manage select:disabled,
+.saved-view-manage .prime-select-bridge .p-select.p-disabled,
 .compare-select select:disabled,
+.compare-select .prime-select-bridge .p-select.p-disabled,
 .search-control input:disabled,
-.search-control select:disabled {
+.search-control select:disabled,
+.search-control .prime-select-bridge .p-select.p-disabled {
     opacity: 0.58;
     border-color: color-mix(in srgb, var(--border) 72%, transparent);
     background: color-mix(in srgb, var(--card-bg) 80%, transparent);
@@ -465,9 +483,12 @@
 
 #search-panel .search-control input,
 #search-panel .search-control select,
+#search-panel .search-control .prime-select-bridge .p-select,
 #saved-views-card .saved-view-actions input,
 #saved-views-card .saved-view-actions select,
-#saved-views-card .saved-view-compare select {
+#saved-views-card .saved-view-actions .prime-select-bridge .p-select,
+#saved-views-card .saved-view-compare select,
+#saved-views-card .saved-view-compare .prime-select-bridge .p-select {
     min-height: var(--control-height-md);
     border-radius: var(--control-radius-md);
     border-width: 1px;
@@ -482,6 +503,16 @@
         background var(--motion-duration-fast) var(--motion-ease-out);
 }
 
+#search-panel .search-control .prime-select-bridge .p-select,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select {
+    padding-inline: 0;
+}
+
+#search-panel .search-control .prime-select-bridge .p-select-label,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select-label {
+    padding-inline: 0.7rem;
+}
+
 #search-panel .search-control label,
 #saved-views-card .saved-view-actions label,
 #saved-views-card .saved-view-compare label {
@@ -490,18 +521,24 @@
 }
 
 #search-panel .search-control :is(input, select)[aria-invalid="true"],
-#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select)[aria-invalid="true"] {
+#search-panel .search-control .prime-select-bridge .p-select[aria-invalid="true"],
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select)[aria-invalid="true"],
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select[aria-invalid="true"] {
     border-color: color-mix(in srgb, var(--negative) 76%, transparent);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--negative) 38%, transparent);
 }
 
 #search-panel .search-control :is(input, select):hover,
-#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select):hover {
+#search-panel .search-control .prime-select-bridge .p-select:hover,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select):hover,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select:hover {
     border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
 }
 
 #search-panel .search-control :is(input, select):focus-visible,
-#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select):focus-visible {
+#search-panel .search-control .prime-select-bridge .p-select:focus-within,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select):focus-visible,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select:focus-within {
     border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
     background: color-mix(in srgb, var(--card-bg) 96%, transparent);
@@ -509,7 +546,9 @@
 }
 
 #search-panel .search-control :is(input, select)[disabled],
-#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select)[disabled] {
+#search-panel .search-control .prime-select-bridge .p-select.p-disabled,
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select)[disabled],
+#saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select.p-disabled {
     opacity: 0.58;
     border-color: color-mix(in srgb, var(--border) 72%, transparent);
     background: color-mix(in srgb, var(--card-bg) 80%, transparent);

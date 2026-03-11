@@ -885,8 +885,10 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
 
 - [ ] Phase 14 (2-4 days): Final 100% migration sign-off, PrimeVue completion, and purge.
   - [ ] Complete the deferred PrimeVue form-control adoption so the remaining core controls are no longer native fallbacks.
-    - [ ] Restore PrimeVue `Select/Dropdown` as the production default where runtime-native `select` is still used.
-    - [ ] Restore PrimeVue `DatePicker/Calendar` as the production default where runtime-native `input[type="date"]` is still used.
+    - [x] Restore PrimeVue `Select/Dropdown` as the production default where runtime-native `select` is still used.
+      - [x] Shared render primitives default back to PrimeVue select controls (`js/vue/primevueRenderPrimitives.js`), and remaining search/saved production callers now mount PrimeVue-visible selects while preserving hidden native refs for controller compatibility (`js/search/participantUi.js`, `js/savedViewsUi.js`, `js/vue/primeSelectBridge.js`).
+    - [x] Restore PrimeVue `DatePicker/Calendar` as the production default where runtime-native `input[type="date"]` is still used.
+      - [x] Shared render primitives default back to PrimeVue date controls with existing `YYYY-MM-DD` controller contract preserved (`js/vue/primevueRenderPrimitives.js`).
     - [ ] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
     - [ ] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
   - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.

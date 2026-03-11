@@ -1,3 +1,217 @@
+.waan-prime-control-overlay {
+    z-index: 1200;
+    border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+    border-radius: var(--control-radius-md);
+    background: color-mix(in srgb, var(--card-bg) 98%, transparent);
+    box-shadow: var(--shadow-card-deep);
+    color: var(--text);
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.45));
+    overflow: hidden;
+}
+
+.waan-prime-select-host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
+.waan-prime-select-host > :is(.p-select, .p-dropdown) {
+    width: 100%;
+    min-width: 0;
+}
+
+.waan-prime-select-overlay {
+    display: block;
+    min-width: min(22rem, calc(100vw - 2rem));
+    max-height: min(18rem, 45vh);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.waan-prime-select-overlay :is(.p-select-list-container, .p-dropdown-items-wrapper) {
+    max-height: 18rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.waan-prime-select-overlay .p-virtualscroller {
+    position: relative;
+    max-height: min(18rem, 45vh);
+    overflow: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    contain: strict;
+    transform: translateZ(0);
+    will-change: scroll-position;
+    outline: 0;
+}
+
+.waan-prime-select-overlay .p-virtualscroller-content {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    min-height: 100%;
+    min-width: 100%;
+    will-change: transform;
+}
+
+.waan-prime-select-overlay .p-virtualscroller-spacer {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: 1px;
+    height: 1px;
+    transform-origin: 0 0;
+    pointer-events: none;
+}
+
+.waan-prime-select-overlay .p-virtualscroller-loading {
+    position: sticky;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    transform: none !important;
+    min-height: 0;
+}
+
+.waan-prime-select-overlay :is(.p-select-list, .p-dropdown-items) {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem;
+}
+
+.waan-prime-select-overlay ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem;
+}
+
+.waan-prime-select-overlay :is(.p-select-option, .p-dropdown-item) {
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: calc(var(--control-radius-md) - 0.2rem);
+    color: color-mix(in srgb, var(--text) 94%, transparent);
+    cursor: pointer;
+    transition: background var(--motion-duration-fast) var(--motion-ease-out), color var(--motion-duration-fast) var(--motion-ease-out);
+}
+
+.waan-prime-select-overlay li {
+    list-style: none;
+}
+
+.waan-prime-select-overlay :is(.p-select-option:hover, .p-dropdown-item:hover, .p-select-option.p-focus, .p-dropdown-item.p-focus) {
+    background: color-mix(in srgb, var(--accent) 14%, var(--card-bg));
+}
+
+.waan-prime-select-overlay :is(.p-select-option.p-select-option-selected, .p-dropdown-item.p-highlight) {
+    background: color-mix(in srgb, var(--accent) 20%, var(--card-bg));
+    color: color-mix(in srgb, var(--accent) 78%, var(--text));
+}
+
+.waan-prime-select-overlay :is(.p-select-empty-message, .p-dropdown-empty-message) {
+    padding: 0.8rem;
+    color: var(--muted);
+}
+
+.waan-prime-datepicker-overlay {
+    padding: 0.6rem;
+    min-width: min(20rem, calc(100vw - 2rem));
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--type-label-sm);
+    letter-spacing: var(--tracking-label);
+    color: color-mix(in srgb, var(--muted) 88%, var(--text));
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-prev-button,
+.waan-prime-datepicker-overlay .p-datepicker-next-button,
+.waan-prime-datepicker-overlay .p-datepicker-month,
+.waan-prime-datepicker-overlay .p-datepicker-year {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    border-radius: calc(var(--control-radius-md) - 0.25rem);
+    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+    color: color-mix(in srgb, var(--text) 94%, transparent);
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-calendar-container {
+    width: 100%;
+}
+
+.waan-prime-datepicker-overlay table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.2rem;
+}
+
+.waan-prime-datepicker-overlay th {
+    padding: 0.2rem;
+    font-size: var(--type-label-xs);
+    letter-spacing: var(--tracking-label);
+    color: color-mix(in srgb, var(--muted) 84%, var(--text));
+    text-transform: uppercase;
+}
+
+.waan-prime-datepicker-overlay td {
+    padding: 0;
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-day,
+.waan-prime-datepicker-overlay .p-datepicker-day-view,
+.waan-prime-datepicker-overlay .p-datepicker-weekday-cell > span,
+.waan-prime-datepicker-overlay .p-disabled,
+.waan-prime-datepicker-overlay .p-datepicker-today-button,
+.waan-prime-datepicker-overlay .p-datepicker-clear-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 2.2rem;
+    min-height: 2.2rem;
+    border-radius: calc(var(--control-radius-md) - 0.2rem);
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-day,
+.waan-prime-datepicker-overlay .p-datepicker-day-view {
+    border: 1px solid transparent;
+    color: color-mix(in srgb, var(--text) 94%, transparent);
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-day:hover,
+.waan-prime-datepicker-overlay .p-datepicker-day-view:hover {
+    background: color-mix(in srgb, var(--accent) 12%, var(--card-bg));
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-day.p-highlight,
+.waan-prime-datepicker-overlay .p-datepicker-day-view.p-highlight {
+    background: color-mix(in srgb, var(--accent) 18%, var(--card-bg));
+    border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+    color: color-mix(in srgb, var(--accent) 82%, var(--text));
+}
+
+.waan-prime-datepicker-overlay .p-datepicker-day.p-disabled,
+.waan-prime-datepicker-overlay .p-datepicker-day-view.p-disabled {
+    opacity: 0.42;
+}
+
 .hero-shell {
     padding: var(--hero-shell-pad-top) var(--hero-shell-pad-x) var(--hero-shell-pad-bottom);
     background: var(--card-bg);
@@ -2367,7 +2581,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     max-width: 560px;
 }
 
-.page-controls .control.dataset-control select {
+.page-controls .control.dataset-control :is(select, .waan-prime-select-host, .p-select) {
     width: 100%;
     min-width: 0;
     max-width: none;
@@ -2465,16 +2679,19 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     color: color-mix(in srgb, var(--muted) 88%, transparent);
 }
 
-.page-controls select {
+.page-controls :is(select, .waan-prime-select-host, .p-select, .p-datepicker) {
     appearance: none;
     border: 1px solid var(--border);
     border-radius: 0.68rem;
     background: var(--card-bg);
     color: var(--text);
-    padding: 0.42rem 2rem 0.42rem 0.8rem;
     font-size: 0.9rem;
     line-height: 1.2;
     box-shadow: var(--native-select-shadow);
+}
+
+.page-controls select {
+    padding: 0.42rem 2rem 0.42rem 0.8rem;
     background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
         linear-gradient(135deg, var(--muted) 50%, transparent 50%);
     background-position: calc(100% - 1.1rem) calc(50% - 0.35rem),
@@ -2483,9 +2700,106 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     background-repeat: no-repeat;
 }
 
-.page-controls select:focus {
+.page-controls :is(select, .waan-prime-select-host, .p-select, .p-datepicker):focus-within,
+.page-controls :is(select, .waan-prime-select-host, .p-select, .p-datepicker):focus {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+.page-controls :is(.p-select, .p-datepicker) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-height-md);
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    background-image: none;
+}
+
+.page-controls .p-select-label,
+.page-controls .p-datepicker-input {
+    width: 100%;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    padding: 0.42rem 2rem 0.42rem 0.8rem;
+    font: inherit;
+    line-height: inherit;
+    box-shadow: none;
+}
+
+.page-controls .p-select-label.p-placeholder,
+.page-controls .p-datepicker-input::placeholder {
+    color: var(--muted);
+}
+
+.page-controls .p-select-dropdown {
+    position: absolute;
+    inset-inline-end: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    pointer-events: none;
+}
+
+.page-controls .p-select-overlay,
+.page-controls .p-datepicker-panel {
+    margin-top: 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+    border-radius: calc(var(--control-radius-md) + 2px);
+    background: color-mix(in srgb, var(--card-bg) 98%, transparent);
+    color: var(--text);
+    box-shadow: var(--shadow-float);
+    overflow: hidden;
+    z-index: 30;
+}
+
+.page-controls .p-select-list-container {
+    max-height: min(18rem, 45vh);
+    overflow: auto;
+}
+
+.page-controls .p-select-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem;
+}
+
+.page-controls .p-select-option,
+.page-controls .p-datepicker-day,
+.page-controls .p-datepicker-month,
+.page-controls .p-datepicker-year {
+    border-radius: calc(var(--control-radius-md) - 4px);
+}
+
+.page-controls .p-select-option {
+    padding: 0.55rem 0.7rem;
+    cursor: pointer;
+}
+
+.page-controls .p-select-option.p-focus,
+.page-controls .p-select-option:hover,
+.page-controls .p-datepicker-day:hover,
+.page-controls .p-datepicker-month:hover,
+.page-controls .p-datepicker-year:hover {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.page-controls .p-select-option.p-select-option-selected,
+.page-controls .p-datepicker-day.p-datepicker-day-selected,
+.page-controls .p-datepicker-month.p-datepicker-month-selected,
+.page-controls .p-datepicker-year.p-datepicker-year-selected {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: color-mix(in srgb, var(--accent) 76%, var(--text));
 }
 
 .notifications-panel {
@@ -2521,7 +2835,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     width: 100%;
 }
 
-.page-controls .custom-range-inputs input[type="date"] {
+.page-controls .custom-range-inputs :is(input[type="date"], .p-datepicker) {
     flex: 1 1 170px;
     min-width: 150px;
 }
@@ -2541,7 +2855,7 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     max-width: 420px;
 }
 
-.page-controls .control.period-control select {
+.page-controls .control.period-control :is(select, .waan-prime-select-host, .p-select) {
     width: 100%;
     min-width: 0;
 }
@@ -2762,16 +3076,24 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     flex-wrap: wrap;
 }
 
-.custom-range-inputs input[type="date"] {
+.custom-range-inputs :is(input[type="date"], .p-datepicker) {
     border: 1px solid var(--border);
     border-radius: 0.5rem;
     background: var(--card-bg);
     color: var(--text);
-    padding: 0.35rem 0.6rem;
     font-size: 0.9rem;
 }
 
-.custom-range-inputs input[type="date"]:disabled {
+.custom-range-inputs input[type="date"] {
+    padding: 0.35rem 0.6rem;
+}
+
+.custom-range-inputs .p-datepicker-input {
+    padding: 0.35rem 0.6rem;
+}
+
+.custom-range-inputs :is(input[type="date"], .p-datepicker):disabled,
+.custom-range-inputs .p-datepicker.p-disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -2859,13 +3181,20 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
     gap: 0.5rem;
 }
 
-.participants-controls .control-group select {
+.participants-controls .control-group :is(select, .waan-prime-select-host, .p-select) {
     border: 1px solid var(--border);
     border-radius: 0.6rem;
     background: var(--card-bg);
     color: var(--text);
-    padding: 0.38rem 1.75rem 0.38rem 0.62rem;
     font-size: 0.82rem;
+}
+
+.participants-controls .control-group .waan-prime-select-host {
+    min-width: 7rem;
+}
+
+.participants-controls .control-group select {
+    padding: 0.38rem 1.75rem 0.38rem 0.62rem;
     appearance: none;
     background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
         linear-gradient(135deg, var(--muted) 50%, transparent 50%);
@@ -2873,6 +3202,69 @@ main.is-syncing > .card:nth-of-type(-n+2) .card-content::after {
         calc(100% - 0.7rem) calc(50% - 0.25rem);
     background-size: 5px 5px, 5px 5px;
     background-repeat: no-repeat;
+}
+
+.participants-controls .control-group .p-select {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 7rem;
+    padding: 0;
+    background-image: none;
+}
+
+.participants-controls .control-group .p-select-label {
+    border: none;
+    background: transparent;
+    color: inherit;
+    width: 100%;
+    padding: 0.38rem 1.75rem 0.38rem 0.62rem;
+    font: inherit;
+    line-height: inherit;
+}
+
+.participants-controls .control-group .p-select-dropdown {
+    position: absolute;
+    inset-inline-end: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    pointer-events: none;
+}
+
+.participants-controls .control-group .p-select-overlay {
+    margin-top: 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+    border-radius: calc(var(--control-radius-md) + 2px);
+    background: color-mix(in srgb, var(--card-bg) 98%, transparent);
+    color: var(--text);
+    box-shadow: var(--shadow-float);
+    overflow: hidden;
+    z-index: 25;
+}
+
+.participants-controls .control-group .p-select-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem;
+}
+
+.participants-controls .control-group .p-select-option {
+    padding: 0.42rem 0.55rem;
+    border-radius: calc(var(--control-radius-md) - 4px);
+    cursor: pointer;
+}
+
+.participants-controls .control-group .p-select-option.p-focus,
+.participants-controls .control-group .p-select-option:hover {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.participants-controls .control-group .p-select-option.p-select-option-selected {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: color-mix(in srgb, var(--accent) 76%, var(--text));
 }
 
 .participants-quick-filters {
