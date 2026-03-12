@@ -52,13 +52,6 @@ export function createDatasetLifecycleController({ elements, deps }) {
   }
 
   /**
-   * @param {HTMLSelectElement | null | undefined} selectEl
-   */
-  function hasPrimeSelectBridge(selectEl) {
-    return Boolean(/** @type {any} */ (selectEl)?.__waanPrimeSelectBridge);
-  }
-
-  /**
    * @param {AnyRecord[]} entries
    * @param {string} label
    * @param {AnyRecord} [options]
@@ -98,7 +91,7 @@ export function createDatasetLifecycleController({ elements, deps }) {
       customStart: "",
       customEnd: "",
     });
-    if (rangeSelect && (!pageControlsHandled || !hasPrimeSelectBridge(rangeSelect))) {
+    if (rangeSelect && !pageControlsHandled) {
       rangeSelect.value = "all";
     }
     resetHourlyFilters();

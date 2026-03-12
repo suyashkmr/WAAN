@@ -427,6 +427,36 @@ describe("savedViews controller", () => {
     expect(focusPageControl).toHaveBeenCalledWith("range");
   });
 
+  it("prefers the shell bridge for saved-views focus-range actions even when a startup range ref exists", () => {
+    const elements = buildElements();
+    const dependencies = buildDependencies();
+    /** @type {Record<string, Function>} */
+    let panelActionHandlers = {};
+    const focusPageControl = vi.fn(() => true);
+    const nativeFocus = vi.fn();
+    elements.rangeSelect.focus = nativeFocus;
+    installShellVueBridge({
+      focusPageControl,
+    });
+    installSearchSavedVueBridge({
+      setPanelActionHandlers: vi.fn(handlers => {
+        panelActionHandlers = handlers;
+        return true;
+      }),
+      renderSavedViewsGallery: vi.fn(() => true),
+      renderSavedViewsComparison: vi.fn(() => true),
+      renderSavedViewsPanelState: vi.fn(() => true),
+    });
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+    panelActionHandlers["savedViews:focus-range"]?.();
+
+    expect(focusPageControl).toHaveBeenCalledWith("range");
+    expect(nativeFocus).not.toHaveBeenCalled();
+  });
+
   it("skips native saved-view action listeners when bridge-owned buttons are mounted", async () => {
     const elements = buildElements();
     document.body.append(
@@ -588,20 +618,13 @@ describe("savedViews controller", () => {
     expect(dirtyCard?.textContent).toContain("Unsaved changes");
   });
 
-  it("marks the active saved view dirty while custom range edits are still in progress", async () => {
+  it("marks the active saved view dirty while custom range drafts are still in progress", async () => {
     const elements = buildElements();
     installSavedViewsBridge(elements);
-    const allOption = document.createElement("option");
-    allOption.value = "all";
-    allOption.textContent = "All";
-    const customOption = document.createElement("option");
-    customOption.value = "custom";
-    customOption.textContent = "Custom";
-    elements.rangeSelect.append(allOption, customOption);
-
     const dependencies = buildDependencies();
     dependencies.getCurrentRange = vi.fn(() => "all");
     dependencies.getCustomRange = vi.fn(() => null);
+    dependencies.readPageControlDraftState = null;
 
     const controller = createSavedViewsController({ elements, dependencies });
     controller.init();
@@ -617,14 +640,41 @@ describe("savedViews controller", () => {
 
     elements.rangeSelect.value = "custom";
     elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
-
-    let dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
-    expect(dirtyCard).toBeTruthy();
-
     elements.customStartInput.value = "2025-01-02";
     elements.customStartInput.dispatchEvent(new Event("input", { bubbles: true }));
 
-    dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
+    const dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
+    expect(dirtyCard).toBeTruthy();
+    expect(dirtyCard?.textContent).toContain("Unsaved changes");
+  });
+
+  it("keeps native draft listeners active when a draft reader exists but page controls are not bridge-owned", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    const dependencies = buildDependencies();
+    dependencies.getCurrentRange = vi.fn(() => "all");
+    dependencies.getCustomRange = vi.fn(() => null);
+    dependencies.readPageControlDraftState = vi.fn(() => null);
+    dependencies.hasBridgeOwnedPageControls = vi.fn(() => false);
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Observed native draft";
+    elements.saveButton.click();
+    elements.listSelect.value = "view-1";
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
+
+    elements.rangeSelect.value = "custom";
+    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    elements.customStartInput.value = "2025-01-02";
+    elements.customStartInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    const dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
     expect(dirtyCard).toBeTruthy();
     expect(dirtyCard?.textContent).toContain("Unsaved changes");
   });
@@ -646,6 +696,8 @@ describe("savedViews controller", () => {
     const dependencies = buildDependencies();
     dependencies.getCurrentRange = vi.fn(() => "90");
     dependencies.getCustomRange = vi.fn(() => null);
+    let draftState = { rangeValue: "90", customStart: "", customEnd: "" };
+    dependencies.readPageControlDraftState = vi.fn(() => draftState);
 
     const controller = createSavedViewsController({ elements, dependencies });
     controller.init();
@@ -659,15 +711,13 @@ describe("savedViews controller", () => {
 
     expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
 
-    elements.rangeSelect.value = "custom";
-    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
-    elements.customStartInput.value = "2025-01-02";
-    elements.customStartInput.dispatchEvent(new Event("input", { bubbles: true }));
+    draftState = { rangeValue: "custom", customStart: "2025-01-02", customEnd: "" };
+    window.dispatchEvent(new CustomEvent(WAAN_PAGE_CONTROL_DRAFT_EVENT, { detail: draftState }));
 
     expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeTruthy();
 
-    elements.rangeSelect.value = "90";
-    elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    draftState = { rangeValue: "90", customStart: "", customEnd: "" };
+    window.dispatchEvent(new CustomEvent(WAAN_PAGE_CONTROL_DRAFT_EVENT, { detail: draftState }));
 
     expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
   });

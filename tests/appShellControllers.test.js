@@ -15,7 +15,9 @@ describe("appShell controllers", () => {
     const rangeSelect = document.createElement("select");
     const optionAll = document.createElement("option");
     optionAll.value = "all";
-    rangeSelect.appendChild(optionAll);
+    const optionCustom = document.createElement("option");
+    optionCustom.value = "custom";
+    rangeSelect.append(optionAll, optionCustom);
     rangeSelect.value = "custom";
 
     const analytics = {
@@ -77,11 +79,76 @@ describe("appShell controllers", () => {
       customStart: "",
       customEnd: "",
     });
-    expect(rangeSelect.value).toBe("all");
+    expect(rangeSelect.value).toBe("custom");
     expect(deps.setActiveChatId).not.toHaveBeenCalled();
     expect(deps.renderDashboard).toHaveBeenCalledWith(analytics);
     expect(deps.refreshChatSelector).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ analytics, datasetId: null });
+  });
+
+  it("datasetLifecycle treats bridge-owned page controls as the primary writer", async () => {
+    const rangeSelect = document.createElement("select");
+    const optionAll = document.createElement("option");
+    optionAll.value = "all";
+    const optionCustom = document.createElement("option");
+    optionCustom.value = "custom";
+    rangeSelect.append(optionAll, optionCustom);
+    rangeSelect.value = "custom";
+
+    const analytics = {
+      total_messages: 2,
+      date_range: { start: "2025-01-01", end: "2025-01-02" },
+    };
+
+    const deps = {
+      setDatasetEntries: vi.fn(),
+      setDatasetFingerprint: vi.fn(),
+      setDatasetParticipantDirectory: vi.fn(),
+      clearAnalyticsCache: vi.fn(),
+      setDatasetLabel: vi.fn(),
+      setCurrentRange: vi.fn(),
+      setCustomRange: vi.fn(),
+      resetHourlyFilters: vi.fn(),
+      resetWeekdayFilters: vi.fn(),
+      computeDatasetFingerprint: vi.fn(() => "fp-2"),
+      setCachedAnalytics: vi.fn(),
+      setDatasetAnalytics: vi.fn(),
+      setActiveChatId: vi.fn(),
+      computeAnalyticsWithWorker: vi.fn(async () => analytics),
+      renderDashboard: vi.fn(),
+      updateCustomRangeBounds: vi.fn(),
+      refreshChatSelector: vi.fn(async () => {}),
+      updateStatus: vi.fn(),
+      setDashboardLoadingState: vi.fn(),
+      formatNumber: value => String(value),
+      nextAnalyticsRequestToken: vi.fn(() => 1),
+      isAnalyticsRequestCurrent: vi.fn(() => true),
+      resetSavedViewsForNewDataset: vi.fn(),
+      resetSearchState: vi.fn(),
+      populateSearchParticipants: vi.fn(),
+      syncPageControls: vi.fn(() => true),
+    };
+
+    const { applyEntriesToApp } = createDatasetLifecycleController({
+      elements: { rangeSelect },
+      deps,
+    });
+
+    await applyEntriesToApp(
+      [
+        { sender: "Ana", sender_id: "ana", message: "hello", timestamp: "2025-01-01T00:00:00Z" },
+        { sender: "Ben", sender_id: "ben", message: "hi", timestamp: "2025-01-02T00:00:00Z" },
+      ],
+      "Demo",
+      { entriesNormalized: true, analyticsOverride: analytics },
+    );
+
+    expect(deps.syncPageControls).toHaveBeenCalledWith({
+      rangeValue: "all",
+      customStart: "",
+      customEnd: "",
+    });
+    expect(rangeSelect.value).toBe("custom");
   });
 
   it("relayBootstrap wires controls and starts polling", async () => {

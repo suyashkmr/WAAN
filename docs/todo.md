@@ -907,9 +907,12 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
           - [ ] `js/vue/shellPageControlsIsland.js`
           - [ ] `js/appShell/chatSelection.js`
           - [ ] `js/appShell/rangeFilters.js`
-          - [ ] `js/savedViews.js`
-          - [ ] `js/savedViewsDirtyTracking.js`
-          - [ ] `js/appShell/datasetLifecycle.js`
+          - [x] `js/savedViews.js`
+            - [x] Saved-view focus and dirty-signature paths no longer rely on preserved native page-control refs; focus prefers the shell bridge target and dirty-state capture now derives from app state plus page-control draft state only.
+          - [x] `js/savedViewsDirtyTracking.js`
+            - [x] Saved-view dirty-state refresh now uses app-shell UI-state updates and page-control draft signals only when the shell bridge actually owns page-control interactions; native draft listeners remain active for standalone and native-fallback paths even if a draft-state reader is present.
+          - [x] `js/appShell/datasetLifecycle.js`
+            - [x] Dataset load/reset no longer inspects detached native range-select bridge markers; when shell page-control sync succeeds, the bridge is treated as the primary writer and the startup DOM ref is left untouched.
           - [x] `js/appShell/eventBindings.js`
             - [x] Shell-driven page-control actions now fall back to shell bridge state/sync contracts when the runtime no longer has native page-control refs, instead of requiring detached native inputs/selects for range and custom-date handling.
           - [ ] `js/appShell/dashboardRender/participantsPanel.js`

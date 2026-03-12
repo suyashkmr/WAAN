@@ -68,6 +68,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     vueRuntime = null,
     subscribeAppShellUiState = null,
     readPageControlDraftState = null,
+    hasBridgeOwnedPageControls = null,
     globalScope = globalThis,
   } = dependencies;
 
@@ -78,11 +79,14 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   const shellBridge = () => resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
 
   function focusRangeControl() {
+    if (shellBridge()?.focusPageControl?.("range")) {
+      return true;
+    }
     if (rangeSelect?.focus) {
       rangeSelect.focus();
       return true;
     }
-    return Boolean(shellBridge()?.focusPageControl?.("range"));
+    return false;
   }
 
   function isActiveViewDirty() {
@@ -324,6 +328,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       rangeSelect,
       customStartInput,
       customEndInput,
+      readDraftRangeState: readPageControlDraftState,
+      hasBridgeOwnedPageControls,
       globalScope,
       onStateChange: refreshOnStateChange,
     });

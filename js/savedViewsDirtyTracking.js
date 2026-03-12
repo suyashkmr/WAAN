@@ -60,6 +60,8 @@ export function subscribeSavedViewDirtyState({
   rangeSelect,
   customStartInput,
   customEndInput,
+  readDraftRangeState = null,
+  hasBridgeOwnedPageControls = null,
   globalScope = globalThis,
   onStateChange,
 }) {
@@ -92,31 +94,37 @@ export function subscribeSavedViewDirtyState({
     });
   }
 
-  const handleDraftCustomInput = () => onStateChange();
+  const bridgeOwnsPageControls = typeof hasBridgeOwnedPageControls === "function"
+    ? Boolean(hasBridgeOwnedPageControls())
+    : false;
 
-  if (rangeSelect) {
-    rangeSelect.addEventListener("change", handleDraftRangeChange);
-    unsubscribers.push(() => {
-      rangeSelect.removeEventListener("change", handleDraftRangeChange);
-    });
-  }
+  if (!bridgeOwnsPageControls) {
+    const handleDraftCustomInput = () => onStateChange();
 
-  if (customStartInput) {
-    customStartInput.addEventListener("input", handleDraftCustomInput);
-    customStartInput.addEventListener("change", handleDraftCustomInput);
-    unsubscribers.push(() => {
-      customStartInput.removeEventListener("input", handleDraftCustomInput);
-      customStartInput.removeEventListener("change", handleDraftCustomInput);
-    });
-  }
+    if (rangeSelect) {
+      rangeSelect.addEventListener("change", handleDraftRangeChange);
+      unsubscribers.push(() => {
+        rangeSelect.removeEventListener("change", handleDraftRangeChange);
+      });
+    }
 
-  if (customEndInput) {
-    customEndInput.addEventListener("input", handleDraftCustomInput);
-    customEndInput.addEventListener("change", handleDraftCustomInput);
-    unsubscribers.push(() => {
-      customEndInput.removeEventListener("input", handleDraftCustomInput);
-      customEndInput.removeEventListener("change", handleDraftCustomInput);
-    });
+    if (customStartInput) {
+      customStartInput.addEventListener("input", handleDraftCustomInput);
+      customStartInput.addEventListener("change", handleDraftCustomInput);
+      unsubscribers.push(() => {
+        customStartInput.removeEventListener("input", handleDraftCustomInput);
+        customStartInput.removeEventListener("change", handleDraftCustomInput);
+      });
+    }
+
+    if (customEndInput) {
+      customEndInput.addEventListener("input", handleDraftCustomInput);
+      customEndInput.addEventListener("change", handleDraftCustomInput);
+      unsubscribers.push(() => {
+        customEndInput.removeEventListener("input", handleDraftCustomInput);
+        customEndInput.removeEventListener("change", handleDraftCustomInput);
+      });
+    }
   }
 
   return () => {
