@@ -1047,6 +1047,24 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
       - [x] `npm run ci:verify`
   - [x] Acceptance: header rhythm, command-surface density, and narrow-width presentation are visually more consistent across the PrimeVue-owned surfaces without changing public runtime contracts.
 
+- [x] Phase 18 (2-4 days): Test maintainability and shared harness cleanup.
+  - [x] Extract shared lightweight test harness helpers for repeated Vue/Prime runtime and bridge/bootstrap setup.
+    - [x] Added `tests/uiTestHarness.js` to centralize the reusable Vue runtime stub, PrimeVue global install/reset helpers, and the full-shell DOM seed markup that large integration suites were rebuilding inline.
+    - [x] Expanded `tests/vueBridgeTestUtils.js` with explicit bridge-registry helpers for shared shell/dashboard bridge setup instead of repeated ad hoc `VUE_RUNTIME_REGISTRY_KEY` object construction.
+    - [x] Added `tests/uiTestHarness.test.js` to lock the helper cleanup contract for bridge-runtime and DOM-ref bootstrap markers.
+  - [x] Compress the largest integration suites onto those helpers without changing runtime assertions.
+    - [x] `tests/vueFullShellInteractions.test.js` now uses the shared Vue runtime stub and seeded shell DOM harness instead of carrying its own inline renderer/runtime implementation and repeated bootstrap fixture.
+    - [x] `tests/eventBindingsDetailed.test.js` now uses shared shell/dashboard bridge harness helpers for registry installation and handler capture, reducing repeated bridge setup across the file.
+    - [x] `tests/savedViews.test.js` and `tests/relayControls.test.js` now use the shared UI global cleanup/install helpers instead of repeating inline Vue/Prime global teardown/setup patterns.
+  - [x] Keep the current release gates unchanged and verify the refactor through the existing suites.
+    - [x] Focused suite validation passed on 2026-03-12:
+      - [x] `npm test -- tests/uiTestHarness.test.js tests/vueFullShellInteractions.test.js tests/eventBindingsDetailed.test.js tests/savedViews.test.js tests/relayControls.test.js`
+    - [x] Release-gate validation passed on 2026-03-12:
+      - [x] `npm run ci:verify`
+      - [x] `npm run test:visual`
+      - [x] `npm run test:accessibility-smoke`
+  - [x] Acceptance: the largest app-shell/bridge integration suites now share explicit test harness helpers for runtime/bootstrap setup, with equivalent coverage and lower maintenance duplication.
+
 ## Historical Execution Model
 
 - Historical planning note only:

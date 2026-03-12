@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createEventBindingsController } from "../js/appShell/eventBindings.js";
 import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
+import {
+  createDashboardPanelsBridgeStub,
+  createShellBridgeHarness,
+  installVueRuntimeRegistry,
+} from "./vueBridgeTestUtils.js";
 
 function createHandlers() {
   return {
@@ -42,27 +47,15 @@ function createDeps(overrides = {}) {
 }
 
 describe("event bindings detailed", () => {
-  /** @type {Record<string, Function>} */
-  let shellActionHandlers;
+  let shellHarness;
 
   beforeEach(() => {
     document.body.innerHTML = "";
-    shellActionHandlers = {};
-    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
-      bridges: {
-        [VUE_BRIDGE_NAMES.shell]: {
-          setShellActionHandlers: handlersMap => {
-            shellActionHandlers = handlersMap;
-          },
-          dispatchShellAction: vi.fn(),
-        },
-        [VUE_BRIDGE_NAMES.dashboardPanels]: {
-          ownsParticipantInteractions: true,
-          ownsActivityFilterInteractions: true,
-          setPanelActionHandlers: vi.fn(() => true),
-        },
-      },
-    };
+    shellHarness = createShellBridgeHarness();
+    installVueRuntimeRegistry({
+      [VUE_BRIDGE_NAMES.shell]: shellHarness.shellBridge,
+      [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
+    });
   });
 
   afterEach(() => {
@@ -138,9 +131,9 @@ describe("event bindings detailed", () => {
     downloadChatJsonButton.click();
     downloadSentimentButton.click();
     downloadSearchButton.click();
-    shellActionHandlers["export.markdown"]?.();
-    shellActionHandlers["export.slides"]?.();
-    shellActionHandlers["export.pdf"]?.();
+    shellHarness.getShellActionHandlers()["export.markdown"]?.();
+    shellHarness.getShellActionHandlers()["export.slides"]?.();
+    shellHarness.getShellActionHandlers()["export.pdf"]?.();
     statA.click();
     statB.click();
     expect(handlers.exportParticipants).toHaveBeenCalledTimes(1);
@@ -167,24 +160,11 @@ describe("event bindings detailed", () => {
   it("registers toolbar export actions with shell dispatcher when available", () => {
     const handlers = createHandlers();
     const deps = createDeps();
-    /** @type {Record<string, Function>} */
-    let registeredHandlers = {};
-    const setShellActionHandlers = vi.fn(handlersMap => {
-      registeredHandlers = handlersMap;
+    shellHarness = createShellBridgeHarness();
+    installVueRuntimeRegistry({
+      [VUE_BRIDGE_NAMES.shell]: shellHarness.shellBridge,
+      [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
     });
-    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
-      bridges: {
-        [VUE_BRIDGE_NAMES.shell]: {
-          setShellActionHandlers,
-          dispatchShellAction: vi.fn(),
-        },
-        [VUE_BRIDGE_NAMES.dashboardPanels]: {
-          ownsParticipantInteractions: true,
-          ownsActivityFilterInteractions: true,
-          setPanelActionHandlers: vi.fn(() => true),
-        },
-      },
-    };
 
     const downloadMarkdownButton = document.createElement("button");
     const downloadSlidesButton = document.createElement("button");
@@ -202,7 +182,8 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    expect(setShellActionHandlers).toHaveBeenCalledTimes(1);
+    expect(shellHarness.shellBridge.setShellActionHandlers).toHaveBeenCalledTimes(1);
+    const registeredHandlers = shellHarness.getShellActionHandlers();
     expect(typeof registeredHandlers["export.pdf"]).toBe("function");
     expect(typeof registeredHandlers["export.markdown"]).toBe("function");
     expect(typeof registeredHandlers["export.slides"]).toBe("function");
@@ -223,17 +204,13 @@ describe("event bindings detailed", () => {
     const globalScope = {
       [VUE_RUNTIME_REGISTRY_KEY]: {
         bridges: {
-          [VUE_BRIDGE_NAMES.shell]: {
+          [VUE_BRIDGE_NAMES.shell]: createShellBridgeHarness({
             setShellActionHandlers: handlersMap => {
               registeredHandlers = handlersMap;
+              return true;
             },
-            dispatchShellAction: vi.fn(),
-          },
-          [VUE_BRIDGE_NAMES.dashboardPanels]: {
-            ownsParticipantInteractions: true,
-            ownsActivityFilterInteractions: true,
-            setPanelActionHandlers: vi.fn(() => true),
-          },
+          }).shellBridge,
+          [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
         },
       },
     };
@@ -269,8 +246,8 @@ describe("event bindings detailed", () => {
     });
 
     initEventHandlers();
-    shellActionHandlers["page.chat.force-select"]?.({ value: "remote:chat-1" });
-    shellActionHandlers["page.chat.force-select"]?.({ value: "remote:chat-1" });
+    shellHarness.getShellActionHandlers()["page.chat.force-select"]?.({ value: "remote:chat-1" });
+    shellHarness.getShellActionHandlers()["page.chat.force-select"]?.({ value: "remote:chat-1" });
 
     expect(handlers.handleChatSelectionChange).toHaveBeenCalledTimes(2);
     expect(handlers.handleChatSelectionChange).toHaveBeenNthCalledWith(
@@ -404,9 +381,9 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    shellActionHandlers["page.chat.select"]?.({ value: "remote:chat-2" });
-    shellActionHandlers["page.range.select"]?.({ value: "30" });
-    shellActionHandlers["page.range.apply-custom"]?.({ start: "2025-01-01", end: "2025-01-05" });
+    shellHarness.getShellActionHandlers()["page.chat.select"]?.({ value: "remote:chat-2" });
+    shellHarness.getShellActionHandlers()["page.range.select"]?.({ value: "30" });
+    shellHarness.getShellActionHandlers()["page.range.apply-custom"]?.({ start: "2025-01-01", end: "2025-01-05" });
     await Promise.resolve();
 
     expect(handlers.handleChatSelectionChange).toHaveBeenCalledWith(
@@ -447,9 +424,9 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    shellActionHandlers["page.range.select"]?.({ value: "30" });
-    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-01-05" });
-    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-01-07" });
+    shellHarness.getShellActionHandlers()["page.range.select"]?.({ value: "30" });
+    shellHarness.getShellActionHandlers()["page.range.set-custom-start"]?.({ value: "2025-01-05" });
+    shellHarness.getShellActionHandlers()["page.range.set-custom-end"]?.({ value: "2025-01-07" });
 
     expect(rangeSelect.value).toBe("30");
     expect(customStartInput.value).toBe("2025-01-05");
@@ -470,27 +447,18 @@ describe("event bindings detailed", () => {
     customStartInput.remove();
     customEndInput.remove();
 
-    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
-      bridges: {
-        [VUE_BRIDGE_NAMES.shell]: {
-          setShellActionHandlers: vi.fn(handlersMap => {
-            Object.assign(shellActionHandlers, handlersMap);
-          }),
-          dispatchShellAction: vi.fn(),
-          syncPageControls,
-          getPageControlState: vi.fn(() => ({
-            customStart: "2025-01-01",
-            customEnd: "2025-01-02",
-          })),
-          ownsPageControlInteractions: true,
-        },
-        [VUE_BRIDGE_NAMES.dashboardPanels]: {
-          ownsParticipantInteractions: true,
-          ownsActivityFilterInteractions: true,
-          setPanelActionHandlers: vi.fn(() => true),
-        },
-      },
-    };
+    shellHarness = createShellBridgeHarness({
+      syncPageControls,
+      getPageControlState: vi.fn(() => ({
+        customStart: "2025-01-01",
+        customEnd: "2025-01-02",
+      })),
+      ownsPageControlInteractions: true,
+    });
+    installVueRuntimeRegistry({
+      [VUE_BRIDGE_NAMES.shell]: shellHarness.shellBridge,
+      [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
+    });
 
     const { initEventHandlers } = createEventBindingsController({
       elements: {
@@ -503,8 +471,8 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-03-01" });
-    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-03-07" });
+    shellHarness.getShellActionHandlers()["page.range.set-custom-start"]?.({ value: "2025-03-01" });
+    shellHarness.getShellActionHandlers()["page.range.set-custom-end"]?.({ value: "2025-03-07" });
 
     expect(syncPageControls).toHaveBeenCalledWith({ customStart: "2025-03-01" });
     expect(syncPageControls).toHaveBeenCalledWith({ customEnd: "2025-03-07" });
@@ -542,19 +510,10 @@ describe("event bindings detailed", () => {
     const handlers = createHandlers();
     const deps = createDeps();
 
-    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
-      bridges: {
-        [VUE_BRIDGE_NAMES.shell]: {
-          setShellActionHandlers: vi.fn(),
-          dispatchShellAction: vi.fn(),
-        },
-        [VUE_BRIDGE_NAMES.dashboardPanels]: {
-          ownsParticipantInteractions: true,
-          ownsActivityFilterInteractions: true,
-          setPanelActionHandlers: vi.fn(() => true),
-        },
-      },
-    };
+    installVueRuntimeRegistry({
+      [VUE_BRIDGE_NAMES.shell]: createShellBridgeHarness().shellBridge,
+      [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
+    });
 
     const { initEventHandlers } = createEventBindingsController({
       elements: {},
@@ -602,23 +561,13 @@ describe("event bindings detailed", () => {
     const customEndInput = document.createElement("input");
     document.body.append(customStartInput, customEndInput);
 
-    const shellActionHandlers = {};
-    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
-      bridges: {
-        [VUE_BRIDGE_NAMES.shell]: {
-          setShellActionHandlers: vi.fn(nextHandlers => {
-            Object.assign(shellActionHandlers, nextHandlers);
-          }),
-          dispatchShellAction: vi.fn(),
-          ownsPageControlInteractions: true,
-        },
-        [VUE_BRIDGE_NAMES.dashboardPanels]: {
-          ownsParticipantInteractions: true,
-          ownsActivityFilterInteractions: true,
-          setPanelActionHandlers: vi.fn(() => true),
-        },
-      },
-    };
+    const ownedShellHarness = createShellBridgeHarness({
+      ownsPageControlInteractions: true,
+    });
+    installVueRuntimeRegistry({
+      [VUE_BRIDGE_NAMES.shell]: ownedShellHarness.shellBridge,
+      [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
+    });
 
     const { initEventHandlers } = createEventBindingsController({
       elements: {
@@ -640,8 +589,8 @@ describe("event bindings detailed", () => {
     customEndInput.addEventListener("input", endInputSpy);
     customEndInput.addEventListener("change", endChangeSpy);
 
-    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-01-05" });
-    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-01-07" });
+    ownedShellHarness.getShellActionHandlers()["page.range.set-custom-start"]?.({ value: "2025-01-05" });
+    ownedShellHarness.getShellActionHandlers()["page.range.set-custom-end"]?.({ value: "2025-01-07" });
 
     expect(customStartInput.value).toBe("2025-01-05");
     expect(customEndInput.value).toBe("2025-01-07");
@@ -660,24 +609,15 @@ describe("event bindings detailed", () => {
       customEnd: "2025-03-07",
     }));
 
-    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
-      bridges: {
-        [VUE_BRIDGE_NAMES.shell]: {
-          setShellActionHandlers: vi.fn(nextHandlers => {
-            Object.assign(shellActionHandlers, nextHandlers);
-          }),
-          dispatchShellAction: vi.fn(),
-          ownsPageControlInteractions: true,
-          syncPageControls,
-          getPageControlState,
-        },
-        [VUE_BRIDGE_NAMES.dashboardPanels]: {
-          ownsParticipantInteractions: true,
-          ownsActivityFilterInteractions: true,
-          setPanelActionHandlers: vi.fn(() => true),
-        },
-      },
-    };
+    shellHarness = createShellBridgeHarness({
+      ownsPageControlInteractions: true,
+      syncPageControls,
+      getPageControlState,
+    });
+    installVueRuntimeRegistry({
+      [VUE_BRIDGE_NAMES.shell]: shellHarness.shellBridge,
+      [VUE_BRIDGE_NAMES.dashboardPanels]: createDashboardPanelsBridgeStub(),
+    });
 
     const { initEventHandlers } = createEventBindingsController({
       elements: {},
@@ -687,10 +627,10 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    shellActionHandlers["page.range.select"]?.({ value: "30" });
-    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-03-01" });
-    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-03-07" });
-    shellActionHandlers["page.range.apply-custom"]?.();
+    shellHarness.getShellActionHandlers()["page.range.select"]?.({ value: "30" });
+    shellHarness.getShellActionHandlers()["page.range.set-custom-start"]?.({ value: "2025-03-01" });
+    shellHarness.getShellActionHandlers()["page.range.set-custom-end"]?.({ value: "2025-03-07" });
+    shellHarness.getShellActionHandlers()["page.range.apply-custom"]?.();
     await Promise.resolve();
 
     expect(syncPageControls).toHaveBeenCalledWith({ rangeValue: "30" });

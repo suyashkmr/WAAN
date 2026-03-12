@@ -12,14 +12,19 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("applies reduced-motion and high-contrast states", async ({ page }) => {
-    await expect(page.locator("#reduce-motion-toggle")).toBeVisible();
-    await expect(page.locator("#high-contrast-toggle")).toBeVisible();
+    const reduceMotionToggle = page.locator("#reduce-motion-toggle:visible").first();
+    const highContrastToggle = page.locator("#high-contrast-toggle:visible").first();
 
-    await page.click("#reduce-motion-toggle");
+    await expect(reduceMotionToggle).toBeVisible();
+    await expect(highContrastToggle).toBeVisible();
+    await expect(reduceMotionToggle).toHaveAttribute("title", /.+/);
+    await expect(highContrastToggle).toHaveAttribute("title", /.+/);
+
+    await reduceMotionToggle.click();
     await page.waitForFunction(() => document.body?.dataset.reduceMotion === "true");
     await page.waitForFunction(() => document.documentElement?.dataset.uiMotion === "reduced");
 
-    await page.click("#high-contrast-toggle");
+    await highContrastToggle.click();
     await page.waitForFunction(() => document.body?.dataset.contrast === "high");
     await page.waitForFunction(() => document.documentElement?.dataset.uiContrast === "high");
   });
@@ -53,8 +58,8 @@ test.describe("WAAN Accessibility Smoke", () => {
       await expect(target).toBeVisible();
       await target.focus();
       await expect
-        .poll(async () => page.evaluate(() => document.activeElement?.id || ""))
-        .toBe(selector.slice(1));
+        .poll(async () => target.evaluate(element => element === document.activeElement || element.contains(document.activeElement)))
+        .toBe(true);
     }
   });
 

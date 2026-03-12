@@ -4,6 +4,7 @@ import { createSavedViewsController } from "../js/savedViews.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge, installShellVueBridge } from "./vueBridgeTestUtils.js";
 import { WAAN_PAGE_CONTROL_DRAFT_EVENT } from "../js/vue/pageControlDraftSignal.js";
 import { readPrimeSelectBridgeValue, syncPrimeSelectBridgeById } from "../js/vue/primeSelectBridge.js";
+import { installTestUiGlobals, resetTestUiGlobals } from "./uiTestHarness.js";
 
 function buildElements() {
   const buildSelect = values => {
@@ -200,8 +201,10 @@ describe("savedViews controller", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     clearVueBridgeRuntime();
-    delete globalThis.PrimeVue;
-    document.body.innerHTML = "";
+    resetTestUiGlobals({
+      clearBridgeRuntime: false,
+      clearBody: true,
+    });
   });
 
   it("disables controls when no dataset is available", () => {
@@ -321,7 +324,9 @@ describe("savedViews controller", () => {
   });
 
   it("mounts PrimeVue-managed saved-view selects while keeping native refs for controllers", () => {
-    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    installTestUiGlobals({
+      primeVue: { Select: { name: "PrimeSelectStub" } },
+    });
     const elements = buildElements();
     document.body.append(
       elements.nameInput,
@@ -466,7 +471,10 @@ describe("savedViews controller", () => {
       elements.deleteButton,
       elements.compareButton,
     );
-    globalThis.Vue = { h, render };
+    installTestUiGlobals({
+      vueRuntime: { h, render },
+      clearPrimeVueRuntime: false,
+    });
     const searchSavedIsland = await import("../js/vue/searchSavedIsland.js");
     searchSavedIsland.mountSearchSavedBridge();
 
@@ -792,7 +800,9 @@ describe("savedViews controller", () => {
   it("uses bridged saved-view select state even when the hidden native select is stale", async () => {
     const elements = buildElements();
     installSavedViewsBridge(elements);
-    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    installTestUiGlobals({
+      primeVue: { Select: { name: "PrimeSelectStub" } },
+    });
     document.body.append(
       elements.nameInput,
       elements.saveButton,
@@ -849,7 +859,9 @@ describe("savedViews controller", () => {
   it("uses bridged compare select state even when the hidden native selects are stale", () => {
     const elements = buildElements();
     installSavedViewsBridge(elements);
-    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    installTestUiGlobals({
+      primeVue: { Select: { name: "PrimeSelectStub" } },
+    });
     document.body.append(
       elements.nameInput,
       elements.saveButton,

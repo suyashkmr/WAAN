@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { Fragment, h, render } from "vue";
 import { createRelayController } from "../js/relayControls.js";
 import { clearVueBridgeRuntime, installShellVueBridge } from "./vueBridgeTestUtils.js";
+import { installTestUiGlobals, resetTestUiGlobals } from "./uiTestHarness.js";
 
 function buildRelayElements() {
   const relayLiveCard = document.createElement("section");
@@ -133,12 +134,18 @@ function createController(overrides = {}) {
 
 describe("relayControls", () => {
   beforeEach(() => {
-    globalThis.Vue = { h, render, Fragment };
+    installTestUiGlobals({
+      vueRuntime: { h, render, Fragment },
+    });
   });
 
   afterEach(() => {
     clearVueBridgeRuntime();
-    delete globalThis.Vue;
+    resetTestUiGlobals({
+      clearBridgeRuntime: false,
+      clearPrimeVueRuntime: false,
+      clearBody: true,
+    });
     vi.restoreAllMocks();
     vi.useRealTimers();
   });
