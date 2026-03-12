@@ -121,6 +121,9 @@ export function createEventBindingsController({
     if (!supportsShellActionDispatch) {
       throw new Error("Shell bridge dispatch contracts are required for event bindings.");
     }
+    const readPageControlState = () => shellBridge?.getPageControlState?.() ?? null;
+    /** @param {Record<string, any>} nextState */
+    const syncBridgePageControls = nextState => Boolean(shellBridge?.syncPageControls?.(nextState));
     shellBridge.setShellActionHandlers({
       "export.pdf": handleDownloadPdfReport,
       "export.markdown": handleDownloadMarkdownReport,
@@ -137,6 +140,9 @@ export function createEventBindingsController({
         if (rangeSelect && rangeSelect.value !== value) {
           rangeSelect.value = value;
         }
+        if (!rangeSelect) {
+          syncBridgePageControls({ rangeValue: value });
+        }
         syncPrimeSelectBridgeValue({
           selectEl: rangeSelect,
           value,
@@ -146,8 +152,9 @@ export function createEventBindingsController({
       },
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.apply-custom": async payload => {
-        const start = payload?.start || customStartInput?.value || "";
-        const end = payload?.end || customEndInput?.value || "";
+        const pageControlState = readPageControlState();
+        const start = payload?.start || customStartInput?.value || pageControlState?.customStart || "";
+        const end = payload?.end || customEndInput?.value || pageControlState?.customEnd || "";
         if (!start || !end) {
           updateStatus("Please pick both a start and end date.", "warning");
           return;
@@ -156,12 +163,15 @@ export function createEventBindingsController({
       },
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.set-custom-start": payload => {
+        const value = payload?.value || "";
         if (customStartInput) {
-          customStartInput.value = payload?.value || "";
+          customStartInput.value = value;
+        } else {
+          syncBridgePageControls({ customStart: value });
         }
         syncPrimeDateBridgeValue({
           inputEl: customStartInput,
-          value: payload?.value || "",
+          value,
           disabled: customStartInput?.disabled,
           min: customStartInput?.min,
           max: customStartInput?.max,
@@ -169,12 +179,15 @@ export function createEventBindingsController({
       },
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.set-custom-end": payload => {
+        const value = payload?.value || "";
         if (customEndInput) {
-          customEndInput.value = payload?.value || "";
+          customEndInput.value = value;
+        } else {
+          syncBridgePageControls({ customEnd: value });
         }
         syncPrimeDateBridgeValue({
           inputEl: customEndInput,
-          value: payload?.value || "",
+          value,
           disabled: customEndInput?.disabled,
           min: customEndInput?.min,
           max: customEndInput?.max,

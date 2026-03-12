@@ -287,13 +287,13 @@ describe("vue full-shell interactions", () => {
     expect(document.getElementById("global-range--primevue")).toBeTruthy();
     expect(document.getElementById("custom-start--primevue")).toBeTruthy();
     expect(document.getElementById("custom-end--primevue")).toBeTruthy();
-    expect(document.getElementById("chat-selector")).toBeTruthy();
-    expect(document.getElementById("global-range")).toBeTruthy();
-    expect(document.getElementById("custom-start")).toBeTruthy();
-    expect(document.getElementById("custom-end")).toBeTruthy();
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
+    expect(document.getElementById("custom-start")).toBeNull();
+    expect(document.getElementById("custom-end")).toBeNull();
   });
 
-  it("keeps preserved page controls attached until app refs are captured", () => {
+  it("detaches bridged page controls immediately once PrimeVue owns the page-control surface", () => {
     document.querySelector(".page-controls .primary-controls").innerHTML = `
       <label class="control dataset-control">
         <span>Loaded chats</span>
@@ -312,10 +312,10 @@ describe("vue full-shell interactions", () => {
 
     const firstBridge = mountPageControlsPrimitive(globalThis);
     expect(firstBridge?.ownsPageControlInteractions).toBe(true);
-    expect(document.getElementById("chat-selector")).toBeTruthy();
-    expect(document.getElementById("global-range")).toBeTruthy();
-    expect(document.getElementById("custom-start")).toBeTruthy();
-    expect(document.getElementById("custom-end")).toBeTruthy();
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
+    expect(document.getElementById("custom-start")).toBeNull();
+    expect(document.getElementById("custom-end")).toBeNull();
 
     const refs = createAppDomRefs({
       documentRef: document,
@@ -323,10 +323,10 @@ describe("vue full-shell interactions", () => {
       storageRef: globalThis.localStorage,
       vueRuntime: globalThis.Vue,
     });
-    expect(refs.chatSelector?.id).toBe("chat-selector");
-    expect(refs.rangeSelect?.id).toBe("global-range");
-    expect(refs.customStartInput?.id).toBe("custom-start");
-    expect(refs.customEndInput?.id).toBe("custom-end");
+    expect(refs.chatSelector).toBeNull();
+    expect(refs.rangeSelect).toBeNull();
+    expect(refs.customStartInput).toBeNull();
+    expect(refs.customEndInput).toBeNull();
 
     mountPageControlsPrimitive(globalThis);
     expect(document.getElementById("chat-selector")).toBeNull();
@@ -335,17 +335,17 @@ describe("vue full-shell interactions", () => {
     expect(document.getElementById("custom-end")).toBeNull();
   });
 
-  it("does not detach empty-container seeded page controls before refs are captured", () => {
+  it("detaches empty-container seeded page controls immediately after the PrimeVue bridge mounts", () => {
     const controlsEl = document.querySelector(".page-controls .primary-controls");
     controlsEl.innerHTML = "";
     delete document.documentElement.dataset.waanDomRefsCaptured;
 
     const firstBridge = mountPageControlsPrimitive(globalThis);
     expect(firstBridge?.ownsPageControlInteractions).toBe(true);
-    expect(document.getElementById("chat-selector")).toBeTruthy();
-    expect(document.getElementById("global-range")).toBeTruthy();
-    expect(document.getElementById("custom-start")).toBeTruthy();
-    expect(document.getElementById("custom-end")).toBeTruthy();
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
+    expect(document.getElementById("custom-start")).toBeNull();
+    expect(document.getElementById("custom-end")).toBeNull();
     expect(document.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
 
     const refs = createAppDomRefs({
@@ -354,11 +354,11 @@ describe("vue full-shell interactions", () => {
       storageRef: globalThis.localStorage,
       vueRuntime: globalThis.Vue,
     });
-    expect(refs.chatSelector?.id).toBe("chat-selector");
-    expect(refs.rangeSelect?.id).toBe("global-range");
-    expect(refs.customStartInput?.id).toBe("custom-start");
-    expect(refs.customEndInput?.id).toBe("custom-end");
-    expect(document.documentElement.dataset.waanDomRefsCaptured).toBe("true");
+    expect(refs.chatSelector).toBeNull();
+    expect(refs.rangeSelect).toBeNull();
+    expect(refs.customStartInput).toBeNull();
+    expect(refs.customEndInput).toBeNull();
+    expect(document.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
 
     mountPageControlsPrimitive(globalThis);
     expect(document.getElementById("chat-selector")).toBeNull();
@@ -604,16 +604,16 @@ describe("vue full-shell interactions", () => {
     expect(document.getElementById("global-range--primevue")).toBeTruthy();
     expect(firstBridge?.legacyRefs?.chatSelector).toBeTruthy();
     expect(firstBridge?.legacyRefs?.rangeSelect).toBeTruthy();
-    expect(document.getElementById("chat-selector")).toBeTruthy();
-    expect(document.getElementById("global-range")).toBeTruthy();
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
 
     const secondBridge = mountPageControlsPrimitive(globalThis);
 
     expect(secondBridge).toBe(firstBridge);
     expect(document.querySelectorAll("#chat-selector--primevue")).toHaveLength(1);
     expect(document.querySelectorAll("#global-range--primevue")).toHaveLength(1);
-    expect(document.getElementById("chat-selector")).toBeTruthy();
-    expect(document.getElementById("global-range")).toBeTruthy();
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
     expect(controlsEl.innerHTML).not.toBe(originalMarkup);
   });
 
@@ -892,7 +892,7 @@ describe("vue full-shell interactions", () => {
     const legacyChatSelect = firstBridge?.legacyRefs?.chatSelector;
     const legacyRangeSelect = firstBridge?.legacyRefs?.rangeSelect;
     expect(legacyChatSelect?.value).toBe("remote:chat-1");
-    expect(legacyChatSelect?.isConnected).toBe(true);
+    expect(legacyChatSelect?.isConnected).toBe(false);
     const rangeOptions = Array.from(legacyRangeSelect?.options || []).map(option => option.value);
     expect(rangeOptions).toEqual(["all", "30", "90", "180", "365", "custom"]);
   });

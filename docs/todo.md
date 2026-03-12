@@ -900,7 +900,9 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Remaining explicit audit focus:
       - [ ] Strict closeout requirement: no detached/preserved native form bridge refs remain anywhere in the runtime path.
         - [ ] Remove detached/preserved native select bridge refs from `js/vue/primeSelectBridge.js`.
+          - [x] Removed the pre-capture `preserved` branch; page-control Prime selects now detach immediately once the bridge mounts, and only the remaining detached-native compatibility ref contract is still open.
         - [ ] Remove detached/preserved native date bridge refs from `js/vue/primeDateBridge.js`.
+          - [x] Removed the pre-capture `preserved` branch; page-control Prime date inputs now detach immediately once the bridge mounts, and only the remaining detached-native compatibility ref contract is still open.
         - [ ] Remove runtime dependence on those preserved refs from:
           - [ ] `js/vue/shellPageControlsIsland.js`
           - [ ] `js/appShell/chatSelection.js`
@@ -908,7 +910,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
           - [ ] `js/savedViews.js`
           - [ ] `js/savedViewsDirtyTracking.js`
           - [ ] `js/appShell/datasetLifecycle.js`
-          - [ ] `js/appShell/eventBindings.js`
+          - [x] `js/appShell/eventBindings.js`
+            - [x] Shell-driven page-control actions now fall back to shell bridge state/sync contracts when the runtime no longer has native page-control refs, instead of requiring detached native inputs/selects for range and custom-date handling.
           - [ ] `js/appShell/dashboardRender/participantsPanel.js`
       - [x] empty-container bootstrap seeding is no longer a separate compatibility helper; the seed path now lives directly in `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`
       - [x] non-test runtime callers no longer depend on direct native form refs as the primary source of truth
@@ -923,7 +926,8 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] `js/ui/primitivesRuntime.js` and `js/ui/primitivesVueComposables.js` remain intentional runtime/test utility modules (`js/main.js`, `tests/uiPrimitives*.test.js`), not leftover migration scaffolding or dead compatibility helpers.
   - [x] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
     - [ ] Strict closeout requirement: default `index.html` runtime no longer ships or depends on native form-control placeholders as runtime scaffolding for page/search/saved/dashboard control ownership.
-      - [ ] Replace remaining native control placeholders in `index.html` with pure Vue mount anchors where still needed for runtime control ownership.
+      - [ ] Replace remaining native control placeholders in `index.html` with pure Vue mount anchors where still needed for runtime control ownership, but only after the non-PrimeVue native fallback path and startup ref consumers no longer depend on shipped page-control markup.
+      - [ ] Remove shell-primitive import-time auto-mount only after all side-effect import callers are migrated to explicit mounting and the shell bridge remains available for existing integration entry points.
     - [x] Default `index.html` runtime no longer depends on controller-owned native selects or date inputs as the primary visible controls; page-control shell actions now read bridge state instead of detached native values, the old separate seed helper has been removed, and non-page PrimeVue select bridges now detach the original native selects from the live DOM.
   - [x] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
     - [x] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is tracked by the completed Phase 11 runtime audit acceptance above.

@@ -357,6 +357,58 @@ describe("relayControls", () => {
     expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
   });
 
+  it("uses shell bridge page-control targets for first-run chat selection when startup chat ref is missing", async () => {
+    const runningStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 2,
+      syncingChats: false,
+    };
+    const elements = buildRelayElements();
+    elements.chatSelector = null;
+    const focusPageControl = vi.fn(() => true);
+    const scrollPageControl = vi.fn(() => true);
+    installShellVueBridge({
+      focusPageControl,
+      scrollPageControl,
+    });
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) return runningStatus;
+          if (url.endsWith("/api/chats")) return { chats: [] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    controller.handleFirstRunPrimaryAction();
+
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
+    expect(scrollPageControl).toHaveBeenCalledWith("chat");
+    expect(focusPageControl).toHaveBeenCalledWith("chat");
+  });
+
   it("shows guided recovery actions for degraded sync and runs recovery handlers", async () => {
     const runningFallbackStatus = {
       status: "running",

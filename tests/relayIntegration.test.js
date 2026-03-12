@@ -405,14 +405,10 @@ describe("relay integration", () => {
     document.body.appendChild(liveActionsContainer);
 
     const relayStatusEl = document.createElement("div");
-    /** @type {Record<string, Function>} */
-    let registeredHandlers = {};
     globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
       bridges: {
         [VUE_BRIDGE_NAMES.shell]: {
-          setRelayActionHandlers: handlers => {
-            registeredHandlers = handlers;
-          },
+          setRelayActionHandlers: () => {},
           dispatchRelayAction: vi.fn(),
         },
       },

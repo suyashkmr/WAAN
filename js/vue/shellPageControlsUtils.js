@@ -40,7 +40,7 @@ function createLabeledControl(ownerDocument, labelClassName, labelText, inputId)
   return labelEl;
 }
 
-export function renderLegacyPageControlsSeed(controlsEl) {
+function renderLegacyPageControlsSeed(controlsEl) {
   const ownerDocument = controlsEl?.ownerDocument ?? null;
   if (!controlsEl || !ownerDocument) return false;
   controlsEl.textContent = "";
@@ -87,4 +87,68 @@ export function renderLegacyPageControlsSeed(controlsEl) {
   controlsEl.append(chatLabel, customControls, rangeLabel);
   controlsEl.dataset.vueManaged = "page-controls";
   return true;
+}
+
+export function resolveLegacyPageControlRefs(controlsEl) {
+  return {
+    chatSelector: controlsEl.querySelector?.("#chat-selector") ?? null,
+    rangeSelect: controlsEl.querySelector?.("#global-range") ?? null,
+    customControls: controlsEl.querySelector?.("#custom-range-controls") ?? null,
+    customStartInput: controlsEl.querySelector?.("#custom-start") ?? null,
+    customEndInput: controlsEl.querySelector?.("#custom-end") ?? null,
+    customApplyButton: controlsEl.querySelector?.("#apply-custom-range") ?? null,
+  };
+}
+
+export function mergeLegacyPageControlRefs(existingRefs, resolvedRefs) {
+  return {
+    chatSelector: resolvedRefs.chatSelector ?? existingRefs?.chatSelector ?? null,
+    rangeSelect: resolvedRefs.rangeSelect ?? existingRefs?.rangeSelect ?? null,
+    customControls: resolvedRefs.customControls ?? existingRefs?.customControls ?? null,
+    customStartInput: resolvedRefs.customStartInput ?? existingRefs?.customStartInput ?? null,
+    customEndInput: resolvedRefs.customEndInput ?? existingRefs?.customEndInput ?? null,
+    customApplyButton: resolvedRefs.customApplyButton ?? existingRefs?.customApplyButton ?? null,
+  };
+}
+
+export function resolvePageControlTarget(legacyRefs, ownerDocument, controlKey) {
+  const visibleControlId = (
+    controlKey === "chat" ? "chat-selector" :
+    controlKey === "range" ? "global-range" :
+    controlKey === "custom-start" ? "custom-start" :
+    controlKey === "custom-end" ? "custom-end" :
+    null
+  );
+  if (!visibleControlId) return null;
+  if (controlKey === "chat") return legacyRefs?.chatSelector ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
+  if (controlKey === "range") return legacyRefs?.rangeSelect ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
+  if (controlKey === "custom-start") return legacyRefs?.customStartInput ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
+  return legacyRefs?.customEndInput ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
+}
+
+export function ensureLegacyPageControlsRendered(controlsEl, existingBridge = null) {
+  if (!controlsEl) return false;
+  if (hasPreservedLegacyRefs(existingBridge?.legacyRefs)) return true;
+  const existingRefs = resolveLegacyPageControlRefs(controlsEl);
+  if (existingRefs.chatSelector || existingRefs.rangeSelect || existingRefs.customStartInput || existingRefs.customEndInput) {
+    return true;
+  }
+  return renderLegacyPageControlsSeed(controlsEl);
+}
+
+function resolveVisiblePageControlTarget(controlId, ownerDocument) {
+  if (!ownerDocument || !controlId) return null;
+  return ownerDocument.getElementById(`${controlId}--primevue`)
+    ?? ownerDocument.getElementById(`${controlId}--mount`)
+    ?? null;
+}
+
+function hasPreservedLegacyRefs(legacyRefs) {
+  if (!legacyRefs) return false;
+  return Boolean(
+    legacyRefs.chatSelector ||
+    legacyRefs.rangeSelect ||
+    legacyRefs.customStartInput ||
+    legacyRefs.customEndInput,
+  );
 }

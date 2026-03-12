@@ -5,10 +5,6 @@ function createBridgeMountId(inputId) {
   return `${inputId}--mount`;
 }
 
-function hasCapturedDomRefs(ownerDocument) {
-  return ownerDocument?.documentElement?.dataset?.waanDomRefsCaptured === "true";
-}
-
 function getVueRuntime(vueRuntime, globalScope) {
   return vueRuntime ?? globalScope?.Vue ?? null;
 }
@@ -90,13 +86,6 @@ function hideNativeInput(inputEl, inputId, preserveNativeId = false, detachPrese
     inputEl.id = `${inputId}--native`;
   }
   if (preserveNativeId && detachPreservedNative && inputEl.parentNode) {
-    if (!hasCapturedDomRefs(inputEl.ownerDocument)) {
-      inputEl.classList.add("hidden");
-      inputEl.setAttribute("aria-hidden", "true");
-      inputEl.tabIndex = -1;
-      inputEl.dataset.primevueManaged = "preserved";
-      return;
-    }
     inputEl.remove();
     inputEl.dataset.primevueManaged = "detached";
     return;

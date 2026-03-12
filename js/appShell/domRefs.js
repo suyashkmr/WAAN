@@ -24,7 +24,10 @@ export function createAppDomRefs({
   const customEndInput = domCache.getById("custom-end");
   if (
     documentRef?.documentElement
-    && (chatSelector || rangeSelect || customStartInput || customEndInput)
+    && chatSelector
+    && rangeSelect
+    && customStartInput
+    && customEndInput
   ) {
     documentRef.documentElement.dataset.waanDomRefsCaptured = "true";
   }

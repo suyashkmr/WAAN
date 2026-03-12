@@ -13,6 +13,7 @@ import {
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
 import { syncSavedViewListSelection } from "./savedViewsSelectBridgeSync.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
 import { readPrimeSelectBridgeValue } from "./vue/primeSelectBridge.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
   const {
@@ -74,6 +75,15 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   let dataAvailable = false;
   let activeViewId = null;
   let lastAppliedViewSignature = null;
+  const shellBridge = () => resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
+
+  function focusRangeControl() {
+    if (rangeSelect?.focus) {
+      rangeSelect.focus();
+      return true;
+    }
+    return Boolean(shellBridge()?.focusPageControl?.("range"));
+  }
 
   function isActiveViewDirty() {
     if (!activeViewId || !dataAvailable || !lastAppliedViewSignature) return false;
@@ -168,7 +178,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       }),
       onPanelAction: (actionId, payload = null) => {
         if (actionId === "save-view") return handleSaveView();
-        if (actionId === "focus-range") rangeSelect?.focus();
+        if (actionId === "focus-range") return focusRangeControl();
         if (actionId === "apply-selected-view") return handleApplySavedView();
         if (actionId === "delete-selected-view") return handleDeleteSavedView();
         if (actionId === "compare-views") return handleCompareViews();

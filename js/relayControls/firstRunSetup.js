@@ -14,6 +14,8 @@
  *   relayStartButton?: HTMLButtonElement | null,
  *   getControlsLocked?: (() => boolean) | null,
  *   getDataAvailable?: (() => boolean) | null,
+ *   focusChatSelector?: (() => boolean) | null,
+ *   scrollChatSelector?: (() => boolean) | null,
  * }} [params]
  */
 export function createFirstRunSetupController({
@@ -25,6 +27,8 @@ export function createFirstRunSetupController({
   relayStartButton,
   getControlsLocked,
   getDataAvailable,
+  focusChatSelector = null,
+  scrollChatSelector = null,
 } = {}) {
   /**
    * @param {Element | null | undefined} target
@@ -93,8 +97,14 @@ export function createFirstRunSetupController({
   function handleFirstRunPrimaryAction() {
     const action = firstRunPrimaryActionButton?.dataset.action || "connect";
     if (action === "select-chat") {
-      scrollToElement(chatSelector);
-      chatSelector?.focus();
+      const handledScroll = Boolean(scrollChatSelector?.());
+      if (!handledScroll) {
+        scrollToElement(chatSelector);
+      }
+      const handledFocus = Boolean(focusChatSelector?.());
+      if (!handledFocus) {
+        chatSelector?.focus();
+      }
       return;
     }
     if (relayStartButton && !relayStartButton.disabled) {

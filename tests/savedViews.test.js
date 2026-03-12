@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { Fragment, h, render } from "vue";
 import { createSavedViewsController } from "../js/savedViews.js";
-import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
+import { clearVueBridgeRuntime, installSearchSavedVueBridge, installShellVueBridge } from "./vueBridgeTestUtils.js";
 import { WAAN_PAGE_CONTROL_DRAFT_EVENT } from "../js/vue/pageControlDraftSignal.js";
 
 function buildElements() {
@@ -397,6 +397,34 @@ describe("savedViews controller", () => {
 
     expect(dependencies.applyRangeAndRender).toHaveBeenCalledWith("all");
     expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Dispatcher View".', "success");
+  });
+
+  it("routes saved-views focus-range action through the shell bridge when no startup range ref exists", () => {
+    const elements = buildElements();
+    elements.rangeSelect = null;
+    const dependencies = buildDependencies();
+    /** @type {Record<string, Function>} */
+    let panelActionHandlers = {};
+    const focusPageControl = vi.fn(() => true);
+    installShellVueBridge({
+      focusPageControl,
+    });
+    installSearchSavedVueBridge({
+      setPanelActionHandlers: vi.fn(handlers => {
+        panelActionHandlers = handlers;
+        return true;
+      }),
+      renderSavedViewsGallery: vi.fn(() => true),
+      renderSavedViewsComparison: vi.fn(() => true),
+      renderSavedViewsPanelState: vi.fn(() => true),
+    });
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+    panelActionHandlers["savedViews:focus-range"]?.();
+
+    expect(focusPageControl).toHaveBeenCalledWith("range");
   });
 
   it("skips native saved-view action listeners when bridge-owned buttons are mounted", async () => {

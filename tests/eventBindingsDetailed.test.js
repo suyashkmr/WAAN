@@ -612,4 +612,78 @@ describe("event bindings detailed", () => {
     expect(endInputSpy).not.toHaveBeenCalled();
     expect(endChangeSpy).not.toHaveBeenCalled();
   });
+
+  it("uses shell bridge page-control state when bridge-owned page controls have no native refs", async () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const syncPageControls = vi.fn(() => true);
+    const getPageControlState = vi.fn(() => ({
+      customStart: "2025-03-01",
+      customEnd: "2025-03-07",
+    }));
+
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(nextHandlers => {
+            Object.assign(shellActionHandlers, nextHandlers);
+          }),
+          dispatchShellAction: vi.fn(),
+          ownsPageControlInteractions: true,
+          syncPageControls,
+          getPageControlState,
+        },
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
+          ownsActivityFilterInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
+        },
+      },
+    };
+
+    const syncRangeSpy = vi.spyOn(primeSelectBridgeModule, "syncPrimeSelectBridgeValue");
+    const syncDateSpy = vi.spyOn(primeDateBridgeModule, "syncPrimeDateBridgeValue");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {},
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+
+    shellActionHandlers["page.range.select"]?.({ value: "30" });
+    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-03-01" });
+    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-03-07" });
+    shellActionHandlers["page.range.apply-custom"]?.();
+    await Promise.resolve();
+
+    expect(syncPageControls).toHaveBeenCalledWith({ rangeValue: "30" });
+    expect(syncPageControls).toHaveBeenCalledWith({ customStart: "2025-03-01" });
+    expect(syncPageControls).toHaveBeenCalledWith({ customEnd: "2025-03-07" });
+    expect(getPageControlState).toHaveBeenCalled();
+    expect(handlers.handleRangeChange).toHaveBeenCalledWith(
+      expect.objectContaining({ target: { value: "30" } }),
+    );
+    expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-03-01", "2025-03-07");
+    expect(syncRangeSpy).toHaveBeenCalledWith({
+      selectEl: undefined,
+      value: "30",
+      disabled: undefined,
+    });
+    expect(syncDateSpy).toHaveBeenNthCalledWith(1, {
+      inputEl: undefined,
+      value: "2025-03-01",
+      disabled: undefined,
+      min: undefined,
+      max: undefined,
+    });
+    expect(syncDateSpy).toHaveBeenNthCalledWith(2, {
+      inputEl: undefined,
+      value: "2025-03-07",
+      disabled: undefined,
+      min: undefined,
+      max: undefined,
+    });
+  });
 });

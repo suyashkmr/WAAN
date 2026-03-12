@@ -8,11 +8,7 @@ import {
   createRelayLiveActionsRoot,
 } from "./shellPrimitiveViews.js";
 import { mountPageControlsPrimitive } from "./shellPageControlsIsland.js";
-import {
-  VUE_BRIDGE_NAMES,
-  registerVueBridge,
-  resolveVueBridge,
-} from "./bridgeRegistry.js";
+import { VUE_BRIDGE_NAMES, registerVueBridge, resolveVueBridge } from "./bridgeRegistry.js";
 import { configurePrimeVueApp } from "./primevueApp.js";
 import { renderActionButton } from "./primevueRenderPrimitives.js";
 
@@ -329,6 +325,8 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     },
     getPageControlState: () => pageControlsBridge?.readPageControlState?.() ?? null,
     syncPageControls: nextState => pageControlsBridge?.syncPageControls?.(nextState) ?? false,
+    focusPageControl: controlKey => pageControlsBridge?.focusPageControl?.(controlKey) ?? false,
+    scrollPageControl: controlKey => pageControlsBridge?.scrollPageControl?.(controlKey) ?? false,
   }, { globalScope });
 }
 export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {

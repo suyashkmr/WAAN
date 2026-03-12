@@ -50,4 +50,17 @@ describe("app shell dom refs", () => {
 
     expect(sandbox.documentElement.dataset.waanDomRefsCaptured).toBe("true");
   });
+
+  it("does not mark dom refs as captured when only a partial page-control set exists", () => {
+    const sandbox = document.implementation.createHTMLDocument("waan-dom-refs-partial-page-controls");
+    sandbox.body.innerHTML = `
+      <main id="root"></main>
+      <select id="chat-selector"><option value="">No chats loaded yet</option></select>
+      <select id="global-range"><option value="all">All time</option></select>
+    `;
+
+    createAppDomRefs({ documentRef: sandbox, windowRef: /** @type {Window} */ ({}) });
+
+    expect(sandbox.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
+  });
 });

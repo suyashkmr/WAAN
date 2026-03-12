@@ -3,6 +3,7 @@
 import { createRelaySyncProgressController } from "./syncProgress.js";
 import { createRelayLogController } from "./logStream.js";
 import { createFirstRunSetupController } from "./firstRunSetup.js";
+import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
  * @param {{ elements: Record<string, any>, deps: Record<string, any> }} params
@@ -11,6 +12,7 @@ export function createRelaySupportControllers({
   elements,
   deps,
 }) {
+  const shellBridge = () => resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: deps.globalScope ?? globalThis });
   const firstRunSetupController = createFirstRunSetupController({
     firstRunSetup: elements.firstRunSetup,
     firstRunSetupSteps: elements.firstRunSetupSteps,
@@ -20,6 +22,8 @@ export function createRelaySupportControllers({
     relayStartButton: elements.relayStartButton,
     getControlsLocked: deps.getControlsLocked,
     getDataAvailable: deps.getDataAvailable,
+    focusChatSelector: () => Boolean(shellBridge()?.focusPageControl?.("chat")),
+    scrollChatSelector: () => Boolean(shellBridge()?.scrollPageControl?.("chat")),
   });
   const relaySyncProgressController = createRelaySyncProgressController({
     relaySyncProgressEl: elements.relaySyncProgressEl,

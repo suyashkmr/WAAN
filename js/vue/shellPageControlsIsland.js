@@ -3,9 +3,12 @@ import { readPrimeDateBridgeValue, syncPrimeDateBridge, syncPrimeDateBridgeValue
 import { readPrimeSelectBridgeValue, syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./primeSelectBridge.js";
 import { emitPageControlDraftSignal } from "./pageControlDraftSignal.js";
 import {
+  ensureLegacyPageControlsRendered,
   ensureSelectOptions,
   extractSelectOptions,
-  renderLegacyPageControlsSeed,
+  mergeLegacyPageControlRefs,
+  resolveLegacyPageControlRefs,
+  resolvePageControlTarget,
 } from "./shellPageControlsUtils.js";
 
 const PAGE_CONTROLS_BRIDGE_KEY = "__waanPageControlsBridge";
@@ -233,50 +236,6 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
   return foundBridgeableControl && ownsInteractions;
 }
 
-function resolveLegacyPageControlRefs(controlsEl) {
-  return {
-    chatSelector: controlsEl.querySelector?.("#chat-selector") ?? null,
-    rangeSelect: controlsEl.querySelector?.("#global-range") ?? null,
-    customControls: controlsEl.querySelector?.("#custom-range-controls") ?? null,
-    customStartInput: controlsEl.querySelector?.("#custom-start") ?? null,
-    customEndInput: controlsEl.querySelector?.("#custom-end") ?? null,
-    customApplyButton: controlsEl.querySelector?.("#apply-custom-range") ?? null,
-  };
-}
-
-function mergeLegacyPageControlRefs(existingRefs, resolvedRefs) {
-  return {
-    chatSelector: resolvedRefs.chatSelector ?? existingRefs?.chatSelector ?? null,
-    rangeSelect: resolvedRefs.rangeSelect ?? existingRefs?.rangeSelect ?? null,
-    customControls: resolvedRefs.customControls ?? existingRefs?.customControls ?? null,
-    customStartInput: resolvedRefs.customStartInput ?? existingRefs?.customStartInput ?? null,
-    customEndInput: resolvedRefs.customEndInput ?? existingRefs?.customEndInput ?? null,
-    customApplyButton: resolvedRefs.customApplyButton ?? existingRefs?.customApplyButton ?? null,
-  };
-}
-
-function hasPreservedLegacyRefs(legacyRefs) {
-  if (!legacyRefs) return false;
-  return Boolean(
-    legacyRefs.chatSelector ||
-    legacyRefs.rangeSelect ||
-    legacyRefs.customStartInput ||
-    legacyRefs.customEndInput,
-  );
-}
-
-function ensureLegacyPageControlsRendered(controlsEl, globalScope = globalThis, existingBridge = null) {
-  if (!controlsEl) return false;
-  if (hasPreservedLegacyRefs(existingBridge?.legacyRefs)) {
-    return true;
-  }
-  const existingRefs = resolveLegacyPageControlRefs(controlsEl);
-  if (existingRefs.chatSelector || existingRefs.rangeSelect || existingRefs.customStartInput || existingRefs.customEndInput) {
-    return true;
-  }
-  return renderLegacyPageControlsSeed(controlsEl, globalScope);
-}
-
 export function mountPageControlsPrimitive(globalScope = globalThis) {
   const controlsEl = globalScope?.document?.querySelector?.(".page-controls .primary-controls");
   if (!controlsEl) return null;
@@ -324,10 +283,32 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
       pageControlsBridge.ownsPageControlInteractions = ownsInteractions;
       return ownsInteractions;
     },
+    focusPageControl(controlKey) {
+      const legacyRefs = mergeLegacyPageControlRefs(
+        pageControlsBridge.legacyRefs,
+        resolveLegacyPageControlRefs(controlsEl),
+      );
+      pageControlsBridge.legacyRefs = legacyRefs;
+      const target = resolvePageControlTarget(legacyRefs, controlsEl.ownerDocument, controlKey);
+      if (!target?.focus) return false;
+      target.focus();
+      return true;
+    },
+    scrollPageControl(controlKey) {
+      const legacyRefs = mergeLegacyPageControlRefs(
+        pageControlsBridge.legacyRefs,
+        resolveLegacyPageControlRefs(controlsEl),
+      );
+      pageControlsBridge.legacyRefs = legacyRefs;
+      const target = resolvePageControlTarget(legacyRefs, controlsEl.ownerDocument, controlKey);
+      if (!target?.scrollIntoView) return false;
+      target.scrollIntoView({ behavior: "auto", block: "center" });
+      return true;
+    },
   };
   controlsEl[PAGE_CONTROLS_BRIDGE_KEY] = pageControlsBridge;
 
-  ensureLegacyPageControlsRendered(controlsEl, globalScope, existingBridge);
+  ensureLegacyPageControlsRendered(controlsEl, existingBridge);
   const legacyRefs = mergeLegacyPageControlRefs(
     pageControlsBridge.legacyRefs,
     resolveLegacyPageControlRefs(controlsEl),
