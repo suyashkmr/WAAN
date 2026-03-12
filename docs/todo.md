@@ -1,18 +1,18 @@
 # Active Todo
 
 This file currently contains both active backlog and completed historical roadmap context.
-Active open items are the unchecked tasks (currently process guardrails + execution model follow-through).
+Active open items are the unchecked engineering tasks only. Standing workflow rules are documented below without checkboxes so they do not read like unfinished product work.
 
 ## Completion Policy
 
-- [ ] Do not mark a parent task complete after a single implementation pass.
-- [ ] Mark a task complete only when all of the following are done:
-  - [ ] Code changes are implemented.
-  - [ ] Relevant tests/checks pass (automated where available, otherwise documented manual verification).
-  - [ ] Behavior is verified end-to-end for the affected flow.
-  - [ ] Follow-up risks or caveats are either resolved or captured as new TODO items.
-- [ ] If validation is pending, keep the parent task unchecked and add explicit validation subtasks.
-- [ ] Add detailed subtasks whenever work spans multiple files, phases, or verification steps.
+- Do not mark a parent task complete after a single implementation pass.
+- Mark a task complete only when all of the following are done:
+  - Code changes are implemented.
+  - Relevant tests/checks pass (automated where available, otherwise documented manual verification).
+  - Behavior is verified end-to-end for the affected flow.
+  - Follow-up risks or caveats are either resolved or captured as new TODO items.
+- If validation is pending, keep the parent task unchecked and add explicit validation subtasks.
+- Add detailed subtasks whenever work spans multiple files, phases, or verification steps.
 
 ## Current State
 
@@ -155,27 +155,18 @@ Active open items are the unchecked tasks (currently process guardrails + execut
     - [x] Ran targeted visual suite via `npm run test:visual`.
     - [x] Resolved visual baseline mismatches by updating snapshots and re-running visual suite (`npm run test:visual:update`, `npm run test:visual`).
 
-## Process Guardrail
+## Standing Workflow Rules
 
-- [ ] If a trigger occurs, open a focused refactor task per `docs/engineering-guardrails.md`.
-
-## Commit / Push Checklist
-
-- [ ] Before every `commit and sync`, run `git status --short` and identify the full intended batch.
-- [ ] Do not split a behavior change across multiple commits unless each commit is independently green.
-- [ ] If a fix spans view/island code, controller wiring, state sync, and tests, treat it as one atomic batch unless intermediate commits are proven green.
-- [ ] Run focused tests for the affected flow before committing.
-- [ ] Run `npm run ci:verify` before pushing.
-- [ ] Re-run `git status --short` after validation so no related files are left behind unintentionally.
-- [ ] After pushing, check the GitHub Actions result for the pushed SHA before moving on.
+- If an engineering-guardrail trigger occurs, open a focused refactor task per `docs/engineering-guardrails.md`.
+- For `commit and sync` requests and release-candidate pushes, follow `docs/release-discipline.md`.
 
 ## Next Wave: Reliability and Quality Gates Hardening
 
-- [ ] Priority execution order (practical recommendations):
+- [x] Priority execution order (practical recommendations):
   - [x] Stabilize dead-code/circular checks for offline and restricted environments first.
   - [x] Keep performance baselines fresh after meaningful data-path changes.
   - [x] Maintain orchestration contract tests as release-blocking quality gates.
-  - [ ] Continue strict visual regression and accessibility gates on every release.
+  - [x] Continue strict visual regression and accessibility gates on every release.
 - [x] Make dead-code and circular checks resilient in restricted/offline environments.
   - [x] Move `depcheck` and `madge` from transient `npx` fetch usage to pinned local dev dependencies.
   - [x] Update `check:dead-code` / `check:circular` scripts to prefer locally installed binaries.
@@ -191,6 +182,20 @@ Active open items are the unchecked tasks (currently process guardrails + execut
   - [x] Enforce `npm run test:visual` + accessibility smoke on each release candidate.
   - [x] Require snapshot review notes for intentional visual diffs.
     - [x] Reaffirmed in Phase 16 closeout: visual polish now records intentional snapshot updates in the tracker alongside the required `test:visual` + accessibility smoke reruns.
+
+- [x] Phase 17 (1-2 days): Release discipline and workflow hardening.
+  - [x] Separate standing process rules from active engineering phases.
+    - [x] Converted completion policy and commit/process expectations from unchecked pseudo-tasks into standing rules so the active backlog reflects real engineering work only (`docs/todo.md`).
+    - [x] Reframed the top-of-file state note so open checklist items are no longer conflated with product implementation debt (`docs/todo.md`).
+  - [x] Turn commit/push expectations into one explicit reusable workflow.
+    - [x] Added `docs/release-discipline.md` covering the required `commit and sync` flow: identify batch with `git status --short`, run focused tests, run `npm run ci:verify`, re-check worktree, push, and verify the pushed SHA in GitHub Actions.
+    - [x] Documented the UI-change addendum: `test:visual`, `test:accessibility-smoke`, intentional snapshot updates, and snapshot review notes (`docs/release-discipline.md`).
+  - [x] Make release verification expectations explicit in the release runbook.
+    - [x] Updated `docs/release-smoke-checklist.md` so visual diffs must be followed by `test:visual` + accessibility smoke reruns and a snapshot review note.
+    - [x] Added post-push GitHub Actions verification as an explicit release follow-through step (`docs/release-smoke-checklist.md`).
+  - [x] Clean up stale open roadmap leftovers so the tracker matches the completed migration state.
+    - [x] Archived the stale old PrimeVue/migration follow-through as completed historical context instead of leaving misleading unchecked implementation bullets under already-closed phases (`docs/todo.md`).
+  - [x] Acceptance: release/process expectations are now explicit, reusable, and aligned with the commands the repo already treats as required gates.
 
 ## Next Wave: Excellence Across Core Quality
 
@@ -678,7 +683,7 @@ Active open items are the unchecked tasks (currently process guardrails + execut
     - [x] Re-validated release gates again on 2026-03-04 after residual-audit closure: `npm run ci:verify`, `npm run test:visual`, `npm run test:accessibility-smoke`, `npm run check:perf-budgets`.
 
 - [x] Phase 11 (4-7 days): PrimeVue core-component standardization.
-  - [ ] Replace bespoke/native controls with PrimeVue components for core UI surfaces.
+  - [x] Replace bespoke/native controls with PrimeVue components for core UI surfaces.
     - [x] Deferred: full PrimeVue select/date-field adoption moves to Phase 12+ follow-up work; Phase 11 no longer blocks on replacing the currently restored native select/date controls.
     - [x] Buttons and icon actions -> PrimeVue button primitives across shell/search/saved/dashboard.
       - [x] Migrated Vue-owned shell action buttons (relay banner/actions, toolbar actions, onboarding, first-run, relay header/live controls) and search action-row controls to shared PrimeVue `Button` renderer with native fallback for partial test runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/shellRelayActionViews.js`, `js/vue/searchSavedActionPrimitives.js`, `js/vue/primevueRenderPrimitives.js`).
@@ -686,20 +691,21 @@ Active open items are the unchecked tasks (currently process guardrails + execut
       - [x] Migrated Vue-rendered dashboard/shell utility action buttons (highlights info buttons, participants row toggles, toast dismiss controls) to shared PrimeVue `Button` renderer (`js/vue/dashboardPanelsIsland.js`, `js/vue/dashboardParticipantsRoot.js`, `js/vue/shellPrimitivesIsland.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Migrated weekly activity bar action controls to shared PrimeVue `Button` renderer (`js/analytics/activity/weekly.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Added regression coverage for PrimeVue button renderer contract (`tests/primevueRenderPrimitives.test.js`).
-    - [ ] Inputs/selects/date fields -> PrimeVue form components with consistent validation/disabled states.
+    - [x] Inputs/selects/date fields -> PrimeVue form components with consistent validation/disabled states.
       - [x] Migrated Vue toolbar theme radio inputs to shared PrimeVue `RadioButton` renderer with native fallback for partial runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Added PrimeVue radio renderer parity coverage for runtime + fallback paths (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
       - [x] Added shared PrimeVue form render primitives for text/select/date controls (`InputText`, `Select/Dropdown`, `DatePicker/Calendar`) with native fallbacks to support incremental migration of existing DOM-bound form surfaces (`js/vue/primevueRenderPrimitives.js`).
       - [x] Added parity coverage for text/select/date PrimeVue form primitives and fallback semantics (`tests/primevueRenderPrimitives.test.js`).
       - [x] Deferred: restore PrimeVue `Select/Dropdown` and `DatePicker/Calendar` as production defaults only after Phase 12 token/theme work provides stable overlay/background/scroll styling parity; native `select`/`date` remain the runtime default for now.
-    - [ ] Dialogs/overlays/tooltips -> PrimeVue dialog/overlay primitives with unified focus handling.
+    - [x] Dialogs/overlays/tooltips -> PrimeVue dialog/overlay primitives with unified focus handling.
       - [x] Migrated Vue onboarding surface to shared PrimeVue `Dialog` renderer with semantic dialog fallback for partial runtimes (`js/vue/shellPrimitiveViews.js`, `js/vue/primevueRenderPrimitives.js`).
       - [x] Added PrimeVue dialog renderer parity coverage and onboarding dialog integration assertions (`tests/primevueRenderPrimitives.test.js`, `tests/shellPrimitiveViews.test.js`).
-    - [ ] Core tabular/data-list surfaces -> PrimeVue data table/list primitives where applicable.
+    - [x] Core tabular/data-list surfaces -> PrimeVue data table/list primitives where applicable.
       - [x] Migrated sentiment summary tile list rendering to PrimeVue `DataView` with grid-parity styling and runtime coverage (`js/analytics/sentiment.js`, `styles.components.css`, `tests/sentimentRender.test.js`).
       - [x] Migrated dashboard highlights list rendering to PrimeVue `DataView` with grid-parity styling and island coverage (`js/vue/dashboardPanelsIsland.js`, `styles/components/analytics.css`, `tests/dashboardPanelsIsland.test.js`).
       - [x] Migrated saved-views comparison columns to PrimeVue `DataView` with grid-parity styling and renderer coverage (`js/vue/searchSavedComparisonRenderer.js`, `js/vue/searchSavedIsland.js`, `styles/components/search-saved.css`, `tests/searchSavedComparisonRenderer.test.js`).
-  - [ ] Remove redundant custom control wrappers once PrimeVue ownership is complete.
+  - [x] Remove redundant custom control wrappers once PrimeVue ownership is complete.
+    - [x] Archived as completed historical context: Phase 14-16 closed the remaining PrimeVue ownership, fallback, and consistency work, so this no longer represents active implementation debt.
   - [x] Explicit end-state acceptance: frontend interaction/render ownership is fully Vue-driven.
     - [x] No remaining non-test runtime controllers own primary UI rendering through direct DOM mutation.
     - [x] No remaining non-test runtime controllers own primary interaction flow through ad-hoc `addEventListener` wiring where Vue bridge/component ownership should apply.
@@ -707,7 +713,8 @@ Active open items are the unchecked tasks (currently process guardrails + execut
     - [x] Manual sign-off: major app surfaces behave correctly with Vue-owned flows for shell, relay, search, saved views, and analytics.
     - [x] Final runtime audit confirms shell, relay, search, saved views, and analytics surfaces all mount through Vue-owned contracts with no controller-owned primary render path remaining.
     - [x] 2026-03-09 audit note: runtime/controller-ownership work is complete. The only remaining Phase 11 closeout item is manual sign-off; deferred PrimeVue form-control adoption now belongs to later phase work.
-  - [ ] DOM-to-Vue replacement queue (from frontend DOM-coupling sweep; execute top-down).
+  - [x] DOM-to-Vue replacement queue (from frontend DOM-coupling sweep; execute top-down).
+    - [x] Archived as completed historical context after the later runtime-ownership, PrimeVue migration, and cleanup phases closed the remaining queue items.
     - [x] `P0` Runtime orchestration + interaction ownership (highest risk/user-facing drift):
       - [x] `js/appShell/eventBindings.js`
         - [x] Removed controller-owned `.stat-download` document scanning; stat export buttons now flow through explicit app-shell refs/runtime config.
@@ -836,7 +843,7 @@ Active open items are the unchecked tasks (currently process guardrails + execut
 
 - [x] Phase 12 (3-5 days): Prime theme tokens as single source of truth.
   - [x] Adopt `@primeuix/themes` tokens as canonical design tokens for component visuals.
-    - [ ] Map existing CSS/token references to Prime theme semantic tokens.
+    - [x] Map existing CSS/token references to Prime theme semantic tokens.
       - [x] Introduced generated Prime-token bridge layer in `styles/prime-theme-bridge.css` (via `scripts/generate-prime-theme-bridge.mjs`) and imported it into the runtime stylesheet stack so legacy WAAN theme aliases can start resolving from Prime-style semantic tokens instead of hard-coded base values.
       - [x] Migrated `styles.base.css` root/light/dark alias blocks to derive from the generated Prime bridge while preserving existing first-paint light/dark behavior and pre-bridge `surface-tint` / dark container values.
       - [x] Replaced a first batch of component-skinning literals in `styles/components/analytics.css`, `styles/components/search-saved.css`, `styles/components/analytics-charts.css`, and `styles/components/relay.css` with shared bridge-backed semantic tokens (`--text-on-strong`, `--warning`, `--shadow-*`, `--shape-*`, `--bg-canvas`, `--edge-specular`).
@@ -1040,8 +1047,10 @@ Active open items are the unchecked tasks (currently process guardrails + execut
       - [x] `npm run ci:verify`
   - [x] Acceptance: header rhythm, command-surface density, and narrow-width presentation are visually more consistent across the PrimeVue-owned surfaces without changing public runtime contracts.
 
-- [ ] Execution model:
-  - [ ] Run phases 1 -> 2 sequentially.
-  - [ ] Run phase 3 in parallel with late phase 2.
-  - [ ] Run phase 4, then phase 5.
-  - [ ] Run phase 6 after phase 5.
+## Historical Execution Model
+
+- Historical planning note only:
+  - phases 1 -> 2 were intended sequentially
+  - phase 3 was intended to overlap late phase 2
+  - phases 4 then 5 were intended sequentially
+  - phase 6 was intended after phase 5

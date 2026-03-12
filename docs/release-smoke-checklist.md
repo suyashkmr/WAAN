@@ -72,7 +72,8 @@ Run these gates in addition to relay smoke.
    - Must pass across desktop/laptop/tablet/mobile projects.
 4. Visual regression status (per release)
    - `npm run test:visual`
-   - If expected intentional diffs exist, run `npm run test:visual:update`, review, and re-run `npm run test:visual`.
+   - If expected intentional diffs exist, run `npm run test:visual:update`, review, re-run `npm run test:visual`, then re-run `npm run test:accessibility-smoke`.
+   - Record a snapshot review note using the format in `docs/release-discipline.md`.
 5. Naming and copy consistency (per release)
    - `rg -n "ChatScope" index.html README.md docs --glob '!docs/release-smoke-checklist.md'`
    - Expected result: no user-facing brand-name drift unless explicitly documented in release notes.
@@ -94,6 +95,14 @@ Run these gates in addition to relay smoke.
 5. Naming and copy consistency
    - Owner: Product + Engineering
    - Frequency: Per release
+
+## Push Follow-Through
+
+After any release-candidate push:
+
+1. Confirm the pushed SHA in GitHub Actions.
+2. Do not treat the batch as complete until the required workflow for that SHA is green.
+3. If the SHA fails, capture the failure in release notes or sign-off notes before retrying.
 
 ## Failure Capture
 
