@@ -187,9 +187,10 @@ Active open items are the unchecked tasks (currently process guardrails + execut
 - [x] Preserve app-shell modularity contracts as decomposition evolves.
   - [x] Keep boundary/smoke suites (`appShell`/composition/controller contracts) in required CI paths.
   - [x] Add targeted regression tests whenever orchestration assembly APIs change.
-- [ ] Keep visual and accessibility release gates strict for token/theme updates.
-  - [ ] Enforce `npm run test:visual` + accessibility smoke on each release candidate.
-  - [ ] Require snapshot review notes for intentional visual diffs.
+- [x] Keep visual and accessibility release gates strict for token/theme updates.
+  - [x] Enforce `npm run test:visual` + accessibility smoke on each release candidate.
+  - [x] Require snapshot review notes for intentional visual diffs.
+    - [x] Reaffirmed in Phase 16 closeout: visual polish now records intentional snapshot updates in the tracker alongside the required `test:visual` + accessibility smoke reruns.
 
 ## Next Wave: Excellence Across Core Quality
 
@@ -1020,6 +1021,24 @@ Active open items are the unchecked tasks (currently process guardrails + execut
       - [x] `npm run test:visual`
       - [x] `npm run test:accessibility-smoke`
   - [x] Acceptance: hot-path cleanup reduced repeated bridge/mount churn without changing user-facing behavior or the Phase 14 production ownership contract.
+
+- [x] Phase 16 (2-4 days): UI consistency polish pass.
+  - [x] Normalize shared header and action-cluster rhythm across shell, relay, search, saved views, and analytics cards.
+    - [x] Tightened shared card/app header row spacing, action-cluster gap, and button/toggle/info-note alignment in the shared shell layer so headers follow one vertical rhythm across breakpoints (`styles/components/app-shell.css`).
+    - [x] Narrow-width header action clusters now wrap as compact inline controls instead of forcing full-width ghost buttons inside every card header (`styles.components.css`).
+  - [x] Align search, saved-view, and participant control density.
+    - [x] Search and saved-view controls now share one command-surface spacing contract for field gaps, labels, helper text, control padding, and action-row spacing (`styles/components/search-saved.css`).
+    - [x] Participant filters and quick-filter chips now use the same control density and label rhythm as the search/saved command surfaces instead of a dashboard-specific compressed treatment (`styles.components.css`).
+  - [x] Polish mobile and narrow-width presentation without changing interaction contracts.
+    - [x] Saved-view manage/compare controls and search action rows now rebalance more cleanly at mobile widths, while participant controls keep full-width inputs without the over-compressed label/control pairing from the prior layout (`styles/components/search-saved.css`, `styles.components.css`).
+  - [x] Re-run visual/accessibility gates and record intentional diff notes.
+    - [x] Intentional snapshot updates were limited to the dashboard visual baselines after the shared header/action and command-surface density polish (`tests/visual/dashboard.visual.spec.js-snapshots/*`).
+    - [x] Verified on 2026-03-12:
+      - [x] `npm run test:visual:update`
+      - [x] `npm run test:visual`
+      - [x] `npm run test:accessibility-smoke`
+      - [x] `npm run ci:verify`
+  - [x] Acceptance: header rhythm, command-surface density, and narrow-width presentation are visually more consistent across the PrimeVue-owned surfaces without changing public runtime contracts.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.

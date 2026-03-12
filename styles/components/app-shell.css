@@ -88,6 +88,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--card-stack-gap);
+    row-gap: clamp(0.55rem, 0.9vw, 0.82rem);
     flex-wrap: wrap;
 }
 
@@ -97,6 +98,7 @@
     justify-content: space-between;
     width: 100%;
     gap: var(--card-stack-gap);
+    row-gap: clamp(0.42rem, 0.7vw, 0.66rem);
     flex-wrap: wrap;
 }
 
@@ -108,6 +110,7 @@
 :is(.card-title-group, .app-section-intro) > :first-child:not(.card-heading):not(h2) {
     display: grid;
     gap: var(--section-header-intro-gap);
+    align-content: start;
 }
 
 :is(.card-header-actions, .app-panel-actions) {
@@ -116,13 +119,23 @@
     align-self: flex-start;
     justify-content: flex-end;
     flex-wrap: wrap;
-    gap: var(--section-header-actions-gap);
+    gap: clamp(0.45rem, 0.65vw, var(--section-header-actions-gap));
     margin-left: auto;
+    min-height: var(--control-height-sm);
+    padding-top: 0.08rem;
+}
+
+:is(.card-header-actions, .app-panel-actions) > * {
+    align-self: center;
 }
 
 :is(.card-header-actions, .app-panel-actions) .ghost-button {
     min-height: var(--control-height-sm);
     box-shadow: var(--shadow-soft);
+}
+
+:is(.card-header-actions, .app-panel-actions) :is(.ghost-button, .info-note-button, .card-toggle) {
+    margin-block: 0;
 }
 
 :is(.card-title-group, .app-section-intro) > .card-toggle {

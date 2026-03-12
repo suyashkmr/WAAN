@@ -1,3 +1,13 @@
+.saved-views,
+.search-panel {
+    --command-surface-gap: 0.7rem;
+    --command-field-gap: 0.4rem;
+    --command-label-color: color-mix(in srgb, var(--muted) 88%, transparent);
+    --command-helper-color: color-mix(in srgb, var(--muted) 80%, transparent);
+    --command-control-surface: color-mix(in srgb, var(--card-bg) 93%, transparent);
+    --command-control-surface-active: color-mix(in srgb, var(--card-bg) 96%, transparent);
+}
+
 .saved-views {
     display: flex;
     flex-direction: column;
@@ -20,7 +30,7 @@
 .saved-view-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
+    gap: calc(var(--command-surface-gap) + 0.08rem);
 }
 
 @media (min-width: 780px) {
@@ -35,14 +45,14 @@
 .saved-view-save {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: var(--command-field-gap);
     flex: 1 1 260px;
 }
 
 .saved-view-manage {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.55rem;
+    gap: var(--command-surface-gap);
     align-items: flex-end;
 }
 
@@ -57,7 +67,7 @@
 .saved-view-manage .control-group {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: var(--command-field-gap);
 }
 
 .saved-view-manage .prime-select-bridge,
@@ -81,7 +91,7 @@
     min-height: var(--control-height-md);
     border-radius: var(--control-radius-md);
     border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 93%, transparent);
+    background: var(--command-control-surface);
     color: var(--text);
     transition:
         border-color var(--motion-duration-fast) var(--motion-ease-out),
@@ -111,7 +121,7 @@
     outline: none;
     border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+    background: var(--command-control-surface-active);
 }
 
 .saved-view-save input[type="text"]:disabled,
@@ -145,7 +155,8 @@
 .saved-view-manage .control-group span {
     font-size: var(--type-label-sm);
     letter-spacing: var(--tracking-label);
-    color: color-mix(in srgb, var(--muted) 88%, transparent);
+    line-height: 1.2;
+    color: var(--command-label-color);
 }
 
 .saved-view-gallery {
@@ -345,14 +356,14 @@
 .compare-controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.55rem;
+    gap: var(--command-surface-gap);
     align-items: flex-end;
 }
 
 .compare-select {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--command-field-gap);
     flex: 1 1 220px;
 }
 
@@ -447,7 +458,7 @@
 
 .search-controls {
     display: grid;
-    gap: 0.62rem;
+    gap: var(--command-surface-gap);
 }
 
 @media (min-width: 780px) {
@@ -466,14 +477,15 @@
 .search-control {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--command-field-gap);
 }
 
 .search-control .field-helper,
 .saved-view-actions .field-helper {
     margin: 0;
     font-size: var(--type-label-sm);
-    color: color-mix(in srgb, var(--muted) 80%, transparent);
+    line-height: 1.35;
+    color: var(--command-helper-color);
 }
 
 .search-control .field-helper.is-error,
@@ -494,9 +506,9 @@
     border-width: 1px;
     border-style: solid;
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    background: var(--command-control-surface);
     color: color-mix(in srgb, var(--text) 94%, transparent);
-    padding-inline: 0.7rem;
+    padding-inline: 0.78rem;
     transition:
         border-color var(--motion-duration-fast) var(--motion-ease-out),
         box-shadow var(--motion-duration-fast) var(--motion-ease-out),
@@ -510,7 +522,7 @@
 
 #search-panel .search-control .prime-select-bridge .p-select-label,
 #saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select-label {
-    padding-inline: 0.7rem;
+    padding-inline: 0.78rem;
 }
 
 #search-panel .search-control label,
@@ -518,6 +530,8 @@
 #saved-views-card .saved-view-compare label {
     font-size: var(--type-label-sm);
     letter-spacing: var(--tracking-label);
+    line-height: 1.2;
+    color: var(--command-label-color);
 }
 
 #search-panel .search-control :is(input, select)[aria-invalid="true"],
@@ -541,7 +555,7 @@
 #saved-views-card :is(.saved-view-actions, .saved-view-compare) .prime-select-bridge .p-select:focus-within {
     border-color: color-mix(in srgb, var(--accent) 58%, var(--border));
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+    background: var(--command-control-surface-active);
     outline: none;
 }
 
@@ -616,7 +630,7 @@
 
 .search-actions {
     display: flex;
-    gap: 0.6rem;
+    gap: var(--command-surface-gap);
     align-items: center;
     flex-wrap: wrap;
 }
@@ -634,6 +648,33 @@
     max-width: 62ch;
     text-wrap: pretty;
     margin-top: 0.12rem;
+}
+
+@media (max-width: 720px) {
+    .saved-view-actions,
+    .saved-view-manage,
+    .compare-controls,
+    .search-controls,
+    .search-actions {
+        gap: 0.65rem;
+    }
+
+    .saved-view-manage,
+    .compare-controls {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .search-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    #search-panel .search-actions .ghost-button,
+    #saved-views-card :is(.saved-view-actions, .saved-view-compare) .ghost-button {
+        width: 100%;
+    }
 }
 
 .search-progress {
