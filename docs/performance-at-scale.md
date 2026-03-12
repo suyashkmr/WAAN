@@ -54,14 +54,14 @@ npm run perf:searchworker
 
 ## ChatStore Metadata Write Amplification (Measured)
 
-Run captured on March 2, 2026 (`generatedAt=2026-03-02T13:03:59.012Z`):
+Run captured on March 12, 2026 (`generatedAt=2026-03-12T14:09:00.782Z`):
 
 | Scenario | Iterations | Before writes | After writes | Reduction | Duration (ms) |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 760 |
-| `upsertChatMeta` (batched persist) | 1000 | 1000 | 1 | 99.9% | 12 |
-| `appendMessage` (default batched metadata path) | 400 | 400 | 1 | 99.75% | 93 |
-| `appendMessage` (forced immediate metadata persist) | 400 | 400 | 400 | 0% | 132 |
+| `upsertChatMeta` (blocking persist) | 1000 | 1000 | 1000 | 0% | 691 |
+| `upsertChatMeta` (batched persist) | 1000 | 1000 | 1 | 99.9% | 10 |
+| `appendMessage` (default batched metadata path) | 400 | 400 | 1 | 99.75% | 84 |
+| `appendMessage` (forced immediate metadata persist) | 400 | 400 | 400 | 0% | 131 |
 | `upsertChatMeta` single-chat (batched incremental path) | 400 | 400 | 1 | 99.75% | 1 |
 
 Interpretation:
@@ -71,21 +71,21 @@ Interpretation:
 
 ## Search Worker Indexed Query Benchmark (Measured)
 
-Run captured on March 2, 2026 (`generatedAt=2026-03-02T13:03:58.506Z`), dataset size `120000` messages:
+Run captured on March 12, 2026 (`generatedAt=2026-03-12T14:09:00.372Z`), dataset size `120000` messages:
 
 | Metric | Duration (ms) | Notes |
 | --- | ---: | --- |
-| Index build | 337.44 | Indexed messages: 120000 |
-| keyword (full scan) | 31.34 | matched=600 |
-| keyword (indexed) | 2.45 | matched=600, speedup=12.79x |
-| participant+keyword (full scan) | 7.97 | matched=3750 |
-| participant+keyword (indexed) | 2.42 | matched=3750, speedup=3.29x |
-| keyword+date-range (full scan) | 22.1 | matched=40001 |
-| keyword+date-range (indexed) | 4.33 | matched=40001, speedup=5.1x |
+| Index build | 359.94 | Indexed messages: 120000 |
+| keyword (full scan) | 51.05 | matched=600 |
+| keyword (indexed) | 1.72 | matched=600, speedup=29.68x |
+| participant+keyword (full scan) | 5.62 | matched=3750 |
+| participant+keyword (indexed) | 1.49 | matched=3750, speedup=3.77x |
+| keyword+date-range (full scan) | 24.1 | matched=40001 |
+| keyword+date-range (indexed) | 4.39 | matched=40001, speedup=5.49x |
 
 Interpretation:
 - Search now pays one index-build cost per dataset version, then queries run over indexed candidate sets instead of full message scans.
-- Repeated keyword/participant/date-filter queries show material latency reductions with the indexed path.
+- Repeated keyword/participant/date-filter queries continue to show material latency reductions with the indexed path, with the direct indexed keyword query improving further in the latest run.
 
 ## Release Perf Budgets (Enforced)
 

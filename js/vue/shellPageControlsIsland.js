@@ -5,7 +5,8 @@ import { syncPrimeSelectBridge } from "./primeSelectBridge.js";
 import { renderActionButton } from "./primevueRenderPrimitives.js";
 import { emitPageControlDraftSignal } from "./pageControlDraftSignal.js";
 import { readRegisteredPageControlBridgeValue, syncBridgeOwnedPageControls, syncRegisteredPageControlBridge } from "./shellPageControlsBridgeSync.js";
-import { ensureLegacyPageControlsRendered, ensureSelectOptions, mergeLegacyPageControlRefs, resolveLegacyPageControlRefs, resolvePageControlTarget } from "./shellPageControlsUtils.js";
+import { interactWithPageControl, readPageControlsBridgeState, refreshLegacyRefs, syncPageControlsBridgeState } from "./shellPageControlsRuntime.js";
+import { ensureLegacyPageControlsRendered, ensureSelectOptions } from "./shellPageControlsUtils.js";
 import { mergePageControlState, resolveDateControlState, resolveSelectControlState, snapshotPageControlState } from "./shellPageControlsState.js";
 const PAGE_CONTROLS_BRIDGE_KEY = "__waanPageControlsBridge";
 const CUSTOM_APPLY_BUTTON_BRIDGE_ID = "apply-custom-range--primevue";
@@ -258,11 +259,7 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
   const existingBridge = controlsEl[PAGE_CONTROLS_BRIDGE_KEY] ?? null;
   if (controlsEl.dataset.vuePrimitiveMounted === "true") {
     if (existingBridge) {
-      const legacyRefs = mergeLegacyPageControlRefs(
-        existingBridge.legacyRefs,
-        resolveLegacyPageControlRefs(controlsEl),
-      );
-      existingBridge.legacyRefs = legacyRefs;
+      const legacyRefs = refreshLegacyRefs(existingBridge, controlsEl);
       existingBridge.state = snapshotPageControlState(legacyRefs, existingBridge.state);
       existingBridge.ownsPageControlInteractions = syncPrimePageControls(legacyRefs, existingBridge, globalScope);
       return existingBridge;
@@ -274,67 +271,24 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
     legacyRefs: null,
     state: null,
     readPageControlState() {
-      if (!pageControlsBridge.state || !pageControlsBridge.ownsPageControlInteractions) {
-        const legacyRefs = mergeLegacyPageControlRefs(
-          pageControlsBridge.legacyRefs,
-          resolveLegacyPageControlRefs(controlsEl),
-        );
-        pageControlsBridge.legacyRefs = legacyRefs;
-        pageControlsBridge.state = snapshotPageControlState(legacyRefs, pageControlsBridge.state);
-      }
-      return { chatValue: pageControlsBridge.state?.chatValue ?? "", rangeValue: pageControlsBridge.state?.rangeValue ?? "all", customStart: pageControlsBridge.state?.customStart ?? "", customEnd: pageControlsBridge.state?.customEnd ?? "" };
+      return readPageControlsBridgeState(pageControlsBridge, controlsEl);
     },
     syncPageControls(nextState = {}) {
-      const legacyRefs = mergeLegacyPageControlRefs(
-        pageControlsBridge.legacyRefs,
-        resolveLegacyPageControlRefs(controlsEl),
-      );
-      pageControlsBridge.legacyRefs = legacyRefs;
-      pageControlsBridge.state = mergePageControlState(pageControlsBridge.state, nextState);
-      syncLegacyPageControlRefs(legacyRefs, nextState);
-      const ownsInteractions = syncPrimePageControls(legacyRefs, pageControlsBridge, globalScope);
-      pageControlsBridge.ownsPageControlInteractions = ownsInteractions;
-      if (!ownsInteractions) {
-        pageControlsBridge.state = snapshotPageControlState(legacyRefs, pageControlsBridge.state);
-      }
-      return ownsInteractions;
+      return syncPageControlsBridgeState(pageControlsBridge, controlsEl, globalScope, nextState, {
+        syncLegacyPageControlRefs,
+        syncPrimePageControls,
+      });
     },
     focusPageControl(controlKey) {
-      const legacyRefs = mergeLegacyPageControlRefs(
-        pageControlsBridge.legacyRefs,
-        resolveLegacyPageControlRefs(controlsEl),
-      );
-      pageControlsBridge.legacyRefs = legacyRefs;
-      const target = resolvePageControlTarget(
-        legacyRefs,
-        controlsEl.ownerDocument,
-        controlKey,
-        pageControlsBridge.ownsPageControlInteractions,
-      );
-      if (!target?.focus) return false;
-      target.focus();
-      return true;
+      return interactWithPageControl(pageControlsBridge, controlsEl, controlKey, "focus");
     },
     scrollPageControl(controlKey) {
-      const legacyRefs = mergeLegacyPageControlRefs(
-        pageControlsBridge.legacyRefs,
-        resolveLegacyPageControlRefs(controlsEl),
-      );
-      pageControlsBridge.legacyRefs = legacyRefs;
-      const target = resolvePageControlTarget(
-        legacyRefs,
-        controlsEl.ownerDocument,
-        controlKey,
-        pageControlsBridge.ownsPageControlInteractions,
-      );
-      if (!target?.scrollIntoView) return false;
-      target.scrollIntoView({ behavior: "auto", block: "center" });
-      return true;
+      return interactWithPageControl(pageControlsBridge, controlsEl, controlKey, "scrollIntoView");
     },
   };
   controlsEl[PAGE_CONTROLS_BRIDGE_KEY] = pageControlsBridge;
   ensureLegacyPageControlsRendered(controlsEl, existingBridge);
-  const legacyRefs = mergeLegacyPageControlRefs(pageControlsBridge.legacyRefs, resolveLegacyPageControlRefs(controlsEl));
+  const legacyRefs = refreshLegacyRefs(pageControlsBridge, controlsEl);
   pageControlsBridge.legacyRefs = legacyRefs;
   pageControlsBridge.state = snapshotPageControlState(legacyRefs, pageControlsBridge.state);
   const ownsPageControlInteractions = syncPrimePageControls(legacyRefs, pageControlsBridge, globalScope);

@@ -276,8 +276,6 @@ describe("vue full-shell interactions", () => {
         <input id="custom-end" />
       </div>
     `;
-    const legacyRangeSelect = document.getElementById("global-range");
-    const legacyCustomStart = document.getElementById("custom-start");
     mountVueAppShellRoot({ globalScope: globalThis });
     const bridge = mountPageControlsPrimitive(globalThis);
     bridge?.syncPageControls?.({

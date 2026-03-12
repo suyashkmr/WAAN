@@ -69,21 +69,6 @@ function resolveRegisteredBridge(ownerDocument, bridgeId) {
   return bridge;
 }
 
-function resolveVisibleDateTarget(inputEl, visibleInputId = "") {
-  const ownerDocument = inputEl?.ownerDocument ?? null;
-  if (!ownerDocument) return null;
-  if (visibleInputId) {
-    const explicitTarget = ownerDocument.getElementById(visibleInputId);
-    if (explicitTarget instanceof HTMLElement) return explicitTarget;
-  }
-  const bridge = resolveBridgeStateForElement(inputEl, visibleInputId);
-  const mountEl = bridge?.mountEl ?? null;
-  if (!(mountEl instanceof HTMLElement)) return null;
-  return mountEl.querySelector(".p-datepicker, .p-calendar, input, button, [tabindex]") instanceof HTMLElement
-    ? /** @type {HTMLElement} */ (mountEl.querySelector(".p-datepicker, .p-calendar, input, button, [tabindex]"))
-    : mountEl;
-}
-
 function canSyncDetachedDateValue(inputEl, keepDetachedNativeValueSynced = true) {
   if (keepDetachedNativeValueSynced) return true;
   return Boolean(inputEl?.isConnected && !inputEl?.classList?.contains("hidden"));

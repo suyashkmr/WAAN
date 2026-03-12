@@ -1,7 +1,7 @@
 // @ts-check
 import { renderDailySection, renderWeeklySection } from "../../analytics/activity.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
-import { mountDashboardPanelsIsland } from "../../vue/dashboardPanelsIsland.js";
+import { createDashboardPanelsBridgeInvoker } from "../../vue/dashboardPanelsBridgeRuntime.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
 import { syncHourlyControls, syncWeekdayControls } from "./activityPanelControlSync.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
@@ -79,15 +79,7 @@ export function createActivityPanelsController({ elements, deps }) {
   let hourlyControlsInitialised = false;
   let stateSubscriptionsInitialised = false;
   const hasStateSubscription = typeof subscribeAppShellUiState === "function";
-
-  function renderWithDashboardPanelsBridge(/** @type {string} */ method, /** @type {any} */ payload) {
-    mountDashboardPanelsIsland();
-    const bridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels);
-    /** @type {any} */
-    const handler = bridge?.[method];
-    if (typeof handler !== "function") return false;
-    return Boolean(handler(payload));
-  }
+  const renderWithDashboardPanelsBridge = createDashboardPanelsBridgeInvoker();
 
   function shellBridgeOwnsPageControls() {
     return Boolean(resolveVueBridge(VUE_BRIDGE_NAMES.shell)?.ownsPageControlInteractions);
@@ -130,6 +122,7 @@ export function createActivityPanelsController({ elements, deps }) {
 
   /** @param {Record<string, any>} analytics */
   function renderHourlyPanel(analytics) {
+    const hourlyState = getHourlyState();
     const data = {
       heatmap: analytics.hourly_heatmap,
       summary: analytics.hourly_summary,
@@ -146,9 +139,9 @@ export function createActivityPanelsController({ elements, deps }) {
     renderWithDashboardPanelsBridge("renderHourlyHeatmap", { data, options });
     if (!hourlyControlsInitialised) {
       const bridgeOwnsHourlyControls = renderWithDashboardPanelsBridge("syncHourlyControls", {
-        filters: getHourlyState().filters,
-        brush: getHourlyState().brush,
-        labels: buildHourLabels(getHourlyState().brush.start, getHourlyState().brush.end),
+        filters: hourlyState.filters,
+        brush: hourlyState.brush,
+        labels: buildHourLabels(hourlyState.brush.start, hourlyState.brush.end),
       });
       if (!bridgeOwnsHourlyControls) initHourlyControls();
       hourlyControlsInitialised = true;
@@ -288,7 +281,8 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureDayFilters() {
-    ensureFilterPair(getHourlyState(), {
+    const hourlyState = getHourlyState();
+    ensureFilterPair(hourlyState, {
       firstKey: "weekdays",
       secondKey: "weekends",
       firstToggle: filterWeekdays,
@@ -298,7 +292,8 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function ensureHourFilters() {
-    ensureFilterPair(getHourlyState(), {
+    const hourlyState = getHourlyState();
+    ensureFilterPair(hourlyState, {
       firstKey: "working",
       secondKey: "offhours",
       firstToggle: filterWorking,
@@ -308,8 +303,9 @@ export function createActivityPanelsController({ elements, deps }) {
   }
 
   function syncHourlyControlsWithState() {
+    const hourlyState = getHourlyState();
     syncHourlyControls({
-      state: getHourlyState(),
+      state: hourlyState,
       renderWithDashboardPanelsBridge,
       filterWeekdays,
       filterWeekends,

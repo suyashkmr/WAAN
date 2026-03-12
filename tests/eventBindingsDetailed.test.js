@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createEventBindingsController } from "../js/appShell/eventBindings.js";
 import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
-import * as primeDateBridgeModule from "../js/vue/primeDateBridge.js";
-import * as primeSelectBridgeModule from "../js/vue/primeSelectBridge.js";
 
 function createHandlers() {
   return {

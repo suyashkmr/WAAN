@@ -101,6 +101,9 @@ export function createEventBindingsController({
     await applyCustomRange(start, end);
   }
 
+  /**
+   * @param {HTMLElement | HTMLInputElement | HTMLSelectElement | null | undefined} controlEl
+   */
   function hasLivePageControlRef(controlEl) {
     return Boolean(controlEl?.isConnected);
   }

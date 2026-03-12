@@ -9,8 +9,8 @@ import {
 } from "./shellPrimitiveViews.js";
 import { mountPageControlsPrimitive } from "./shellPageControlsIsland.js";
 import { VUE_BRIDGE_NAMES, registerVueBridge, resolveVueBridge } from "./bridgeRegistry.js";
-import { configurePrimeVueApp } from "./primevueApp.js";
 import { renderActionButton } from "./primevueRenderPrimitives.js";
+import { mountConfiguredShellPrimitive } from "./shellPrimitiveMounting.js";
 
 /**
  * @param {string} actionId
@@ -29,93 +29,63 @@ function dispatchShellAction(actionId, payload = null, globalScope = globalThis)
 }
 
 function mountRelayBannerPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
   const bannerEl = globalScope?.document?.getElementById?.("relay-status-banner");
-  if (!VueRuntime || !bannerEl) return;
-  if (bannerEl.dataset.vuePrimitiveMounted === "true") return;
-
-  const { createApp, h } = VueRuntime;
-  bannerEl.dataset.vueManaged = "true";
-  const RelayBannerRoot = createRelayBannerRoot(h, (actionId, payload = null) =>
-    dispatchShellAction(actionId, payload, globalScope),
-  );
-  const app = configurePrimeVueApp(createApp(RelayBannerRoot), globalScope);
-  app.mount(bannerEl);
-  bannerEl.dataset.vuePrimitiveMounted = "true";
+  mountConfiguredShellPrimitive({
+    globalScope,
+    mountEl: bannerEl,
+    createRoot: h => createRelayBannerRoot(h, (actionId, payload = null) =>
+      dispatchShellAction(actionId, payload, globalScope)),
+  });
 }
 
 function mountActionsToolbarPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
   const toolbarEl = globalScope?.document?.getElementById?.("actions-toolbar");
-  if (!VueRuntime || !toolbarEl) return;
-  if (toolbarEl.dataset.vuePrimitiveMounted === "true") return;
-  const { createApp, h } = VueRuntime;
-  toolbarEl.dataset.vueManaged = "true";
-  const ActionsToolbarRoot = createActionsToolbarRoot(h, (actionId, payload = null) =>
-    dispatchShellAction(actionId, payload, globalScope),
-  );
-
-  const app = configurePrimeVueApp(createApp(ActionsToolbarRoot), globalScope);
-  app.mount(toolbarEl);
-  toolbarEl.dataset.vuePrimitiveMounted = "true";
+  mountConfiguredShellPrimitive({
+    globalScope,
+    mountEl: toolbarEl,
+    createRoot: h => createActionsToolbarRoot(h, (actionId, payload = null) =>
+      dispatchShellAction(actionId, payload, globalScope)),
+  });
 }
 
 function mountOnboardingDialogPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
   const onboardingEl = globalScope?.document?.getElementById?.("onboarding-overlay");
-  if (!VueRuntime || !onboardingEl) return;
-  if (onboardingEl.dataset.vuePrimitiveMounted === "true") return;
-  const { createApp, h } = VueRuntime;
-  onboardingEl.dataset.vueManaged = "true";
-  const OnboardingDialogRoot = createOnboardingDialogRoot(h, (actionId, payload = null) =>
-    dispatchShellAction(actionId, payload, globalScope),
-  );
-
-  const app = configurePrimeVueApp(createApp(OnboardingDialogRoot), globalScope);
-  app.mount(onboardingEl);
-  onboardingEl.dataset.vuePrimitiveMounted = "true";
+  mountConfiguredShellPrimitive({
+    globalScope,
+    mountEl: onboardingEl,
+    createRoot: h => createOnboardingDialogRoot(h, (actionId, payload = null) =>
+      dispatchShellAction(actionId, payload, globalScope)),
+  });
 }
 
 function mountFirstRunActionsPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
   const firstRunActionsEl = globalScope?.document?.querySelector?.("#first-run-setup .first-run-actions");
-  if (!VueRuntime || !firstRunActionsEl) return;
-  if (firstRunActionsEl.dataset.vuePrimitiveMounted === "true") return;
-  const { createApp, h } = VueRuntime;
-  firstRunActionsEl.dataset.vueManaged = "true";
-  const FirstRunActionsRoot = createFirstRunActionsRoot(h, (actionId, payload = null) =>
-    dispatchShellAction(actionId, payload, globalScope),
-  );
-  configurePrimeVueApp(createApp(FirstRunActionsRoot), globalScope).mount(firstRunActionsEl);
-  firstRunActionsEl.dataset.vuePrimitiveMounted = "true";
+  mountConfiguredShellPrimitive({
+    globalScope,
+    mountEl: firstRunActionsEl,
+    createRoot: h => createFirstRunActionsRoot(h, (actionId, payload = null) =>
+      dispatchShellAction(actionId, payload, globalScope)),
+  });
 }
 
 function mountRelayHeaderActionsPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
   const actionsEl = globalScope?.document?.querySelector?.("#relay-live-card .card-header-actions");
-  if (!VueRuntime || !actionsEl) return;
-  if (actionsEl.dataset.vuePrimitiveMounted === "true") return;
-  const { createApp, h } = VueRuntime;
-  actionsEl.dataset.vueManaged = "true";
-  const RelayHeaderActionsRoot = createRelayHeaderActionsRoot(h, (actionId, payload = null) =>
-    dispatchShellAction(actionId, payload, globalScope),
-  );
-  configurePrimeVueApp(createApp(RelayHeaderActionsRoot), globalScope).mount(actionsEl);
-  actionsEl.dataset.vuePrimitiveMounted = "true";
+  mountConfiguredShellPrimitive({
+    globalScope,
+    mountEl: actionsEl,
+    createRoot: h => createRelayHeaderActionsRoot(h, (actionId, payload = null) =>
+      dispatchShellAction(actionId, payload, globalScope)),
+  });
 }
 
 function mountRelayLiveActionsPrimitive(globalScope = globalThis) {
-  const VueRuntime = globalScope?.Vue;
   const actionsEl = globalScope?.document?.querySelector?.("#relay-live-card .live-actions");
-  if (!VueRuntime || !actionsEl) return;
-  if (actionsEl.dataset.vuePrimitiveMounted === "true") return;
-  const { createApp, h } = VueRuntime;
-  actionsEl.dataset.vueManaged = "true";
-  const RelayLiveActionsRoot = createRelayLiveActionsRoot(h, (actionId, payload = null) =>
-    dispatchShellAction(actionId, payload, globalScope),
-  );
-  configurePrimeVueApp(createApp(RelayLiveActionsRoot), globalScope).mount(actionsEl);
-  actionsEl.dataset.vuePrimitiveMounted = "true";
+  mountConfiguredShellPrimitive({
+    globalScope,
+    mountEl: actionsEl,
+    createRoot: h => createRelayLiveActionsRoot(h, (actionId, payload = null) =>
+      dispatchShellAction(actionId, payload, globalScope)),
+  });
 }
 
 function mountDashboardCardShellPrimitives(globalScope = globalThis) {

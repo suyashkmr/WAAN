@@ -1,7 +1,7 @@
 # Active Todo
 
 This file currently contains both active backlog and completed historical roadmap context.
-Active open items are the unchecked tasks (currently Phase 11-13 + process guardrails).
+Active open items are the unchecked tasks (currently process guardrails + execution model follow-through).
 
 ## Completion Policy
 
@@ -1001,6 +1001,25 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] PrimeVue is the production default for core buttons, radios, dialogs, selects, and date controls.
     - [x] No core production UI path depends on app-owned fallback component implementations, native-form temporary defaults, or detached/preserved native form scaffolding beyond the documented page-controls native seed/bootstrap exception and explicit test/controlled-compatibility fallback modes.
       - [x] The Phase 14 endgame checklist above now records the remaining accepted exceptions and fallback scope explicitly, and manual sign-off has been completed.
+
+- [x] Phase 15 (2-4 days): Runtime performance cleanup pass.
+  - [x] Flatten repeated bridge/state-sync work in hot controller paths without changing public shell action contracts.
+    - [x] Extracted page-control bridge lifecycle helpers so repeated `read/sync/focus/scroll` flows share one legacy-ref refresh path and skip disconnected native write work during bridge-owned syncs (`js/vue/shellPageControlsRuntime.js`, `js/vue/shellPageControlsIsland.js`).
+    - [x] Cached dashboard bridge resolution inside the activity-panels controller so repeated dashboard rerenders do not keep remounting/re-resolving the bridge contract (`js/vue/dashboardPanelsBridgeRuntime.js`, `js/appShell/dashboardRender/activityPanels.js`).
+    - [x] Collapsed duplicated shell primitive mount wiring behind a shared configured-mount helper to keep startup mount behavior single-path and cheaper to maintain (`js/vue/shellPrimitiveMounting.js`, `js/vue/shellPrimitivesIsland.js`).
+  - [x] Tighten regression coverage around the migrated PrimeVue hot paths.
+    - [x] Added dashboard bridge runtime caching coverage so repeated panel renders reuse the same mounted bridge (`tests/dashboardPanelsBridgeRuntime.test.js`).
+    - [x] Re-validated page-control single-mount/single-sync and shell bootstrap behavior through the focused bridge suites (`tests/vueFullShellInteractions.test.js`, `tests/appShellBoot.test.js`, `tests/activityPanelsDetailed.test.js`, `tests/vueBridgeIslandsIntegration.test.js`).
+  - [x] Refresh performance baselines after the cleanup pass.
+    - [x] Updated `docs/performance-at-scale.md` with March 12, 2026 `perf:chatstore` and `perf:searchworker` measurements.
+    - [x] `check:perf-budgets` remains green after the cleanup pass.
+  - [x] Re-run release gates before closure.
+    - [x] Verified on 2026-03-12:
+      - [x] `npm run check:perf-budgets`
+      - [x] `npm run ci:verify`
+      - [x] `npm run test:visual`
+      - [x] `npm run test:accessibility-smoke`
+  - [x] Acceptance: hot-path cleanup reduced repeated bridge/mount churn without changing user-facing behavior or the Phase 14 production ownership contract.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.
