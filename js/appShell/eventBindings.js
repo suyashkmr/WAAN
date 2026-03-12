@@ -1,8 +1,6 @@
 // @ts-check
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
-import { syncPrimeDateBridgeValue } from "../vue/primeDateBridge.js";
-import { syncPrimeSelectBridgeValue } from "../vue/primeSelectBridge.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -103,6 +101,10 @@ export function createEventBindingsController({
     await applyCustomRange(start, end);
   }
 
+  function hasLivePageControlRef(controlEl) {
+    return Boolean(controlEl?.isConnected);
+  }
+
   /**
    * @param {Element} button
    */
@@ -143,11 +145,6 @@ export function createEventBindingsController({
         if (!rangeSelect) {
           syncBridgePageControls({ rangeValue: value });
         }
-        syncPrimeSelectBridgeValue({
-          selectEl: rangeSelect,
-          value,
-          disabled: rangeSelect?.disabled,
-        });
         return handleRangeChange({ target: { value } });
       },
       /** @param {Record<string, any> | null | undefined} payload */
@@ -164,34 +161,20 @@ export function createEventBindingsController({
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.set-custom-start": payload => {
         const value = payload?.value || "";
-        if (customStartInput) {
+        if (hasLivePageControlRef(customStartInput)) {
           customStartInput.value = value;
         } else {
           syncBridgePageControls({ customStart: value });
         }
-        syncPrimeDateBridgeValue({
-          inputEl: customStartInput,
-          value,
-          disabled: customStartInput?.disabled,
-          min: customStartInput?.min,
-          max: customStartInput?.max,
-        });
       },
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.set-custom-end": payload => {
         const value = payload?.value || "";
-        if (customEndInput) {
+        if (hasLivePageControlRef(customEndInput)) {
           customEndInput.value = value;
         } else {
           syncBridgePageControls({ customEnd: value });
         }
-        syncPrimeDateBridgeValue({
-          inputEl: customEndInput,
-          value,
-          disabled: customEndInput?.disabled,
-          min: customEndInput?.min,
-          max: customEndInput?.max,
-        });
       },
     });
 

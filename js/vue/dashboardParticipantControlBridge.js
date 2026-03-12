@@ -1,4 +1,4 @@
-import { syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./primeSelectBridge.js";
+import { syncPrimeSelectBridge } from "./primeSelectBridge.js";
 
 const PARTICIPANT_SELECT_CONFIGS = [
   {
@@ -42,6 +42,21 @@ const PARTICIPANT_SELECT_CONFIGS = [
   },
 ];
 
+function seedNativeSelectFromAnchor(doc, selectId) {
+  if (!doc || doc.getElementById(selectId)) return;
+  const anchor = doc.getElementById(`${selectId}-anchor`);
+  if (!anchor) return;
+  const selectEl = doc.createElement("select");
+  selectEl.id = selectId;
+  anchor.replaceWith(selectEl);
+}
+
+export function seedDashboardParticipantControlSelects(doc) {
+  PARTICIPANT_SELECT_CONFIGS.forEach(({ id }) => {
+    seedNativeSelectFromAnchor(doc, id);
+  });
+}
+
 function ensureNativeOptions(selectEl, options) {
   if (!selectEl) return;
   const existingSignature = Array.from(selectEl.options).map(option => `${option.value}:${option.textContent || ""}`).join("|");
@@ -63,6 +78,7 @@ export function createDashboardParticipantControlBridge({
   vueRuntime,
   globalScope = globalThis,
 }) {
+  seedDashboardParticipantControlSelects(doc);
   const configs = PARTICIPANT_SELECT_CONFIGS.map(config => ({
     ...config,
     selectEl: /** @type {HTMLSelectElement | null} */ (doc.getElementById(config.id)),
@@ -83,16 +99,25 @@ export function createDashboardParticipantControlBridge({
       if (!selectEl) return;
       ensureNativeOptions(selectEl, options);
       const nextValue = getValue(filters);
-      selectEl.value = nextValue;
-      if (selectEl.value !== nextValue) {
-        selectEl.value = options[0]?.value ?? "";
+      const bridgeManaged = Boolean(selectEl.dataset.primevueInputId);
+      let resolvedValue = nextValue;
+      if (!bridgeManaged) {
+        selectEl.value = nextValue;
+        if (selectEl.value !== nextValue) {
+          selectEl.value = options[0]?.value ?? "";
+        }
+        resolvedValue = selectEl.value;
+      } else if (!options.some(option => option.value === nextValue)) {
+        resolvedValue = options[0]?.value ?? "";
       }
       const bridged = syncPrimeSelectBridge({
         selectEl,
         options,
-        value: selectEl.value,
+        value: resolvedValue,
         disabled: false,
         preserveNativeId: true,
+        detachPreservedNative: true,
+        keepDetachedNativeValueSynced: false,
         visibleInputId: `${selectEl.id}--primevue`,
         onValueChange: value => {
           setState(participantsState.filters, value);
@@ -101,14 +126,8 @@ export function createDashboardParticipantControlBridge({
         vueRuntime,
         globalScope,
       });
-      if (bridged) {
-        syncPrimeSelectBridgeValue({
-          selectEl,
-          value: selectEl.value,
-          disabled: false,
-        });
-        return;
-      }
+      if (bridged) return;
+      selectEl.value = resolvedValue;
       bindFallbackListener(selectEl, actionId, setState);
     });
   }

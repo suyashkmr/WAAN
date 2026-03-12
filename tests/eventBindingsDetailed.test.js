@@ -421,7 +421,7 @@ describe("event bindings detailed", () => {
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
   });
 
-  it("syncs Prime range/date bridge state for shell-driven page control updates", () => {
+  it("updates native page-control refs for shell-driven page control updates", () => {
     const handlers = createHandlers();
     const deps = createDeps();
     const rangeSelect = document.createElement("select");
@@ -435,8 +435,7 @@ describe("event bindings detailed", () => {
     customEndInput.type = "date";
     customEndInput.min = "2025-01-01";
     customEndInput.max = "2025-12-31";
-    const syncRangeSpy = vi.spyOn(primeSelectBridgeModule, "syncPrimeSelectBridgeValue");
-    const syncDateSpy = vi.spyOn(primeDateBridgeModule, "syncPrimeDateBridgeValue");
+    document.body.append(rangeSelect, customStartInput, customEndInput);
 
     const { initEventHandlers } = createEventBindingsController({
       elements: {
@@ -454,25 +453,65 @@ describe("event bindings detailed", () => {
     shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-01-05" });
     shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-01-07" });
 
-    expect(syncRangeSpy).toHaveBeenCalledWith({
-      selectEl: rangeSelect,
-      value: "30",
-      disabled: false,
+    expect(rangeSelect.value).toBe("30");
+    expect(customStartInput.value).toBe("2025-01-05");
+    expect(customEndInput.value).toBe("2025-01-07");
+  });
+
+  it("routes shell-driven custom date updates through the shell bridge when native refs are detached", () => {
+    const handlers = createHandlers();
+    const syncPageControls = vi.fn(() => true);
+    const deps = createDeps();
+    const customStartInput = document.createElement("input");
+    customStartInput.type = "date";
+    customStartInput.value = "2025-01-01";
+    const customEndInput = document.createElement("input");
+    customEndInput.type = "date";
+    customEndInput.value = "2025-01-02";
+    document.body.append(customStartInput, customEndInput);
+    customStartInput.remove();
+    customEndInput.remove();
+
+    globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
+      bridges: {
+        [VUE_BRIDGE_NAMES.shell]: {
+          setShellActionHandlers: vi.fn(handlersMap => {
+            Object.assign(shellActionHandlers, handlersMap);
+          }),
+          dispatchShellAction: vi.fn(),
+          syncPageControls,
+          getPageControlState: vi.fn(() => ({
+            customStart: "2025-01-01",
+            customEnd: "2025-01-02",
+          })),
+          ownsPageControlInteractions: true,
+        },
+        [VUE_BRIDGE_NAMES.dashboardPanels]: {
+          ownsParticipantInteractions: true,
+          ownsActivityFilterInteractions: true,
+          setPanelActionHandlers: vi.fn(() => true),
+        },
+      },
+    };
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        customStartInput,
+        customEndInput,
+      },
+      handlers,
+      deps,
     });
-    expect(syncDateSpy).toHaveBeenNthCalledWith(1, {
-      inputEl: customStartInput,
-      value: "2025-01-05",
-      disabled: false,
-      min: "2025-01-01",
-      max: "2025-12-31",
-    });
-    expect(syncDateSpy).toHaveBeenNthCalledWith(2, {
-      inputEl: customEndInput,
-      value: "2025-01-07",
-      disabled: false,
-      min: "2025-01-01",
-      max: "2025-12-31",
-    });
+
+    initEventHandlers();
+
+    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-03-01" });
+    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-03-07" });
+
+    expect(syncPageControls).toHaveBeenCalledWith({ customStart: "2025-03-01" });
+    expect(syncPageControls).toHaveBeenCalledWith({ customEnd: "2025-03-07" });
+    expect(customStartInput.value).toBe("2025-01-01");
+    expect(customEndInput.value).toBe("2025-01-02");
   });
 
   it("avoids direct filter rerenders from event bindings", () => {
@@ -563,6 +602,7 @@ describe("event bindings detailed", () => {
     const deps = createDeps();
     const customStartInput = document.createElement("input");
     const customEndInput = document.createElement("input");
+    document.body.append(customStartInput, customEndInput);
 
     const shellActionHandlers = {};
     globalThis[VUE_RUNTIME_REGISTRY_KEY] = {
@@ -641,9 +681,6 @@ describe("event bindings detailed", () => {
       },
     };
 
-    const syncRangeSpy = vi.spyOn(primeSelectBridgeModule, "syncPrimeSelectBridgeValue");
-    const syncDateSpy = vi.spyOn(primeDateBridgeModule, "syncPrimeDateBridgeValue");
-
     const { initEventHandlers } = createEventBindingsController({
       elements: {},
       handlers,
@@ -666,24 +703,5 @@ describe("event bindings detailed", () => {
       expect.objectContaining({ target: { value: "30" } }),
     );
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-03-01", "2025-03-07");
-    expect(syncRangeSpy).toHaveBeenCalledWith({
-      selectEl: undefined,
-      value: "30",
-      disabled: undefined,
-    });
-    expect(syncDateSpy).toHaveBeenNthCalledWith(1, {
-      inputEl: undefined,
-      value: "2025-03-01",
-      disabled: undefined,
-      min: undefined,
-      max: undefined,
-    });
-    expect(syncDateSpy).toHaveBeenNthCalledWith(2, {
-      inputEl: undefined,
-      value: "2025-03-07",
-      disabled: undefined,
-      min: undefined,
-      max: undefined,
-    });
   });
 });

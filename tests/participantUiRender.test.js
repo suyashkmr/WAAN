@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Fragment, h, render } from "vue";
 
 import { createSearchParticipantUiController } from "../js/search/participantUi.js";
+import { readPrimeSelectBridgeValue } from "../js/vue/primeSelectBridge.js";
 
 describe("search participant UI rendering", () => {
   const originalVitestEnv = process.env.VITEST;
@@ -9,6 +10,7 @@ describe("search participant UI rendering", () => {
   afterEach(() => {
     if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
     else delete process.env.VITEST;
+    delete globalThis.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__;
     delete globalThis.Vue;
     delete globalThis.PrimeVue;
     document.body.innerHTML = "";
@@ -42,6 +44,7 @@ describe("search participant UI rendering", () => {
 
   it("keeps native participant select rendering when PrimeVue bridge is unavailable", () => {
     delete process.env.VITEST;
+    globalThis.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__ = true;
     const participantSelect = document.createElement("select");
 
     const controller = createSearchParticipantUiController({
@@ -92,9 +95,11 @@ describe("search participant UI rendering", () => {
 
     expect(participantSelect.id).toBe("search-participant");
     expect(participantSelect.isConnected).toBe(false);
-    expect(participantSelect.dataset.primevueManaged).toBe("detached");
-    expect(participantSelect.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(participantSelect.__waanPrimeSelectBridge?.mountEl?.isConnected).toBe(true);
+    expect(participantSelect.dataset.primevueManaged).toBeUndefined();
+    expect(participantSelect.dataset.primevueDelegateInstalled).toBeUndefined();
+    const mountEl = document.getElementById("search-participant--mount");
+    expect(mountEl?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(mountEl?.isConnected).toBe(true);
   });
 
   it("keeps bridged participant state in sync after user selection", () => {
@@ -131,14 +136,13 @@ describe("search participant UI rendering", () => {
 
     controller.populateParticipants();
 
-    const bridgeState = participantSelect.__waanPrimeSelectBridge?.state;
-    expect(bridgeState?.value).toBe("");
+    expect(readPrimeSelectBridgeValue(participantSelect)).toBe("");
 
     const vnode = latestRoot.render();
     vnode.children[0].props["onUpdate:modelValue"]("Ana");
 
-    expect(participantSelect.value).toBe("Ana");
-    expect(bridgeState?.value).toBe("Ana");
+    expect(participantSelect.value).toBe("");
+    expect(readPrimeSelectBridgeValue(participantSelect)).toBe("Ana");
   });
 
   it("does not emit mirrored native change events for the bridged participant select", () => {
@@ -180,8 +184,56 @@ describe("search participant UI rendering", () => {
     const vnode = latestRoot.render();
     vnode.children[0].props["onUpdate:modelValue"]("Ana");
 
-    expect(participantSelect.value).toBe("Ana");
+    expect(participantSelect.value).toBe("");
+    expect(readPrimeSelectBridgeValue(participantSelect)).toBe("Ana");
     expect(nativeChangeListener).not.toHaveBeenCalled();
+  });
+
+  it("preserves the visible bridged participant selection when options are repopulated", () => {
+    const participantSelect = document.createElement("select");
+    participantSelect.id = "search-participant";
+    document.body.appendChild(participantSelect);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    let latestRoot = null;
+    let entries = [{ type: "message", sender: "Ana" }];
+    const vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        latestRoot = root;
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.children?.[0]?.props?.["data-ui-runtime"] || vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+
+    const controller = createSearchParticipantUiController({
+      participantSelect,
+      getEntries: () => entries,
+      getDatasetFingerprint: () => `fp-${entries.length}`,
+      getSearchState: () => ({ query: { participant: "" } }),
+      buildParticipantOptionsCacheKey: ({ datasetFingerprint, entriesLength, selectedStateValue, selectedUiValue }) =>
+        `${datasetFingerprint}|${entriesLength}|${selectedStateValue}|${selectedUiValue}`,
+      vueRuntime,
+    });
+
+    controller.populateParticipants();
+    latestRoot.render().children[0].props["onUpdate:modelValue"]("Ana");
+
+    entries = [
+      { type: "message", sender: "Ana" },
+      { type: "message", sender: "Ben" },
+    ];
+    controller.populateParticipants();
+
+    expect(readPrimeSelectBridgeValue(participantSelect)).toBe("Ana");
+    expect(Array.from(participantSelect.options).map(option => option.value)).toEqual(["", "Ana", "Ben"]);
   });
 
   it("clears stale participant selection before syncing the PrimeVue bridge", () => {

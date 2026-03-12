@@ -340,9 +340,3 @@ export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   mountDashboardCardShellPrimitives(globalScope);
   mountFeedbackPrimitiveBridge(globalScope);
 }
-
-try {
-  mountShellPrimitivesIsland();
-} catch (error) {
-  globalThis.console?.warn?.("Vue shell primitives island mount failed.", error);
-}

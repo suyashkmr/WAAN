@@ -54,10 +54,19 @@ export function setupAppBootstrap({
     },
   });
   const { initAppBootstrap } = bootstrapController;
+  let bootstrapInitialised = false;
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function runBootstrapOnce() {
+    if (bootstrapInitialised) return;
+    bootstrapInitialised = true;
     initAppBootstrap();
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runBootstrapOnce, { once: true });
+  } else {
+    runBootstrapOnce();
+  }
 
   return {
     initEventHandlers,

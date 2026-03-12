@@ -1,15 +1,9 @@
 // @ts-check
-import {
-  renderDailySection,
-  renderWeeklySection,
-} from "../../analytics/activity.js";
+import { renderDailySection, renderWeeklySection } from "../../analytics/activity.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../../vue/dashboardPanelsIsland.js";
 import { buildHourlyTopHourSummary } from "./hourlySummary.js";
-import {
-  syncHourlyControls,
-  syncWeekdayControls,
-} from "./activityPanelControlSync.js";
+import { syncHourlyControls, syncWeekdayControls } from "./activityPanelControlSync.js";
 import { initActivityHourlyControls } from "./hourlyControlBindings.js";
 import {
   buildHourLabels,
@@ -93,6 +87,10 @@ export function createActivityPanelsController({ elements, deps }) {
     const handler = bridge?.[method];
     if (typeof handler !== "function") return false;
     return Boolean(handler(payload));
+  }
+
+  function shellBridgeOwnsPageControls() {
+    return Boolean(resolveVueBridge(VUE_BRIDGE_NAMES.shell)?.ownsPageControlInteractions);
   }
 
   function initStateSubscriptions() {
@@ -186,7 +184,7 @@ export function createActivityPanelsController({ elements, deps }) {
       onSelectRange: range => {
         if (!range?.start || !range?.end) return;
         applyCustomRange(range.start, range.end);
-        if (rangeSelect) rangeSelect.value = "custom";
+        if (!shellBridgeOwnsPageControls() && rangeSelect) rangeSelect.value = "custom";
       },
       },
       vueRuntime,

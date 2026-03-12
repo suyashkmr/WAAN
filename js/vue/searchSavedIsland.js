@@ -7,6 +7,7 @@ import { createPanelActionDispatcher } from "./panelActionDispatcher.js";
 import {
   mountSavedViewsActionPrimitives,
   mountSearchActionsPrimitive,
+  mountSearchSavedSelectSeedPrimitives,
 } from "./searchSavedActionPrimitives.js";
 import {
   renderPanelStateWithVue,
@@ -18,6 +19,7 @@ import {
 
 export function mountSearchSavedBridge({ globalScope = globalThis } = {}) {
   if (!globalScope) return;
+  mountSearchSavedSelectSeedPrimitives({ globalScope });
   const existingBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved, { globalScope });
   const shouldReplaceExistingBridge = Boolean(
     existingBridge

@@ -10,6 +10,7 @@ import {
 } from "../index.js";
 import { createDashboardViewAdapter } from "./dashboardViewAdapter.js";
 import { createHeroStatusRenderer } from "../../vue/heroStatusRenderer.js";
+import { readPrimeSelectBridgeValue } from "../../vue/primeSelectBridge.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -89,9 +90,9 @@ export function createDashboardDataStatusThemeWiring({
   viewAdapter.applySummarySkeletonState();
 
   const participantFilters = {
-    topCount: Number(dom.participantsTopSelect?.value ?? 25) || 0,
-    sortMode: dom.participantsSortSelect?.value ?? "most",
-    timeframe: dom.participantsTimeframeSelect?.value ?? "all",
+    topCount: Number(readPrimeSelectBridgeValue(dom.participantsTopSelect) || 25) || 0,
+    sortMode: readPrimeSelectBridgeValue(dom.participantsSortSelect) || "most",
+    timeframe: readPrimeSelectBridgeValue(dom.participantsTimeframeSelect) || "all",
   };
 
   const getExportFilterSummary = createExportFilterSummary({

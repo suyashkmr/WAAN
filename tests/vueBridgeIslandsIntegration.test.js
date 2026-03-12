@@ -62,8 +62,9 @@ describe("vue bridge islands integration", () => {
   it("mounts all Vue island bridges with callable contracts", async () => {
     await import("../js/vue/summaryIsland.js");
     await import("../js/vue/dashboardPanelsIsland.js");
-    await import("../js/vue/shellPrimitivesIsland.js");
+    const { mountShellPrimitivesIsland } = await import("../js/vue/shellPrimitivesIsland.js");
     await import("../js/vue/searchSavedIsland.js");
+    mountShellPrimitivesIsland({ globalScope: window });
 
     const summaryBridge = resolveVueBridge(VUE_BRIDGE_NAMES.summary, { globalScope: window });
     const dashboardBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope: window });

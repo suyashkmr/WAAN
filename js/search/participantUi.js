@@ -1,4 +1,4 @@
-import { syncPrimeSelectBridge } from "../vue/primeSelectBridge.js";
+import { readPrimeSelectBridgeValue, syncPrimeSelectBridge } from "../vue/primeSelectBridge.js";
 
 export function createSearchParticipantUiController({
   participantSelect,
@@ -14,7 +14,7 @@ export function createSearchParticipantUiController({
     const entries = getEntries();
     const datasetFingerprint = getDatasetFingerprint() || "";
     const selectedStateValue = getSearchState()?.query.participant ?? "";
-    const selectedUiValue = participantSelect.value || "";
+    const selectedUiValue = readPrimeSelectBridgeValue(participantSelect) || "";
     const nextCacheKey = buildParticipantOptionsCacheKey({
       datasetFingerprint,
       entriesLength: entries.length,
@@ -31,7 +31,7 @@ export function createSearchParticipantUiController({
 
     const selected = getSearchState()?.query.participant ?? "";
     const options = Array.from(senders).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-    const previousValue = participantSelect.value;
+    const previousValue = readPrimeSelectBridgeValue(participantSelect) || "";
     const optionModels = [
       { value: "", label: "All participants" },
       ...options.map(sender => ({ value: sender, label: sender })),
@@ -58,6 +58,7 @@ export function createSearchParticipantUiController({
       options: optionModels,
       value: participantSelect.value,
       disabled: datasetEmpty,
+      keepDetachedNativeValueSynced: false,
       vueRuntime,
     });
     participantOptionsCacheKey = nextCacheKey;
@@ -73,6 +74,7 @@ export function createSearchParticipantUiController({
       })),
       value: participantSelect.value,
       disabled: participantSelect.disabled,
+      keepDetachedNativeValueSynced: false,
       vueRuntime,
     });
   }

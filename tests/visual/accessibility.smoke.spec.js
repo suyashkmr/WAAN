@@ -36,9 +36,17 @@ test.describe("WAAN Accessibility Smoke", () => {
     for (const selectors of focusTargetGroups) {
       let selector = selectors[0];
       for (const candidate of selectors) {
-        if (await page.locator(candidate).count()) {
+        if (await page.locator(`${candidate}:visible`).count()) {
           selector = candidate;
           break;
+        }
+      }
+      if (!(await page.locator(`${selector}:visible`).count())) {
+        for (const candidate of selectors) {
+          if (await page.locator(candidate).count()) {
+            selector = candidate;
+            break;
+          }
         }
       }
       const target = page.locator(selector);

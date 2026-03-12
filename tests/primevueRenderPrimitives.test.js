@@ -44,21 +44,21 @@ describe("primevue render primitives", () => {
     expect(vnode.children.default()).toEqual([childNode]);
   });
 
-  it("falls back to native button vnode when PrimeVue Button is unavailable", () => {
+  it("falls back to native button vnode only in explicit fallback mode", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderActionButton(h, {
       id: "reset-search",
       text: "Clear filters",
       className: "ghost-button",
       type: "button",
-    }, { PrimeVue: {} });
+    }, { PrimeVue: {}, __WAAN_ALLOW_NATIVE_PRIMITIVE_FALLBACKS__: true });
 
     expect(vnode.type).toBe("button");
     expect(vnode.props.id).toBe("reset-search");
     expect(vnode.children).toBe("Clear filters");
   });
 
-  it("preserves disabled/onClick/attrs in fallback native button path", () => {
+  it("preserves disabled/onClick/attrs in explicit fallback native button path", () => {
     const clickHandler = () => {};
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderActionButton(h, {
@@ -71,7 +71,7 @@ describe("primevue render primitives", () => {
         "aria-label": "Pause relay",
         "data-action": "relay.stop",
       },
-    }, { PrimeVue: {} });
+    }, { PrimeVue: {}, __WAAN_ALLOW_NATIVE_PRIMITIVE_FALLBACKS__: true });
 
     expect(vnode.type).toBe("button");
     expect(vnode.props.disabled).toBe(true);
@@ -80,7 +80,7 @@ describe("primevue render primitives", () => {
     expect(vnode.props["data-action"]).toBe("relay.stop");
   });
 
-  it("renders native radio input even when PrimeVue runtime is available", () => {
+  it("renders PrimeVue RadioButton when runtime component is available", () => {
     const PrimeRadioButton = { name: "PrimeRadioButtonStub" };
     const globalScope = { PrimeVue: { RadioButton: PrimeRadioButton } };
     const h = (type, props = {}, children = []) => ({ type, props, children });
@@ -92,12 +92,12 @@ describe("primevue render primitives", () => {
       onChange: () => {},
     }, globalScope);
 
-    expect(vnode.type).toBe("input");
-    expect(vnode.props.type).toBe("radio");
-    expect(vnode.props.id).toBe("theme-system");
+    expect(vnode.type).toBe(PrimeRadioButton);
+    expect(vnode.props.inputId).toBe("theme-system");
     expect(vnode.props.name).toBe("theme-option");
     expect(vnode.props.value).toBe("system");
-    expect(vnode.props.checked).toBe(true);
+    expect(vnode.props.modelValue).toBe("system");
+    expect(vnode.props["data-ui-runtime"]).toBe("primevue");
   });
 
   it("derives checked state from modelValue in controlled mode", () => {
@@ -117,11 +117,11 @@ describe("primevue render primitives", () => {
       onChange: vi.fn(),
     }, { PrimeVue: { RadioButton: { name: "PrimeRadioButtonStub" } } });
 
-    expect(checkedNode.props.checked).toBe(true);
-    expect(uncheckedNode.props.checked).toBeUndefined();
+    expect(checkedNode.props.modelValue).toBe(1);
+    expect(uncheckedNode.props.modelValue).toBe(1);
   });
 
-  it("falls back to native radio input when PrimeVue RadioButton is unavailable", () => {
+  it("falls back to native radio input only in explicit fallback mode", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderRadioInput(h, {
       id: "theme-dark",
@@ -129,7 +129,7 @@ describe("primevue render primitives", () => {
       value: "dark",
       checked: false,
       onChange: () => {},
-    }, { PrimeVue: {} });
+    }, { PrimeVue: {}, __WAAN_ALLOW_NATIVE_PRIMITIVE_FALLBACKS__: true });
 
     expect(vnode.type).toBe("input");
     expect(vnode.props.type).toBe("radio");
@@ -159,12 +159,12 @@ describe("primevue render primitives", () => {
     expect(captured).toBe("new value");
   });
 
-  it("falls back to native text input when PrimeVue InputText is unavailable", () => {
+  it("falls back to native text input only in explicit fallback mode", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderTextInput(h, {
       id: "search-keyword",
       value: "x",
-    }, { PrimeVue: {} });
+    }, { PrimeVue: {}, __WAAN_ALLOW_NATIVE_PRIMITIVE_FALLBACKS__: true });
     expect(vnode.type).toBe("input");
     expect(vnode.props.type).toBe("text");
     expect(vnode.props.id).toBe("search-keyword");
@@ -356,23 +356,52 @@ describe("primevue render primitives", () => {
     expect(vnode.children[1].props.inputId).toBe("custom-start--primevue");
   });
 
-  it("requires PrimeVue select/date components at runtime", () => {
+  it("requires PrimeVue components at runtime when fallback mode is disabled", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
+    const runtimeWithoutFallback = { PrimeVue: {}, __WAAN_DISABLE_NATIVE_PRIMITIVE_FALLBACKS__: true };
+
+    expect(() =>
+      renderActionButton(h, {
+        id: "native-button",
+        text: "Native",
+      }, runtimeWithoutFallback),
+    ).toThrow(/PrimeVue Button/);
+
+    expect(() =>
+      renderRadioInput(h, {
+        id: "native-radio",
+        name: "mode",
+        value: "a",
+      }, runtimeWithoutFallback),
+    ).toThrow(/PrimeVue RadioButton/);
+
+    expect(() =>
+      renderTextInput(h, {
+        id: "native-text",
+        value: "x",
+      }, runtimeWithoutFallback),
+    ).toThrow(/PrimeVue InputText/);
 
     expect(() =>
       renderSelectInput(h, {
         id: "native-select",
         value: "all",
         options: [{ value: "all", label: "All time" }],
-      }, { PrimeVue: {} }),
+      }, runtimeWithoutFallback),
     ).toThrow(/PrimeVue Select\/Dropdown/);
 
     expect(() =>
       renderDateInput(h, {
         id: "native-date",
         value: "2026-03-10",
-      }, { PrimeVue: {} }),
+      }, runtimeWithoutFallback),
     ).toThrow(/PrimeVue DatePicker\/Calendar/);
+
+    expect(() =>
+      renderDialogContainer(h, {
+        className: "native-dialog",
+      }, runtimeWithoutFallback),
+    ).toThrow(/PrimeVue Dialog/);
   });
 
   it("renders PrimeVue Dialog container when runtime component is available", () => {
@@ -394,13 +423,13 @@ describe("primevue render primitives", () => {
     expect(typeof vnode.children.default).toBe("function");
   });
 
-  it("falls back to native dialog container when PrimeVue Dialog is unavailable", () => {
+  it("falls back to native dialog container only in explicit fallback mode", () => {
     const h = (type, props = {}, children = []) => ({ type, props, children });
     const vnode = renderDialogContainer(h, {
       className: "onboarding-panel",
       label: "Welcome to WAAN",
       children: [],
-    }, { PrimeVue: {} });
+    }, { PrimeVue: {}, __WAAN_ALLOW_NATIVE_PRIMITIVE_FALLBACKS__: true });
 
     expect(vnode.type).toBe("div");
     expect(vnode.props.role).toBe("dialog");

@@ -15,6 +15,12 @@ function resolvePrimeVueComponent(componentName, globalScope = globalThis) {
   return null;
 }
 
+function allowNativePrimitiveFallback(globalScope = globalThis) {
+  if (globalScope?.__WAAN_DISABLE_NATIVE_PRIMITIVE_FALLBACKS__ === true) return false;
+  if (globalScope?.__WAAN_ALLOW_NATIVE_PRIMITIVE_FALLBACKS__ === true) return true;
+  return Boolean(globalScope?.process?.env?.VITEST || globalThis?.process?.env?.VITEST);
+}
+
 function resolvePrimeVisibleInputId(id = "", preserveNativeElement = false) {
   return preserveNativeElement && id ? `${id}--primevue` : id;
 }
@@ -52,6 +58,10 @@ export function renderActionButton(h, options = {}, globalScope = globalThis) {
     return h(PrimeButton, primeProps, { default: () => children });
   }
 
+  if (!allowNativePrimitiveFallback(globalScope)) {
+    throw new Error("renderActionButton requires PrimeVue Button at runtime");
+  }
+
   return h("button", commonProps, children == null ? text : children);
 }
 
@@ -65,8 +75,33 @@ export function renderRadioInput(h, options, globalScope = globalThis) {
     onChange,
     attrs = {},
   } = options;
-  void globalScope;
   const resolvedChecked = modelValue !== undefined ? Object.is(modelValue, value) : Boolean(checked);
+  const PrimeRadioButton = resolvePrimeVueComponent("RadioButton", globalScope);
+  if (PrimeRadioButton) {
+    return h(PrimeRadioButton, {
+      inputId: id,
+      name,
+      value,
+      modelValue: modelValue !== undefined ? modelValue : (resolvedChecked ? value : null),
+      binary: false,
+      unstyled: true,
+      "data-ui-runtime": "primevue",
+      "onUpdate:modelValue": nextValue => {
+        if (typeof onChange !== "function") return;
+        const normalizedNextValue = nextValue ?? null;
+        onChange({
+          target: {
+            value,
+            checked: Object.is(normalizedNextValue, value),
+          },
+        });
+      },
+      ...attrs,
+    });
+  }
+  if (!allowNativePrimitiveFallback(globalScope)) {
+    throw new Error("renderRadioInput requires PrimeVue RadioButton at runtime");
+  }
   return h("input", {
     type: "radio",
     name,
@@ -103,6 +138,10 @@ export function renderTextInput(h, options, globalScope = globalThis) {
       },
       ...attrs,
     });
+  }
+
+  if (!allowNativePrimitiveFallback(globalScope)) {
+    throw new Error("renderTextInput requires PrimeVue InputText at runtime");
   }
 
   return h("input", {
@@ -277,6 +316,10 @@ export function renderDialogContainer(h, options = {}, globalScope = globalThis)
         ...(label ? { header: () => label } : {}),
       },
     );
+  }
+
+  if (!allowNativePrimitiveFallback(globalScope)) {
+    throw new Error("renderDialogContainer requires PrimeVue Dialog at runtime");
   }
 
   return h(

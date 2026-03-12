@@ -102,24 +102,24 @@ describe("shell primitive views", () => {
 
       const systemInput = findNode(
         tree,
-        node => node?.type === "input" && node?.props?.id === "theme-system",
+        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-system",
       );
       const lightInput = findNode(
         tree,
-        node => node?.type === "input" && node?.props?.id === "theme-light",
+        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-light",
       );
       const darkInput = findNode(
         tree,
-        node => node?.type === "input" && node?.props?.id === "theme-dark",
+        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-dark",
       );
 
       expect(systemInput).toBeTruthy();
       expect(lightInput).toBeTruthy();
       expect(darkInput).toBeTruthy();
 
-      systemInput.props.onChange({ target: { checked: true } });
-      lightInput.props.onChange({ target: { checked: true } });
-      darkInput.props.onChange({ target: { checked: true } });
+      systemInput.props["onUpdate:modelValue"]("system");
+      lightInput.props["onUpdate:modelValue"]("light");
+      darkInput.props["onUpdate:modelValue"]("dark");
 
       expect(onAction).toHaveBeenNthCalledWith(1, "ui.theme.set", { preference: "system" });
       expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "light" });

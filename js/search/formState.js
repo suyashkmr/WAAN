@@ -1,4 +1,4 @@
-import { readPrimeSelectBridgeValue, syncPrimeSelectBridgeValue } from "../vue/primeSelectBridge.js";
+import { readPrimeSelectBridgeValue } from "../vue/primeSelectBridge.js";
 
 export function applySearchStateToInputs({
   state,
@@ -10,10 +10,7 @@ export function applySearchStateToInputs({
   if (!state) return;
   if (keywordInput) keywordInput.value = state.query.text ?? "";
   if (participantSelect) {
-    syncPrimeSelectBridgeValue({
-      selectEl: participantSelect,
-      value: state.query.participant ?? "",
-    });
+    participantSelect.value = state.query.participant ?? "";
   }
   if (startInput) startInput.value = state.query.start ?? "";
   if (endInput) endInput.value = state.query.end ?? "";
@@ -41,10 +38,7 @@ export function resetSearchInputs({
 }) {
   if (keywordInput) keywordInput.value = "";
   if (participantSelect) {
-    syncPrimeSelectBridgeValue({
-      selectEl: participantSelect,
-      value: "",
-    });
+    participantSelect.value = "";
   }
   if (startInput) startInput.value = "";
   if (endInput) endInput.value = "";

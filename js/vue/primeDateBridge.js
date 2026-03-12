@@ -9,21 +9,64 @@ function getVueRuntime(vueRuntime, globalScope) {
   return vueRuntime ?? globalScope?.Vue ?? null;
 }
 
-function resolveBridgeState(inputEl) {
-  return /** @type {any} */ (inputEl).__waanPrimeDateBridge ?? null;
+function allowNativeBridgeFallback(globalScope = globalThis) {
+  const disableFallback = globalScope?.__WAAN_DISABLE_NATIVE_BRIDGE_FALLBACKS__ === true
+    || globalThis?.__WAAN_DISABLE_NATIVE_BRIDGE_FALLBACKS__ === true;
+  if (disableFallback) return false;
+  const allowFallback = globalScope?.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__ === true
+    || globalThis?.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__ === true;
+  if (allowFallback) return true;
+  return Boolean(globalScope?.process?.env?.VITEST || globalThis?.process?.env?.VITEST);
+}
+
+function resolveBridgeStateForElement(inputEl, visibleInputId = "") {
+  const ownerDocument = inputEl?.ownerDocument ?? null;
+  const inputId = inputEl?.dataset?.primevueInputId || "";
+  return resolveRegisteredBridge(ownerDocument, visibleInputId || `${inputId}--primevue`)
+    ?? resolveRegisteredBridge(ownerDocument, inputId)
+    ?? null;
 }
 
 export function readPrimeDateBridgeValue(inputEl) {
   if (!inputEl) return "";
-  const bridge = resolveBridgeState(inputEl);
+  const bridge = resolveBridgeStateForElement(inputEl);
   if (bridge?.state) {
     return bridge.state.value == null ? "" : String(bridge.state.value);
   }
   return inputEl.value ?? "";
 }
 
-function storeBridgeState(inputEl, state) {
-  /** @type {any} */ (inputEl).__waanPrimeDateBridge = state;
+export function readPrimeDateBridgeValueById(ownerDocument, bridgeId) {
+  const bridge = resolveRegisteredBridge(ownerDocument, bridgeId);
+  if (!bridge?.state) return "";
+  return bridge.state.value == null ? "" : String(bridge.state.value);
+}
+
+function resolveBridgeRegistry(ownerDocument) {
+  if (!ownerDocument) return null;
+  /** @type {Map<string, any>} */
+  const registry = /** @type {any} */ (ownerDocument).__waanPrimeDateBridgeRegistry
+    ?? new Map();
+  /** @type {any} */ (ownerDocument).__waanPrimeDateBridgeRegistry = registry;
+  return registry;
+}
+
+function registerBridgeState(ownerDocument, bridgeId, bridge) {
+  if (!bridgeId) return;
+  resolveBridgeRegistry(ownerDocument)?.set(bridgeId, bridge);
+}
+
+function resolveRegisteredBridge(ownerDocument, bridgeId) {
+  if (!bridgeId) return null;
+  const registry = resolveBridgeRegistry(ownerDocument);
+  const bridge = registry?.get(bridgeId) ?? null;
+  if (!bridge) return null;
+  const mountEl = bridge?.mountEl ?? null;
+  if (mountEl instanceof HTMLElement && !mountEl.isConnected) {
+    registry?.delete(bridgeId);
+    return null;
+  }
+  return bridge;
 }
 
 function resolveVisibleDateTarget(inputEl, visibleInputId = "") {
@@ -33,7 +76,7 @@ function resolveVisibleDateTarget(inputEl, visibleInputId = "") {
     const explicitTarget = ownerDocument.getElementById(visibleInputId);
     if (explicitTarget instanceof HTMLElement) return explicitTarget;
   }
-  const bridge = resolveBridgeState(inputEl);
+  const bridge = resolveBridgeStateForElement(inputEl, visibleInputId);
   const mountEl = bridge?.mountEl ?? null;
   if (!(mountEl instanceof HTMLElement)) return null;
   return mountEl.querySelector(".p-datepicker, .p-calendar, input, button, [tabindex]") instanceof HTMLElement
@@ -41,28 +84,9 @@ function resolveVisibleDateTarget(inputEl, visibleInputId = "") {
     : mountEl;
 }
 
-function installDetachedDateDelegates(inputEl, visibleInputId = "") {
-  if (!inputEl || inputEl.dataset.primevueManaged !== "detached") return;
-  if (inputEl.dataset.primevueDelegateInstalled === "true") return;
-  const nativeFocus = inputEl.focus.bind(inputEl);
-  const nativeScrollIntoView = inputEl.scrollIntoView.bind(inputEl);
-  inputEl.focus = function focus(options) {
-    const visibleTarget = resolveVisibleDateTarget(inputEl, visibleInputId);
-    if (visibleTarget && visibleTarget !== inputEl) {
-      visibleTarget.focus?.(options);
-      return;
-    }
-    nativeFocus(options);
-  };
-  inputEl.scrollIntoView = function scrollIntoView(arg) {
-    const visibleTarget = resolveVisibleDateTarget(inputEl, visibleInputId);
-    if (visibleTarget && visibleTarget !== inputEl) {
-      visibleTarget.scrollIntoView?.(arg);
-      return;
-    }
-    nativeScrollIntoView(arg);
-  };
-  inputEl.dataset.primevueDelegateInstalled = "true";
+function canSyncDetachedDateValue(inputEl, keepDetachedNativeValueSynced = true) {
+  if (keepDetachedNativeValueSynced) return true;
+  return Boolean(inputEl?.isConnected && !inputEl?.classList?.contains("hidden"));
 }
 
 function ensureBridgeMount(inputEl, inputId) {
@@ -87,13 +111,11 @@ function hideNativeInput(inputEl, inputId, preserveNativeId = false, detachPrese
   }
   if (preserveNativeId && detachPreservedNative && inputEl.parentNode) {
     inputEl.remove();
-    inputEl.dataset.primevueManaged = "detached";
     return;
   }
   inputEl.classList.add("hidden");
   inputEl.setAttribute("aria-hidden", "true");
   inputEl.tabIndex = -1;
-  inputEl.dataset.primevueManaged = "true";
 }
 
 /**
@@ -105,6 +127,7 @@ function hideNativeInput(inputEl, inputId, preserveNativeId = false, detachPrese
  *   max?: string,
  *   preserveNativeId?: boolean,
  *   detachPreservedNative?: boolean,
+ *   keepDetachedNativeValueSynced?: boolean,
  *   visibleInputId?: string,
  *   onValueChange?: ((value: string) => void) | null,
  *   vueRuntime?: any,
@@ -120,6 +143,7 @@ export function syncPrimeDateBridge({
   max = "",
   preserveNativeId = false,
   detachPreservedNative = false,
+  keepDetachedNativeValueSynced = true,
   visibleInputId = "",
   onValueChange = null,
   vueRuntime = null,
@@ -135,30 +159,35 @@ export function syncPrimeDateBridge({
     (globalScope?.PrimeVue || globalScope?.primevue)?.Calendar,
   );
   if (!VueRuntime || typeof VueRuntime.createApp !== "function" || typeof VueRuntime.h !== "function" || !hasPrimeVue) {
+    if (!allowNativeBridgeFallback(globalScope)) {
+      throw new Error("syncPrimeDateBridge requires Vue runtime and PrimeVue DatePicker/Calendar");
+    }
     return false;
   }
 
-  inputEl.value = value == null ? "" : String(value);
-  inputEl.disabled = Boolean(disabled);
-  inputEl.min = min == null ? "" : String(min);
-  inputEl.max = max == null ? "" : String(max);
+  if (canSyncDetachedDateValue(inputEl, keepDetachedNativeValueSynced)) {
+    inputEl.value = value == null ? "" : String(value);
+    inputEl.disabled = Boolean(disabled);
+    inputEl.min = min == null ? "" : String(min);
+    inputEl.max = max == null ? "" : String(max);
+  }
 
-  let bridge = resolveBridgeState(inputEl);
+  let bridge = resolveBridgeStateForElement(inputEl, resolvedVisibleInputId);
   if (!bridge) {
     const mountEl = ensureBridgeMount(inputEl, inputId);
     if (!mountEl) return false;
     const state = VueRuntime.reactive
       ? VueRuntime.reactive({
-        value: inputEl.value,
+        value: value == null ? "" : String(value),
         disabled: Boolean(disabled),
-        min: inputEl.min,
-        max: inputEl.max,
+        min: min == null ? "" : String(min),
+        max: max == null ? "" : String(max),
       })
       : {
-        value: inputEl.value,
+        value: value == null ? "" : String(value),
         disabled: Boolean(disabled),
-        min: inputEl.min,
-        max: inputEl.max,
+        min: min == null ? "" : String(min),
+        max: max == null ? "" : String(max),
       };
     const Root = {
       name: "PrimeDateBridgeField",
@@ -175,7 +204,9 @@ export function syncPrimeDateBridge({
           onChange: event => {
             const nextValue = event?.target?.value ?? "";
             state.value = String(nextValue ?? "");
-            inputEl.value = state.value;
+            if (canSyncDetachedDateValue(inputEl, keepDetachedNativeValueSynced)) {
+              inputEl.value = state.value;
+            }
             onValueChange?.(state.value);
           },
         }, globalScope);
@@ -183,44 +214,30 @@ export function syncPrimeDateBridge({
     };
     configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(mountEl);
     hideNativeInput(inputEl, inputId, preserveNativeId, detachPreservedNative);
-    installDetachedDateDelegates(inputEl, resolvedVisibleInputId);
     bridge = { state, mountEl };
-    storeBridgeState(inputEl, bridge);
+    registerBridgeState(inputEl.ownerDocument, inputId, bridge);
+    registerBridgeState(inputEl.ownerDocument, resolvedVisibleInputId, bridge);
   }
 
-  bridge.state.value = inputEl.value;
+  bridge.state.value = value == null ? "" : String(value);
   bridge.state.disabled = Boolean(disabled);
-  bridge.state.min = inputEl.min;
-  bridge.state.max = inputEl.max;
+  bridge.state.min = min == null ? "" : String(min);
+  bridge.state.max = max == null ? "" : String(max);
   hideNativeInput(inputEl, inputId, preserveNativeId, detachPreservedNative);
-  installDetachedDateDelegates(inputEl, resolvedVisibleInputId);
   return true;
 }
 
-/**
- * @param {{
- *   inputEl: HTMLInputElement | null | undefined,
- *   value?: string | null,
- *   disabled?: boolean,
- *   min?: string | null,
- *   max?: string | null,
- * }} params
- */
-export function syncPrimeDateBridgeValue({
-  inputEl,
+export function syncPrimeDateBridgeById({
+  ownerDocument,
+  bridgeId,
   value = "",
   disabled,
   min,
   max,
 }) {
-  if (!inputEl) return false;
-  inputEl.value = value == null ? "" : String(value);
-  if (typeof disabled === "boolean") inputEl.disabled = disabled;
-  if (typeof min === "string") inputEl.min = min;
-  if (typeof max === "string") inputEl.max = max;
-  const bridge = resolveBridgeState(inputEl);
+  const bridge = resolveRegisteredBridge(ownerDocument, bridgeId);
   if (!bridge) return false;
-  bridge.state.value = inputEl.value;
+  bridge.state.value = value == null ? "" : String(value);
   if (typeof disabled === "boolean") bridge.state.disabled = Boolean(disabled);
   if (typeof min === "string") bridge.state.min = min;
   if (typeof max === "string") bridge.state.max = max;

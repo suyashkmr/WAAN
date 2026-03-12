@@ -102,16 +102,16 @@ export function resolveLegacyPageControlRefs(controlsEl) {
 
 export function mergeLegacyPageControlRefs(existingRefs, resolvedRefs) {
   return {
-    chatSelector: resolvedRefs.chatSelector ?? existingRefs?.chatSelector ?? null,
-    rangeSelect: resolvedRefs.rangeSelect ?? existingRefs?.rangeSelect ?? null,
+    chatSelector: resolvedRefs.chatSelector ?? (existingRefs?.chatSelector?.isConnected ? existingRefs.chatSelector : null),
+    rangeSelect: resolvedRefs.rangeSelect ?? (existingRefs?.rangeSelect?.isConnected ? existingRefs.rangeSelect : null),
     customControls: resolvedRefs.customControls ?? existingRefs?.customControls ?? null,
-    customStartInput: resolvedRefs.customStartInput ?? existingRefs?.customStartInput ?? null,
-    customEndInput: resolvedRefs.customEndInput ?? existingRefs?.customEndInput ?? null,
-    customApplyButton: resolvedRefs.customApplyButton ?? existingRefs?.customApplyButton ?? null,
+    customStartInput: resolvedRefs.customStartInput ?? (existingRefs?.customStartInput?.isConnected ? existingRefs.customStartInput : null),
+    customEndInput: resolvedRefs.customEndInput ?? (existingRefs?.customEndInput?.isConnected ? existingRefs.customEndInput : null),
+    customApplyButton: resolvedRefs.customApplyButton ?? (existingRefs?.customApplyButton?.isConnected ? existingRefs.customApplyButton : null),
   };
 }
 
-export function resolvePageControlTarget(legacyRefs, ownerDocument, controlKey) {
+export function resolvePageControlTarget(legacyRefs, ownerDocument, controlKey, preferVisible = false) {
   const visibleControlId = (
     controlKey === "chat" ? "chat-selector" :
     controlKey === "range" ? "global-range" :
@@ -120,10 +120,12 @@ export function resolvePageControlTarget(legacyRefs, ownerDocument, controlKey) 
     null
   );
   if (!visibleControlId) return null;
-  if (controlKey === "chat") return legacyRefs?.chatSelector ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
-  if (controlKey === "range") return legacyRefs?.rangeSelect ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
-  if (controlKey === "custom-start") return legacyRefs?.customStartInput ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
-  return legacyRefs?.customEndInput ?? resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
+  const visibleTarget = resolveVisiblePageControlTarget(visibleControlId, ownerDocument);
+  if (preferVisible && visibleTarget) return visibleTarget;
+  if (controlKey === "chat") return legacyRefs?.chatSelector ?? visibleTarget;
+  if (controlKey === "range") return legacyRefs?.rangeSelect ?? visibleTarget;
+  if (controlKey === "custom-start") return legacyRefs?.customStartInput ?? visibleTarget;
+  return legacyRefs?.customEndInput ?? visibleTarget;
 }
 
 export function ensureLegacyPageControlsRendered(controlsEl, existingBridge = null) {
@@ -131,6 +133,9 @@ export function ensureLegacyPageControlsRendered(controlsEl, existingBridge = nu
   if (hasPreservedLegacyRefs(existingBridge?.legacyRefs)) return true;
   const existingRefs = resolveLegacyPageControlRefs(controlsEl);
   if (existingRefs.chatSelector || existingRefs.rangeSelect || existingRefs.customStartInput || existingRefs.customEndInput) {
+    return true;
+  }
+  if (hasVisiblePageControlTargets(controlsEl.ownerDocument)) {
     return true;
   }
   return renderLegacyPageControlsSeed(controlsEl);
@@ -146,9 +151,21 @@ function resolveVisiblePageControlTarget(controlId, ownerDocument) {
 function hasPreservedLegacyRefs(legacyRefs) {
   if (!legacyRefs) return false;
   return Boolean(
-    legacyRefs.chatSelector ||
-    legacyRefs.rangeSelect ||
-    legacyRefs.customStartInput ||
-    legacyRefs.customEndInput,
+    legacyRefs.chatSelector?.isConnected ||
+    legacyRefs.rangeSelect?.isConnected ||
+    legacyRefs.customStartInput?.isConnected ||
+    legacyRefs.customEndInput?.isConnected,
+  );
+}
+
+function hasVisiblePageControlTargets(ownerDocument) {
+  if (!ownerDocument) return false;
+  return Boolean(
+    resolveVisiblePageControlTarget("chat-selector", ownerDocument) ||
+    resolveVisiblePageControlTarget("global-range", ownerDocument) ||
+    resolveVisiblePageControlTarget("custom-start", ownerDocument) ||
+    resolveVisiblePageControlTarget("custom-end", ownerDocument) ||
+    ownerDocument.getElementById("apply-custom-range--primevue") ||
+    ownerDocument.getElementById("apply-custom-range--mount")
   );
 }

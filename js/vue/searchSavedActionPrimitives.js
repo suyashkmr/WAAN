@@ -37,6 +37,52 @@ function bindPanelActionFormSubmit({ form, actionKey, dispatchPanelAction }) {
 
 /**
  * @param {{
+ *   doc: Document | null | undefined,
+ *   anchorId: string,
+ *   selectId: string,
+ * }} params
+ */
+function seedNativeSelectFromAnchor({ doc, anchorId, selectId }) {
+  if (!doc) return;
+  if (doc.getElementById(selectId)) return;
+  const anchor = doc.getElementById(anchorId);
+  if (!anchor) return;
+  const select = doc.createElement("select");
+  select.id = selectId;
+  anchor.replaceWith(select);
+}
+
+/**
+ * @param {{
+ *   globalScope?: any,
+ * }} params
+ */
+export function mountSearchSavedSelectSeedPrimitives({ globalScope = globalThis } = {}) {
+  const doc = globalScope?.document ?? null;
+  seedNativeSelectFromAnchor({
+    doc,
+    anchorId: "search-participant-anchor",
+    selectId: "search-participant",
+  });
+  seedNativeSelectFromAnchor({
+    doc,
+    anchorId: "saved-view-list-anchor",
+    selectId: "saved-view-list",
+  });
+  seedNativeSelectFromAnchor({
+    doc,
+    anchorId: "compare-view-a-anchor",
+    selectId: "compare-view-a",
+  });
+  seedNativeSelectFromAnchor({
+    doc,
+    anchorId: "compare-view-b-anchor",
+    selectId: "compare-view-b",
+  });
+}
+
+/**
+ * @param {{
  *   globalScope?: any,
  *   dispatchPanelAction: (actionKey: string, payload?: any) => void,
  * }} params

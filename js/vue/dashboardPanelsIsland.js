@@ -11,6 +11,7 @@ import {
   createParticipantQuickFiltersRoot,
 } from "./dashboardParticipantControlsRoot.js";
 import { createDashboardParticipantControlBridge } from "./dashboardParticipantControlBridge.js";
+import { readPrimeSelectBridgeValue } from "./primeSelectBridge.js";
 import {
   createHourlyControlsRoot,
   createWeekdayControlsRoot,
@@ -59,9 +60,9 @@ export function mountDashboardPanelsIsland({ globalScope = globalThis } = {}) {
     emptyMessage: "",
     expandedByRowId: {},
     filters: {
-      topCount: String(doc.getElementById("participants-top-count")?.value || "25"),
-      sortMode: String(doc.getElementById("participants-sort")?.value || "most"),
-      timeframe: String(doc.getElementById("participants-timeframe")?.value || "all"),
+      topCount: readPrimeSelectBridgeValue(/** @type {HTMLSelectElement | null} */ (doc.getElementById("participants-top-count"))) || "25",
+      sortMode: readPrimeSelectBridgeValue(/** @type {HTMLSelectElement | null} */ (doc.getElementById("participants-sort"))) || "most",
+      timeframe: readPrimeSelectBridgeValue(/** @type {HTMLSelectElement | null} */ (doc.getElementById("participants-timeframe"))) || "all",
     },
   });
   const hourlyState = reactive({

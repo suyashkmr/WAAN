@@ -8,6 +8,7 @@ import {
   setStatusCallback,
   setSearchQuery,
 } from "../js/state.js";
+import { readPrimeSelectBridgeValue, syncPrimeSelectBridgeById } from "../js/vue/primeSelectBridge.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
 
 const testVueRuntime = { h, render, Fragment };
@@ -442,11 +443,11 @@ describe("search controller", () => {
     setSearchQuery({ text: "", participant: "Ben", start: "", end: "" });
     controller.applyStateToForm();
     expect(elements.participantSelect.value).toBe("Ben");
-    expect(elements.participantSelect.__waanPrimeSelectBridge.state.value).toBe("Ben");
+    expect(readPrimeSelectBridgeValue(elements.participantSelect)).toBe("Ben");
 
     controller.resetState();
     expect(elements.participantSelect.value).toBe("");
-    expect(elements.participantSelect.__waanPrimeSelectBridge.state.value).toBe("");
+    expect(readPrimeSelectBridgeValue(elements.participantSelect)).toBe("");
   });
 
   it("submits using bridged participant state even when the hidden native select is stale", async () => {
@@ -484,7 +485,11 @@ describe("search controller", () => {
     controller.init();
     controller.populateParticipants();
     elements.participantSelect.value = "";
-    elements.participantSelect.__waanPrimeSelectBridge.state.value = "Ben";
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "search-participant",
+      value: "Ben",
+    });
 
     elements.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     await Promise.resolve();

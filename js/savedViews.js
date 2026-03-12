@@ -12,7 +12,6 @@ import {
 } from "./savedViewsDirtyTracking.js";
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
-import { syncSavedViewListSelection } from "./savedViewsSelectBridgeSync.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
 import { readPrimeSelectBridgeValue } from "./vue/primeSelectBridge.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
@@ -244,8 +243,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       return;
     }
     const record = addSavedView(view);
-    refreshUI();
-    syncSavedViewListSelection(listSelect, record.id, dataAvailable);
+    refreshUI({ preferredListSelection: record.id });
     if (nameInput) nameInput.value = "";
     updateStatus(`Saved view "${name}".`, "success");
   }
@@ -276,9 +274,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       updateStatus("Couldn't remove that saved view.", "error");
       return;
     }
-    refreshUI();
+    refreshUI({ preferredListSelection: "" });
     renderComparisonSummary();
-    syncSavedViewListSelection(listSelect, "", dataAvailable);
     if (activeViewId === id) {
       activeViewId = null;
       lastAppliedViewSignature = null;
@@ -311,7 +308,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       return;
     }
     await applySavedView(view);
-    syncSavedViewListSelection(listSelect, viewId, dataAvailable);
+    refreshUI({ preferredListSelection: viewId });
   }
 
   function attachEvents() {

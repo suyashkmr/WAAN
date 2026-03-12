@@ -3,6 +3,7 @@ import { Fragment, h, render } from "vue";
 import { createSavedViewsController } from "../js/savedViews.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge, installShellVueBridge } from "./vueBridgeTestUtils.js";
 import { WAAN_PAGE_CONTROL_DRAFT_EVENT } from "../js/vue/pageControlDraftSignal.js";
+import { readPrimeSelectBridgeValue, syncPrimeSelectBridgeById } from "../js/vue/primeSelectBridge.js";
 
 function buildElements() {
   const buildSelect = values => {
@@ -363,10 +364,10 @@ describe("savedViews controller", () => {
     expect(elements.listSelect.isConnected).toBe(false);
     expect(elements.compareSelectA.isConnected).toBe(false);
     expect(elements.compareSelectB.isConnected).toBe(false);
-    expect(elements.listSelect.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(elements.compareSelectA.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(elements.compareSelectB.__waanPrimeSelectBridge?.mountEl?.classList.contains("prime-select-bridge")).toBe(true);
-    expect(elements.listSelect.__waanPrimeSelectBridge?.state?.value).toBe("view-1");
+    expect(document.getElementById("saved-view-list--mount")?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(document.getElementById("compare-view-a--mount")?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(document.getElementById("compare-view-b--mount")?.classList.contains("prime-select-bridge")).toBe(true);
+    expect(readPrimeSelectBridgeValue(elements.listSelect)).toBe("view-1");
   });
 
   it("routes saved-view apply actions through Vue panel dispatcher when available", async () => {
@@ -831,7 +832,11 @@ describe("savedViews controller", () => {
     elements.saveButton.click();
 
     elements.listSelect.value = "";
-    elements.listSelect.__waanPrimeSelectBridge.state.value = "view-2";
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "saved-view-list",
+      value: "view-2",
+    });
     await Promise.resolve(elements.applyButton.click());
     await Promise.resolve();
 
@@ -885,8 +890,16 @@ describe("savedViews controller", () => {
 
     elements.compareSelectA.value = "";
     elements.compareSelectB.value = "";
-    elements.compareSelectA.__waanPrimeSelectBridge.state.value = "view-1";
-    elements.compareSelectB.__waanPrimeSelectBridge.state.value = "view-2";
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "compare-view-a",
+      value: "view-1",
+    });
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "compare-view-b",
+      value: "view-2",
+    });
     elements.compareButton.click();
 
     expect(dependencies.setCompareSelection).toHaveBeenLastCalledWith("view-1", "view-2");

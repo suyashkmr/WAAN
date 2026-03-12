@@ -197,34 +197,7 @@
         </section>
 
         <div class="page-controls full-span">
-            <div class="control-row primary-controls" data-vue-page-controls-root="true">
-                <label class="control dataset-control">
-                    <span>Loaded chats</span>
-                    <select id="chat-selector" disabled>
-                        <option value="">No chats loaded yet</option>
-                    </select>
-                </label>
-                <div class="control custom-range hidden" id="custom-range-controls">
-                    <span>Custom dates</span>
-                    <div class="custom-range-inputs">
-                        <input type="date" id="custom-start" disabled>
-                        <span class="range-separator">to</span>
-                        <input type="date" id="custom-end" disabled>
-                        <button type="button" class="ghost-button small" id="apply-custom-range" disabled>Apply</button>
-                    </div>
-                </div>
-                <label class="control period-control">
-                    <span>Time range</span>
-                    <select id="global-range">
-                        <option value="all">All time</option>
-                        <option value="30">Last 30 days</option>
-                        <option value="90">Last 90 days</option>
-                        <option value="180">Last 180 days</option>
-                        <option value="365">Last 365 days</option>
-                        <option value="custom">Custom range</option>
-                    </select>
-                </label>
-            </div>
+            <div class="control-row primary-controls" data-vue-page-controls-root="true"></div>
         </div>
 
         <div id="dataset-empty-callout" class="dataset-empty panel-state panel-state--empty full-span hidden" aria-live="polite">
@@ -332,27 +305,15 @@
                 <div class="participants-controls">
                     <label class="control-group" for="participants-top-count">
                         <span>Show Top</span>
-                        <select id="participants-top-count">
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="25" selected>25</option>
-                            <option value="50">50</option>
-                            <option value="0">All</option>
-                        </select>
+                        <div id="participants-top-count-anchor" data-native-select-seed="participants-top-count"></div>
                     </label>
                     <label class="control-group" for="participants-sort">
                         <span>Sort</span>
-                        <select id="participants-sort">
-                            <option value="most" selected>Most active</option>
-                            <option value="quiet">Quietest</option>
-                        </select>
+                        <div id="participants-sort-anchor" data-native-select-seed="participants-sort"></div>
                     </label>
                     <label class="control-group" for="participants-timeframe">
                         <span>Timeframe</span>
-                        <select id="participants-timeframe">
-                            <option value="all" selected>All time</option>
-                            <option value="week">Last 7 days</option>
-                        </select>
+                        <div id="participants-timeframe-anchor" data-native-select-seed="participants-timeframe"></div>
                     </label>
                 </div>
                 <div class="participants-quick-filters">
@@ -910,7 +871,7 @@
                     <div class="saved-view-manage">
                         <label class="control-group" for="saved-view-list">
                             <span>Saved setups</span>
-                            <select id="saved-view-list"></select>
+                            <div id="saved-view-list-anchor" data-native-select-seed="saved-view-list"></div>
                         </label>
                         <button type="button" class="ghost-button small" id="apply-saved-view">Load view</button>
                         <button type="button" class="ghost-button small" id="delete-saved-view">Delete view</button>
@@ -920,11 +881,11 @@
                 <div class="compare-controls" id="compare-controls">
                     <div class="compare-select">
                         <label for="compare-view-a">View A</label>
-                        <select id="compare-view-a"></select>
+                        <div id="compare-view-a-anchor" data-native-select-seed="compare-view-a"></div>
                     </div>
                     <div class="compare-select">
                         <label for="compare-view-b">View B</label>
-                        <select id="compare-view-b"></select>
+                        <div id="compare-view-b-anchor" data-native-select-seed="compare-view-b"></div>
                     </div>
                     <button type="button" class="ghost-button" id="compare-views">Compare views</button>
                 </div>
@@ -966,9 +927,7 @@
                     </div>
                     <div class="search-control">
                         <label for="search-participant">Participant</label>
-                        <select id="search-participant">
-                            <option value="">All participants</option>
-                        </select>
+                        <div id="search-participant-anchor" data-native-select-seed="search-participant"></div>
                     </div>
                     <div class="search-control">
                         <label for="search-start">Start date</label>

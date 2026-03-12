@@ -9,21 +9,64 @@ function getVueRuntime(vueRuntime, globalScope) {
   return vueRuntime ?? globalScope?.Vue ?? null;
 }
 
-function resolveBridgeState(selectEl) {
-  return /** @type {any} */ (selectEl).__waanPrimeSelectBridge ?? null;
+function allowNativeBridgeFallback(globalScope = globalThis) {
+  const disableFallback = globalScope?.__WAAN_DISABLE_NATIVE_BRIDGE_FALLBACKS__ === true
+    || globalThis?.__WAAN_DISABLE_NATIVE_BRIDGE_FALLBACKS__ === true;
+  if (disableFallback) return false;
+  const allowFallback = globalScope?.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__ === true
+    || globalThis?.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__ === true;
+  if (allowFallback) return true;
+  return Boolean(globalScope?.process?.env?.VITEST || globalThis?.process?.env?.VITEST);
+}
+
+function resolveBridgeStateForElement(selectEl, visibleInputId = "") {
+  const ownerDocument = selectEl?.ownerDocument ?? null;
+  const inputId = selectEl?.dataset?.primevueInputId || selectEl?.dataset?.primevueLegacyId || "";
+  return resolveRegisteredBridge(ownerDocument, visibleInputId || `${inputId}--primevue`)
+    ?? resolveRegisteredBridge(ownerDocument, inputId)
+    ?? null;
 }
 
 export function readPrimeSelectBridgeValue(selectEl) {
   if (!selectEl) return "";
-  const bridge = resolveBridgeState(selectEl);
+  const bridge = resolveBridgeStateForElement(selectEl);
   if (bridge?.state) {
     return bridge.state.value == null ? "" : String(bridge.state.value);
   }
   return selectEl.value ?? "";
 }
 
-function storeBridgeState(selectEl, state) {
-  /** @type {any} */ (selectEl).__waanPrimeSelectBridge = state;
+export function readPrimeSelectBridgeValueById(ownerDocument, bridgeId) {
+  const bridge = resolveRegisteredBridge(ownerDocument, bridgeId);
+  if (!bridge?.state) return "";
+  return bridge.state.value == null ? "" : String(bridge.state.value);
+}
+
+function resolveBridgeRegistry(ownerDocument) {
+  if (!ownerDocument) return null;
+  /** @type {Map<string, any>} */
+  const registry = /** @type {any} */ (ownerDocument).__waanPrimeSelectBridgeRegistry
+    ?? new Map();
+  /** @type {any} */ (ownerDocument).__waanPrimeSelectBridgeRegistry = registry;
+  return registry;
+}
+
+function registerBridgeState(ownerDocument, bridgeId, bridge) {
+  if (!bridgeId) return;
+  resolveBridgeRegistry(ownerDocument)?.set(bridgeId, bridge);
+}
+
+function resolveRegisteredBridge(ownerDocument, bridgeId) {
+  if (!bridgeId) return null;
+  const registry = resolveBridgeRegistry(ownerDocument);
+  const bridge = registry?.get(bridgeId) ?? null;
+  if (!bridge) return null;
+  const mountEl = bridge?.mountEl ?? null;
+  if (mountEl instanceof HTMLElement && !mountEl.isConnected) {
+    registry?.delete(bridgeId);
+    return null;
+  }
+  return bridge;
 }
 
 function ensureBridgeMount(selectEl, inputId, preserveNativeId = false) {
@@ -65,7 +108,6 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false, detachPre
     selectEl.dataset.primevueLegacyId = selectEl.id || inputId;
   }
   if (!preserveNativeId && !selectEl.isConnected) {
-    selectEl.dataset.primevueManaged = "detached";
     return;
   }
   if (!preserveNativeId && selectEl.id === inputId) {
@@ -74,13 +116,11 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false, detachPre
   detachHiddenSelectFromWrappingLabel(selectEl);
   if (preserveNativeId && detachPreservedNative && selectEl.parentNode) {
     selectEl.remove();
-    selectEl.dataset.primevueManaged = "detached";
     return;
   }
   selectEl.classList.add("hidden");
   selectEl.setAttribute("aria-hidden", "true");
   selectEl.tabIndex = -1;
-  selectEl.dataset.primevueManaged = "true";
 }
 
 function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, visibleInputId = "") {
@@ -96,43 +136,9 @@ function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, vis
   });
 }
 
-function resolveVisibleSelectTarget(selectEl, visibleInputId = "") {
-  const ownerDocument = selectEl?.ownerDocument ?? null;
-  if (!ownerDocument) return null;
-  if (visibleInputId) {
-    const explicitTarget = ownerDocument.getElementById(visibleInputId);
-    if (explicitTarget instanceof HTMLElement) return explicitTarget;
-  }
-  const bridge = resolveBridgeState(selectEl);
-  const mountEl = bridge?.mountEl ?? null;
-  if (!(mountEl instanceof HTMLElement)) return null;
-  return mountEl.querySelector(".p-select, .p-dropdown, select, input, button, [tabindex]") instanceof HTMLElement
-    ? /** @type {HTMLElement} */ (mountEl.querySelector(".p-select, .p-dropdown, select, input, button, [tabindex]"))
-    : mountEl;
-}
-
-function installDetachedSelectDelegates(selectEl, visibleInputId = "") {
-  if (!selectEl || selectEl.dataset.primevueManaged !== "detached") return;
-  if (selectEl.dataset.primevueDelegateInstalled === "true") return;
-  const nativeFocus = selectEl.focus.bind(selectEl);
-  const nativeScrollIntoView = selectEl.scrollIntoView.bind(selectEl);
-  selectEl.focus = function focus(options) {
-    const visibleTarget = resolveVisibleSelectTarget(selectEl, visibleInputId);
-    if (visibleTarget && visibleTarget !== selectEl) {
-      visibleTarget.focus?.(options);
-      return;
-    }
-    nativeFocus(options);
-  };
-  selectEl.scrollIntoView = function scrollIntoView(arg) {
-    const visibleTarget = resolveVisibleSelectTarget(selectEl, visibleInputId);
-    if (visibleTarget && visibleTarget !== selectEl) {
-      visibleTarget.scrollIntoView?.(arg);
-      return;
-    }
-    nativeScrollIntoView(arg);
-  };
-  selectEl.dataset.primevueDelegateInstalled = "true";
+function canSyncDetachedSelectValue(selectEl, keepDetachedNativeValueSynced = true) {
+  if (keepDetachedNativeValueSynced) return true;
+  return Boolean(selectEl?.isConnected && !selectEl?.classList?.contains("hidden"));
 }
 
 /**
@@ -143,6 +149,7 @@ function installDetachedSelectDelegates(selectEl, visibleInputId = "") {
  *   disabled?: boolean,
  *   preserveNativeId?: boolean,
  *   detachPreservedNative?: boolean,
+ *   keepDetachedNativeValueSynced?: boolean,
  *   visibleInputId?: string,
  *   attrs?: Record<string, any>,
  *   onValueChange?: ((value: string) => void) | null,
@@ -158,6 +165,7 @@ export function syncPrimeSelectBridge({
   disabled = false,
   preserveNativeId = false,
   detachPreservedNative = false,
+  keepDetachedNativeValueSynced = true,
   visibleInputId = "",
   attrs: inputAttrs = {},
   onValueChange = null,
@@ -174,13 +182,18 @@ export function syncPrimeSelectBridge({
     (globalScope?.PrimeVue || globalScope?.primevue)?.Dropdown,
   );
   if (!VueRuntime || typeof VueRuntime.createApp !== "function" || typeof VueRuntime.h !== "function" || !hasPrimeVue) {
+    if (!allowNativeBridgeFallback(globalScope)) {
+      throw new Error("syncPrimeSelectBridge requires Vue runtime and PrimeVue Select/Dropdown");
+    }
     return false;
   }
 
-  selectEl.value = value == null ? "" : String(value);
-  selectEl.disabled = Boolean(disabled);
+  if (canSyncDetachedSelectValue(selectEl, keepDetachedNativeValueSynced)) {
+    selectEl.value = value == null ? "" : String(value);
+    selectEl.disabled = Boolean(disabled);
+  }
 
-  let bridge = resolveBridgeState(selectEl);
+  let bridge = resolveBridgeStateForElement(selectEl, resolvedVisibleInputId);
   if (!bridge) {
     const mountEl = ensureBridgeMount(selectEl, inputId, preserveNativeId);
     if (!mountEl) return false;
@@ -215,7 +228,9 @@ export function syncPrimeSelectBridge({
           onChange: event => {
             const nextValue = event?.target?.value ?? "";
             state.value = String(nextValue ?? "");
-            selectEl.value = state.value;
+            if (canSyncDetachedSelectValue(selectEl, keepDetachedNativeValueSynced)) {
+              selectEl.value = state.value;
+            }
             onValueChange?.(state.value);
           },
         }, globalScope);
@@ -224,9 +239,9 @@ export function syncPrimeSelectBridge({
     configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(mountEl);
     hideNativeSelect(selectEl, inputId, preserveNativeId, detachPreservedNative);
     syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
-    installDetachedSelectDelegates(selectEl, resolvedVisibleInputId);
     bridge = { state, mountEl };
-    storeBridgeState(selectEl, bridge);
+    registerBridgeState(selectEl.ownerDocument, inputId, bridge);
+    registerBridgeState(selectEl.ownerDocument, resolvedVisibleInputId, bridge);
   }
 
   bridge.state.options = Array.isArray(options) ? options : [];
@@ -234,33 +249,20 @@ export function syncPrimeSelectBridge({
   bridge.state.disabled = Boolean(disabled);
   hideNativeSelect(selectEl, inputId, preserveNativeId, detachPreservedNative);
   syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
-  installDetachedSelectDelegates(selectEl, resolvedVisibleInputId);
   return true;
 }
 
-/**
- * @param {{
- *   selectEl: HTMLSelectElement | null | undefined,
- *   value?: string | null,
- *   disabled?: boolean,
- * }} params
- */
-export function syncPrimeSelectBridgeValue({
-  selectEl,
+export function syncPrimeSelectBridgeById({
+  ownerDocument,
+  bridgeId,
+  options,
   value = "",
   disabled,
 }) {
-  if (!selectEl) return false;
-  const normalizedValue = value == null ? "" : String(value);
-  selectEl.value = normalizedValue;
-  if (typeof disabled === "boolean") {
-    selectEl.disabled = disabled;
-  }
-  const bridge = resolveBridgeState(selectEl);
+  const bridge = resolveRegisteredBridge(ownerDocument, bridgeId);
   if (!bridge) return false;
-  bridge.state.value = selectEl.value;
-  if (typeof disabled === "boolean") {
-    bridge.state.disabled = Boolean(disabled);
-  }
+  if (Array.isArray(options)) bridge.state.options = options;
+  bridge.state.value = value == null ? "" : String(value);
+  if (typeof disabled === "boolean") bridge.state.disabled = Boolean(disabled);
   return true;
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { h, render } from "vue";
-import { clearVueBridgeRuntime, installDashboardPanelsVueBridge } from "./vueBridgeTestUtils.js";
+import { clearVueBridgeRuntime, installDashboardPanelsVueBridge, installShellVueBridge } from "./vueBridgeTestUtils.js";
 
 vi.mock("../js/analytics/activity.js", () => ({
   renderDailySection: vi.fn(),
@@ -470,6 +470,38 @@ describe("activityPanels detailed", () => {
     options.onSelectRange({ start: "2025-01-02", end: "2025-01-09" });
     expect(applyCustomRange).toHaveBeenCalledWith("2025-01-02", "2025-01-09");
     expect(elements.rangeSelect.value).toBe("custom");
+  });
+
+  it("does not overwrite the native range select when shell-owned page controls handle weekly custom-range selection", () => {
+    installShellVueBridge({
+      ownsPageControlInteractions: true,
+    });
+    const elements = baseElements();
+    elements.rangeSelect.value = "all";
+    const applyCustomRange = vi.fn();
+
+    const controller = createActivityPanelsController({
+      elements,
+      deps: {
+        getCustomRange: () => ({ type: "custom", start: "2025-01-01", end: "2025-01-05" }),
+        getDatasetAnalytics: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        applyCustomRange,
+        formatNumber: value => String(value),
+        formatFloat: (value, digits = 1) => Number(value).toFixed(digits),
+      },
+    });
+
+    controller.renderWeeklyPanel({ weekly_counts: [], weekly_summary: {} });
+
+    const options = renderWeeklySection.mock.calls[0][2];
+    options.onSelectRange({ start: "2025-01-02", end: "2025-01-09" });
+
+    expect(applyCustomRange).toHaveBeenCalledWith("2025-01-02", "2025-01-09");
+    expect(elements.rangeSelect.value).toBe("all");
   });
 
   it("rerenders weekday/time-of-day from state based on analytics availability", () => {

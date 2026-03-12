@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { Fragment, h, render } from "vue";
 import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
 
@@ -6,13 +6,19 @@ function seedMinimumDom() {
   document.body.innerHTML = `
     <main></main>
     <table id="top-senders"><tbody></tbody></table>
-    <select id="chat-selector"></select>
-    <select id="global-range"></select>
+    <div class="page-controls"><div class="control-row primary-controls" data-vue-page-controls-root="true"></div></div>
     <div class="section-nav-inner"></div>
   `;
 }
 
 describe("appShell boot", () => {
+  beforeEach(() => {
+    Object.defineProperty(document, "readyState", {
+      configurable: true,
+      value: "complete",
+    });
+  });
+
   afterEach(() => {
     delete globalThis.Vue;
     delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
@@ -42,18 +48,13 @@ describe("appShell boot", () => {
         },
       },
     };
-    const chatSelector = document.getElementById("chat-selector");
-    expect(chatSelector).toBeTruthy();
-
     vi.resetModules();
 
     await expect(import("../js/appShell.js")).resolves.toBeTruthy();
-
-    document.dispatchEvent(new Event("DOMContentLoaded"));
     await Promise.resolve();
 
-    expect(chatSelector.disabled).toBe(true);
-    expect(chatSelector.options.length).toBe(1);
-    expect(chatSelector.options[0].textContent).toBe("No chats loaded yet");
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
+    expect(globalThis[VUE_RUNTIME_REGISTRY_KEY].bridges[VUE_BRIDGE_NAMES.shell].setShellActionHandlers).toHaveBeenCalled();
   }, 15_000);
 });

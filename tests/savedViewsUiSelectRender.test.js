@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Fragment, h, render } from "vue";
 
 import { createSavedViewsUiController } from "../js/savedViewsUi.js";
+import { readPrimeSelectBridgeValue } from "../js/vue/primeSelectBridge.js";
 
 function buildController({
   views = [],
@@ -51,6 +52,7 @@ describe("saved views select rendering", () => {
   afterEach(() => {
     if (typeof originalVitestEnv === "string") process.env.VITEST = originalVitestEnv;
     else delete process.env.VITEST;
+    delete globalThis.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__;
     delete globalThis.Vue;
     delete globalThis.PrimeVue;
     vi.restoreAllMocks();
@@ -82,7 +84,7 @@ describe("saved views select rendering", () => {
     expect(compareSelectB.value).toBe("v2");
   });
 
-  it("re-syncs bridged compare selects after assigning default comparison values", () => {
+  it("assigns default bridged compare select values without a follow-up native bridge-value sync", () => {
     globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
     const vueRuntime = {
       h,
@@ -110,12 +112,13 @@ describe("saved views select rendering", () => {
 
     expect(compareSelectA.value).toBe("v1");
     expect(compareSelectB.value).toBe("v2");
-    expect(compareSelectA.__waanPrimeSelectBridge?.state?.value).toBe("v1");
-    expect(compareSelectB.__waanPrimeSelectBridge?.state?.value).toBe("v2");
+    expect(readPrimeSelectBridgeValue(compareSelectA)).toBe("v1");
+    expect(readPrimeSelectBridgeValue(compareSelectB)).toBe("v2");
   });
 
   it("keeps native saved-view select rendering when PrimeVue bridge is unavailable", () => {
     delete process.env.VITEST;
+    globalThis.__WAAN_ALLOW_NATIVE_BRIDGE_FALLBACKS__ = true;
     const { controller, listSelect, compareSelectA, compareSelectB } = buildController({
       views: [{ id: "v1", name: "Baseline", rangeLabel: "all" }],
     });

@@ -12,7 +12,6 @@ import { buildSavedViewsComparisonPayload } from "./savedViewsComparisonPayload.
 import {
   readPrimeSelectBridgeValue,
   syncPrimeSelectBridge,
-  syncPrimeSelectBridgeValue,
 } from "./vue/primeSelectBridge.js";
 
 export function createSavedViewsUiController({
@@ -166,6 +165,7 @@ export function createSavedViewsUiController({
       options: optionModels,
       value: select.value,
       disabled: !dataAvailableGetter(),
+      keepDetachedNativeValueSynced: false,
       vueRuntime,
     });
     if (select.value && !views.some(view => view.id === select.value)) {
@@ -204,14 +204,9 @@ export function createSavedViewsUiController({
     if (compareSummaryEl) compareSummaryEl.textContent = "";
   }
 
-  function refreshUI() {
+  function refreshUI({ preferredListSelection = null } = {}) {
     const views = getSavedViews();
     const compareSelection = getCompareSelection();
-
-    populateSavedSelect(listSelect, views, readPrimeSelectBridgeValue(listSelect), "Choose a saved view…");
-    populateSavedSelect(compareSelectA, views, compareSelection.primary, "Select view A…");
-    populateSavedSelect(compareSelectB, views, compareSelection.secondary, "Select view B…");
-
     const validPrimary = views.some(view => view.id === compareSelection.primary)
       ? compareSelection.primary
       : null;
@@ -233,16 +228,14 @@ export function createSavedViewsUiController({
     }
 
     setCompareSelection(primary, secondary);
-    syncPrimeSelectBridgeValue({
-      selectEl: compareSelectA,
-      value: primary ?? "",
-      disabled: !dataAvailableGetter(),
-    });
-    syncPrimeSelectBridgeValue({
-      selectEl: compareSelectB,
-      value: secondary ?? "",
-      disabled: !dataAvailableGetter(),
-    });
+    populateSavedSelect(
+      listSelect,
+      views,
+      preferredListSelection ?? readPrimeSelectBridgeValue(listSelect),
+      "Choose a saved view…",
+    );
+    populateSavedSelect(compareSelectA, views, primary, "Select view A…");
+    populateSavedSelect(compareSelectB, views, secondary, "Select view B…");
 
     renderComparisonSummary();
     renderSavedViewGallery(views);

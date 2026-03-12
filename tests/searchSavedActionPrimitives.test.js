@@ -3,6 +3,7 @@ import { defineComponent, createApp, h } from "vue";
 import {
   mountSavedViewsActionPrimitives,
   mountSearchActionsPrimitive,
+  mountSearchSavedSelectSeedPrimitives,
 } from "../js/vue/searchSavedActionPrimitives.js";
 
 describe("search saved action primitives", () => {
@@ -115,5 +116,23 @@ describe("search saved action primitives", () => {
     expect(dispatchPanelAction).toHaveBeenNthCalledWith(2, "savedViews:apply-selected-view");
     expect(dispatchPanelAction).toHaveBeenNthCalledWith(3, "savedViews:delete-selected-view");
     expect(dispatchPanelAction).toHaveBeenNthCalledWith(4, "savedViews:compare-views");
+  });
+
+  it("seeds search and saved-view native selects from anchor placeholders", () => {
+    document.body.innerHTML = `
+      <div id="saved-view-list-anchor" data-native-select-seed="saved-view-list"></div>
+      <div id="compare-view-a-anchor" data-native-select-seed="compare-view-a"></div>
+      <div id="compare-view-b-anchor" data-native-select-seed="compare-view-b"></div>
+      <div id="search-participant-anchor" data-native-select-seed="search-participant"></div>
+    `;
+
+    mountSearchSavedSelectSeedPrimitives();
+
+    expect(document.getElementById("saved-view-list")?.tagName).toBe("SELECT");
+    expect(document.getElementById("compare-view-a")?.tagName).toBe("SELECT");
+    expect(document.getElementById("compare-view-b")?.tagName).toBe("SELECT");
+    expect(document.getElementById("search-participant")?.tagName).toBe("SELECT");
+    expect(document.getElementById("saved-view-list-anchor")).toBeNull();
+    expect(document.getElementById("search-participant-anchor")).toBeNull();
   });
 });
