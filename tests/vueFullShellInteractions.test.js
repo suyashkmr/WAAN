@@ -6,6 +6,8 @@ import {
 } from "../js/vue/bridgeRegistry.js";
 import { mountVueAppShellRoot, VUE_APP_SHELL_ROOT_KEY } from "../js/vue/appShellRoot.js";
 import { mountPageControlsPrimitive } from "../js/vue/shellPageControlsIsland.js";
+import { readPrimeSelectBridgeValue } from "../js/vue/primeSelectBridge.js";
+import { createAppDomRefs } from "../js/appShell/domRefs.js";
 
 function createVueRuntimeStub() {
   function normalizeDateValue(value) {
@@ -164,6 +166,7 @@ describe("vue full-shell interactions", () => {
       DatePicker: { name: "PrimeDatePickerStub" },
     };
     globalThis.primevue = globalThis.PrimeVue;
+    delete document.documentElement.dataset.waanDomRefsCaptured;
   });
 
   afterEach(() => {
@@ -173,6 +176,7 @@ describe("vue full-shell interactions", () => {
     delete globalThis.primevue;
     delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
     delete globalThis[VUE_APP_SHELL_ROOT_KEY];
+    delete document.documentElement.dataset.waanDomRefsCaptured;
   });
 
   it("mounts root and dispatches shell + search panel actions through registered bridges", () => {
@@ -279,18 +283,88 @@ describe("vue full-shell interactions", () => {
 
     mountPageControlsPrimitive(globalThis);
 
-    expect(document.getElementById("chat-selector")?.tagName).toBe("SELECT");
-    expect(document.getElementById("global-range")?.tagName).toBe("SELECT");
-    expect(document.getElementById("custom-start")?.tagName).toBe("INPUT");
-    expect(document.getElementById("custom-end")?.tagName).toBe("INPUT");
     expect(document.getElementById("chat-selector--primevue")).toBeTruthy();
     expect(document.getElementById("global-range--primevue")).toBeTruthy();
     expect(document.getElementById("custom-start--primevue")).toBeTruthy();
     expect(document.getElementById("custom-end--primevue")).toBeTruthy();
-    expect(document.getElementById("chat-selector")?.classList.contains("hidden")).toBe(true);
-    expect(document.getElementById("global-range")?.classList.contains("hidden")).toBe(true);
-    expect(document.getElementById("custom-start")?.classList.contains("hidden")).toBe(true);
-    expect(document.getElementById("custom-end")?.classList.contains("hidden")).toBe(true);
+    expect(document.getElementById("chat-selector")).toBeTruthy();
+    expect(document.getElementById("global-range")).toBeTruthy();
+    expect(document.getElementById("custom-start")).toBeTruthy();
+    expect(document.getElementById("custom-end")).toBeTruthy();
+  });
+
+  it("keeps preserved page controls attached until app refs are captured", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="all">All time</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" value="2025-01-01" />
+        <input id="custom-end" value="2025-01-02" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    expect(firstBridge?.ownsPageControlInteractions).toBe(true);
+    expect(document.getElementById("chat-selector")).toBeTruthy();
+    expect(document.getElementById("global-range")).toBeTruthy();
+    expect(document.getElementById("custom-start")).toBeTruthy();
+    expect(document.getElementById("custom-end")).toBeTruthy();
+
+    const refs = createAppDomRefs({
+      documentRef: document,
+      windowRef: window,
+      storageRef: globalThis.localStorage,
+      vueRuntime: globalThis.Vue,
+    });
+    expect(refs.chatSelector?.id).toBe("chat-selector");
+    expect(refs.rangeSelect?.id).toBe("global-range");
+    expect(refs.customStartInput?.id).toBe("custom-start");
+    expect(refs.customEndInput?.id).toBe("custom-end");
+
+    mountPageControlsPrimitive(globalThis);
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
+    expect(document.getElementById("custom-start")).toBeNull();
+    expect(document.getElementById("custom-end")).toBeNull();
+  });
+
+  it("does not detach empty-container seeded page controls before refs are captured", () => {
+    const controlsEl = document.querySelector(".page-controls .primary-controls");
+    controlsEl.innerHTML = "";
+    delete document.documentElement.dataset.waanDomRefsCaptured;
+
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    expect(firstBridge?.ownsPageControlInteractions).toBe(true);
+    expect(document.getElementById("chat-selector")).toBeTruthy();
+    expect(document.getElementById("global-range")).toBeTruthy();
+    expect(document.getElementById("custom-start")).toBeTruthy();
+    expect(document.getElementById("custom-end")).toBeTruthy();
+    expect(document.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
+
+    const refs = createAppDomRefs({
+      documentRef: document,
+      windowRef: window,
+      storageRef: globalThis.localStorage,
+      vueRuntime: globalThis.Vue,
+    });
+    expect(refs.chatSelector?.id).toBe("chat-selector");
+    expect(refs.rangeSelect?.id).toBe("global-range");
+    expect(refs.customStartInput?.id).toBe("custom-start");
+    expect(refs.customEndInput?.id).toBe("custom-end");
+    expect(document.documentElement.dataset.waanDomRefsCaptured).toBe("true");
+
+    mountPageControlsPrimitive(globalThis);
+    expect(document.getElementById("chat-selector")).toBeNull();
+    expect(document.getElementById("global-range")).toBeNull();
+    expect(document.getElementById("custom-start")).toBeNull();
+    expect(document.getElementById("custom-end")).toBeNull();
   });
 
   it("preserves visible chat force-select interactions in PrimeVue bridge mode", () => {
@@ -322,6 +396,50 @@ describe("vue full-shell interactions", () => {
     expect(onForceSelect).toHaveBeenNthCalledWith(2, { value: "remote:chat-1" });
   });
 
+  it("forwards detached page-control ref focus and scroll actions to the visible PrimeVue controls", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="all">All time</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    const legacyChatSelect = /** @type {HTMLSelectElement} */ (document.getElementById("chat-selector"));
+    const legacyRangeSelect = /** @type {HTMLSelectElement} */ (document.getElementById("global-range"));
+
+    mountPageControlsPrimitive(globalThis);
+    createAppDomRefs({
+      documentRef: document,
+      windowRef: window,
+      storageRef: globalThis.localStorage,
+      vueRuntime: globalThis.Vue,
+    });
+    mountPageControlsPrimitive(globalThis);
+
+    const visibleChatSelect = /** @type {HTMLElement} */ (document.getElementById("chat-selector--primevue"));
+    const visibleRangeSelect = /** @type {HTMLElement} */ (document.getElementById("global-range--primevue"));
+    const chatFocusSpy = vi.spyOn(visibleChatSelect, "focus").mockImplementation(() => {});
+    const chatScrollSpy = vi.spyOn(visibleChatSelect, "scrollIntoView").mockImplementation(() => {});
+    const rangeFocusSpy = vi.spyOn(visibleRangeSelect, "focus").mockImplementation(() => {});
+
+    legacyChatSelect.focus();
+    legacyChatSelect.scrollIntoView();
+    legacyRangeSelect.focus();
+
+    expect(chatFocusSpy).toHaveBeenCalledTimes(1);
+    expect(chatScrollSpy).toHaveBeenCalledTimes(1);
+    expect(rangeFocusSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("mounts bridged page selects ahead of hidden native selects inside wrapping labels", () => {
     document.querySelector(".page-controls .primary-controls").innerHTML = `
       <label class="control dataset-control">
@@ -340,6 +458,13 @@ describe("vue full-shell interactions", () => {
     `;
 
     mountPageControlsPrimitive(globalThis);
+    createAppDomRefs({
+      documentRef: document,
+      windowRef: window,
+      storageRef: globalThis.localStorage,
+      vueRuntime: globalThis.Vue,
+    });
+    mountPageControlsPrimitive(globalThis);
 
     const chatLabel = document.querySelector("label.dataset-control");
     const rangeLabel = document.querySelector("label.period-control");
@@ -349,10 +474,8 @@ describe("vue full-shell interactions", () => {
     expect(rangeLabel?.children[1]?.classList.contains("prime-select-bridge")).toBe(true);
     expect(chatLabel?.querySelector("#chat-selector")).toBeNull();
     expect(rangeLabel?.querySelector("#global-range")).toBeNull();
-    expect(chatLabel?.nextElementSibling?.id).toBe("chat-selector");
-    expect(rangeLabel?.nextElementSibling?.id).toBe("global-range");
-    expect(chatLabel?.nextElementSibling?.classList.contains("hidden")).toBe(true);
-    expect(rangeLabel?.nextElementSibling?.classList.contains("hidden")).toBe(true);
+    expect(chatLabel?.nextElementSibling?.id).not.toBe("chat-selector");
+    expect(rangeLabel?.nextElementSibling?.id).not.toBe("global-range");
   });
 
   it("keeps page controls on native fallback ownership when PrimeVue is unavailable", () => {
@@ -450,6 +573,115 @@ describe("vue full-shell interactions", () => {
     expect(shellBridge?.ownsPageControlInteractions).toBe(true);
   });
 
+  it("does not reseed page controls on a second shell mount after a partial PrimeVue bridge", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="remote:chat-1">Chat 1</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="all">All time</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+    globalThis.PrimeVue = {
+      Config: {},
+      Select: { name: "PrimeSelectStub" },
+    };
+    globalThis.primevue = globalThis.PrimeVue;
+
+    const controlsEl = document.querySelector(".page-controls .primary-controls");
+    const originalMarkup = controlsEl.innerHTML;
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+
+    expect(firstBridge?.ownsPageControlInteractions).toBe(false);
+    expect(document.getElementById("chat-selector--primevue")).toBeTruthy();
+    expect(document.getElementById("global-range--primevue")).toBeTruthy();
+    expect(firstBridge?.legacyRefs?.chatSelector).toBeTruthy();
+    expect(firstBridge?.legacyRefs?.rangeSelect).toBeTruthy();
+    expect(document.getElementById("chat-selector")).toBeTruthy();
+    expect(document.getElementById("global-range")).toBeTruthy();
+
+    const secondBridge = mountPageControlsPrimitive(globalThis);
+
+    expect(secondBridge).toBe(firstBridge);
+    expect(document.querySelectorAll("#chat-selector--primevue")).toHaveLength(1);
+    expect(document.querySelectorAll("#global-range--primevue")).toHaveLength(1);
+    expect(document.getElementById("chat-selector")).toBeTruthy();
+    expect(document.getElementById("global-range")).toBeTruthy();
+    expect(controlsEl.innerHTML).not.toBe(originalMarkup);
+  });
+
+  it("preserves detached page-control refs across retry mounts after a partial bridge", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector">
+          <option value="">No chats loaded yet</option>
+          <option value="remote:chat-1">Chat 1</option>
+        </select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range">
+          <option value="all">All time</option>
+          <option value="180">Last 180 days</option>
+        </select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" />
+        <input id="custom-end" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+    globalThis.PrimeVue = {
+      Config: {},
+      Select: { name: "PrimeSelectStub" },
+    };
+    globalThis.primevue = globalThis.PrimeVue;
+
+    const firstBridge = mountPageControlsPrimitive(globalThis);
+    const firstChatRef = firstBridge?.legacyRefs?.chatSelector;
+    const firstRangeRef = firstBridge?.legacyRefs?.rangeSelect;
+
+    expect(firstBridge?.ownsPageControlInteractions).toBe(false);
+    expect(firstChatRef).toBeTruthy();
+    expect(firstRangeRef).toBeTruthy();
+
+    globalThis.PrimeVue = {
+      Config: {},
+      Select: { name: "PrimeSelectStub" },
+      DatePicker: { name: "PrimeDatePickerStub" },
+    };
+    globalThis.primevue = globalThis.PrimeVue;
+
+    const secondBridge = mountPageControlsPrimitive(globalThis);
+    const pageState = secondBridge?.readPageControlState?.();
+
+    expect(secondBridge?.legacyRefs?.chatSelector).toBe(firstChatRef);
+    expect(secondBridge?.legacyRefs?.rangeSelect).toBe(firstRangeRef);
+    expect(secondBridge?.ownsPageControlInteractions).toBe(true);
+    expect(pageState).toMatchObject({
+      chatValue: "",
+      rangeValue: "all",
+      customStart: "",
+      customEnd: "",
+    });
+
+    expect(secondBridge?.syncPageControls?.({
+      chatValue: "remote:chat-1",
+      rangeValue: "180",
+    })).toBe(true);
+
+    expect(readPrimeSelectBridgeValue(firstChatRef)).toBe("remote:chat-1");
+    expect(readPrimeSelectBridgeValue(firstRangeRef)).toBe("180");
+  });
+
   it("dispatches chat and range actions through the visible PrimeVue controls after a retry upgrade", () => {
     document.querySelector(".page-controls .primary-controls").innerHTML = `
       <label class="control dataset-control">
@@ -541,9 +773,8 @@ describe("vue full-shell interactions", () => {
       "page.chat.select": onChatSelect,
     });
 
-    mountPageControlsPrimitive(globalThis);
-
-    const legacyChatSelect = document.getElementById("chat-selector");
+    const bridge = mountPageControlsPrimitive(globalThis);
+    const legacyChatSelect = bridge?.legacyRefs?.chatSelector;
     const legacyChangeSpy = vi.fn();
     legacyChatSelect?.addEventListener("change", legacyChangeSpy);
 
@@ -598,6 +829,53 @@ describe("vue full-shell interactions", () => {
     expect(onSetCustomEnd).toHaveBeenCalledWith({ value: "2025-01-07" });
   });
 
+  it("reads custom apply payload from bridged date state instead of detached native inputs", () => {
+    document.querySelector(".page-controls .primary-controls").innerHTML = `
+      <label class="control dataset-control">
+        <span>Loaded chats</span>
+        <select id="chat-selector"><option value="">No chats loaded yet</option></select>
+      </label>
+      <label class="control period-control">
+        <span>Time range</span>
+        <select id="global-range"><option value="custom">Custom range</option></select>
+      </label>
+      <div id="custom-range-controls">
+        <input id="custom-start" value="2025-01-01" />
+        <input id="custom-end" value="2025-01-02" />
+      </div>
+      <button id="apply-custom-range" type="button">Apply</button>
+    `;
+
+    mountVueAppShellRoot({ globalScope: globalThis });
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    const onApplyCustomRange = vi.fn();
+    shellBridge?.setShellActionHandlers?.({
+      "page.range.apply-custom": onApplyCustomRange,
+    });
+
+    const bridge = mountPageControlsPrimitive(globalThis);
+    const legacyStart = bridge?.legacyRefs?.customStartInput;
+    const legacyEnd = bridge?.legacyRefs?.customEndInput;
+    const visibleStartInput = document.getElementById("custom-start--primevue");
+    const visibleEndInput = document.getElementById("custom-end--primevue");
+    expect(visibleStartInput).toBeTruthy();
+    expect(visibleEndInput).toBeTruthy();
+
+    visibleStartInput.value = "2025-02-05";
+    visibleStartInput.dispatchEvent(new Event("change", { bubbles: true }));
+    visibleEndInput.value = "2025-02-07";
+    visibleEndInput.dispatchEvent(new Event("change", { bubbles: true }));
+    legacyStart.value = "";
+    legacyEnd.value = "";
+
+    document.getElementById("apply-custom-range")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(onApplyCustomRange).toHaveBeenCalledWith({
+      start: "2025-02-05",
+      end: "2025-02-07",
+    });
+  });
+
   it("renders and upgrades empty page-control containers without losing the retry path", () => {
     const controlsEl = document.querySelector(".page-controls .primary-controls");
     controlsEl.innerHTML = "";
@@ -611,8 +889,11 @@ describe("vue full-shell interactions", () => {
       chatValue: "remote:chat-1",
       chatDisabled: false,
     })).toBe(true);
-    expect(document.getElementById("chat-selector")?.value).toBe("remote:chat-1");
-    const rangeOptions = Array.from(document.getElementById("global-range")?.options || []).map(option => option.value);
+    const legacyChatSelect = firstBridge?.legacyRefs?.chatSelector;
+    const legacyRangeSelect = firstBridge?.legacyRefs?.rangeSelect;
+    expect(legacyChatSelect?.value).toBe("remote:chat-1");
+    expect(legacyChatSelect?.isConnected).toBe(true);
+    const rangeOptions = Array.from(legacyRangeSelect?.options || []).map(option => option.value);
     expect(rangeOptions).toEqual(["all", "30", "90", "180", "365", "custom"]);
   });
 });

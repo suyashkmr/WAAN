@@ -1,6 +1,7 @@
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./bridgeRegistry.js";
-import { syncPrimeDateBridge, syncPrimeDateBridgeValue } from "./primeDateBridge.js";
-import { syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./primeSelectBridge.js";
+import { readPrimeDateBridgeValue, syncPrimeDateBridge, syncPrimeDateBridgeValue } from "./primeDateBridge.js";
+import { readPrimeSelectBridgeValue, syncPrimeSelectBridge, syncPrimeSelectBridgeValue } from "./primeSelectBridge.js";
+import { emitPageControlDraftSignal } from "./pageControlDraftSignal.js";
 import {
   ensureSelectOptions,
   extractSelectOptions,
@@ -71,6 +72,8 @@ function syncLegacyPageControlRefs(legacyRefs, nextState = {}) {
 function bindPageControlListeners(legacyRefs, globalScope) {
   const {
     customApplyButton,
+    customStartInput,
+    customEndInput,
   } = legacyRefs;
 
   if (customApplyButton && customApplyButton.dataset.vuePageControlBound !== "true") {
@@ -79,8 +82,8 @@ function bindPageControlListeners(legacyRefs, globalScope) {
         dispatchShellAction(
           "page.range.apply-custom",
           {
-            start: legacyRefs.customStartInput?.value || "",
-            end: legacyRefs.customEndInput?.value || "",
+            start: readPrimeDateBridgeValue(customStartInput),
+            end: readPrimeDateBridgeValue(customEndInput),
           },
           globalScope,
         );
@@ -109,16 +112,19 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       value: chatSelector.value,
       disabled: chatSelector.disabled,
       preserveNativeId: true,
+      detachPreservedNative: true,
       visibleInputId: "chat-selector--primevue",
       attrs: {
         onDblclick: () => {
-          if (!chatSelector.value) return;
-          dispatchShellAction("page.chat.force-select", { value: chatSelector.value }, globalScope);
+          const value = readPrimeSelectBridgeValue(chatSelector);
+          if (!value) return;
+          dispatchShellAction("page.chat.force-select", { value }, globalScope);
         },
         onKeydown: event => {
-          if (event?.key !== "Enter" || !chatSelector.value) return;
+          const value = readPrimeSelectBridgeValue(chatSelector);
+          if (event?.key !== "Enter" || !value) return;
           event.preventDefault?.();
-          dispatchShellAction("page.chat.force-select", { value: chatSelector.value }, globalScope);
+          dispatchShellAction("page.chat.force-select", { value }, globalScope);
         },
       },
       onValueChange: value => {
@@ -145,8 +151,10 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       value: rangeSelect.value,
       disabled: rangeSelect.disabled,
       preserveNativeId: true,
+      detachPreservedNative: true,
       visibleInputId: "global-range--primevue",
       onValueChange: value => {
+        emitPageControlDraftSignal(globalScope, { type: "range-select", value: value || "all" });
         dispatchShellAction("page.range.select", { value: value || "all" }, globalScope);
       },
       globalScope,
@@ -171,8 +179,10 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       min: customStartInput.min,
       max: customStartInput.max,
       preserveNativeId: true,
+      detachPreservedNative: true,
       visibleInputId: "custom-start--primevue",
       onValueChange: value => {
+        emitPageControlDraftSignal(globalScope, { type: "custom-start", value });
         dispatchShellAction("page.range.set-custom-start", { value }, globalScope);
       },
       globalScope,
@@ -199,8 +209,10 @@ function syncPrimePageControls(legacyRefs, globalScope = globalThis) {
       min: customEndInput.min,
       max: customEndInput.max,
       preserveNativeId: true,
+      detachPreservedNative: true,
       visibleInputId: "custom-end--primevue",
       onValueChange: value => {
+        emitPageControlDraftSignal(globalScope, { type: "custom-end", value });
         dispatchShellAction("page.range.set-custom-end", { value }, globalScope);
       },
       globalScope,
@@ -232,8 +244,32 @@ function resolveLegacyPageControlRefs(controlsEl) {
   };
 }
 
-function ensureLegacyPageControlsRendered(controlsEl, globalScope = globalThis) {
+function mergeLegacyPageControlRefs(existingRefs, resolvedRefs) {
+  return {
+    chatSelector: resolvedRefs.chatSelector ?? existingRefs?.chatSelector ?? null,
+    rangeSelect: resolvedRefs.rangeSelect ?? existingRefs?.rangeSelect ?? null,
+    customControls: resolvedRefs.customControls ?? existingRefs?.customControls ?? null,
+    customStartInput: resolvedRefs.customStartInput ?? existingRefs?.customStartInput ?? null,
+    customEndInput: resolvedRefs.customEndInput ?? existingRefs?.customEndInput ?? null,
+    customApplyButton: resolvedRefs.customApplyButton ?? existingRefs?.customApplyButton ?? null,
+  };
+}
+
+function hasPreservedLegacyRefs(legacyRefs) {
+  if (!legacyRefs) return false;
+  return Boolean(
+    legacyRefs.chatSelector ||
+    legacyRefs.rangeSelect ||
+    legacyRefs.customStartInput ||
+    legacyRefs.customEndInput,
+  );
+}
+
+function ensureLegacyPageControlsRendered(controlsEl, globalScope = globalThis, existingBridge = null) {
   if (!controlsEl) return false;
+  if (hasPreservedLegacyRefs(existingBridge?.legacyRefs)) {
+    return true;
+  }
   const existingRefs = resolveLegacyPageControlRefs(controlsEl);
   if (existingRefs.chatSelector || existingRefs.rangeSelect || existingRefs.customStartInput || existingRefs.customEndInput) {
     return true;
@@ -246,7 +282,16 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
   if (!controlsEl) return null;
   const existingBridge = controlsEl[PAGE_CONTROLS_BRIDGE_KEY] ?? null;
   if (controlsEl.dataset.vuePrimitiveMounted === "true") {
-    return existingBridge ?? {
+    if (existingBridge) {
+      const legacyRefs = mergeLegacyPageControlRefs(
+        existingBridge.legacyRefs,
+        resolveLegacyPageControlRefs(controlsEl),
+      );
+      existingBridge.legacyRefs = legacyRefs;
+      existingBridge.ownsPageControlInteractions = syncPrimePageControls(legacyRefs, globalScope);
+      return existingBridge;
+    }
+    return {
       ownsPageControlInteractions: false,
       syncPageControls: () => false,
     };
@@ -254,8 +299,26 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
 
   const pageControlsBridge = existingBridge ?? {
     ownsPageControlInteractions: false,
+    legacyRefs: null,
+    readPageControlState() {
+      const legacyRefs = mergeLegacyPageControlRefs(
+        pageControlsBridge.legacyRefs,
+        resolveLegacyPageControlRefs(controlsEl),
+      );
+      pageControlsBridge.legacyRefs = legacyRefs;
+      return {
+        chatValue: readPrimeSelectBridgeValue(legacyRefs.chatSelector),
+        rangeValue: readPrimeSelectBridgeValue(legacyRefs.rangeSelect) || "all",
+        customStart: readPrimeDateBridgeValue(legacyRefs.customStartInput),
+        customEnd: readPrimeDateBridgeValue(legacyRefs.customEndInput),
+      };
+    },
     syncPageControls(nextState = {}) {
-      const legacyRefs = resolveLegacyPageControlRefs(controlsEl);
+      const legacyRefs = mergeLegacyPageControlRefs(
+        pageControlsBridge.legacyRefs,
+        resolveLegacyPageControlRefs(controlsEl),
+      );
+      pageControlsBridge.legacyRefs = legacyRefs;
       syncLegacyPageControlRefs(legacyRefs, nextState);
       const ownsInteractions = syncPrimePageControls(legacyRefs, globalScope);
       pageControlsBridge.ownsPageControlInteractions = ownsInteractions;
@@ -264,8 +327,12 @@ export function mountPageControlsPrimitive(globalScope = globalThis) {
   };
   controlsEl[PAGE_CONTROLS_BRIDGE_KEY] = pageControlsBridge;
 
-  ensureLegacyPageControlsRendered(controlsEl, globalScope);
-  const legacyRefs = resolveLegacyPageControlRefs(controlsEl);
+  ensureLegacyPageControlsRendered(controlsEl, globalScope, existingBridge);
+  const legacyRefs = mergeLegacyPageControlRefs(
+    pageControlsBridge.legacyRefs,
+    resolveLegacyPageControlRefs(controlsEl),
+  );
+  pageControlsBridge.legacyRefs = legacyRefs;
   const ownsPageControlInteractions = syncPrimePageControls(legacyRefs, globalScope);
   pageControlsBridge.ownsPageControlInteractions = ownsPageControlInteractions;
   if (ownsPageControlInteractions) {

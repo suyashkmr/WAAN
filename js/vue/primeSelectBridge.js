@@ -5,6 +5,10 @@ function createBridgeMountId(inputId) {
   return `${inputId}--mount`;
 }
 
+function hasCapturedDomRefs(ownerDocument) {
+  return ownerDocument?.documentElement?.dataset?.waanDomRefsCaptured === "true";
+}
+
 function getVueRuntime(vueRuntime, globalScope) {
   return vueRuntime ?? globalScope?.Vue ?? null;
 }
@@ -59,7 +63,7 @@ function detachHiddenSelectFromWrappingLabel(selectEl) {
   wrappingLabel.insertAdjacentElement("afterend", selectEl);
 }
 
-function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
+function hideNativeSelect(selectEl, inputId, preserveNativeId = false, detachPreservedNative = false) {
   if (!selectEl) return;
   if (!selectEl.dataset.primevueLegacyId) {
     selectEl.dataset.primevueLegacyId = selectEl.id || inputId;
@@ -72,6 +76,18 @@ function hideNativeSelect(selectEl, inputId, preserveNativeId = false) {
     selectEl.id = `${inputId}--native`;
   }
   detachHiddenSelectFromWrappingLabel(selectEl);
+  if (preserveNativeId && detachPreservedNative && selectEl.parentNode) {
+    if (!hasCapturedDomRefs(selectEl.ownerDocument)) {
+      selectEl.classList.add("hidden");
+      selectEl.setAttribute("aria-hidden", "true");
+      selectEl.tabIndex = -1;
+      selectEl.dataset.primevueManaged = "preserved";
+      return;
+    }
+    selectEl.remove();
+    selectEl.dataset.primevueManaged = "detached";
+    return;
+  }
   selectEl.classList.add("hidden");
   selectEl.setAttribute("aria-hidden", "true");
   selectEl.tabIndex = -1;
@@ -91,6 +107,45 @@ function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, vis
   });
 }
 
+function resolveVisibleSelectTarget(selectEl, visibleInputId = "") {
+  const ownerDocument = selectEl?.ownerDocument ?? null;
+  if (!ownerDocument) return null;
+  if (visibleInputId) {
+    const explicitTarget = ownerDocument.getElementById(visibleInputId);
+    if (explicitTarget instanceof HTMLElement) return explicitTarget;
+  }
+  const bridge = resolveBridgeState(selectEl);
+  const mountEl = bridge?.mountEl ?? null;
+  if (!(mountEl instanceof HTMLElement)) return null;
+  return mountEl.querySelector(".p-select, .p-dropdown, select, input, button, [tabindex]") instanceof HTMLElement
+    ? /** @type {HTMLElement} */ (mountEl.querySelector(".p-select, .p-dropdown, select, input, button, [tabindex]"))
+    : mountEl;
+}
+
+function installDetachedSelectDelegates(selectEl, visibleInputId = "") {
+  if (!selectEl || selectEl.dataset.primevueManaged !== "detached") return;
+  if (selectEl.dataset.primevueDelegateInstalled === "true") return;
+  const nativeFocus = selectEl.focus.bind(selectEl);
+  const nativeScrollIntoView = selectEl.scrollIntoView.bind(selectEl);
+  selectEl.focus = function focus(options) {
+    const visibleTarget = resolveVisibleSelectTarget(selectEl, visibleInputId);
+    if (visibleTarget && visibleTarget !== selectEl) {
+      visibleTarget.focus?.(options);
+      return;
+    }
+    nativeFocus(options);
+  };
+  selectEl.scrollIntoView = function scrollIntoView(arg) {
+    const visibleTarget = resolveVisibleSelectTarget(selectEl, visibleInputId);
+    if (visibleTarget && visibleTarget !== selectEl) {
+      visibleTarget.scrollIntoView?.(arg);
+      return;
+    }
+    nativeScrollIntoView(arg);
+  };
+  selectEl.dataset.primevueDelegateInstalled = "true";
+}
+
 /**
  * @param {{
  *   selectEl: HTMLSelectElement | null | undefined,
@@ -98,6 +153,7 @@ function syncVisibleLabelTarget(selectEl, inputId, preserveNativeId = false, vis
  *   value?: string,
  *   disabled?: boolean,
  *   preserveNativeId?: boolean,
+ *   detachPreservedNative?: boolean,
  *   visibleInputId?: string,
  *   attrs?: Record<string, any>,
  *   onValueChange?: ((value: string) => void) | null,
@@ -112,6 +168,7 @@ export function syncPrimeSelectBridge({
   value = "",
   disabled = false,
   preserveNativeId = false,
+  detachPreservedNative = false,
   visibleInputId = "",
   attrs: inputAttrs = {},
   onValueChange = null,
@@ -176,8 +233,9 @@ export function syncPrimeSelectBridge({
       },
     };
     configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(mountEl);
-    hideNativeSelect(selectEl, inputId, preserveNativeId);
+    hideNativeSelect(selectEl, inputId, preserveNativeId, detachPreservedNative);
     syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
+    installDetachedSelectDelegates(selectEl, resolvedVisibleInputId);
     bridge = { state, mountEl };
     storeBridgeState(selectEl, bridge);
   }
@@ -185,8 +243,9 @@ export function syncPrimeSelectBridge({
   bridge.state.options = Array.isArray(options) ? options : [];
   bridge.state.value = value == null ? "" : String(value);
   bridge.state.disabled = Boolean(disabled);
-  hideNativeSelect(selectEl, inputId, preserveNativeId);
+  hideNativeSelect(selectEl, inputId, preserveNativeId, detachPreservedNative);
   syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
+  installDetachedSelectDelegates(selectEl, resolvedVisibleInputId);
   return true;
 }
 

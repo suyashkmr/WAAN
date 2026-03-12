@@ -33,5 +33,21 @@ describe("app shell dom refs", () => {
     expect(refs.sectionNavInner?.className).toBe("section-nav-inner");
     expect(refs.dashboardRoot?.id).toBe("root");
     expect(refs.themeToggleInputs.length).toBe(1);
+    expect(sandbox.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
+  });
+
+  it("marks dom refs as captured only when page controls exist", () => {
+    const sandbox = document.implementation.createHTMLDocument("waan-dom-refs-page-controls");
+    sandbox.body.innerHTML = `
+      <main id="root"></main>
+      <select id="chat-selector"><option value="">No chats loaded yet</option></select>
+      <select id="global-range"><option value="all">All time</option></select>
+      <input id="custom-start" type="date" />
+      <input id="custom-end" type="date" />
+    `;
+
+    createAppDomRefs({ documentRef: sandbox, windowRef: /** @type {Window} */ ({}) });
+
+    expect(sandbox.documentElement.dataset.waanDomRefsCaptured).toBe("true");
   });
 });

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createEventBindingsController } from "../js/appShell/eventBindings.js";
 import { VUE_BRIDGE_NAMES, VUE_RUNTIME_REGISTRY_KEY } from "../js/vue/bridgeRegistry.js";
+import * as primeDateBridgeModule from "../js/vue/primeDateBridge.js";
+import * as primeSelectBridgeModule from "../js/vue/primeSelectBridge.js";
 
 function createHandlers() {
   return {
@@ -404,9 +406,6 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    const rangeChangeSpy = vi.fn();
-    rangeSelect.addEventListener("change", rangeChangeSpy);
-
     shellActionHandlers["page.chat.select"]?.({ value: "remote:chat-2" });
     shellActionHandlers["page.range.select"]?.({ value: "30" });
     shellActionHandlers["page.range.apply-custom"]?.({ start: "2025-01-01", end: "2025-01-05" });
@@ -419,8 +418,61 @@ describe("event bindings detailed", () => {
       expect.objectContaining({ target: { value: "30" } }),
     );
     expect(rangeSelect.value).toBe("30");
-    expect(rangeChangeSpy).toHaveBeenCalledTimes(1);
     expect(deps.applyCustomRange).toHaveBeenCalledWith("2025-01-01", "2025-01-05");
+  });
+
+  it("syncs Prime range/date bridge state for shell-driven page control updates", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const rangeSelect = document.createElement("select");
+    rangeSelect.innerHTML = '<option value="all">All time</option><option value="30">Last 30 days</option>';
+    rangeSelect.value = "all";
+    const customStartInput = document.createElement("input");
+    customStartInput.type = "date";
+    customStartInput.min = "2025-01-01";
+    customStartInput.max = "2025-12-31";
+    const customEndInput = document.createElement("input");
+    customEndInput.type = "date";
+    customEndInput.min = "2025-01-01";
+    customEndInput.max = "2025-12-31";
+    const syncRangeSpy = vi.spyOn(primeSelectBridgeModule, "syncPrimeSelectBridgeValue");
+    const syncDateSpy = vi.spyOn(primeDateBridgeModule, "syncPrimeDateBridgeValue");
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        rangeSelect,
+        customStartInput,
+        customEndInput,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+
+    shellActionHandlers["page.range.select"]?.({ value: "30" });
+    shellActionHandlers["page.range.set-custom-start"]?.({ value: "2025-01-05" });
+    shellActionHandlers["page.range.set-custom-end"]?.({ value: "2025-01-07" });
+
+    expect(syncRangeSpy).toHaveBeenCalledWith({
+      selectEl: rangeSelect,
+      value: "30",
+      disabled: false,
+    });
+    expect(syncDateSpy).toHaveBeenNthCalledWith(1, {
+      inputEl: customStartInput,
+      value: "2025-01-05",
+      disabled: false,
+      min: "2025-01-01",
+      max: "2025-12-31",
+    });
+    expect(syncDateSpy).toHaveBeenNthCalledWith(2, {
+      inputEl: customEndInput,
+      value: "2025-01-07",
+      disabled: false,
+      min: "2025-01-01",
+      max: "2025-12-31",
+    });
   });
 
   it("avoids direct filter rerenders from event bindings", () => {
@@ -476,7 +528,7 @@ describe("event bindings detailed", () => {
     expect(() => initEventHandlers()).not.toThrow();
   });
 
-  it("ignores bridge-mirrored native page-control change events after fallback listeners were bound", () => {
+  it("keeps native page-control fallback listeners bound only for the native path", () => {
     const handlers = createHandlers();
     const deps = createDeps();
     const chatSelector = document.createElement("select");
@@ -501,24 +553,12 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    chatSelector.dataset.primevueMirrorDispatch = "true";
-    chatSelector.value = "remote:chat-1";
-    chatSelector.dispatchEvent(new Event("change", { bubbles: true }));
-    delete chatSelector.dataset.primevueMirrorDispatch;
-
-    rangeSelect.dataset.primevueMirrorDispatch = "true";
-    rangeSelect.value = "180";
-    rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
-    delete rangeSelect.dataset.primevueMirrorDispatch;
-
-    expect(handlers.handleChatSelectionChange).not.toHaveBeenCalled();
-    expect(handlers.handleRangeChange).not.toHaveBeenCalled();
     expect(chatSelector.dataset.eventBindingsPageControlBound).toBe("true");
     expect(rangeSelect.dataset.eventBindingsPageControlBound).toBe("true");
     expect(customApplyButton.dataset.eventBindingsPageControlBound).toBe("true");
   });
 
-  it("updates preserved custom date refs from shell draft-range actions", () => {
+  it("updates preserved custom date refs from shell draft-range actions without synthetic native events", () => {
     const handlers = createHandlers();
     const deps = createDeps();
     const customStartInput = document.createElement("input");
@@ -567,9 +607,9 @@ describe("event bindings detailed", () => {
 
     expect(customStartInput.value).toBe("2025-01-05");
     expect(customEndInput.value).toBe("2025-01-07");
-    expect(startInputSpy).toHaveBeenCalledTimes(1);
-    expect(startChangeSpy).toHaveBeenCalledTimes(1);
-    expect(endInputSpy).toHaveBeenCalledTimes(1);
-    expect(endChangeSpy).toHaveBeenCalledTimes(1);
+    expect(startInputSpy).not.toHaveBeenCalled();
+    expect(startChangeSpy).not.toHaveBeenCalled();
+    expect(endInputSpy).not.toHaveBeenCalled();
+    expect(endChangeSpy).not.toHaveBeenCalled();
   });
 });

@@ -5,6 +5,10 @@ function createBridgeMountId(inputId) {
   return `${inputId}--mount`;
 }
 
+function hasCapturedDomRefs(ownerDocument) {
+  return ownerDocument?.documentElement?.dataset?.waanDomRefsCaptured === "true";
+}
+
 function getVueRuntime(vueRuntime, globalScope) {
   return vueRuntime ?? globalScope?.Vue ?? null;
 }
@@ -13,8 +17,56 @@ function resolveBridgeState(inputEl) {
   return /** @type {any} */ (inputEl).__waanPrimeDateBridge ?? null;
 }
 
+export function readPrimeDateBridgeValue(inputEl) {
+  if (!inputEl) return "";
+  const bridge = resolveBridgeState(inputEl);
+  if (bridge?.state) {
+    return bridge.state.value == null ? "" : String(bridge.state.value);
+  }
+  return inputEl.value ?? "";
+}
+
 function storeBridgeState(inputEl, state) {
   /** @type {any} */ (inputEl).__waanPrimeDateBridge = state;
+}
+
+function resolveVisibleDateTarget(inputEl, visibleInputId = "") {
+  const ownerDocument = inputEl?.ownerDocument ?? null;
+  if (!ownerDocument) return null;
+  if (visibleInputId) {
+    const explicitTarget = ownerDocument.getElementById(visibleInputId);
+    if (explicitTarget instanceof HTMLElement) return explicitTarget;
+  }
+  const bridge = resolveBridgeState(inputEl);
+  const mountEl = bridge?.mountEl ?? null;
+  if (!(mountEl instanceof HTMLElement)) return null;
+  return mountEl.querySelector(".p-datepicker, .p-calendar, input, button, [tabindex]") instanceof HTMLElement
+    ? /** @type {HTMLElement} */ (mountEl.querySelector(".p-datepicker, .p-calendar, input, button, [tabindex]"))
+    : mountEl;
+}
+
+function installDetachedDateDelegates(inputEl, visibleInputId = "") {
+  if (!inputEl || inputEl.dataset.primevueManaged !== "detached") return;
+  if (inputEl.dataset.primevueDelegateInstalled === "true") return;
+  const nativeFocus = inputEl.focus.bind(inputEl);
+  const nativeScrollIntoView = inputEl.scrollIntoView.bind(inputEl);
+  inputEl.focus = function focus(options) {
+    const visibleTarget = resolveVisibleDateTarget(inputEl, visibleInputId);
+    if (visibleTarget && visibleTarget !== inputEl) {
+      visibleTarget.focus?.(options);
+      return;
+    }
+    nativeFocus(options);
+  };
+  inputEl.scrollIntoView = function scrollIntoView(arg) {
+    const visibleTarget = resolveVisibleDateTarget(inputEl, visibleInputId);
+    if (visibleTarget && visibleTarget !== inputEl) {
+      visibleTarget.scrollIntoView?.(arg);
+      return;
+    }
+    nativeScrollIntoView(arg);
+  };
+  inputEl.dataset.primevueDelegateInstalled = "true";
 }
 
 function ensureBridgeMount(inputEl, inputId) {
@@ -29,13 +81,25 @@ function ensureBridgeMount(inputEl, inputId) {
   return mount;
 }
 
-function hideNativeInput(inputEl, inputId, preserveNativeId = false) {
+function hideNativeInput(inputEl, inputId, preserveNativeId = false, detachPreservedNative = false) {
   if (!inputEl) return;
   if (!inputEl.dataset.primevueInputId) {
     inputEl.dataset.primevueInputId = inputId;
   }
   if (!preserveNativeId && inputEl.id === inputId) {
     inputEl.id = `${inputId}--native`;
+  }
+  if (preserveNativeId && detachPreservedNative && inputEl.parentNode) {
+    if (!hasCapturedDomRefs(inputEl.ownerDocument)) {
+      inputEl.classList.add("hidden");
+      inputEl.setAttribute("aria-hidden", "true");
+      inputEl.tabIndex = -1;
+      inputEl.dataset.primevueManaged = "preserved";
+      return;
+    }
+    inputEl.remove();
+    inputEl.dataset.primevueManaged = "detached";
+    return;
   }
   inputEl.classList.add("hidden");
   inputEl.setAttribute("aria-hidden", "true");
@@ -51,6 +115,7 @@ function hideNativeInput(inputEl, inputId, preserveNativeId = false) {
  *   min?: string,
  *   max?: string,
  *   preserveNativeId?: boolean,
+ *   detachPreservedNative?: boolean,
  *   visibleInputId?: string,
  *   onValueChange?: ((value: string) => void) | null,
  *   vueRuntime?: any,
@@ -65,6 +130,7 @@ export function syncPrimeDateBridge({
   min = "",
   max = "",
   preserveNativeId = false,
+  detachPreservedNative = false,
   visibleInputId = "",
   onValueChange = null,
   vueRuntime = null,
@@ -127,7 +193,8 @@ export function syncPrimeDateBridge({
       },
     };
     configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(mountEl);
-    hideNativeInput(inputEl, inputId, preserveNativeId);
+    hideNativeInput(inputEl, inputId, preserveNativeId, detachPreservedNative);
+    installDetachedDateDelegates(inputEl, resolvedVisibleInputId);
     bridge = { state, mountEl };
     storeBridgeState(inputEl, bridge);
   }
@@ -136,7 +203,8 @@ export function syncPrimeDateBridge({
   bridge.state.disabled = Boolean(disabled);
   bridge.state.min = inputEl.min;
   bridge.state.max = inputEl.max;
-  hideNativeInput(inputEl, inputId, preserveNativeId);
+  hideNativeInput(inputEl, inputId, preserveNativeId, detachPreservedNative);
+  installDetachedDateDelegates(inputEl, resolvedVisibleInputId);
   return true;
 }
 

@@ -43,7 +43,6 @@ function mountRelayBannerPrimitive(globalScope = globalThis) {
   const RelayBannerRoot = createRelayBannerRoot(h, (actionId, payload = null) =>
     dispatchShellAction(actionId, payload, globalScope),
   );
-
   const app = configurePrimeVueApp(createApp(RelayBannerRoot), globalScope);
   app.mount(bannerEl);
   bannerEl.dataset.vuePrimitiveMounted = "true";
@@ -328,6 +327,7 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
     get ownsPageControlInteractions() {
       return Boolean(pageControlsBridge?.ownsPageControlInteractions);
     },
+    getPageControlState: () => pageControlsBridge?.readPageControlState?.() ?? null,
     syncPageControls: nextState => pageControlsBridge?.syncPageControls?.(nextState) ?? false,
   }, { globalScope });
 }

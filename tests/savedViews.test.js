@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { Fragment, h, render } from "vue";
 import { createSavedViewsController } from "../js/savedViews.js";
 import { clearVueBridgeRuntime, installSearchSavedVueBridge } from "./vueBridgeTestUtils.js";
+import { WAAN_PAGE_CONTROL_DRAFT_EVENT } from "../js/vue/pageControlDraftSignal.js";
 
 function buildElements() {
   const buildSelect = values => {
@@ -135,6 +136,8 @@ function buildDependencies() {
     emitAppShellUiState: event => {
       appShellSubscriber?.(event);
     },
+    readPageControlDraftState: vi.fn(() => null),
+    globalScope: window,
     vueRuntime: { h, render, Fragment },
   };
 }
@@ -639,6 +642,34 @@ describe("savedViews controller", () => {
     elements.rangeSelect.dispatchEvent(new Event("change", { bubbles: true }));
 
     expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
+  });
+
+  it("marks the active saved view dirty from bridged page-control draft signals", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    const dependencies = buildDependencies();
+    let draftState = { rangeValue: "all", customStart: "", customEnd: "" };
+    dependencies.getCurrentRange = vi.fn(() => "all");
+    dependencies.readPageControlDraftState = vi.fn(() => draftState);
+    const controller = createSavedViewsController({ elements, dependencies });
+
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Draft bridge view";
+    elements.saveButton.click();
+    elements.listSelect.value = "view-1";
+    await Promise.resolve(elements.applyButton.click());
+    await Promise.resolve();
+
+    expect(elements.gallery.querySelector(".saved-view-card.is-dirty")).toBeFalsy();
+
+    draftState = { rangeValue: "custom", customStart: "2025-01-02", customEnd: "2025-01-05" };
+    window.dispatchEvent(new CustomEvent(WAAN_PAGE_CONTROL_DRAFT_EVENT, { detail: draftState }));
+
+    const dirtyCard = elements.gallery.querySelector(".saved-view-card.is-dirty");
+    expect(dirtyCard).toBeTruthy();
+    expect(dirtyCard?.textContent).toContain("Unsaved changes");
   });
 
   it("hydrates missing saved-view snapshots through analytics worker path", async () => {

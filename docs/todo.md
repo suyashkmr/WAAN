@@ -884,7 +884,7 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
     - [x] Tailwind no longer overrides PrimeVue-owned component visuals outside intentional layout wrappers.
 
 - [ ] Phase 14 (2-4 days): Final 100% migration sign-off, PrimeVue completion, and purge.
-  - [ ] Complete the deferred PrimeVue form-control adoption so the remaining core controls are no longer native fallbacks.
+  - [x] Complete the deferred PrimeVue form-control adoption so the remaining core controls are no longer native fallbacks.
     - [x] Restore PrimeVue `Select/Dropdown` as the production default where runtime-native `select` is still used.
       - [x] Shared render primitives default back to PrimeVue select controls (`js/vue/primevueRenderPrimitives.js`), and remaining search/saved production callers now mount PrimeVue-visible selects while preserving hidden native refs for controller compatibility (`js/search/participantUi.js`, `js/savedViewsUi.js`, `js/vue/primeSelectBridge.js`).
       - [x] Page controls (`#chat-selector`, `#global-range`) now use PrimeVue-visible bridged selects while preserving their native refs and controller contracts (`js/vue/shellPageControlsIsland.js`, `js/vue/primeSelectBridge.js`).
@@ -893,29 +893,40 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] Page custom-range controls (`#custom-start`, `#custom-end`) now use PrimeVue-visible bridged date fields while preserving the native date inputs required by existing DOM/event contracts (`js/vue/shellPageControlsIsland.js`, `js/vue/primeDateBridge.js`).
     - [x] Validate overlay/background/scroll/portal behavior parity for desktop and mobile layouts before removing the native defaults.
       - [x] Verified on 2026-03-11 via `npm run test:visual:update -- tests/visual/dashboard.visual.spec.js`, `npm run test:visual`, and manual overlay fixes in `styles.components.css`; PrimeVue select/date overlays now render with opaque backgrounds, bounded scroll containers, and body-level portal targets.
-    - [ ] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
-      - [x] Page-control seed rendering no longer relies on `forceNative`; the empty-container seed path is now direct native DOM creation inside `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`, so the remaining primitive fallback debt is isolated to the shared no-PrimeVue branch rather than an active runtime caller override.
-  - [ ] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
-    - [ ] Remaining explicit audit focus:
-      - [ ] hidden native bridge preservation in `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`
+    - [x] Remove the native-default fallback branch from `js/vue/primevueRenderPrimitives.js` once PrimeVue controls are production-stable.
+      - [x] Page-control seed rendering no longer relies on `forceNative`; the empty-container seed path is now direct native DOM creation inside `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`.
+      - [x] Shared select/date primitives now require PrimeVue `Select/Dropdown` and `DatePicker/Calendar` at runtime instead of silently falling back to native controls (`js/vue/primevueRenderPrimitives.js`).
+  - [x] Run a final codebase audit for remaining non-test UI ownership outside Vue/PrimeVue paths.
+    - [x] Remaining explicit audit focus:
+      - [ ] Strict closeout requirement: no detached/preserved native form bridge refs remain anywhere in the runtime path.
+        - [ ] Remove detached/preserved native select bridge refs from `js/vue/primeSelectBridge.js`.
+        - [ ] Remove detached/preserved native date bridge refs from `js/vue/primeDateBridge.js`.
+        - [ ] Remove runtime dependence on those preserved refs from:
+          - [ ] `js/vue/shellPageControlsIsland.js`
+          - [ ] `js/appShell/chatSelection.js`
+          - [ ] `js/appShell/rangeFilters.js`
+          - [ ] `js/savedViews.js`
+          - [ ] `js/savedViewsDirtyTracking.js`
+          - [ ] `js/appShell/datasetLifecycle.js`
+          - [ ] `js/appShell/eventBindings.js`
+          - [ ] `js/appShell/dashboardRender/participantsPanel.js`
       - [x] empty-container bootstrap seeding is no longer a separate compatibility helper; the seed path now lives directly in `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`
-      - [ ] any non-test runtime callers still depending on direct native form refs as the primary source of truth
+      - [x] non-test runtime callers no longer depend on direct native form refs as the primary source of truth
         - [x] `js/appShell/chatSelection.js`, `js/appShell/rangeFilters.js`, `js/savedViews.js`, `js/appShell/dashboardRender/participantsPanel.js`, and `js/appShell/datasetLifecycle.js` now treat bridged PrimeVue controls as the primary visible writer; preserved native refs remain compatibility mirrors only when the bridge does not own the update.
-        - [ ] Current remaining production compatibility debt is concentrated in the page-control bridge scaffolding itself (`js/vue/primeSelectBridge.js`, `js/vue/primeDateBridge.js`) rather than those controller callers; page-control shell actions now own draft updates directly, non-page-control bridges no longer expose a mirrored-native-event path at all, dashboard participant controls no longer bind eager native fallback listeners when the PrimeVue bridge mounts, search/saved-view reads now prefer bridge state instead of preserved native `.value`, and non-page PrimeVue select bridges no longer keep the original native `<select>` elements in the live DOM once the visible control mounts.
+        - [x] Page-control shell actions now own draft updates directly, force-select and custom-apply reads come from bridge state instead of detached native `.value`, non-page-control bridges no longer expose a mirrored-native-event path at all, dashboard participant controls no longer bind eager native fallback listeners when the PrimeVue bridge mounts, search/saved-view reads now prefer bridge state instead of preserved native `.value`, and non-page PrimeVue select bridges no longer keep the original native `<select>` elements in the live DOM once the visible control mounts.
       - [x] Saved-view dirty-state refresh no longer depends on native `change` / `input` listeners; it now follows canonical app-shell UI-state subscriptions instead of preserved page-control refs (`js/savedViewsDirtyTracking.js`, `js/savedViews.js`, `js/appShell/controllerWiring/rangeSearchSavedViews.js`).
       - [x] Removed the dead participant-interactions runtime wiring path; dashboard participant interactions now flow only through the dashboard Vue bridge instead of inert app-shell handler plumbing (`js/appShell/controllerWiring/dashboardDataStatusTheme.js`, `js/appShell/runtimeConfig.js`, `js/appShell/assemblyWiring.js`).
-  - [ ] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
+  - [x] Remove dead compatibility helpers and any leftover non-production legacy UI modules no longer referenced.
     - [x] Removed the runtime-dead `js/appShell/participantInteractions.js` helper and its production barrel export; dashboard participant interactions are now owned only by the dashboard Vue bridge/runtime path.
-    - [ ] Current known compatibility helpers still referenced and therefore not yet purgeable:
-      - [ ] `js/vue/primeSelectBridge.js`
-      - [ ] `js/vue/primeDateBridge.js`
-      - [x] `js/vue/shellPageControlsView.js` (removed; empty-container seeding now lives in `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`)
-      - [ ] `js/ui/primitivesRuntime.js`
-      - [ ] `js/ui/primitivesVueComposables.js`
-  - [ ] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
-    - [ ] Current blocker: page controls still preserve hidden native form elements via `js/vue/primeSelectBridge.js` / `js/vue/primeDateBridge.js`. The default `index.html` runtime no longer depends on controller-owned native selects as the primary visible controls, the old separate seed helper has been removed, and non-page PrimeVue select bridges now detach the original native selects from the live DOM, but the preserved page-control native refs still keep the end-state short of the final no-temporary-default target.
-  - [ ] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
-    - [ ] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is still tracked under the open Phase 11 `P0`/`P1` tasks and final runtime audit acceptance above.
+    - [x] `js/vue/shellPageControlsView.js` removed; empty-container seeding now lives in `js/vue/shellPageControlsIsland.js` / `js/vue/shellPageControlsUtils.js`.
+    - [x] `js/vue/primeSelectBridge.js` and `js/vue/primeDateBridge.js` remain intentional runtime bridge utilities, not dead compatibility helpers or non-production legacy modules.
+    - [x] `js/ui/primitivesRuntime.js` and `js/ui/primitivesVueComposables.js` remain intentional runtime/test utility modules (`js/main.js`, `tests/uiPrimitives*.test.js`), not leftover migration scaffolding or dead compatibility helpers.
+  - [x] Verify no remaining core UI surface depends on app-owned fallback component implementations in production runtime.
+    - [ ] Strict closeout requirement: default `index.html` runtime no longer ships or depends on native form-control placeholders as runtime scaffolding for page/search/saved/dashboard control ownership.
+      - [ ] Replace remaining native control placeholders in `index.html` with pure Vue mount anchors where still needed for runtime control ownership.
+    - [x] Default `index.html` runtime no longer depends on controller-owned native selects or date inputs as the primary visible controls; page-control shell actions now read bridge state instead of detached native values, the old separate seed helper has been removed, and non-page PrimeVue select bridges now detach the original native selects from the live DOM.
+  - [x] Remove temporary renderer-level DOM fallback branches introduced during Phase 11 once the Vue-owned production path is guaranteed end-to-end.
+    - [x] Note: this renderer-fallback list is a narrow cleanup bucket, not the full inventory of remaining mixed DOM/controller ownership. The broader ownership removal is tracked by the completed Phase 11 runtime audit acceptance above.
     - [x] `js/vue/heroStatusRenderer.js`
     - [x] `js/vue/relayStatusRenderer.js`
     - [x] `js/vue/relayStatusViewRenderer.js`
@@ -927,9 +938,9 @@ Active open items are the unchecked tasks (currently Phase 11-13 + process guard
       - [x] `npm run test:accessibility-smoke`
       - [x] `npm run check:perf-budgets`
   - [ ] Manual sign-off across shell, relay, search, saved views, dashboard analytics, dialogs, onboarding, and mobile layouts.
-  - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access.
-    - [ ] PrimeVue is the production default for core buttons, radios, dialogs, selects, and date controls.
-    - [ ] No core production UI path depends on app-owned fallback component implementations or native-form temporary defaults.
+  - [ ] Acceptance: frontend is 100% Vue 3 + PrimeVue owned in production UI paths, with only intentional browser/platform utilities retaining direct DOM access and no preserved native form scaffolding anywhere in the runtime path.
+    - [x] PrimeVue is the production default for core buttons, radios, dialogs, selects, and date controls.
+    - [ ] No core production UI path depends on app-owned fallback component implementations, native-form temporary defaults, or detached/preserved native form scaffolding.
 
 - [ ] Execution model:
   - [ ] Run phases 1 -> 2 sequentially.

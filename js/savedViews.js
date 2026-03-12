@@ -66,6 +66,8 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
     syncPageControls = null,
     vueRuntime = null,
     subscribeAppShellUiState = null,
+    readPageControlDraftState = null,
+    globalScope = globalThis,
   } = dependencies;
 
   const placeholderText = nameInput?.getAttribute("placeholder") || "";
@@ -83,6 +85,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       rangeSelect,
       customStartInput,
       customEndInput,
+      readDraftRangeState: readPageControlDraftState,
     }) !== lastAppliedViewSignature;
   }
 
@@ -311,6 +314,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
       rangeSelect,
       customStartInput,
       customEndInput,
+      globalScope,
       onStateChange: refreshOnStateChange,
     });
   }

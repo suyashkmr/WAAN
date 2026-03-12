@@ -1,3 +1,5 @@
+import { WAAN_PAGE_CONTROL_DRAFT_EVENT } from "./vue/pageControlDraftSignal.js";
+
 function createComparableViewState(viewLike) {
   const rawRangeData = viewLike?.rangeData;
   const rangeData = rawRangeData && typeof rawRangeData === "object"
@@ -28,15 +30,18 @@ export function captureCurrentViewSignature({
   rangeSelect,
   customStartInput,
   customEndInput,
+  readDraftRangeState = null,
 }) {
-  const draftRangeValue = rangeSelect?.value ?? null;
+  const draftRangeState =
+    typeof readDraftRangeState === "function" ? readDraftRangeState() : null;
+  const draftRangeValue = draftRangeState?.rangeValue ?? rangeSelect?.value ?? null;
   const range = draftRangeValue || getCurrentRange();
   const customRange = getCustomRange();
   const rangeData = range === "custom"
     ? {
         type: "custom",
-        start: customStartInput?.value ?? customRange?.start ?? "",
-        end: customEndInput?.value ?? customRange?.end ?? "",
+        start: draftRangeState?.customStart ?? customStartInput?.value ?? customRange?.start ?? "",
+        end: draftRangeState?.customEnd ?? customEndInput?.value ?? customRange?.end ?? "",
       }
     : range;
   const hourly = getHourlyState();
@@ -55,6 +60,7 @@ export function subscribeSavedViewDirtyState({
   rangeSelect,
   customStartInput,
   customEndInput,
+  globalScope = globalThis,
   onStateChange,
 }) {
   if (typeof onStateChange !== "function") {
@@ -78,6 +84,13 @@ export function subscribeSavedViewDirtyState({
   }
 
   const handleDraftRangeChange = () => onStateChange();
+
+  if (typeof globalScope?.addEventListener === "function") {
+    globalScope.addEventListener(WAAN_PAGE_CONTROL_DRAFT_EVENT, handleDraftRangeChange);
+    unsubscribers.push(() => {
+      globalScope.removeEventListener?.(WAAN_PAGE_CONTROL_DRAFT_EVENT, handleDraftRangeChange);
+    });
+  }
 
   const handleDraftCustomInput = () => onStateChange();
 

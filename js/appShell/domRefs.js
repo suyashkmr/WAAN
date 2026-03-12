@@ -18,6 +18,16 @@ export function createAppDomRefs({
   vueRuntime = typeof globalThis !== "undefined" ? /** @type {any} */ (globalThis).Vue ?? null : null,
 } = {}) {
   const domCache = createDomCache(documentRef);
+  const rangeSelect = domCache.getById("global-range");
+  const chatSelector = domCache.getById("chat-selector");
+  const customStartInput = domCache.getById("custom-start");
+  const customEndInput = domCache.getById("custom-end");
+  if (
+    documentRef?.documentElement
+    && (chatSelector || rangeSelect || customStartInput || customEndInput)
+  ) {
+    documentRef.documentElement.dataset.waanDomRefsCaptured = "true";
+  }
   return {
     documentRef,
     windowRef,
@@ -44,8 +54,8 @@ export function createAppDomRefs({
     participantsSortSelect: domCache.getById("participants-sort"),
     participantsTimeframeSelect: domCache.getById("participants-timeframe"),
     participantPresetButtons: documentRef?.querySelectorAll("[data-participants-preset]") ?? [],
-    rangeSelect: domCache.getById("global-range"),
-    chatSelector: domCache.getById("chat-selector"),
+    rangeSelect,
+    chatSelector,
     relayLiveCard: domCache.getById("relay-live-card"),
     relayStatusEl: domCache.getById("relay-connection-status"),
     relayAccountEl: domCache.getById("relay-account-name"),
@@ -65,8 +75,8 @@ export function createAppDomRefs({
     reduceMotionToggle: domCache.getById("reduce-motion-toggle"),
     highContrastToggle: domCache.getById("high-contrast-toggle"),
     customControls: domCache.getById("custom-range-controls"),
-    customStartInput: domCache.getById("custom-start"),
-    customEndInput: domCache.getById("custom-end"),
+    customStartInput,
+    customEndInput,
     customApplyButton: domCache.getById("apply-custom-range"),
     filterWeekdays: domCache.getById("filter-weekdays"),
     filterWeekends: domCache.getById("filter-weekends"),

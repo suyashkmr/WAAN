@@ -1,6 +1,8 @@
 // @ts-check
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
+import { syncPrimeDateBridgeValue } from "../vue/primeDateBridge.js";
+import { syncPrimeSelectBridgeValue } from "../vue/primeSelectBridge.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -69,29 +71,9 @@ export function createEventBindingsController({
   }
 
   /**
-   * @param {{ target?: { dataset?: Record<string, string | undefined> } } | null | undefined} event
-   */
-  function isBridgeMirroredEvent(event) {
-    return event?.target?.dataset?.primevueMirrorDispatch === "true";
-  }
-
-  /**
-   * @param {HTMLElement | null | undefined} element
-   * @param {"input" | "change"} type
-   */
-  function dispatchBridgeMirroredEvent(element, type) {
-    if (!element) return;
-    const EventCtor = element.ownerDocument?.defaultView?.Event ?? Event;
-    element.dataset.primevueMirrorDispatch = "true";
-    element.dispatchEvent(new EventCtor(type, { bubbles: true }));
-    delete element.dataset.primevueMirrorDispatch;
-  }
-
-  /**
    * @param {any} event
    */
   function handleNativeChatSelectionChange(event) {
-    if (isBridgeMirroredEvent(event)) return;
     return handleChatSelectionChange(event);
   }
 
@@ -99,7 +81,6 @@ export function createEventBindingsController({
    * @param {any} event
    */
   function handleNativeRangeChange(event) {
-    if (isBridgeMirroredEvent(event)) return;
     return handleRangeChange(event);
   }
 
@@ -156,8 +137,11 @@ export function createEventBindingsController({
         if (rangeSelect && rangeSelect.value !== value) {
           rangeSelect.value = value;
         }
-        dispatchBridgeMirroredEvent(rangeSelect, "input");
-        dispatchBridgeMirroredEvent(rangeSelect, "change");
+        syncPrimeSelectBridgeValue({
+          selectEl: rangeSelect,
+          value,
+          disabled: rangeSelect?.disabled,
+        });
         return handleRangeChange({ target: { value } });
       },
       /** @param {Record<string, any> | null | undefined} payload */
@@ -174,17 +158,27 @@ export function createEventBindingsController({
       "page.range.set-custom-start": payload => {
         if (customStartInput) {
           customStartInput.value = payload?.value || "";
-          dispatchBridgeMirroredEvent(customStartInput, "input");
-          dispatchBridgeMirroredEvent(customStartInput, "change");
         }
+        syncPrimeDateBridgeValue({
+          inputEl: customStartInput,
+          value: payload?.value || "",
+          disabled: customStartInput?.disabled,
+          min: customStartInput?.min,
+          max: customStartInput?.max,
+        });
       },
       /** @param {Record<string, any> | null | undefined} payload */
       "page.range.set-custom-end": payload => {
         if (customEndInput) {
           customEndInput.value = payload?.value || "";
-          dispatchBridgeMirroredEvent(customEndInput, "input");
-          dispatchBridgeMirroredEvent(customEndInput, "change");
         }
+        syncPrimeDateBridgeValue({
+          inputEl: customEndInput,
+          value: payload?.value || "",
+          disabled: customEndInput?.disabled,
+          min: customEndInput?.min,
+          max: customEndInput?.max,
+        });
       },
     });
 

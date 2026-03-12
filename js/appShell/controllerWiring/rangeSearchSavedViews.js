@@ -36,6 +36,8 @@ export function createRangeSearchSavedViewsWiring({
   /** @param {Record<string, any>} nextState */
   const syncPageControls = nextState =>
     Boolean(resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })?.syncPageControls?.(nextState));
+  const readPageControlDraftState = () =>
+    resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })?.getPageControlState?.() ?? null;
   const chatSelectionController = createChatSelectionController({
     chatSelector: dom.chatSelector,
     brandName: constants.brandName,
@@ -176,6 +178,8 @@ export function createRangeSearchSavedViewsWiring({
       syncPageControls,
       vueRuntime: dom.vueRuntime ?? null,
       subscribeAppShellUiState: state.subscribeAppShellUiState,
+      readPageControlDraftState,
+      globalScope,
     },
   });
 

@@ -52,6 +52,13 @@ export function createDatasetLifecycleController({ elements, deps }) {
   }
 
   /**
+   * @param {HTMLSelectElement | null | undefined} selectEl
+   */
+  function hasPrimeSelectBridge(selectEl) {
+    return Boolean(/** @type {any} */ (selectEl)?.__waanPrimeSelectBridge);
+  }
+
+  /**
    * @param {AnyRecord[]} entries
    * @param {string} label
    * @param {AnyRecord} [options]
@@ -86,12 +93,14 @@ export function createDatasetLifecycleController({ elements, deps }) {
     setDatasetLabel(label);
     setCurrentRange("all");
     setCustomRange(null);
-    syncPageControlsState({
+    const pageControlsHandled = syncPageControlsState({
       rangeValue: "all",
       customStart: "",
       customEnd: "",
     });
-    if (rangeSelect) rangeSelect.value = "all";
+    if (rangeSelect && (!pageControlsHandled || !hasPrimeSelectBridge(rangeSelect))) {
+      rangeSelect.value = "all";
+    }
     resetHourlyFilters();
     resetWeekdayFilters();
 
