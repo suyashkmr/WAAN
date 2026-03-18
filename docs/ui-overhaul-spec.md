@@ -33,6 +33,15 @@ Closeout status as of 2026-03-19:
 - section-nav behavior guarantees remain intact, including modified-click preservation, keyboard focus behavior, deep-link active-pill reveal, and non-blocking mobile scroll
 - acceptance revalidated with `npm run test:visual`, `npm run test:accessibility-smoke`, and full `npm run ci:verify`
 
+### Current Active Refinement: Analytics Story Lane Overhaul
+
+The next continuation carries the same editorial system into the deeper analysis lane rather than reopening the top shell:
+
+- highlights, participants, timing, weekday, time-of-day, and sentiment panels should read as one connected story lane
+- analytics sections should distinguish story-summary, evidence, and supporting utility tiers without changing runtime ownership
+- chart roots, section IDs, controller entrypoints, bridge hooks, and fallback behavior remain unchanged
+- copy changes stay minimal and serve hierarchy clarity only
+
 ## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.

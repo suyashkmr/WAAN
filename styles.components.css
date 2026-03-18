@@ -2033,6 +2033,19 @@ main.is-loading .card-content {
     margin: 0.75rem 0 1rem;
 }
 
+.analysis-summary-strip {
+    margin: 0;
+}
+
+.analysis-summary-strip .summary-block {
+    min-width: min(240px, 100%);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--analytics-story-tier-bg) 96%, transparent), color-mix(in srgb, var(--panel-bg) 88%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, transparent), transparent 42%);
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, var(--border));
+    box-shadow: var(--editorial-card-shadow);
+}
+
 .sentiment-summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -2102,12 +2115,14 @@ main.is-loading .card-content {
 .sentiment-panel {
     border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
     border-radius: 1rem;
-    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--analytics-evidence-tier-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 7%, transparent), transparent 42%);
     padding: 1.1rem;
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
-    box-shadow: var(--shadow-card-strong);
+    box-shadow: var(--editorial-card-shadow);
     overflow: hidden;
 }
 
@@ -2488,6 +2503,24 @@ main.is-loading .card-content {
     display: block;
 }
 
+.analysis-evidence-frame {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 0.95rem;
+    padding: 1rem 1.02rem 1.05rem;
+    border: 1px solid var(--analytics-evidence-tier-border);
+    border-radius: calc(var(--shape-medium) + 2px);
+    box-shadow: var(--editorial-card-shadow);
+}
+
+.pattern-controls-shell {
+    display: grid;
+    gap: 0.72rem;
+    padding: 1rem 1.02rem 1.05rem;
+    border: 1px solid var(--analytics-support-tier-border);
+    border-radius: calc(var(--shape-medium) + 2px);
+}
+
 .summary-block {
     min-width: 152px;
     background: color-mix(in srgb, var(--muted) 10%, transparent);
@@ -2614,7 +2647,7 @@ main.is-loading .card-content {
     font-size: 0.8rem;
     line-height: 1.35;
     color: color-mix(in srgb, var(--muted) 84%, var(--text));
-    margin-bottom: 0.4rem;
+    margin: 0;
 }
 
 
@@ -3497,7 +3530,9 @@ main.is-loading .card-content {
     overflow-x: hidden;
     border-radius: 0.95rem;
     border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
-    background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--analytics-evidence-tier-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 6%, transparent), transparent 48%);
     box-shadow: var(--table-scrollable-inset-highlight);
 }
 
@@ -3514,7 +3549,9 @@ main.is-loading .card-content {
     padding: 1rem;
     border-radius: 1rem;
     border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
-    background: color-mix(in srgb, var(--panel-bg) 88%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--analytics-support-tier-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 88%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 8%, transparent), transparent 42%);
     color: color-mix(in srgb, var(--muted) 88%, transparent);
     font-size: var(--type-label-sm);
     letter-spacing: var(--tracking-label);
@@ -3647,7 +3684,9 @@ main.is-loading .card-content {
     padding: 0.8rem 0.95rem;
     border-radius: 0.95rem;
     border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    background: color-mix(in srgb, var(--panel-bg) 82%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--analytics-support-tier-bg) 96%, transparent), color-mix(in srgb, var(--panel-bg) 84%, transparent)),
+        radial-gradient(circle at top left, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 6%, transparent), transparent 44%);
 }
 
 .participants-quick-filters .ghost-button.tiny {

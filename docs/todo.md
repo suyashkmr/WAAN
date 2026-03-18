@@ -19,6 +19,27 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - [x] All previously tracked implementation tasks are complete.
 - [x] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
 
+## Next Wave: Analytics Story Lane Overhaul
+
+- [x] Phase 28: Analytics shell hierarchy pass.
+  - [x] Extend the shell/card token system so deep-dive analytics panels read as story-summary, evidence, and supporting tiers (`styles.base.css`, `styles/components/analytics.css`, `styles.components.css`).
+  - [x] Tighten analytics header/support copy and card framing so the lane reads as one guided narrative rather than isolated widgets (`index.html`, `styles/components/analytics.css`).
+- [x] Phase 29: Time and pattern sections reframe.
+  - [x] Reframe hourly, daily, weekly, weekday, and time-of-day sections with narrative intros, clearer control shells, and evidence-panel framing without changing chart/controller behavior (`index.html`, `styles.components.css`).
+  - [x] Improve responsive framing for pattern sections at 1024 / 768 / 390 through the shared analytics tier system and existing responsive shells.
+- [x] Phase 30: Participant and conversation insight pass.
+  - [x] Refresh highlights, participants, and sentiment sections so they match the upgraded overview/workspace shell while preserving mount roots, table hooks, and filter wiring (`index.html`, `styles/components/analytics.css`, `styles.components.css`).
+  - [x] Compress repetitive helper text and sharpen key-metric emphasis through story intros, pills, and evidence framing.
+- [x] Phase 31: Deep-dive cohesion and closeout.
+  - [x] Normalize secondary panel chrome, tooltip context, and responsive spacing across the first deep-dive chart/table tier.
+  - [x] Update `docs/ui-overhaul-spec.md` to record the analytics-story continuation and unchanged runtime constraints.
+  - [x] Complete validation:
+    - [x] targeted analytics/runtime `vitest` suites
+    - [x] `npm run test:visual`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+    - [x] Manual review at 1440 / 1024 / 768 / 390
+
 ## Next Wave: Iterative Visual Refresh
 
 - [x] Phase 24: Visual direction lock and token refresh.

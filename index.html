@@ -312,7 +312,7 @@
                     </div>
                 </section>
 
-        <section class="card highlights" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell"
+        <section class="card highlights analytics-story-card" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell"
             data-accent="highlights">
             <div class="card-header">
                 <div class="card-title-group">
@@ -338,11 +338,21 @@
                 </div>
             </div>
             <div class="card-content" id="insight-highlights-content">
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Story summary</p>
+                        <p class="analytics-story-copy">Start with the strongest shifts in pace, participation, and risk before moving into the detailed activity panels.</p>
+                    </div>
+                    <div class="analytics-story-pills" aria-label="Highlight reading cues">
+                        <span class="analytics-story-pill">What changed</span>
+                        <span class="analytics-story-pill subtle">Why it matters</span>
+                    </div>
+                </div>
                 <div class="highlight-grid" id="highlight-list"></div>
             </div>
         </section>
 
-        <section class="card participants" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell"
+        <section class="card participants analytics-story-card" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell"
             data-accent="participants">
             <div class="card-header">
                 <div class="card-title-group">
@@ -370,31 +380,46 @@
                 </div>
             </div>
             <div class="card-content" id="participants-content">
-                <div class="participants-controls">
-                    <label class="control-group" for="participants-top-count">
-                        <span>Show Top</span>
-                        <div id="participants-top-count-anchor" data-native-select-seed="participants-top-count"></div>
-                    </label>
-                    <label class="control-group" for="participants-sort">
-                        <span>Sort</span>
-                        <div id="participants-sort-anchor" data-native-select-seed="participants-sort"></div>
-                    </label>
-                    <label class="control-group" for="participants-timeframe">
-                        <span>Timeframe</span>
-                        <div id="participants-timeframe-anchor" data-native-select-seed="participants-timeframe"></div>
-                    </label>
+                <div class="participants-story-grid">
+                    <div class="analytics-story-intro supporting-story-tier">
+                        <div>
+                            <p class="analytics-story-kicker">Participation lens</p>
+                            <p class="analytics-story-copy">Compare who leads the conversation, who falls quiet, and how that balance changes when you narrow the timeframe.</p>
+                        </div>
+                        <div class="analytics-story-pills" aria-label="Participant reading cues">
+                            <span class="analytics-story-pill">Who leads</span>
+                            <span class="analytics-story-pill subtle">Who fades</span>
+                        </div>
+                    </div>
+                    <div class="participants-shell-controls">
+                        <div class="participants-controls">
+                            <label class="control-group" for="participants-top-count">
+                                <span>Show Top</span>
+                                <div id="participants-top-count-anchor" data-native-select-seed="participants-top-count"></div>
+                            </label>
+                            <label class="control-group" for="participants-sort">
+                                <span>Sort</span>
+                                <div id="participants-sort-anchor" data-native-select-seed="participants-sort"></div>
+                            </label>
+                            <label class="control-group" for="participants-timeframe">
+                                <span>Timeframe</span>
+                                <div id="participants-timeframe-anchor" data-native-select-seed="participants-timeframe"></div>
+                            </label>
+                        </div>
+                        <div class="participants-quick-filters">
+                            <span>Quick filters:</span>
+                            <button type="button" class="ghost-button tiny" data-participants-preset="top-week"
+                                aria-pressed="false">
+                                Top 5 this week
+                            </button>
+                            <button type="button" class="ghost-button tiny" data-participants-preset="quiet"
+                                aria-pressed="false">
+                                Quietest 5
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="participants-quick-filters">
-                    <span>Quick filters:</span>
-                    <button type="button" class="ghost-button tiny" data-participants-preset="top-week"
-                        aria-pressed="false">
-                        Top 5 this week
-                    </button>
-                    <button type="button" class="ghost-button tiny" data-participants-preset="quiet"
-                        aria-pressed="false">
-                        Quietest 5
-                    </button>
-                </div>
+                <p class="analysis-table-note">Open a row to inspect message share, writing density, and how concentrated each contributor is in the selected scope.</p>
                 <div class="table-container scrollable">
                     <table id="top-senders">
                         <thead>
@@ -440,7 +465,7 @@
             </div>
         </section>
 
-        <section class="card" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
+        <section class="card analytics-story-card" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -467,44 +492,60 @@
                 </div>
             </div>
             <div class="card-content" id="hourly-activity-content">
-                <div class="hourly-summary">
-                    <div class="summary-block">
-                        <span class="summary-label">Top Hour</span>
-                        <span class="summary-value" id="hourly-top-hour">—</span>
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Timing signal</p>
+                        <p class="analytics-story-copy">Start with the strongest burst, then narrow the hour brush to compare routine activity against outlier spikes.</p>
+                    </div>
+                    <div class="analytics-story-pills" aria-label="Hourly reading cues">
+                        <span class="analytics-story-pill">Peak window</span>
+                        <span class="analytics-story-pill subtle">Filter to inspect</span>
                     </div>
                 </div>
-                <div class="hourly-controls">
-                    <div class="toggle-group">
-                        <span class="toggle-label">Days</span>
-                        <label><input type="checkbox" id="filter-weekdays" checked> Weekdays</label>
-                        <label><input type="checkbox" id="filter-weekends" checked> Weekends</label>
-                    </div>
-                    <div class="toggle-group">
-                        <span class="toggle-label">Hours</span>
-                        <label><input type="checkbox" id="filter-working" checked> Working (09-17)</label>
-                        <label><input type="checkbox" id="filter-offhours" checked> Off Hours</label>
-                    </div>
-                    <div class="brush-group">
-                        <label for="hourly-brush-start">Hour Range</label>
-                        <div class="brush-inputs">
-                            <input type="range" id="hourly-brush-start" min="0" max="23" value="0">
-                            <input type="range" id="hourly-brush-end" min="0" max="23" value="23">
+                <div class="pattern-story-grid">
+                    <div class="hourly-summary analysis-summary-strip">
+                        <div class="summary-block">
+                            <span class="summary-label">Top Hour</span>
+                            <span class="summary-value" id="hourly-top-hour">—</span>
                         </div>
-                        <div class="brush-labels">
-                            <span id="hourly-brush-start-label">00:00</span>
-                            <span>–</span>
-                            <span id="hourly-brush-end-label">23:00</span>
+                    </div>
+                    <div class="pattern-controls-shell supporting-story-tier">
+                        <div class="hourly-controls">
+                            <div class="toggle-group">
+                                <span class="toggle-label">Days</span>
+                                <label><input type="checkbox" id="filter-weekdays" checked> Weekdays</label>
+                                <label><input type="checkbox" id="filter-weekends" checked> Weekends</label>
+                            </div>
+                            <div class="toggle-group">
+                                <span class="toggle-label">Hours</span>
+                                <label><input type="checkbox" id="filter-working" checked> Working (09-17)</label>
+                                <label><input type="checkbox" id="filter-offhours" checked> Off Hours</label>
+                            </div>
+                            <div class="brush-group">
+                                <label for="hourly-brush-start">Hour Range</label>
+                                <div class="brush-inputs">
+                                    <input type="range" id="hourly-brush-start" min="0" max="23" value="0">
+                                    <input type="range" id="hourly-brush-end" min="0" max="23" value="23">
+                                </div>
+                                <div class="brush-labels">
+                                    <span id="hourly-brush-start-label">00:00</span>
+                                    <span>–</span>
+                                    <span id="hourly-brush-end-label">23:00</span>
+                                </div>
+                            </div>
                         </div>
+                        <div class="hourly-filter-note" id="hourly-filter-note"></div>
+                        <div class="brush-summary" id="hourly-brush-summary">Select hour range to view details.</div>
                     </div>
                 </div>
-                <div class="hourly-filter-note" id="hourly-filter-note"></div>
-                <div class="brush-summary" id="hourly-brush-summary">Select hour range to view details.</div>
-                <div id="hourly-chart" class="hourly-heatmap"></div>
-                <div class="hourly-anomalies" id="hourly-anomalies"></div>
+                <div class="analysis-evidence-frame evidence-panel-tier">
+                    <div id="hourly-chart" class="hourly-heatmap"></div>
+                    <div class="hourly-anomalies" id="hourly-anomalies"></div>
+                </div>
             </div>
         </section>
 
-        <section class="card" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
+        <section class="card analytics-story-card" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -536,17 +577,25 @@
                 </div>
             </div>
             <div class="card-content" id="daily-activity-content">
+                <div class="analytics-story-intro supporting-story-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Daily cadence</p>
+                        <p class="analytics-story-copy">Scan for streaks and drop-offs across the full range before moving into the denser weekday and time-of-day panels.</p>
+                    </div>
+                </div>
                 <div class="daily-summary">
                     <div class="summary-block">
                         <span class="summary-label">Avg per day</span>
                         <span class="summary-value" id="daily-avg-day">—</span>
                     </div>
                 </div>
-                <div id="daily-chart" class="calendar-chart"></div>
+                <div class="analysis-evidence-frame evidence-panel-tier">
+                    <div id="daily-chart" class="calendar-chart"></div>
+                </div>
             </div>
         </section>
 
-        <section class="card" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly" data-vue-shell-mount="card-shell">
+        <section class="card analytics-story-card" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -573,6 +622,12 @@
                 </div>
             </div>
             <div class="card-content" id="weekly-trend-content">
+                <div class="analytics-story-intro supporting-story-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Momentum view</p>
+                        <p class="analytics-story-copy">Use the rolling weekly frame to tell whether the conversation is accelerating, flattening, or cooling off.</p>
+                    </div>
+                </div>
                 <div class="weekly-summary">
                     <div class="summary-block">
                         <span class="summary-label">Total so far</span>
@@ -587,11 +642,13 @@
                         <span class="summary-value" id="weekly-average">—</span>
                     </div>
                 </div>
-                <div id="weekly-chart" class="weekly-chart"></div>
+                <div class="analysis-evidence-frame evidence-panel-tier">
+                    <div id="weekly-chart" class="weekly-chart"></div>
+                </div>
             </div>
         </section>
 
-        <section class="card" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday" data-vue-shell-mount="card-shell">
+        <section class="card analytics-story-card" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -618,48 +675,64 @@
                 </div>
             </div>
             <div class="card-content" id="weekday-trend-content">
-                <div class="weekday-controls">
-                    <div class="toggle-group">
-                        <span class="toggle-label">Days</span>
-                        <label class="segmented-option">
-                            <input type="checkbox" id="weekday-toggle-weekdays" checked>
-                            <span>Weekdays</span>
-                        </label>
-                        <label class="segmented-option">
-                            <input type="checkbox" id="weekday-toggle-weekends" checked>
-                            <span>Weekends</span>
-                        </label>
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Weekday pattern</p>
+                        <p class="analytics-story-copy">Compare which days carry the most volume, then narrow the hour window to see when those days actually ignite.</p>
                     </div>
-                    <div class="toggle-group">
-                        <span class="toggle-label">Hours</span>
-                        <label class="segmented-option">
-                            <input type="checkbox" id="weekday-toggle-working" checked>
-                            <span>Work hours (09-17)</span>
-                        </label>
-                        <label class="segmented-option">
-                            <input type="checkbox" id="weekday-toggle-offhours" checked>
-                            <span>Off hours</span>
-                        </label>
-                    </div>
-                    <div class="brush-group">
-                        <label for="weekday-hour-start">Hour Range</label>
-                        <div class="brush-inputs">
-                            <input type="range" id="weekday-hour-start" min="0" max="23" value="0">
-                            <input type="range" id="weekday-hour-end" min="0" max="23" value="23">
-                        </div>
-                        <div class="brush-labels">
-                            <span id="weekday-hour-start-label">00:00</span>
-                            <span>–</span>
-                            <span id="weekday-hour-end-label">23:00</span>
-                        </div>
+                    <div class="analytics-story-pills" aria-label="Weekday reading cues">
+                        <span class="analytics-story-pill">Busiest days</span>
+                        <span class="analytics-story-pill subtle">Then narrow hours</span>
                     </div>
                 </div>
-                <div class="weekday-filter-note" id="weekday-filter-note"></div>
-                <div id="weekday-chart" class="weekday-chart"></div>
+                <div class="pattern-story-grid">
+                    <div class="pattern-controls-shell supporting-story-tier">
+                        <div class="weekday-controls">
+                            <div class="toggle-group">
+                                <span class="toggle-label">Days</span>
+                                <label class="segmented-option">
+                                    <input type="checkbox" id="weekday-toggle-weekdays" checked>
+                                    <span>Weekdays</span>
+                                </label>
+                                <label class="segmented-option">
+                                    <input type="checkbox" id="weekday-toggle-weekends" checked>
+                                    <span>Weekends</span>
+                                </label>
+                            </div>
+                            <div class="toggle-group">
+                                <span class="toggle-label">Hours</span>
+                                <label class="segmented-option">
+                                    <input type="checkbox" id="weekday-toggle-working" checked>
+                                    <span>Work hours (09-17)</span>
+                                </label>
+                                <label class="segmented-option">
+                                    <input type="checkbox" id="weekday-toggle-offhours" checked>
+                                    <span>Off hours</span>
+                                </label>
+                            </div>
+                            <div class="brush-group">
+                                <label for="weekday-hour-start">Hour Range</label>
+                                <div class="brush-inputs">
+                                    <input type="range" id="weekday-hour-start" min="0" max="23" value="0">
+                                    <input type="range" id="weekday-hour-end" min="0" max="23" value="23">
+                                </div>
+                                <div class="brush-labels">
+                                    <span id="weekday-hour-start-label">00:00</span>
+                                    <span>–</span>
+                                    <span id="weekday-hour-end-label">23:00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weekday-filter-note" id="weekday-filter-note"></div>
+                    </div>
+                </div>
+                <div class="analysis-evidence-frame evidence-panel-tier">
+                    <div id="weekday-chart" class="weekday-chart"></div>
+                </div>
             </div>
         </section>
 
-        <section class="card" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday" data-vue-shell-mount="card-shell">
+        <section class="card analytics-story-card" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -685,40 +758,56 @@
                 </div>
             </div>
             <div class="card-content" id="timeofday-trend-content">
-                <div class="timeofday-controls">
-                    <div class="toggle-group">
-                        <span class="toggle-label">Days to Include</span>
-                        <label class="segmented-option">
-                            <input type="checkbox" id="timeofday-toggle-weekdays" checked>
-                            <span>Weekdays</span>
-                        </label>
-                        <label class="segmented-option">
-                            <input type="checkbox" id="timeofday-toggle-weekends" checked>
-                            <span>Weekends</span>
-                        </label>
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Daypart story</p>
+                        <p class="analytics-story-copy">Scan which time bands dominate the conversation, then tighten the focus range to compare specific hours.</p>
                     </div>
-                    <div class="brush-group">
-                        <label for="timeofday-hour-start">Focus Hours</label>
-                        <div class="brush-inputs">
-                            <input type="range" id="timeofday-hour-start" min="0" max="23" value="0">
-                            <input type="range" id="timeofday-hour-end" min="0" max="23" value="23">
-                        </div>
-                        <div class="brush-labels">
-                            <span id="timeofday-hour-start-label">00:00</span>
-                            <span>–</span>
-                            <span id="timeofday-hour-end-label">23:00</span>
+                    <div class="analytics-story-pills" aria-label="Time-of-day reading cues">
+                        <span class="analytics-story-pill">Dayparts first</span>
+                        <span class="analytics-story-pill subtle">Then focus hours</span>
+                    </div>
+                </div>
+                <div class="pattern-story-grid">
+                    <div class="pattern-controls-shell supporting-story-tier">
+                        <div class="timeofday-controls">
+                            <div class="toggle-group">
+                                <span class="toggle-label">Days to Include</span>
+                                <label class="segmented-option">
+                                    <input type="checkbox" id="timeofday-toggle-weekdays" checked>
+                                    <span>Weekdays</span>
+                                </label>
+                                <label class="segmented-option">
+                                    <input type="checkbox" id="timeofday-toggle-weekends" checked>
+                                    <span>Weekends</span>
+                                </label>
+                            </div>
+                            <div class="brush-group">
+                                <label for="timeofday-hour-start">Focus Hours</label>
+                                <div class="brush-inputs">
+                                    <input type="range" id="timeofday-hour-start" min="0" max="23" value="0">
+                                    <input type="range" id="timeofday-hour-end" min="0" max="23" value="23">
+                                </div>
+                                <div class="brush-labels">
+                                    <span id="timeofday-hour-start-label">00:00</span>
+                                    <span>–</span>
+                                    <span id="timeofday-hour-end-label">23:00</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="timeofday-chart" id="timeofday-chart">
-                    <div class="timeofday-sparkline" id="timeofday-sparkline"></div>
-                    <div class="timeofday-band-grid" id="timeofday-bands"></div>
-                    <div class="timeofday-callouts" id="timeofday-callouts"></div>
+                <div class="analysis-evidence-frame evidence-panel-tier">
+                    <div class="timeofday-chart" id="timeofday-chart">
+                        <div class="timeofday-sparkline" id="timeofday-sparkline"></div>
+                        <div class="timeofday-band-grid" id="timeofday-bands"></div>
+                        <div class="timeofday-callouts" id="timeofday-callouts"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="card sentiment" id="sentiment-overview" data-nav-target="sentiment-overview" data-vue-shell-mount="card-shell"
+        <section class="card sentiment analytics-story-card" id="sentiment-overview" data-nav-target="sentiment-overview" data-vue-shell-mount="card-shell"
             data-accent="sentiment">
             <div class="card-header">
                 <div class="card-title-group">
@@ -747,6 +836,16 @@
                 </div>
             </div>
             <div class="card-content" id="sentiment-overview-content">
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Conversation mood</p>
+                        <p class="analytics-story-copy">Treat sentiment as a directional signal: scan the drift first, then compare which members are pulling the average up or down.</p>
+                    </div>
+                    <div class="analytics-story-pills" aria-label="Sentiment reading cues">
+                        <span class="analytics-story-pill">Signal, not verdict</span>
+                        <span class="analytics-story-pill subtle">Inspect contributors</span>
+                    </div>
+                </div>
                 <div class="sentiment-summary" id="sentiment-summary"></div>
                 <div class="sentiment-content">
                     <div class="sentiment-trend sentiment-panel">
