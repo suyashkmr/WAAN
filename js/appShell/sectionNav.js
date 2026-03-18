@@ -41,7 +41,18 @@ export function createSectionNavController({
   let sectionNavViewportListener = null;
   /** @type {string | null} */
   let activeSectionId = null;
+  /** @type {string | null} */
+  let pendingManualSectionId = null;
+  let pendingManualSectionUntil = 0;
   const intersectingSections = new Map();
+
+  function prefersReducedMotion() {
+    const reduceMotionFlag = documentRef?.body?.dataset?.reduceMotion === "true";
+    return Boolean(windowRef) &&
+      ((typeof windowRef?.matchMedia === "function" &&
+        windowRef.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+        reduceMotionFlag);
+  }
 
   /**
    * @param {string | null} targetId
@@ -65,24 +76,30 @@ export function createSectionNavController({
     const activeLink = sectionNavLinks.find(
       link => link.getAttribute("href")?.replace(/^#/, "") === targetId,
     );
-    const reduceMotionFlag =
-      documentRef?.body?.dataset?.reduceMotion === "true";
-    const prefersReducedMotion =
-      Boolean(windowRef) &&
-      ((typeof windowRef?.matchMedia === "function" &&
-        windowRef.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
-        reduceMotionFlag);
     activeLink?.scrollIntoView?.({
       inline: "center",
       block: "nearest",
-      behavior: prefersReducedMotion ? "auto" : "smooth",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
     });
   }
 
   /**
    * @param {string} id
    */
-  function handleSectionNavActivate(id) {
+  function handleSectionNavActivate(id, event = null) {
+    if (event?.preventDefault) event.preventDefault();
+    const nextEntry = sectionNavItems.find(entry => entry.id === id);
+    if (nextEntry?.target?.scrollIntoView) {
+      nextEntry.target.scrollIntoView({
+        block: "start",
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+      });
+    }
+    pendingManualSectionId = id;
+    pendingManualSectionUntil = Date.now() + 800;
+    if (typeof windowRef?.history?.replaceState === "function") {
+      windowRef.history.replaceState(null, "", `#${id}`);
+    }
     setActiveSectionNav(id);
   }
 
@@ -132,8 +149,8 @@ export function createSectionNavController({
                 href: `#${item.id}`,
                 "data-section-id": item.id,
                 key: item.id,
-                onClick: () => handleSectionNavActivate(item.id),
-                onFocus: () => handleSectionNavActivate(item.id),
+                onClick: /** @param {MouseEvent} event */ event => handleSectionNavActivate(item.id, event),
+                onFocus: () => setActiveSectionNav(item.id),
                 onKeydown: /** @param {KeyboardEvent} event */ event => handleSectionNavKeydown(item.id, event),
               },
               item.label,
@@ -218,6 +235,18 @@ export function createSectionNavController({
     };
     const syncActiveSection = () => {
       const nextId = resolveActiveSectionId();
+      if (
+        pendingManualSectionId
+        && Date.now() < pendingManualSectionUntil
+        && nextId
+        && nextId !== pendingManualSectionId
+      ) {
+        setActiveSectionNav(pendingManualSectionId);
+        return;
+      }
+      if (pendingManualSectionId && Date.now() >= pendingManualSectionUntil) {
+        pendingManualSectionId = null;
+      }
       if (nextId) setActiveSectionNav(nextId);
     };
 

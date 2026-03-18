@@ -23,6 +23,7 @@ describe("sectionNav detailed", () => {
     const summary = document.createElement("section");
     summary.id = "summary";
     summary.getBoundingClientRect = () => ({ top: 100 });
+    const summaryScrollSpy = vi.spyOn(summary, "scrollIntoView").mockImplementation(() => {});
     const activity = document.createElement("section");
     activity.id = "activity";
     activity.getBoundingClientRect = () => ({ top: 200 });
@@ -53,10 +54,66 @@ describe("sectionNav detailed", () => {
 
     links[0].click();
     expect(links[0].classList.contains("active")).toBe(true);
+    expect(summaryScrollSpy).toHaveBeenCalledTimes(1);
 
     const focusSpy = vi.spyOn(links[1], "focus").mockImplementation(() => {});
     links[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
     expect(focusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps a manually clicked nav item active until scroll tracking catches up", () => {
+    const container = document.createElement("div");
+    const summary = document.createElement("section");
+    summary.id = "summary";
+    summary.getBoundingClientRect = () => ({ top: 20, bottom: 220 });
+    const activity = document.createElement("section");
+    activity.id = "activity";
+    activity.getBoundingClientRect = () => ({ top: 320, bottom: 620 });
+    const activityScrollSpy = vi.spyOn(activity, "scrollIntoView").mockImplementation(() => {});
+    document.body.append(container, summary, activity);
+
+    let callback;
+    class MockIntersectionObserver {
+      constructor(cb) {
+        callback = cb;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    globalThis.IntersectionObserver = MockIntersectionObserver;
+    window.IntersectionObserver = MockIntersectionObserver;
+
+    const controller = createSectionNavController({
+      containerEl: container,
+      navItemsConfig: [
+        { id: "summary", label: "Summary" },
+        { id: "activity", label: "Activity" },
+      ],
+      windowRef: /** @type {any} */ ({
+        innerHeight: 900,
+        IntersectionObserver: MockIntersectionObserver,
+        matchMedia: () => ({ matches: false }),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        history: { replaceState: vi.fn() },
+      }),
+    });
+
+    controller.buildSectionNav();
+    controller.setupSectionNavTracking();
+
+    callback?.([{ isIntersecting: true, intersectionRatio: 0.9, target: summary }]);
+
+    const links = container.querySelectorAll("a");
+    expect(links[0].classList.contains("active")).toBe(true);
+
+    links[1].dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    expect(activityScrollSpy).toHaveBeenCalledTimes(1);
+    expect(links[1].classList.contains("active")).toBe(true);
+
+    callback?.([{ isIntersecting: true, intersectionRatio: 0.9, target: summary }]);
+    expect(links[1].classList.contains("active")).toBe(true);
+    expect(links[0].classList.contains("active")).toBe(false);
   });
 
   it("selects highest intersection ratio among visible entries", () => {
