@@ -2,8 +2,8 @@
 .search-panel {
     --command-surface-gap: 0.7rem;
     --command-field-gap: 0.4rem;
-    --command-label-color: color-mix(in srgb, var(--muted) 88%, transparent);
-    --command-helper-color: color-mix(in srgb, var(--muted) 80%, transparent);
+    --command-label-color: color-mix(in srgb, var(--text) 52%, var(--muted));
+    --command-helper-color: color-mix(in srgb, var(--text) 62%, var(--muted));
     --command-control-surface: color-mix(in srgb, var(--surface-elevated) 98%, transparent);
     --command-control-surface-active: color-mix(in srgb, var(--bg-raised) 98%, transparent);
 }
@@ -177,11 +177,13 @@
 }
 
 .saved-view-card {
-    border: 1px solid color-mix(in srgb, var(--edge-strong) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--edge-strong));
     border-radius: var(--shape-medium);
     padding: 1rem 1.2rem;
-    background: color-mix(in srgb, var(--surface-elevated) 98%, transparent);
-    box-shadow: var(--shadow-card);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 42%);
+    box-shadow: var(--editorial-card-shadow);
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
@@ -193,7 +195,7 @@
 .saved-view-card:focus-visible {
     transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-    box-shadow: var(--shadow-card-strong);
+    box-shadow: var(--editorial-card-shadow-hover);
 }
 
 .saved-view-card.is-active {
@@ -233,7 +235,7 @@
 .saved-view-card-range {
     margin: 0.2rem 0 0;
     font-size: var(--type-body-sm);
-    color: var(--muted);
+    color: color-mix(in srgb, var(--text) 66%, var(--muted));
 }
 
 .saved-view-card-created {
@@ -285,9 +287,9 @@
 
 .saved-view-stat {
     border-radius: calc(var(--shape-medium) - 2px);
-    border: 1px solid color-mix(in srgb, var(--edge-subtle) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 8%, var(--edge-subtle));
     padding: 0.55rem 0.8rem;
-    background: color-mix(in srgb, var(--bg-raised) 96%, transparent);
+    background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
 }
 
 .saved-view-stat .stat-label {
@@ -376,10 +378,12 @@
 }
 
 .compare-summary {
-    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
     border-radius: 1rem;
     padding: 1.05rem;
-    background: color-mix(in srgb, var(--panel-bg) 86%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 88%, transparent), color-mix(in srgb, var(--card-bg) 96%, transparent)),
+        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 42%);
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 52%, transparent);
 }
 
@@ -406,10 +410,10 @@
 }
 
 .compare-column {
-    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
     border-radius: 0.95rem;
     padding: 0.95rem;
-    background: color-mix(in srgb, var(--surface-elevated) 94%, transparent);
+    background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
     box-shadow: var(--shadow-soft);
 }
 
@@ -644,7 +648,7 @@
 .search-results-summary {
     font-size: var(--type-body-sm);
     line-height: var(--leading-body);
-    color: color-mix(in srgb, var(--text) 80%, transparent);
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
     max-width: 62ch;
     text-wrap: pretty;
     margin-top: 0.12rem;
@@ -731,13 +735,16 @@
 }
 
 .search-insight-card {
-    border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
     border-radius: 1rem;
     padding: 0.95rem;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 88%, transparent), color-mix(in srgb, var(--card-bg) 96%, transparent));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 88%, transparent), color-mix(in srgb, var(--card-bg) 96%, transparent)),
+        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 42%);
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
+    box-shadow: var(--shadow-soft);
 }
 
 .search-insight-card h4 {

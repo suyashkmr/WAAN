@@ -193,6 +193,7 @@
     --bg-room: var(--card-bg);
     --bg-raised: var(--surface-elevated);
     --bg-glass: var(--glass-bg);
+    --panel-bg: color-mix(in srgb, var(--surface-elevated-strong) 92%, var(--bg));
     --text-primary: var(--text);
     --text-secondary: color-mix(in srgb, var(--text) 78%, var(--muted));
     --text-muted: var(--muted);
@@ -206,6 +207,7 @@
     --signal-hot: color-mix(in srgb, var(--md-tertiary) 88%, #ffffff);
     --accent-primary: var(--accent);
     --accent-secondary: color-mix(in srgb, var(--md-secondary) 66%, var(--accent));
+    --accent-strong: color-mix(in srgb, var(--accent) 88%, #fff3da);
     --accent-success: var(--positive);
     --accent-warning: var(--warning);
     --accent-danger: var(--negative);
@@ -238,6 +240,21 @@
     --shape-medium: var(--p-border-radius-md, 16px);
     --shape-large: var(--p-border-radius-lg, 28px);
     --shape-full: 999px;
+    --shell-ridge-primary: color-mix(in srgb, var(--accent) 14%, transparent);
+    --shell-ridge-secondary: color-mix(in srgb, var(--md-secondary) 14%, transparent);
+    --shell-ridge-quiet: color-mix(in srgb, var(--edge-specular) 38%, transparent);
+    --nav-shell-border: color-mix(in srgb, var(--accent) 16%, var(--edge-strong));
+    --nav-shell-shadow: 0 16px 38px rgb(var(--shadow-ink-rgb) / 0.28);
+    --nav-item-active-fill: linear-gradient(135deg, color-mix(in srgb, var(--accent) 26%, transparent), color-mix(in srgb, var(--md-secondary) 20%, transparent));
+    --nav-item-hover-fill: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--md-secondary) 12%, transparent));
+    --workspace-shell-border: color-mix(in srgb, var(--accent) 12%, var(--edge-strong));
+    --workspace-shell-shadow: 0 20px 48px rgb(var(--shadow-ink-rgb) / 0.3);
+    --workspace-chip-bg: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--md-secondary) 12%, transparent));
+    --workspace-chip-border: color-mix(in srgb, var(--accent) 24%, transparent);
+    --workspace-chip-text: color-mix(in srgb, var(--accent) 72%, var(--text));
+    --editorial-card-border: color-mix(in srgb, var(--edge-subtle) 92%, transparent);
+    --editorial-card-shadow: var(--shadow-shell);
+    --editorial-card-shadow-hover: var(--shadow-shell-hover);
     --control-height-md: 2.75rem;
     --control-height-sm: 2.2rem;
     --control-radius-md: 0.82rem;
@@ -543,6 +560,8 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
         --glass-bg: rgba(255, 255, 255, 0.75);
         --glass-border: rgba(15, 23, 42, 0.12);
         --glass-blur: 18px;
+        --panel-bg: color-mix(in srgb, #ffffff 90%, var(--bg));
+        --accent-strong: color-mix(in srgb, var(--accent) 78%, #fffdf7);
 
         --positive: var(--p-app-success-color, #2e7d32);
         --positive-soft: rgba(46, 125, 50, 0.12);
@@ -556,6 +575,21 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
         --shape-medium: var(--p-border-radius-md, 16px);
         --shape-large: var(--p-border-radius-lg, 28px);
         --shape-full: 999px;
+        --shell-ridge-primary: color-mix(in srgb, var(--accent) 10%, transparent);
+        --shell-ridge-secondary: color-mix(in srgb, var(--md-secondary) 10%, transparent);
+        --shell-ridge-quiet: color-mix(in srgb, #ffffff 72%, transparent);
+        --nav-shell-border: color-mix(in srgb, var(--accent) 14%, var(--edge-strong));
+        --nav-shell-shadow: 0 16px 34px rgb(var(--shadow-ink-rgb) / 0.14);
+        --nav-item-active-fill: linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--md-secondary) 12%, transparent));
+        --nav-item-hover-fill: linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--md-secondary) 8%, transparent));
+        --workspace-shell-border: color-mix(in srgb, var(--accent) 12%, var(--edge-strong));
+        --workspace-shell-shadow: 0 20px 42px rgb(var(--shadow-ink-rgb) / 0.16);
+        --workspace-chip-bg: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--md-secondary) 8%, transparent));
+        --workspace-chip-border: color-mix(in srgb, var(--accent) 18%, transparent);
+        --workspace-chip-text: color-mix(in srgb, var(--accent) 64%, var(--text));
+        --editorial-card-border: color-mix(in srgb, var(--edge-subtle) 96%, transparent);
+        --editorial-card-shadow: var(--shadow-shell);
+        --editorial-card-shadow-hover: var(--shadow-shell-hover);
 
         --calendar-level-0: rgba(84, 94, 114, 0.12);
         --calendar-level-1: rgba(156, 115, 50, 0.2);
@@ -670,6 +704,23 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --warning: var(--p-app-warning-color, #f4c263);
     --warning-soft: color-mix(in srgb, var(--warning) 24%, transparent);
     --neutral-tone: var(--p-app-neutral-color, #9aa2c4);
+    --panel-bg: color-mix(in srgb, var(--surface-elevated-strong) 94%, var(--bg));
+    --accent-strong: color-mix(in srgb, var(--accent) 90%, #fff1d4);
+    --shell-ridge-primary: color-mix(in srgb, var(--accent) 16%, transparent);
+    --shell-ridge-secondary: color-mix(in srgb, var(--md-secondary) 16%, transparent);
+    --shell-ridge-quiet: color-mix(in srgb, #f0f7ff 28%, transparent);
+    --nav-shell-border: color-mix(in srgb, var(--accent) 20%, var(--edge-strong));
+    --nav-shell-shadow: 0 18px 42px rgb(var(--shadow-ink-rgb) / 0.32);
+    --nav-item-active-fill: linear-gradient(135deg, color-mix(in srgb, var(--accent) 28%, transparent), color-mix(in srgb, var(--md-secondary) 18%, transparent));
+    --nav-item-hover-fill: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--md-secondary) 12%, transparent));
+    --workspace-shell-border: color-mix(in srgb, var(--accent) 16%, var(--edge-strong));
+    --workspace-shell-shadow: 0 22px 52px rgb(var(--shadow-ink-rgb) / 0.36);
+    --workspace-chip-bg: linear-gradient(135deg, color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--md-secondary) 14%, transparent));
+    --workspace-chip-border: color-mix(in srgb, var(--accent) 28%, transparent);
+    --workspace-chip-text: color-mix(in srgb, var(--accent) 78%, var(--text));
+    --editorial-card-border: color-mix(in srgb, var(--edge-subtle) 90%, transparent);
+    --editorial-card-shadow: var(--shadow-shell);
+    --editorial-card-shadow-hover: var(--shadow-shell-hover);
 
     --calendar-level-0: rgba(145, 156, 189, 0.12);
     --calendar-level-1: rgba(214, 179, 110, 0.2);

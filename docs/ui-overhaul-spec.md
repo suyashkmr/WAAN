@@ -4,6 +4,17 @@
 
 Reframe WAAN from a utility dashboard into a conversation command center that feels social, alive, and action-oriented.
 
+## Successor Direction: Iterative Visual Refresh
+
+The next redesign wave is intentionally iterative. WAAN keeps the current workspace shell, Vue/PrimeVue ownership model, routing IDs, and connect-to-analysis workflow, but the visual system moves toward a more editorial, premium product identity:
+
+- stronger shell and card hierarchy
+- sharper navigation and workspace chrome
+- calmer but more intentional guidance surfaces
+- desktop-first refinement before tablet/mobile parity cleanup
+
+This is a visual-system-led continuation, not a restart of layout architecture or runtime ownership.
+
 ## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.

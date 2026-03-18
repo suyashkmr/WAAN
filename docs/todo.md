@@ -19,6 +19,29 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - [x] All previously tracked implementation tasks are complete.
 - [x] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
 
+## Next Wave: Iterative Visual Refresh
+
+- [ ] Phase 24: Visual direction lock and token refresh.
+  - [x] Establish the successor direction as an iterative visual refresh rather than a shell rearchitecture.
+  - [x] Refresh the shared token/chrome layer for stronger surface hierarchy, sharper typography contrast, and more deliberate shell/navigation identity (`styles.base.css`, `styles.components.css`, `styles/components/navigation.css`).
+  - [ ] Verify light/dark/high-contrast parity and record any follow-up token gaps.
+- [ ] Phase 25: Shell and navigation visual pass.
+  - [x] Tighten the top shell presentation for the section nav, hero shell, workspace header, relay banner, and workspace controls without changing section IDs or runtime contracts.
+  - [x] Improve navigation active-state clarity, overflow presentation, sticky-shell separation, and shell/workspace chrome cohesion (`styles/components/navigation.css`, `styles.components.css`, `styles/components/relay.css`).
+  - [ ] Validate desktop-first polish at 1440 and 1024 widths, then capture responsive follow-up at 768 and 390.
+- [ ] Phase 26: Primary workspace and insight surface refresh.
+  - [x] Restyle page controls, dataset empty state, overview framing, and primary analytics card shells so action and analysis surfaces read as one system (`styles.components.css`, `styles/components/analytics.css`).
+  - [x] Rebalance panel density for clearer headers, calmer helper text, and less visual competition between neighboring cards.
+  - [ ] Re-run the relevant shell/page-control/analytics regression suites after the visual pass settles.
+- [ ] Phase 27: Secondary flow and guidance refresh.
+  - [x] Refresh search, saved views, FAQ, relay log drawer, onboarding, and first-run guidance so they match the new shell language while preserving the Phase 23 workflow model (`styles/components/search-saved.css`, `styles/components/relay.css`, `styles.components.css`).
+  - [x] Reduce utility-surface drift by reusing the same editorial card, control, and accent treatment across later-stage workflows.
+  - [ ] Complete end-of-wave validation:
+    - [ ] `npm run test:visual`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npm run ci:verify`
+    - [ ] Manual desktop review at 1440 and 1024, then responsive follow-up at 768 and 390
+
 ## Next Wave: Dark Depth + Background Elegance
 
 - [x] Phase 6: Dark Mode Depth Pass

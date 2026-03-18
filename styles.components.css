@@ -237,7 +237,10 @@
 
 .hero-shell {
     padding: var(--hero-shell-pad-top) var(--hero-shell-pad-x) var(--hero-shell-pad-bottom);
-    background: transparent;
+    background:
+        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 42%),
+        radial-gradient(circle at 82% 18%, var(--shell-ridge-secondary), transparent 32%),
+        linear-gradient(180deg, color-mix(in srgb, var(--bg-canvas) 38%, transparent), transparent 78%);
     border: 0;
     border-radius: 0;
     box-shadow: none;
@@ -262,9 +265,11 @@
 .hero-blurb {
     border-radius: calc(var(--shape-large) - 4px);
     padding: var(--hero-blurb-pad);
-    border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
-    background: color-mix(in srgb, var(--surface-elevated-strong) 100%, transparent);
-    box-shadow: var(--shadow-card);
+    border: 1px solid var(--editorial-card-border);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated-strong) 100%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
+        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 48%);
+    box-shadow: var(--editorial-card-shadow);
     display: flex;
     flex-direction: column;
     gap: var(--hero-blurb-gap);
@@ -366,7 +371,7 @@
 }
 
 .subtitle {
-    color: var(--muted);
+    color: color-mix(in srgb, var(--text) 74%, var(--muted));
     font-size: var(--type-body-lg);
     line-height: var(--leading-relaxed);
     margin-top: var(--space-2);
@@ -446,9 +451,9 @@
 
 .hero-status-copy {
     margin: 0;
-    color: var(--muted);
-    font-size: 0.78rem;
-    line-height: 1.4;
+    color: color-mix(in srgb, var(--text) 70%, var(--muted));
+    font-size: 0.82rem;
+    line-height: 1.48;
 }
 
 .hero-status-meta {
@@ -773,9 +778,11 @@
     margin-bottom: 0.35rem;
     padding: 0.9rem 1rem;
     border-radius: calc(var(--shape-medium) + 2px);
-    background: color-mix(in srgb, var(--surface-elevated) 100%, transparent);
-    border: 1px solid color-mix(in srgb, var(--edge-subtle) 100%, transparent);
-    box-shadow: var(--shadow-soft);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 100%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 42%);
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--edge-subtle));
+    box-shadow: var(--editorial-card-shadow);
     display: grid;
     grid-template-columns: 1fr;
     column-gap: 0;
@@ -797,7 +804,7 @@
     align-content: start;
     width: 100%;
     padding-bottom: 0.65rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
 }
 
 .actions-toolbar .toolbar-group.secondary {
@@ -849,7 +856,8 @@
     padding: 0.12rem 0.2rem 0.12rem 0.45rem;
     border-radius: var(--control-radius-pill);
     background: color-mix(in srgb, var(--surface-elevated-strong) 100%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 18%, transparent);
 }
 
 .theme-toggle > span {
@@ -1133,10 +1141,12 @@ main > .full-span,
     gap: 1rem;
     padding: 1rem;
     border-radius: calc(var(--shape-large) + 2px);
-    border: 1px solid color-mix(in srgb, var(--edge-strong) 80%, transparent);
+    border: 1px solid var(--workspace-shell-border);
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 100%, transparent) 0%, color-mix(in srgb, var(--bg-raised) 96%, transparent) 100%);
-    box-shadow: var(--shadow-card);
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 100%, transparent) 0%, color-mix(in srgb, var(--panel-bg) 96%, transparent) 100%),
+        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 38%),
+        radial-gradient(circle at 88% 0%, var(--shell-ridge-secondary), transparent 28%);
+    box-shadow: var(--workspace-shell-shadow);
 }
 
 .workspace-stage-header {
@@ -1150,15 +1160,15 @@ main > .full-span,
 .workspace-stage-header h2,
 .workspace-overview-header h2 {
     margin: 0.25rem 0 0;
-    font-size: clamp(1.2rem, 1.8vw, 1.5rem);
-    line-height: 1.05;
-    letter-spacing: var(--tracking-tight);
+    font-size: clamp(1.28rem, 1.9vw, 1.62rem);
+    line-height: 1;
+    letter-spacing: calc(var(--tracking-tight) - 0.01em);
 }
 
 .workspace-stage-copy {
     margin: 0.4rem 0 0;
     max-width: 58ch;
-    color: var(--text-secondary);
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
     font-size: var(--type-body-md);
     line-height: var(--leading-relaxed);
 }
@@ -1176,17 +1186,18 @@ main > .full-span,
     min-height: var(--control-height-sm);
     padding: 0 0.85rem;
     border-radius: var(--shape-full);
-    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    color: color-mix(in srgb, var(--accent) 78%, var(--text));
+    border: 1px solid var(--workspace-chip-border);
+    background: var(--workspace-chip-bg);
+    color: var(--workspace-chip-text);
     font-size: var(--type-label-sm);
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 16%, transparent);
 }
 
 .workspace-stage-chip.subtle {
-    border-color: color-mix(in srgb, var(--edge-strong) 70%, transparent);
-    background: color-mix(in srgb, var(--surface-elevated-strong) 100%, transparent);
+    border-color: color-mix(in srgb, var(--edge-strong) 74%, transparent);
+    background: color-mix(in srgb, var(--surface-elevated-strong) 96%, transparent);
     color: var(--text-secondary);
 }
 
@@ -1273,11 +1284,12 @@ main > :is(.card, .app-panel-shell).half-span {
     border-radius: calc(var(--shape-medium) + 6px);
     padding: var(--card-padding);
     margin-bottom: var(--layout-main-gap);
-    border: 1px solid color-mix(in srgb, var(--edge-subtle) 88%, transparent);
-    box-shadow: var(--shadow-shell);
+    border: 1px solid var(--editorial-card-border);
+    box-shadow: var(--editorial-card-shadow);
     background-image:
         linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 20%, transparent) 0%, transparent 46%),
-        linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%);
+        linear-gradient(164deg, color-mix(in srgb, var(--surface-tint) 26%, transparent) 0%, transparent 62%),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 9%, transparent), transparent 42%);
     background-blend-mode: lighten;
     transition:
         transform var(--motion-duration-medium) var(--motion-ease-out),
@@ -2692,11 +2704,13 @@ main.is-loading .card-content {
     display: grid;
     gap: 0.75rem;
     padding: 1rem 1.2rem;
-    background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 95%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 40%);
     backdrop-filter: blur(18px);
-    border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
     border-radius: calc(var(--shape-medium) + 6px);
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--editorial-card-shadow);
 }
 
 
@@ -2831,16 +2845,16 @@ main.is-loading .card-content {
 
 .page-controls .control span {
     letter-spacing: 0.08em;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 600;
-    color: color-mix(in srgb, var(--muted) 88%, transparent);
+    color: color-mix(in srgb, var(--text) 52%, var(--muted));
 }
 
 .page-controls :is(select, .waan-prime-select-host, .p-select, .p-datepicker) {
     appearance: none;
-    border: 1px solid var(--border);
-    border-radius: 0.68rem;
-    background: var(--card-bg);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border-radius: calc(var(--control-radius-md) - 0.04rem);
+    background: color-mix(in srgb, var(--bg-raised) 90%, transparent);
     color: var(--text);
     font-size: 0.9rem;
     line-height: 1.2;
@@ -2859,7 +2873,7 @@ main.is-loading .card-content {
 
 .page-controls :is(select, .waan-prime-select-host, .p-select, .p-datepicker):focus-within,
 .page-controls :is(select, .waan-prime-select-host, .p-select, .p-datepicker):focus {
-    outline: 2px solid var(--accent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 64%, transparent);
     outline-offset: 2px;
 }
 
@@ -3022,8 +3036,10 @@ main.is-loading .card-content {
     align-items: center;
     gap: 1.25rem;
     padding: 1.25rem 1.5rem;
-    background: color-mix(in srgb, var(--glass-bg) 92%, transparent);
-    border: 1px solid var(--glass-border);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--glass-bg) 92%, transparent), color-mix(in srgb, var(--panel-bg) 90%, transparent)),
+        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 44%);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--glass-border));
     border-radius: var(--shape-large);
     box-shadow: var(--dataset-empty-shadow);
     backdrop-filter: blur(var(--glass-blur));
@@ -3035,13 +3051,14 @@ main.is-loading .card-content {
 
 .dataset-empty-copy h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--text);
+    line-height: 1.02;
 }
 
 .dataset-empty-copy p {
     margin: 0.35rem 0 0;
-    color: var(--muted);
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
     max-width: 60ch;
 }
 
@@ -3066,8 +3083,8 @@ main.is-loading .card-content {
     gap: 0.5rem;
     padding: 0.4rem 0.55rem;
     border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--glass-border) 75%, transparent);
-    background: color-mix(in srgb, var(--surface-elevated) 52%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--glass-border));
+    background: color-mix(in srgb, var(--surface-elevated) 62%, transparent);
     color: var(--muted);
 }
 
@@ -4370,10 +4387,12 @@ body[data-compact="true"] .table-container.scrollable {
 
 .onboarding-panel {
     width: min(420px, 90vw);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 96%, transparent), color-mix(in srgb, var(--card-bg) 98%, transparent));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 96%, transparent), color-mix(in srgb, var(--card-bg) 98%, transparent)),
+        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 46%);
     border-radius: 1.35rem;
     padding: 1.85rem;
-    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
     box-shadow: var(--modal-panel-shadow);
     display: flex;
     flex-direction: column;
@@ -4422,9 +4441,11 @@ body[data-compact="true"] .table-container.scrollable {
 .faq-list li {
     margin: 0;
     padding: 1.05rem 1.15rem;
-    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
     border-radius: 1rem;
-    background: color-mix(in srgb, var(--panel-bg) 88%, transparent);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 90%, transparent), color-mix(in srgb, var(--card-bg) 96%, transparent)),
+        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 44%);
     box-shadow: var(--faq-card-shadow);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

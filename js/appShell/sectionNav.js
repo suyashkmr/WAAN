@@ -44,6 +44,10 @@ export function createSectionNavController({
   /** @type {string | null} */
   let pendingManualSectionId = null;
   let pendingManualSectionUntil = 0;
+  let sectionJumpPendingCount = 0;
+  /** @type {string | null} */
+  let sectionJumpRestoreBehavior = null;
+  let hasRevealedInitialActiveLink = false;
   const intersectingSections = new Map();
 
   function prefersReducedMotion() {
@@ -55,9 +59,44 @@ export function createSectionNavController({
   }
 
   /**
-   * @param {string | null} targetId
+   * Force deterministic section jumps for nav clicks instead of layering another smooth
+   * animation on top of any in-flight page scroll.
+   *
+   * @param {HTMLElement} target
    */
-  function setActiveSectionNav(targetId) {
+  function jumpToSection(target) {
+    const rootEl = documentRef?.documentElement ?? null;
+    if (rootEl?.style) {
+      if (sectionJumpPendingCount === 0) {
+        sectionJumpRestoreBehavior = rootEl.style.scrollBehavior ?? "";
+      }
+      sectionJumpPendingCount += 1;
+      rootEl.style.scrollBehavior = "auto";
+    }
+    target.scrollIntoView({
+      block: "start",
+      behavior: "auto",
+    });
+    if (rootEl?.style) {
+      const restore = () => {
+        sectionJumpPendingCount = Math.max(0, sectionJumpPendingCount - 1);
+        if (sectionJumpPendingCount > 0) return;
+        rootEl.style.scrollBehavior = sectionJumpRestoreBehavior ?? "";
+        sectionJumpRestoreBehavior = null;
+      };
+      if (typeof windowRef?.requestAnimationFrame === "function") {
+        windowRef.requestAnimationFrame(restore);
+      } else {
+        restore();
+      }
+    }
+  }
+
+  /**
+   * @param {string | null} targetId
+   * @param {{ scrollActiveLink?: boolean }} [options]
+   */
+  function setActiveSectionNav(targetId, { scrollActiveLink = true } = {}) {
     if (!targetId || activeSectionId === targetId) return;
     activeSectionId = targetId;
     if (containerEl) {
@@ -73,6 +112,7 @@ export function createSectionNavController({
         link.removeAttribute("aria-current");
       }
     });
+    if (!scrollActiveLink) return;
     const activeLink = sectionNavLinks.find(
       link => link.getAttribute("href")?.replace(/^#/, "") === targetId,
     );
@@ -85,15 +125,13 @@ export function createSectionNavController({
 
   /**
    * @param {string} id
+   * @param {{ preventDefault?: () => void } | null | undefined} [event]
    */
   function handleSectionNavActivate(id, event = null) {
     if (event?.preventDefault) event.preventDefault();
     const nextEntry = sectionNavItems.find(entry => entry.id === id);
-    if (nextEntry?.target?.scrollIntoView) {
-      nextEntry.target.scrollIntoView({
-        block: "start",
-        behavior: prefersReducedMotion() ? "auto" : "smooth",
-      });
+    if (nextEntry?.target) {
+      jumpToSection(nextEntry.target);
     }
     pendingManualSectionId = id;
     pendingManualSectionUntil = Date.now() + 800;
@@ -101,6 +139,17 @@ export function createSectionNavController({
       windowRef.history.replaceState(null, "", `#${id}`);
     }
     setActiveSectionNav(id);
+  }
+
+  /**
+   * @param {string} id
+   * @param {MouseEvent} event
+   */
+  function handleSectionNavClick(id, event) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    handleSectionNavActivate(id, event);
   }
 
   /**
@@ -149,8 +198,7 @@ export function createSectionNavController({
                 href: `#${item.id}`,
                 "data-section-id": item.id,
                 key: item.id,
-                onClick: /** @param {MouseEvent} event */ event => handleSectionNavActivate(item.id, event),
-                onFocus: () => setActiveSectionNav(item.id),
+                onClick: /** @param {MouseEvent} event */ event => handleSectionNavClick(item.id, event),
                 onKeydown: /** @param {KeyboardEvent} event */ event => handleSectionNavKeydown(item.id, event),
               },
               item.label,
@@ -241,13 +289,18 @@ export function createSectionNavController({
         && nextId
         && nextId !== pendingManualSectionId
       ) {
-        setActiveSectionNav(pendingManualSectionId);
+        setActiveSectionNav(pendingManualSectionId, { scrollActiveLink: false });
         return;
       }
       if (pendingManualSectionId && Date.now() >= pendingManualSectionUntil) {
         pendingManualSectionId = null;
       }
-      if (nextId) setActiveSectionNav(nextId);
+      if (!nextId) return;
+      const shouldRevealActiveLink = !hasRevealedInitialActiveLink;
+      setActiveSectionNav(nextId, { scrollActiveLink: shouldRevealActiveLink });
+      if (shouldRevealActiveLink) {
+        hasRevealedInitialActiveLink = true;
+      }
     };
 
     if (!navItems.length) return;
