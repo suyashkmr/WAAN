@@ -26,6 +26,13 @@ The active implementation wave tightens the shell around the top-of-page experie
 
 This pass is intentionally presentation-led. Existing section order, bridge/runtime contracts, and workflow hooks remain unchanged.
 
+Closeout status as of 2026-03-19:
+
+- manual breakpoint review completed at 1440, 1024, 768, and 390
+- hero, sticky nav, workspace stage, relay/banner controls, and first-lane analysis cards now share one stabilized editorial shell language
+- section-nav behavior guarantees remain intact, including modified-click preservation, keyboard focus behavior, deep-link active-pill reveal, and non-blocking mobile scroll
+- acceptance revalidated with `npm run test:visual`, `npm run test:accessibility-smoke`, and full `npm run ci:verify`
+
 ## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.

@@ -95,7 +95,7 @@
     box-shadow: none;
     flex: 0 0 auto;
     scroll-snap-align: start;
-    background: var(--nav-item-idle-fill);
+    background: color-mix(in srgb, var(--nav-item-idle-fill) 88%, transparent);
     position: relative;
     z-index: 1;
 }
@@ -150,6 +150,7 @@
     .section-nav::after {
         width: calc(var(--section-nav-fade-width) * 0.85);
     }
+
 }
 
 @media (max-width: 900px) {
@@ -171,4 +172,5 @@
     .section-nav::after {
         border-radius: 0;
     }
+
 }

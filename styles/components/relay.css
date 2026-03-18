@@ -89,7 +89,7 @@
     max-width: var(--layout-content-max-width);
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: var(--relay-banner-gap);
+    gap: calc(var(--relay-banner-gap) - 0.15rem);
     align-items: center;
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--workspace-shell-raised) 100%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
@@ -226,6 +226,7 @@
     margin: 0;
     color: color-mix(in srgb, var(--text) 76%, var(--muted));
     font-size: var(--type-body-sm);
+    line-height: 1.5;
 }
 
 .relay-banner-actions {
@@ -244,6 +245,8 @@
     .relay-status-banner {
         grid-template-columns: 1fr;
         text-align: left;
+        gap: 0.82rem;
+        padding: 1rem 1rem 1.05rem;
     }
 
     .relay-banner-actions {
