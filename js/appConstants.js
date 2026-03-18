@@ -1,11 +1,10 @@
 export const SECTION_NAV_ITEMS = [
   { id: "hero-panel", label: "Home" },
-  { id: "relay-status-banner", label: "Relay Status" },
-  { id: "actions-toolbar", label: "Actions" },
-  { id: "summary", label: "Overview" },
+  { id: "workspace-stage", label: "Workspace" },
+  { id: "workspace-overview", label: "Overview" },
   { id: "insight-highlights", label: "Highlights" },
   { id: "participants", label: "Participants" },
-  { id: "hourly-activity", label: "Hourly Activity" },
+  { id: "hourly-activity", label: "Rhythm" },
   { id: "daily-activity", label: "Day by Day" },
   { id: "weekly-trend", label: "Week by Week" },
   { id: "weekday-trend", label: "Day of Week" },
@@ -14,7 +13,7 @@ export const SECTION_NAV_ITEMS = [
   { id: "message-types", label: "Message Mix" },
   { id: "polls-card", label: "Polls" },
   { id: "saved-views-card", label: "Saved Views" },
-  { id: "search-panel", label: "Search Messages" },
+  { id: "search-panel", label: "Search" },
   { id: "faq-card", label: "FAQ" },
 ];
 

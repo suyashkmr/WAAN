@@ -1065,6 +1065,49 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
       - [x] `npm run test:accessibility-smoke`
   - [x] Acceptance: the largest app-shell/bridge integration suites now share explicit test harness helpers for runtime/bootstrap setup, with equivalent coverage and lower maintenance duplication.
 
+- [x] Phase 19 (3-5 days): Product UI overhaul.
+  - [x] Reset the shared visual system around a calmer editorial product language.
+    - [x] Reworked the shared token foundation toward a quieter neutral-first dark palette with simpler elevation, tighter typography roles, and reduced ambient/glass treatment (`styles.base.css`).
+    - [x] Simplified shell chrome, hero presentation, toolbar framing, and dark-surface ghost controls so the product reads as one interface instead of a stack of glossy widgets (`styles.components.css`, `styles/components/navigation.css`).
+  - [x] Normalize relay, search, saved-view, and analytics surfaces under one calmer panel system.
+    - [x] Relay banner/onboarding surfaces now use flatter elevated panels, quieter active/complete states, and less ornamental emphasis (`styles/components/relay.css`).
+    - [x] Search and saved-view command surfaces now use the same elevated field treatment and calmer card states, while analytics cards and guided insights were de-glossed to rely on hierarchy instead of effects (`styles/components/search-saved.css`, `styles/components/analytics.css`).
+  - [x] Rewrite high-visibility product copy for shorter, more consistent guidance.
+    - [x] Updated shell, relay, export, onboarding, and empty-state markup to use a more direct product voice and reduced repeated relay instructions (`index.html`, `js/vue/shellPrimitiveViews.js`, `js/vue/shellRelayActionViews.js`).
+    - [x] Aligned runtime status, search, and saved-view copy with the same shorter phrasing so live states no longer drift from the default shell language (`js/appShell/dataStatus.js`, `js/relayControls/statusView.js`, `js/relayControls/statusApply.js`, `js/relayControls/primaryAction.js`, `js/relayControls/firstRunSetup.js`, `js/search/resultsUi.js`, `js/search/renderUtils.js`, `js/savedViewsUi.js`, `js/vue/heroStatusRenderer.js`, `js/appShell/dataStatusHeroState.js`).
+  - [x] Refresh visual baselines and re-run release gates with explicit snapshot notes.
+    - [x] Intentional snapshot updates were limited to the dashboard visual baselines after the Phase 19 shell/relay/search/analytics redesign (`tests/visual/dashboard.visual.spec.js-snapshots/*`).
+    - [x] Verified on 2026-03-12:
+      - [x] `npm test -- tests/savedViews.test.js tests/relayControls.test.js tests/eventBindingsDetailed.test.js tests/vueFullShellInteractions.test.js`
+      - [x] `npm run test:visual:update`
+      - [x] `npm run test:visual`
+      - [x] `npm run test:accessibility-smoke`
+      - [x] `npm run ci:verify`
+  - [x] Acceptance: WAAN now presents a coherent PrimeVue-owned product UI with stronger hierarchy, calmer surfaces, more consistent typography, and less repetitive operational copy across desktop and mobile layouts.
+
+- [x] Phases 20-23 (multi-phase): Complete UI + UX overhaul continuation.
+  - [x] Phase 20: Shell architecture and core surface redesign.
+    - [x] Rebuilt the top-level dashboard composition into an explicit workspace shell with a primary insight lane and a secondary utility lane, while preserving the existing behavior IDs and mounts (`index.html`, `styles.components.css`).
+    - [x] Moved relay readiness, action toolbar, page controls, dataset-empty setup guidance, and snackbar feedback into one `workspace-stage` so the current next step stays visible in one place instead of being split across distant cards (`index.html`, `styles.components.css`).
+    - [x] Added shared workspace overview framing and updated mobile collapse behavior so the shell reads as app identity -> workspace -> insights -> utilities across desktop, tablet, and mobile breakpoints (`index.html`, `styles.components.css`).
+  - [x] Phase 21: Secondary surface completion and interaction consistency.
+    - [x] Tightened participant controls, quick filters, summary cards, FAQ, onboarding panel, search insights, compare summaries, results list containers, relay log drawer, and QR treatment so these surfaces now follow the same calmer panel and control density contract (`styles.components.css`, `styles/components/search-saved.css`, `styles/components/relay.css`).
+    - [x] Reduced utility-fragment presentation by replacing the remaining boxed-admin styling with the same elevated editorial system used by the main shell and analytics surfaces (`styles.components.css`, `styles/components/search-saved.css`, `styles/components/relay.css`).
+  - [x] Phase 22: Primary workflow UX overhaul.
+    - [x] Re-centered the main journey around one visible workspace flow: start relay -> link phone -> load chat -> inspect analysis, with the dataset empty state, first-run actions, onboarding copy, relay banner, and hero copy aligned to that progression (`index.html`, `js/appShell/dataStatus.js`, `js/relayControls/statusView.js`, `js/relayControls/statusApply.js`, `js/relayControls/firstRunSetup.js`).
+    - [x] Preserved continuity for focus/action routing while simplifying the instructional language so the next action is stated once in the right place instead of repeated across hero, banner, onboarding, and empty states (`js/appShell/dataStatusHeroState.js`, `js/vue/heroStatusRenderer.js`, `js/vue/shellPrimitiveViews.js`, `js/vue/shellRelayActionViews.js`).
+  - [x] Phase 23: Advanced workflow UX and product guidance.
+    - [x] Tightened search, saved views, FAQ, and relay guidance so overview -> investigate -> save/compare -> export reads as one connected analysis workflow with less status noise and fewer duplicated explanations (`index.html`, `js/search/resultsUi.js`, `js/search/renderUtils.js`, `js/savedViewsUi.js`, `js/relayControls/primaryAction.js`, `js/relayControls/actions.js`).
+    - [x] Refreshed the dashboard visual fixtures to match the new runtime wording and shell hierarchy, including the relay-state scenarios used as the main visual acceptance reference (`tests/visual/dashboard.visual.spec.js`, `tests/visual/dashboard.visual.spec.js-snapshots/*`).
+  - [x] Re-run the visual, accessibility, and release gates for the full overhaul continuation.
+    - [x] Intentional snapshot updates were limited to the dashboard visual baselines after the Phase 20-23 shell and workflow changes (`tests/visual/dashboard.visual.spec.js-snapshots/*`).
+    - [x] Verified on 2026-03-12:
+      - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+      - [x] `npm run test:visual`
+      - [x] `npm run test:accessibility-smoke`
+      - [x] `npm run ci:verify`
+  - [x] Acceptance: WAAN now reads as one professional analysis workspace with a deliberate shell hierarchy, calmer secondary surfaces, a more coherent connect-to-analysis workflow, and clearer connected guidance across desktop and mobile.
+
 ## Historical Execution Model
 
 - Historical planning note only:

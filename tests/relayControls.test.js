@@ -189,7 +189,7 @@ describe("relayControls", () => {
 
     expect(result).toBeNull();
     expect(helpers.updateStatus).toHaveBeenCalledWith(
-      "WAAN Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
+      "WAAN Relay is offline. Start the desktop relay to load chats.",
       "warning",
     );
     expect(helpers.setRemoteChatList).toHaveBeenCalledWith([]);
@@ -361,7 +361,7 @@ describe("relayControls", () => {
     expect(elements.firstRunSetupSteps[0].dataset.state).toBe("complete");
     expect(elements.firstRunSetupSteps[1].dataset.state).toBe("complete");
     expect(elements.firstRunSetupSteps[2].dataset.state).toBe("active");
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose chat");
   });
 
   it("uses shell bridge page-control targets for first-run chat selection when startup chat ref is missing", async () => {
@@ -411,7 +411,7 @@ describe("relayControls", () => {
     await controller.refreshRelayStatus({ silent: true });
     controller.handleFirstRunPrimaryAction();
 
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose Loaded Chat");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose chat");
     expect(scrollPageControl).toHaveBeenCalledWith("chat");
     expect(focusPageControl).toHaveBeenCalledWith("chat");
   });
@@ -889,7 +889,7 @@ describe("relayControls", () => {
     expect(helpers.setDashboardLoadingState).toHaveBeenCalledWith(true);
     expect(helpers.setDataAvailabilityState).toHaveBeenCalledWith(false);
     expect(helpers.updateStatus).toHaveBeenCalledWith(
-      "WAAN Relay is offline. Launch the desktop relay and press Connect to enable live loading.",
+      "WAAN Relay is offline. Start the desktop relay to load chats.",
       "warning",
     );
     errorSpy.mockRestore();

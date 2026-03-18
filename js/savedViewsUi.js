@@ -94,14 +94,14 @@ export function createSavedViewsUiController({
     registerPanelActionHandlers(searchSavedBridge);
     if (!list.length) {
       const tone = dataAvailableGetter() ? "empty" : "loading";
-      const title = dataAvailableGetter() ? "No saved views yet" : "Load a chat to use saved views";
+      const title = dataAvailableGetter() ? "No saved views yet" : "Load a chat to save views";
       const message = dataAvailableGetter()
-        ? "Save your current filters and chart settings to create a reusable view."
-        : "Connect relay and select a chat, then save a view for quick re-apply.";
+        ? "Save the current analysis setup so you can return to it quickly."
+        : "Start the relay, choose a chat, then save a view.";
       const actions = dataAvailableGetter()
         ? [
-            { id: "save-view", label: "Save current view" },
-            { id: "focus-range", label: "Set time range" },
+            { id: "save-view", label: "Save view" },
+            { id: "focus-range", label: "Choose range" },
           ]
         : [];
       if (searchSavedBridge?.renderSavedViewsPanelState) {

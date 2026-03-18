@@ -24,15 +24,15 @@ export function describeRelayStatus(status, { relayServiceName, brandName, forma
   const baseMessage = (() => {
     switch (status.status) {
       case "starting":
-        return `Starting ${relayServiceName}. Opening browser…`;
+        return `Starting ${relayServiceName}.`;
       case "waiting_qr":
-        return "Waiting for QR scan.";
+        return "Waiting for phone link.";
       case "running":
         return status.account
           ? `Connected as ${formatRelayAccount(status.account)}.`
-          : `Connected to ${brandName}.`;
+          : `${brandName} connected.`;
       default:
-        return "Relay is offline.";
+        return "Relay offline.";
     }
   })();
   return { message: baseMessage };
@@ -104,11 +104,11 @@ export function updateRelayBanner({
     relayBannerEl.dataset.status = "offline";
     relayStatusViewRenderer?.renderBanner?.({
       message: "Relay offline.",
-      meta: "Open the relay app, press Connect, then choose a chat.",
+      meta: "Start the relay, link your phone, then choose a chat.",
     });
     if (!canRenderBanner) {
       relayBannerMessage.textContent = "Relay offline.";
-      relayBannerMeta.textContent = "Open the relay app, press Connect, then choose a chat.";
+      relayBannerMeta.textContent = "Start the relay, link your phone, then choose a chat.";
     }
     return;
   }
@@ -178,9 +178,9 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
         if (value === "complete") {
           detailText = "Relay is running.";
         } else if (value === "active") {
-          detailText = "Launching the service…";
+          detailText = "Launching the relay…";
         } else if (state === "error") {
-          detailText = "Relay failed to launch. Retry.";
+          detailText = "Relay failed to launch. Try again.";
         }
         relayStatusViewRenderer?.renderOnboardingDetail?.(String(id || ""), detailText, detail);
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
@@ -194,8 +194,8 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
           value === "complete"
             ? "Phone linked."
             : value === "active"
-              ? "Scan the QR code shown below."
-              : "Open chat app → Linked Devices on your phone and scan the code.";
+              ? "Scan the QR code below."
+              : "Open Linked Devices on your phone and scan the code.";
         relayStatusViewRenderer?.renderOnboardingDetail?.(String(id || ""), detailText, detail);
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
       }
@@ -206,10 +206,10 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
       if (detail) {
         const detailText =
           value === "complete"
-            ? "Chats synced."
+            ? "Chats loaded."
             : value === "active"
-              ? "Syncing chats…"
-              : "Sync chats into WAAN.";
+              ? "Loading chats..."
+              : "Load chats into WAAN.";
         relayStatusViewRenderer?.renderOnboardingDetail?.(String(id || ""), detailText, detail);
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
       }

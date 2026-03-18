@@ -77,7 +77,7 @@ describe("relay status view mapping", () => {
 
     expect(relayBannerEl.dataset.status).toBe("offline");
     expect(relayBannerMessage.textContent).toBe("Relay offline.");
-    expect(relayBannerMeta.textContent).toContain("Open the relay app");
+    expect(relayBannerMeta.textContent).toContain("Start the relay");
   });
 
   it("applies status and metadata for starting/waiting/running transitions", () => {
@@ -182,7 +182,7 @@ describe("relay status view mapping", () => {
     expect(steps[2].dataset.state).toBe("complete");
     expect(details.start?.textContent).toBe("Relay is running.");
     expect(details.qr?.textContent).toBe("Phone linked.");
-    expect(details.sync?.textContent).toBe("Chats synced.");
+    expect(details.sync?.textContent).toBe("Chats loaded.");
   });
 
   it("preserves onboarding detail updates when explicit detail refs are absent or incomplete", () => {
@@ -192,14 +192,14 @@ describe("relay status view mapping", () => {
       status: { status: "starting" },
       relayOnboardingSteps: steps,
     });
-    expect(details.start?.textContent).toBe("Launching the service…");
+    expect(details.start?.textContent).toBe("Launching the relay…");
 
     updateRelayOnboarding({
       status: { status: "waiting_qr" },
       relayOnboardingSteps: steps,
       relayOnboardingStepDetails: { start: details.start, qr: null, sync: details.sync },
     });
-    expect(details.qr?.textContent).toBe("Scan the QR code shown below.");
+    expect(details.qr?.textContent).toBe("Scan the QR code below.");
 
     updateRelayOnboarding({
       status: { status: "running", chatCount: 0 },
@@ -207,7 +207,7 @@ describe("relay status view mapping", () => {
       relayOnboardingStepDetails: { start: null, qr: details.qr, sync: null },
     });
     expect(details.start?.textContent).toBe("Relay is running.");
-    expect(details.sync?.textContent).toBe("Syncing chats…");
+    expect(details.sync?.textContent).toBe("Loading chats...");
   });
 
   it("can route relay banner and onboarding copy through an injected renderer", () => {
@@ -243,7 +243,7 @@ describe("relay status view mapping", () => {
     });
     expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("start", "Relay is running.", details.start);
     expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("qr", "Phone linked.", details.qr);
-    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("sync", "Chats synced.", details.sync);
+    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("sync", "Chats loaded.", details.sync);
   });
 
   it("falls back to DOM writes when a partial renderer omits banner/detail methods", () => {
@@ -273,6 +273,6 @@ describe("relay status view mapping", () => {
     expect(relayBannerMeta.textContent).toBe("Sync pending · 3 chats indexed");
     expect(details.start?.textContent).toBe("Relay is running.");
     expect(details.qr?.textContent).toBe("Phone linked.");
-    expect(details.sync?.textContent).toBe("Syncing chats…");
+    expect(details.sync?.textContent).toBe("Loading chats...");
   });
 });

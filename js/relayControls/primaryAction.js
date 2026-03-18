@@ -24,8 +24,8 @@ function getRelayPrimaryAction(status, { relayServiceName } = {}) {
   /** @type {RelayPrimaryAction} */
   const defaultAction = {
     id: "connect",
-    label: "Connect relay",
-    hint: "Launch the desktop relay and press Connect to sync chats.",
+    label: "Start relay",
+    hint: "Launch the desktop relay to load chats.",
     disabled: false,
   };
   if (!status) return defaultAction;
@@ -34,14 +34,14 @@ function getRelayPrimaryAction(status, { relayServiceName } = {}) {
     return {
       id: "reconnect",
       label: "Reconnect relay",
-      hint: "Restart the relay browser and relink your phone.",
+      hint: "Restart the relay and relink your phone.",
       disabled: false,
     };
   }
   if (state === "running") {
     return {
       id: "resync",
-      label: "Resync chats",
+      label: "Refresh chats",
       hint: "Fetch the latest chats from the relay.",
       disabled: false,
     };
@@ -49,8 +49,8 @@ function getRelayPrimaryAction(status, { relayServiceName } = {}) {
   if (state === "waiting_qr") {
     return {
       id: "waiting",
-      label: "Scan QR to continue",
-      hint: "Open chat app -> Linked Devices on your phone to finish linking.",
+      label: "Waiting for phone link",
+      hint: "Open Linked Devices on your phone to finish linking.",
       disabled: true,
     };
   }

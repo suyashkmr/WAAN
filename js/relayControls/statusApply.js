@@ -227,9 +227,9 @@ export function createRelayStatusApplyController({
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);
       const offlineHelpText =
-        "Press Connect, scan the QR code from Linked Devices, then choose a chat from “Loaded chats”.";
+        "Start the relay, link your phone, then choose a chat from Loaded chats.";
       renderRelayStatusSurface({
-        statusText: `Relay offline. Open the desktop relay to connect ${brandName}.`,
+        statusText: `Relay offline. Start the desktop relay to connect ${brandName}.`,
         accountText: "",
         helpText: offlineHelpText,
         qrSrc: null,
@@ -241,8 +241,8 @@ export function createRelayStatusApplyController({
         refreshChatSelector();
         setDashboardLoadingState(true);
         setDatasetEmptyMessage(
-          "No chat is selected yet.",
-          "Open Relay Controls, scan the QR code, then choose a chat from “Loaded chats”.",
+          "No chat selected",
+          "Start the relay, link your phone, then choose a chat from Loaded chats.",
         );
         setDataAvailabilityState(false);
       }
@@ -257,7 +257,7 @@ export function createRelayStatusApplyController({
       : "";
     const helpText =
       status.status === "running"
-        ? `Your mirrored ${brandName} chats appear under “Loaded chats”. Pick one to view insights.`
+        ? `Your mirrored ${brandName} chats appear in Loaded chats. Pick one to start analysis.`
         : "Open Linked Devices on your phone and scan the QR code shown here.";
     renderRelayStatusSurface({
       statusText: description.message,
@@ -278,7 +278,7 @@ export function createRelayStatusApplyController({
       if (running) {
         setDatasetEmptyMessage(
           "Pick a chat",
-          "Select any conversation from “Loaded chats” to see its insights.",
+          "Choose any conversation from Loaded chats to start analysis.",
         );
       } else if (waiting) {
         setDatasetEmptyMessage("Scan the QR code", "Link your phone to start mirroring messages.");

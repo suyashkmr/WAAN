@@ -148,10 +148,10 @@ export function createSearchResultsUiController({
     if (!total) {
       const renderedStateSource = renderResultsState({
         tone: hasRunSearch ? "empty" : "loading",
-        title: hasRunSearch ? "No matching messages" : "Search this chat",
+        title: hasRunSearch ? "No matching messages" : "Search messages",
         message: hasFilters
-          ? "Try different keywords, participants, or dates."
-          : "Add keywords, participant, or date filters to find messages.",
+          ? "Try another keyword, participant, or date range."
+          : "Add a keyword, participant, or date range to start.",
         actions: hasFilters ? [{ id: "clear-search-filters", label: "Clear filters" }] : [],
       });
       if (renderedStateSource === "bridge") resultsRenderCacheKey = nextRenderCacheKey;

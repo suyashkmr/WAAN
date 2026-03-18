@@ -24,9 +24,7 @@
     border-radius: var(--shape-medium);
     border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
     padding: 0.9rem 1rem;
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--edge-specular) 24%, transparent) 0%, transparent 48%),
-        color-mix(in srgb, var(--card-bg) 92%, transparent);
+    background: color-mix(in srgb, var(--surface-elevated) 98%, transparent);
     box-shadow: var(--shadow-card);
     display: flex;
     flex-direction: column;
@@ -57,17 +55,17 @@
 
 .highlight-card {
     position: relative;
-    border-radius: var(--shape-medium);
+    border-radius: calc(var(--shape-medium) + 2px);
     padding: 1.25rem 1.2rem 1.15rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 0.75rem;
     min-height: 180px;
-    background: linear-gradient(160deg,
-        color-mix(in srgb, var(--section-accent, var(--accent)) 30%, transparent) 0%,
-        color-mix(in srgb, var(--bg-room) 78%, var(--bg-canvas)) 65%);
-    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 28%, var(--border));
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--surface-elevated) 98%, transparent) 0%,
+        color-mix(in srgb, var(--bg-raised) 96%, transparent) 100%);
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 16%, var(--border));
     box-shadow: var(--shadow-card);
     overflow: hidden;
     transition:
@@ -204,8 +202,8 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 40%, transparent) 0%, transparent 55%);
-    opacity: 0.75;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 18%, transparent) 0%, transparent 58%);
+    opacity: 0.58;
     pointer-events: none;
 }
 
@@ -215,10 +213,10 @@
     letter-spacing: var(--tracking-label-tight);
     text-transform: uppercase;
     color: color-mix(in srgb, var(--section-accent, var(--accent)) 55%, var(--text));
-    background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+    background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
     border-radius: var(--shape-full);
     padding: 0.18rem 0.5rem;
-    border: 1px dashed color-mix(in srgb, var(--section-accent, var(--accent)) 45%, transparent);
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 24%, transparent);
 }
 
 .highlight-card .highlight-meta {

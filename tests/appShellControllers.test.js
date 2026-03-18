@@ -489,7 +489,7 @@ describe("appShell controllers", () => {
 
     controller.updateHeroRelayStatus({ status: "running", account: { wid: "1@c.us" }, chatCount: 42 });
     expect(heroStatusBadge.textContent).toContain("Connected");
-    expect(heroStatusCopy.textContent).toContain("42 chats indexed.");
+    expect(heroStatusCopy.textContent).toContain("42 chats loaded.");
     expect(heroStatusMetaCopy.textContent).toContain("Last updated 10:42");
     expect(heroSyncDot.dataset.state).toBe("ready");
   });
@@ -534,7 +534,7 @@ describe("appShell controllers", () => {
     expect(heroStatusRenderer.renderBadge).toHaveBeenCalledWith(
       expect.objectContaining({ text: "Relay connected", state: "ready" }),
     );
-    expect(heroStatusRenderer.renderCopy).toHaveBeenCalledWith("3 chats indexed. Insights are ready.");
+    expect(heroStatusRenderer.renderCopy).toHaveBeenCalledWith("3 chats loaded. Analysis is ready.");
     expect(heroStatusRenderer.renderSyncMeta).toHaveBeenCalledWith(
       expect.objectContaining({ state: "ready", message: "Last updated 10:42" }),
     );
@@ -578,7 +578,7 @@ describe("appShell controllers", () => {
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
 
     expect(heroStatusBadge.textContent).toBe("Relay connected");
-    expect(heroStatusCopy.textContent).toBe("3 chats indexed. Insights are ready.");
+    expect(heroStatusCopy.textContent).toBe("3 chats loaded. Analysis is ready.");
     expect(heroStatusRenderer.renderSyncMeta).toHaveBeenCalledWith(
       expect.objectContaining({ state: "ready", message: "Last updated 10:42" }),
     );

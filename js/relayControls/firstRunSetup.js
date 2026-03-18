@@ -73,19 +73,19 @@ export function createFirstRunSetupController({
       firstRunPrimaryActionButton.dataset.action = "connect";
       firstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
       if (state === "running" && chatCount > 0) {
-        firstRunPrimaryActionButton.textContent = "Choose Loaded Chat";
+        firstRunPrimaryActionButton.textContent = "Choose chat";
         firstRunPrimaryActionButton.dataset.action = "select-chat";
       } else if (state === "starting") {
-        firstRunPrimaryActionButton.textContent = "Starting Relay…";
+        firstRunPrimaryActionButton.textContent = "Starting relay...";
         firstRunPrimaryActionButton.disabled = true;
       } else if (state === "waiting_qr") {
-        firstRunPrimaryActionButton.textContent = "Waiting for QR Scan";
+        firstRunPrimaryActionButton.textContent = "Waiting for phone link";
         firstRunPrimaryActionButton.disabled = true;
       } else if (state === "running") {
-        firstRunPrimaryActionButton.textContent = "Syncing Chats…";
+        firstRunPrimaryActionButton.textContent = "Loading chats...";
         firstRunPrimaryActionButton.disabled = true;
       } else {
-        firstRunPrimaryActionButton.textContent = "Connect Relay";
+        firstRunPrimaryActionButton.textContent = "Start relay";
       }
     }
   }

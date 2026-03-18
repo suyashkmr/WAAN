@@ -6,7 +6,7 @@ export function createHeroViewState() {
     badgeState: "offline",
     copyText: "",
     syncMetaState: "idle",
-    syncMetaMessage: "Awaiting relay.",
+    syncMetaMessage: "Waiting for relay.",
     milestones: {
       connect: "pending",
       sync: "pending",

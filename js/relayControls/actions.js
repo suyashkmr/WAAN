@@ -242,7 +242,7 @@ export function createRelayActionsController({
         }
         if (!requestSilent && (!relayUiState.lastErrorNotice || Date.now() - relayUiState.lastErrorNotice > 60000)) {
           updateStatus(
-            `${relayServiceName} is offline. Launch the desktop relay and press Connect to enable live loading.`,
+            `${relayServiceName} is offline. Start the desktop relay to load chats.`,
             "warning",
           );
           relayUiState.lastErrorNotice = Date.now();

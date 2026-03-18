@@ -11,7 +11,7 @@ export function buildResultsSummaryText({
   resultLimit,
 }) {
   if (!hasRunSearch) {
-    return "Add keywords, choose a participant, or set dates to search this chat. Leave filters blank to list everything.";
+    return "Add a keyword, participant, or date range to search this chat. Leave filters blank to scan everything.";
   }
   if (!total) {
     return lastRunFiltered

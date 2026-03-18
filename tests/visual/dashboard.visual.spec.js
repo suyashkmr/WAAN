@@ -26,8 +26,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       });
 
       if (state === "waiting_qr") {
-        if (heroBadge) heroBadge.textContent = "Scan the QR code";
-        if (heroCopy) heroCopy.textContent = "On your phone: Linked Devices -> Link a device -> scan this code.";
+        if (heroBadge) heroBadge.textContent = "Link your phone";
+        if (heroCopy) heroCopy.textContent = "Open Linked Devices on your phone and scan this code.";
         if (heroMeta) heroMeta.textContent = "Waiting for phone link.";
         if (heroSyncDot) heroSyncDot.dataset.state = "idle";
         milestones.forEach(step => {
@@ -36,15 +36,15 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           if (step.dataset.step === "ready") step.dataset.state = "pending";
         });
         if (relayBanner) relayBanner.dataset.status = "waiting_qr";
-        if (relayBannerMessage) relayBannerMessage.textContent = "Scan the QR code to link your phone.";
-        if (relayBannerMeta) relayBannerMeta.textContent = "Open Linked Devices in your phone app and scan the code.";
+        if (relayBannerMessage) relayBannerMessage.textContent = "Relay waiting for phone link.";
+        if (relayBannerMeta) relayBannerMeta.textContent = "Open Linked Devices on your phone and scan the QR code.";
         return;
       }
 
       if (state === "running_syncing") {
         if (heroBadge) heroBadge.textContent = "Connected • Alice";
-        if (heroCopy) heroCopy.textContent = "24 chats indexed. Syncing updates…";
-        if (heroMeta) heroMeta.textContent = "Syncing now • 24 chats found";
+        if (heroCopy) heroCopy.textContent = "24 chats loaded. Refreshing updates...";
+        if (heroMeta) heroMeta.textContent = "Refreshing now • 24 chats loaded";
         if (heroSyncDot) heroSyncDot.dataset.state = "syncing";
         milestones.forEach(step => {
           if (step.dataset.step === "connect") step.dataset.state = "complete";
@@ -53,7 +53,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         });
         if (relayBanner) relayBanner.dataset.status = "running";
         if (relayBannerMessage) relayBannerMessage.textContent = "Relay connected.";
-        if (relayBannerMeta) relayBannerMeta.textContent = "Sync pending";
+        if (relayBannerMeta) relayBannerMeta.textContent = "Account: Alice · Sync pending · 24 chats indexed";
         return;
       }
 
@@ -62,7 +62,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           heroBadge.textContent = "Connected • Alice";
           heroBadge.classList.add("hero-status-badge-ready");
         }
-        if (heroCopy) heroCopy.textContent = "24 chats indexed. Insights are ready.";
+        if (heroCopy) heroCopy.textContent = "24 chats loaded. Analysis is ready.";
         if (heroMeta) heroMeta.textContent = "Last updated 09:41 PM";
         if (heroSyncDot) heroSyncDot.dataset.state = "ready";
         milestones.forEach(step => {
@@ -72,7 +72,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         });
         if (relayBanner) relayBanner.dataset.status = "running";
         if (relayBannerMessage) relayBannerMessage.textContent = "Relay connected.";
-        if (relayBannerMeta) relayBannerMeta.textContent = "Chats synced and ready.";
+        if (relayBannerMeta) relayBannerMeta.textContent = "Account: Alice · Synced a moment ago · 24 chats indexed";
       }
     }, scenario);
   }
@@ -100,9 +100,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const heroMeta = document.getElementById("hero-status-meta-copy");
       const heroSyncDot = document.getElementById("hero-sync-dot");
       const heroMilestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
-      if (heroBadge) heroBadge.textContent = "Not connected";
-      if (heroCopy) heroCopy.textContent = "Open Relay Controls, then press Connect.";
-      if (heroMeta) heroMeta.textContent = "Awaiting relay.";
+      if (heroBadge) heroBadge.textContent = "Relay offline";
+      if (heroCopy) heroCopy.textContent = "Start the relay to load a chat and unlock the workspace.";
+      if (heroMeta) heroMeta.textContent = "Waiting for relay.";
       if (heroSyncDot) heroSyncDot.dataset.state = "idle";
       heroMilestones.forEach(step => {
         if (step.dataset.step === "connect") step.dataset.state = "active";
@@ -116,7 +116,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       if (relayBanner) relayBanner.dataset.status = "offline";
       if (relayBannerMessage) relayBannerMessage.textContent = "Relay offline.";
       if (relayBannerMeta) {
-        relayBannerMeta.textContent = "Open the relay app, press Connect, then choose a chat.";
+        relayBannerMeta.textContent = "Start the relay, link your phone, then choose a chat.";
       }
 
       const syncProgress = document.getElementById("relay-sync-progress");

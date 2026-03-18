@@ -310,3 +310,5 @@ export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   mountDashboardCardShellPrimitives(globalScope);
   mountFeedbackPrimitiveBridge(globalScope);
 }
+
+mountShellPrimitivesIsland();

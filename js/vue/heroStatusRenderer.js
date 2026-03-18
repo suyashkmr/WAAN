@@ -60,7 +60,7 @@ export function createHeroStatusRenderer({
     /**
      * @param {{ state?: string, message?: string }} [params]
      */
-    renderSyncMeta({ state = "idle", message = "Awaiting relay." } = {}) {
+    renderSyncMeta({ state = "idle", message = "Waiting for relay." } = {}) {
       if (heroSyncDot) heroSyncDot.dataset.state = state;
       renderText(heroStatusMetaCopy, message);
     },

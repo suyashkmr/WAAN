@@ -261,7 +261,7 @@ describe("savedViews controller", () => {
     controller.resetForNewDataset();
 
     expect(dependencies.clearSavedViews).toHaveBeenCalledTimes(1);
-    expect(elements.gallery.textContent).toContain("Load a chat to use saved views");
+    expect(elements.gallery.textContent).toContain("Load a chat to save views");
   });
 
   it("shows empty gallery recovery actions when data is available", () => {
