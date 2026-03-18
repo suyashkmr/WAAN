@@ -20,6 +20,7 @@
         background var(--motion-duration-medium) var(--motion-ease-out),
         box-shadow var(--motion-duration-medium) var(--motion-ease-out),
         border-color var(--motion-duration-medium) var(--motion-ease-out);
+    isolation: isolate;
 }
 
 .section-nav::before {
@@ -33,6 +34,7 @@
 }
 
 .section-nav-inner {
+    position: relative;
     display: flex;
     gap: var(--section-nav-inner-gap);
     flex-wrap: nowrap;
@@ -49,6 +51,17 @@
     display: none;
 }
 
+.section-nav::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: var(--section-nav-fade-width);
+    background: var(--nav-shell-fade);
+    pointer-events: none;
+    border-radius: 0 calc(var(--shape-large) - 2px) calc(var(--shape-large) - 2px) 0;
+    opacity: 0.9;
+}
+
 .section-nav-kicker {
     margin: 0;
     padding: var(--section-nav-kicker-pad-y) var(--section-nav-kicker-pad-x);
@@ -61,6 +74,8 @@
     background: linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 98%, transparent), color-mix(in srgb, var(--panel-bg) 86%, transparent));
     white-space: nowrap;
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 22%, transparent);
+    position: relative;
+    z-index: 1;
 }
 
 .section-nav a {
@@ -80,6 +95,9 @@
     box-shadow: none;
     flex: 0 0 auto;
     scroll-snap-align: start;
+    background: var(--nav-item-idle-fill);
+    position: relative;
+    z-index: 1;
 }
 
 .section-nav a.active,
@@ -129,6 +147,12 @@
 }
 
 @media (max-width: 900px) {
+    .section-nav::after {
+        width: calc(var(--section-nav-fade-width) * 0.85);
+    }
+}
+
+@media (max-width: 900px) {
     .section-nav {
         width: calc(100% - var(--space-4));
     }
@@ -142,5 +166,9 @@
     .section-nav {
         width: 100%;
         padding: var(--section-nav-shell-pad-y) var(--section-nav-shell-pad-x);
+    }
+
+    .section-nav::after {
+        border-radius: 0;
     }
 }

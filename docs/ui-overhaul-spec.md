@@ -15,6 +15,17 @@ The next redesign wave is intentionally iterative. WAAN keeps the current worksp
 
 This is a visual-system-led continuation, not a restart of layout architecture or runtime ownership.
 
+### Current Active Refinement: Workspace-First Editorial Refresh
+
+The active implementation wave tightens the shell around the top-of-page experience and the primary workspace:
+
+- hero identity and live-status framing should feel connected to the workspace stage below
+- section navigation should read as premium product chrome, not a loose link strip
+- relay banner, toolbar, page controls, dataset-empty state, and first insight lane should share one editorial command-surface language
+- the workspace shell must frame the work more strongly than the analysis cards it contains
+
+This pass is intentionally presentation-led. Existing section order, bridge/runtime contracts, and workflow hooks remain unchanged.
+
 ## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.

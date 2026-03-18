@@ -92,11 +92,11 @@
     gap: var(--relay-banner-gap);
     align-items: center;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 98%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
-        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 42%);
-    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--edge-strong));
+        linear-gradient(180deg, color-mix(in srgb, var(--workspace-shell-raised) 100%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%);
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--edge-strong));
     border-radius: calc(var(--shape-large) - 2px);
-    box-shadow: var(--editorial-card-shadow);
+    box-shadow: var(--editorial-card-contrast-shadow);
     position: relative;
     z-index: 1;
     transition:
@@ -219,11 +219,12 @@
     font-weight: 600;
     margin: 0;
     letter-spacing: -0.01em;
+    font-size: var(--type-title-sm);
 }
 
 .relay-banner-meta {
     margin: 0;
-    color: color-mix(in srgb, var(--text) 68%, var(--muted));
+    color: color-mix(in srgb, var(--text) 76%, var(--muted));
     font-size: var(--type-body-sm);
 }
 

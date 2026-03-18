@@ -58,12 +58,7 @@ export function createSectionNavController({
         reduceMotionFlag);
   }
 
-  /**
-   * Force deterministic section jumps for nav clicks instead of layering another smooth
-   * animation on top of any in-flight page scroll.
-   *
-   * @param {HTMLElement} target
-   */
+  /** @param {HTMLElement} target */
   function jumpToSection(target) {
     const rootEl = documentRef?.documentElement ?? null;
     if (rootEl?.style) {
@@ -99,9 +94,7 @@ export function createSectionNavController({
   function setActiveSectionNav(targetId, { scrollActiveLink = true } = {}) {
     if (!targetId || activeSectionId === targetId) return;
     activeSectionId = targetId;
-    if (containerEl) {
-      containerEl.dataset.activeSection = targetId;
-    }
+    if (containerEl) containerEl.dataset.activeSection = targetId;
     sectionNavLinks.forEach(link => {
       const linkTarget = link.getAttribute("href")?.replace(/^#/, "");
       const isActive = linkTarget === targetId;
@@ -130,9 +123,7 @@ export function createSectionNavController({
   function handleSectionNavActivate(id, event = null) {
     if (event?.preventDefault) event.preventDefault();
     const nextEntry = sectionNavItems.find(entry => entry.id === id);
-    if (nextEntry?.target) {
-      jumpToSection(nextEntry.target);
-    }
+    if (nextEntry?.target) jumpToSection(nextEntry.target);
     pendingManualSectionId = id;
     pendingManualSectionUntil = Date.now() + 800;
     if (typeof windowRef?.history?.replaceState === "function") {
@@ -146,9 +137,7 @@ export function createSectionNavController({
    * @param {MouseEvent} event
    */
   function handleSectionNavClick(id, event) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-      return;
-    }
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     handleSectionNavActivate(id, event);
   }
 

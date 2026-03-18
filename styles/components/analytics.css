@@ -22,12 +22,12 @@
 
 .guided-card {
     border-radius: var(--shape-medium);
-    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 12%, var(--border));
-    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 14%, var(--border));
+    padding: 1rem 1.05rem;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 10%, transparent), transparent 44%);
-    box-shadow: var(--editorial-card-shadow);
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated-strong) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 9%, transparent), transparent 44%);
+    box-shadow: var(--editorial-card-contrast-shadow);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -58,17 +58,17 @@
 .highlight-card {
     position: relative;
     border-radius: calc(var(--shape-medium) + 2px);
-    padding: 1.25rem 1.2rem 1.15rem;
+    padding: 1.32rem 1.24rem 1.18rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: 0.75rem;
     min-height: 180px;
     background: linear-gradient(180deg,
-        color-mix(in srgb, var(--surface-elevated) 98%, transparent) 0%,
-        color-mix(in srgb, var(--bg-raised) 96%, transparent) 100%);
-    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 18%, var(--border));
-    box-shadow: var(--editorial-card-shadow);
+        color-mix(in srgb, var(--surface-elevated-strong) 98%, transparent) 0%,
+        color-mix(in srgb, var(--bg-raised) 95%, transparent) 100%);
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 16%, var(--border));
+    box-shadow: var(--editorial-card-contrast-shadow);
     overflow: hidden;
     transition:
         transform var(--motion-duration-fast) var(--motion-ease-out),
@@ -127,10 +127,10 @@
 
 .highlight-headline {
     margin: 0.2rem 0 0.25rem;
-    font-size: 1rem;
+    font-size: 1.04rem;
     font-weight: 600;
     color: var(--text);
-    line-height: 1.28;
+    line-height: 1.24;
 }
 
 .highlight-card .highlight-value {
@@ -141,7 +141,7 @@
 
 .highlight-card .highlight-descriptor {
     font-size: var(--type-body-sm);
-    color: color-mix(in srgb, var(--text) 68%, var(--muted));
+    color: color-mix(in srgb, var(--text) 74%, var(--muted));
 }
 
 .highlight-card .highlight-meta {
