@@ -144,9 +144,7 @@ export function createRelayStatusApplyController({
    */
   function shouldShowRecoveryActions(status) {
     if (!status) return true;
-    if (status.status === "error" || status.status === "offline" || status.status === "stopped") {
-      return true;
-    }
+    if (status.status === "error" || status.status === "offline" || status.status === "stopped") return true;
     if (status.status !== "running") return false;
     if (status.syncPath === "fallback") return true;
     return Number(status.lastSyncDurationMs) >= SLOW_SYNC_THRESHOLD_MS;
@@ -167,15 +165,7 @@ export function createRelayStatusApplyController({
 
     const shellBridge = resolveShellBridge();
     if (shellBridge?.updateRelayRecoveryActions) {
-      shellBridge.updateRelayRecoveryActions({
-        show,
-        reconnectDisabled,
-        reconnectTitle,
-        resyncDisabled,
-        resyncTitle,
-        exportDisabled,
-        exportTitle,
-      });
+      shellBridge.updateRelayRecoveryActions({ show, reconnectDisabled, reconnectTitle, resyncDisabled, resyncTitle, exportDisabled, exportTitle });
       return;
     }
 
@@ -204,9 +194,8 @@ export function createRelayStatusApplyController({
     const stateKind = status?.status || "offline";
     const previousStateKind = relayUiState.lastAppliedStateKind;
     const isStateTransition = previousStateKind === null || previousStateKind !== stateKind;
-    const hasCompletedRemoteChatFetch = Boolean(
-      typeof getRemoteChatsLastFetchedAt === "function" ? getRemoteChatsLastFetchedAt() : 0,
-    );
+    const lastFetchedAt = typeof getRemoteChatsLastFetchedAt === "function" ? getRemoteChatsLastFetchedAt() : 0;
+    const hasCompletedRemoteChatFetch = Boolean(lastFetchedAt);
 
     updateHeroRelayStatus(status);
     electronAPI?.updateRelayStatus?.(status);
@@ -225,23 +214,12 @@ export function createRelayStatusApplyController({
       hasCompletedRemoteChatFetch,
       relayStatusViewRenderer,
     });
-    updateRelayOnboarding({
-      status,
-      relayOnboardingSteps,
-      relayOnboardingStepDetails,
-      hasCompletedRemoteChatFetch,
-      relayStatusViewRenderer,
-    });
+    updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails, hasCompletedRemoteChatFetch, relayStatusViewRenderer });
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);
       const offlineHelpText = UI_COPY.relay.offlineNextStep;
-      renderRelayStatusSurface({
-        statusText: UI_COPY.relay.offlineStatus,
-        accountText: "",
-        helpText: offlineHelpText,
-        qrSrc: null,
-      });
+      renderRelayStatusSurface({ statusText: UI_COPY.relay.offlineStatus, accountText: "", helpText: offlineHelpText, qrSrc: null });
       applyRelayControlButtons({ stopDisabled: true, reloadAllDisabled: true });
       if (isStateTransition) {
         setRemoteChatList([]);
@@ -265,9 +243,6 @@ export function createRelayStatusApplyController({
       : "";
     const chatCount = Number(status.chatCount ?? 0);
     const syncingChats = Boolean(status.syncingChats);
-    const lastFetchedAt = typeof getRemoteChatsLastFetchedAt === "function"
-      ? getRemoteChatsLastFetchedAt()
-      : 0;
     const isConfirmedEmptyAccount =
       status.status === "running" &&
       chatCount <= 0 &&
@@ -281,12 +256,7 @@ export function createRelayStatusApplyController({
             ? UI_COPY.dataset.loadingMessage
             : UI_COPY.dataset.noChatsMessage)
         : UI_COPY.relay.waitingPhoneHero;
-    renderRelayStatusSurface({
-      statusText: description.message,
-      accountText,
-      helpText,
-      qrSrc: status.lastQr || null,
-    });
+    renderRelayStatusSurface({ statusText: description.message, accountText, helpText, qrSrc: status.lastQr || null });
 
     const running = status.status === "running";
     const waiting = status.status === "waiting_qr" || status.status === "starting";
@@ -299,20 +269,11 @@ export function createRelayStatusApplyController({
     if (!getRemoteChatList().length) {
       if (running) {
         if (chatCount > 0) {
-          setDatasetEmptyMessage(
-            UI_COPY.dataset.readyHeading,
-            UI_COPY.dataset.readyMessage,
-          );
+          setDatasetEmptyMessage(UI_COPY.dataset.readyHeading, UI_COPY.dataset.readyMessage);
         } else if (syncingChats || !hasCompletedRemoteChatFetch) {
-          setDatasetEmptyMessage(
-            UI_COPY.dataset.loadingHeading,
-            UI_COPY.dataset.loadingMessage,
-          );
+          setDatasetEmptyMessage(UI_COPY.dataset.loadingHeading, UI_COPY.dataset.loadingMessage);
         } else if (isConfirmedEmptyAccount) {
-          setDatasetEmptyMessage(
-            UI_COPY.dataset.noChatsHeading,
-            UI_COPY.dataset.noChatsMessage,
-          );
+          setDatasetEmptyMessage(UI_COPY.dataset.noChatsHeading, UI_COPY.dataset.noChatsMessage);
         }
       } else if (waiting) {
         setDatasetEmptyMessage(UI_COPY.dataset.waitingHeading, UI_COPY.dataset.waitingMessage);
