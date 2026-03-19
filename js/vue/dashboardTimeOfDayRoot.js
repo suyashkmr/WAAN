@@ -2,6 +2,7 @@ import {
   computeTimeOfDayDataset,
   formatHourLabel,
 } from "../analytics/activity/timeOfDay.js";
+import { UI_COPY } from "../uiCopy.js";
 import { formatFloat, formatNumber } from "../utils.js";
 
 export function createTimeOfDayModel(analytics, chartWidth = 480) {
@@ -137,7 +138,7 @@ export function createTimeOfDayRoot(h, state) {
         const isEmpty = !model || model.empty;
         return [
           h("div", { class: "timeofday-sparkline", id: "timeofday-sparkline" }, isEmpty
-            ? [h("div", { class: "timeofday-summary" }, "No time-of-day data yet.")]
+            ? [h("div", { class: "timeofday-summary" }, UI_COPY.analytics.noTimeOfDayData)]
             : [
               model.summary
                 ? h("div", { class: "timeofday-summary" }, [

@@ -1,5 +1,6 @@
 import { formatFloat } from "../utils.js";
 import { clearContainerForVueRenderOnce } from "../vue/renderMountUtils.js";
+import { UI_COPY } from "../uiCopy.js";
 
 export function renderMessageTypesSection({ data, elements = {}, vueRuntime = null } = {}) {
   const { summaryEl, noteEl } = elements;
@@ -15,7 +16,7 @@ export function renderMessageTypesSection({ data, elements = {}, vueRuntime = nu
 
   if (!summary.length) {
     render(
-      h("p", { class: "empty-state" }, "No message categories for this range."),
+      h("p", { class: "empty-state" }, UI_COPY.analytics.noMessageTypes),
       summaryEl,
     );
     if (noteEl) noteEl.textContent = "";
@@ -27,7 +28,7 @@ export function renderMessageTypesSection({ data, elements = {}, vueRuntime = nu
     .join(" · ");
 
   render(
-    h("p", { class: "message-type-share-summary" }, `Share by type → ${shareSnippets}.`),
+    h("p", { class: "message-type-share-summary" }, shareSnippets),
     summaryEl,
   );
 

@@ -1,4 +1,5 @@
 import { formatNumber, formatFloat } from "./utils.js";
+import { UI_COPY } from "./uiCopy.js";
 
 export function buildSavedViewsComparisonPayload({
   allViews,
@@ -19,14 +20,14 @@ export function buildSavedViewsComparisonPayload({
     return {
       empty: true,
       message: allViews.length
-        ? "Save one more view to enable comparisons."
-        : "Save a view to start building comparisons.",
+        ? UI_COPY.savedViews.compareNeedMore
+        : UI_COPY.savedViews.compareStart,
     };
   }
   if (!primaryView || !secondaryView) {
     return {
       empty: true,
-      message: "Pick two saved views to compare their activity side-by-side.",
+      message: UI_COPY.savedViews.comparePrompt,
     };
   }
 
@@ -35,7 +36,7 @@ export function buildSavedViewsComparisonPayload({
   if (!primarySnapshot || !secondarySnapshot) {
     return {
       empty: true,
-      message: "Unable to compute comparison for these views. Try re-saving them.",
+      message: UI_COPY.savedViews.compareRetry,
     };
   }
 

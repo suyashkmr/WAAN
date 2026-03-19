@@ -1,5 +1,7 @@
 // @ts-check
 
+import { UI_COPY } from "../uiCopy.js";
+
 /**
  * @typedef {Record<string, any>} AnyRecord
  */
@@ -24,15 +26,15 @@ export function describeRelayStatus(status, { relayServiceName, brandName, forma
   const baseMessage = (() => {
     switch (status.status) {
       case "starting":
-        return `Starting ${relayServiceName}.`;
+        return UI_COPY.relay.startingStatus;
       case "waiting_qr":
-        return "Waiting for phone link.";
+        return UI_COPY.relay.waitingPhoneStatus;
       case "running":
         return status.account
-          ? `Connected as ${formatRelayAccount(status.account)}.`
-          : `${brandName} connected.`;
+          ? `Connected: ${formatRelayAccount(status.account)}.`
+          : "Connected.";
       default:
-        return "Relay offline.";
+        return UI_COPY.relay.offlineStatus;
     }
   })();
   return { message: baseMessage };
@@ -104,11 +106,11 @@ export function updateRelayBanner({
     relayBannerEl.dataset.status = "offline";
     relayStatusViewRenderer?.renderBanner?.({
       message: "Relay offline.",
-      meta: "Start the relay, link your phone, then choose a chat.",
+    meta: UI_COPY.relay.offlineNextStep,
     });
     if (!canRenderBanner) {
-      relayBannerMessage.textContent = "Relay offline.";
-      relayBannerMeta.textContent = "Start the relay, link your phone, then choose a chat.";
+      relayBannerMessage.textContent = UI_COPY.relay.offlineStatus;
+      relayBannerMeta.textContent = UI_COPY.relay.offlineNextStep;
     }
     return;
   }
@@ -117,31 +119,31 @@ export function updateRelayBanner({
   const metaParts = [];
   if (status.account) {
     const accountLabel = formatRelayAccountFn(status.account) || "Linked account";
-    metaParts.push(`Account: ${accountLabel}`);
+    metaParts.push(accountLabel);
   }
   if (status.chatsSyncedAt) {
     const relative = formatRelativeTime(status.chatsSyncedAt);
-    metaParts.push(relative ? `Synced ${relative}` : `Synced ${formatDisplayDate(status.chatsSyncedAt)}`);
+    metaParts.push(relative ? `Synced ${relative}` : formatDisplayDate(status.chatsSyncedAt));
   } else {
     metaParts.push("Sync pending");
   }
   if (Number.isFinite(status.chatCount)) {
-    metaParts.push(`${formatNumber(status.chatCount)} chats indexed`);
+    metaParts.push(`${formatNumber(status.chatCount)} chats`);
   }
   if (Number.isFinite(status.lastSyncDurationMs) && status.lastSyncDurationMs >= 0) {
-    metaParts.push(`Last sync: ${formatNumber(status.lastSyncDurationMs)}ms`);
+    metaParts.push(`Last sync ${formatNumber(status.lastSyncDurationMs)}ms`);
     if (status.lastSyncDurationMs >= SLOW_SYNC_THRESHOLD_MS) {
-      metaParts.push(`Sync slowdown detected (${formatSyncDurationLabel(status.lastSyncDurationMs)})`);
+      metaParts.push(`Slow sync ${formatSyncDurationLabel(status.lastSyncDurationMs)}`);
     }
   }
   if (status.syncPath === "primary" || status.syncPath === "fallback") {
-    metaParts.push(`Sync path: ${status.syncPath}`);
+    metaParts.push(status.syncPath === "fallback" ? "Fallback sync" : "Primary sync");
     if (status.syncPath === "fallback") {
       const reason = typeof status.lastSyncPathReason === "string" ? status.lastSyncPathReason.trim() : "";
-      metaParts.push(`Fallback reason: ${reason || "Primary sync path unavailable."}`);
+      metaParts.push(reason || "Primary sync unavailable.");
     }
   }
-  const meta = metaParts.join(" · ") || "Relay ready.";
+  const meta = metaParts.join(" · ") || UI_COPY.relay.runningReadyBannerFallback;
   relayStatusViewRenderer?.renderBanner?.({ message, meta });
   if (!canRenderBanner) {
     relayBannerMessage.textContent = message;
@@ -174,13 +176,13 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
       else if (state === "running" || state === "waiting_qr") value = "complete";
       else value = "pending";
       if (detail) {
-        let detailText = "Open the WAAN Relay app and press Start.";
+        let detailText = UI_COPY.relay.onboarding.startPending;
         if (value === "complete") {
-          detailText = "Relay is running.";
+          detailText = UI_COPY.relay.onboarding.startComplete;
         } else if (value === "active") {
-          detailText = "Launching the relay…";
+          detailText = UI_COPY.relay.onboarding.startActive;
         } else if (state === "error") {
-          detailText = "Relay failed to launch. Try again.";
+          detailText = UI_COPY.relay.onboarding.startError;
         }
         relayStatusViewRenderer?.renderOnboardingDetail?.(String(id || ""), detailText, detail);
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
@@ -192,10 +194,10 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
       if (detail) {
         const detailText =
           value === "complete"
-            ? "Phone linked."
+            ? UI_COPY.relay.onboarding.qrComplete
             : value === "active"
-              ? "Scan the QR code below."
-              : "Open Linked Devices on your phone and scan the code.";
+              ? UI_COPY.relay.onboarding.qrActive
+              : UI_COPY.relay.onboarding.qrPending;
         relayStatusViewRenderer?.renderOnboardingDetail?.(String(id || ""), detailText, detail);
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
       }
@@ -206,10 +208,10 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
       if (detail) {
         const detailText =
           value === "complete"
-            ? "Chats loaded."
+            ? UI_COPY.relay.onboarding.syncComplete
             : value === "active"
-              ? "Loading chats..."
-              : "Load chats into WAAN.";
+              ? UI_COPY.relay.onboarding.syncActive
+              : UI_COPY.relay.onboarding.syncPending;
         relayStatusViewRenderer?.renderOnboardingDetail?.(String(id || ""), detailText, detail);
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
       }

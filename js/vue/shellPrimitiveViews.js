@@ -1,4 +1,5 @@
 import { renderActionButton, renderDialogContainer, renderRadioInput } from "./primevueRenderPrimitives.js";
+import { UI_COPY } from "../uiCopy.js";
 
 export {
   createRelayHeaderActionsRoot,
@@ -20,7 +21,7 @@ export function createRelayBannerRoot(h, onAction) {
           h(
             "p",
             { class: "relay-banner-meta", id: "relay-status-meta" },
-            "Start the relay, link your phone, then choose a chat.",
+            UI_COPY.relay.offlineNextStep,
           ),
         ]),
         h("div", { class: "relay-banner-actions", id: "relay-status-actions", hidden: true }, [
@@ -207,7 +208,7 @@ export function createOnboardingDialogRoot(h, onAction) {
         children: [
           h("h2", "Welcome to WAAN"),
           h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
-          h("p", { id: "onboarding-copy" }, "Link the relay to start mirroring chats."),
+          h("p", { id: "onboarding-copy" }, UI_COPY.relay.offlineNextStep),
           h("div", { class: "onboarding-actions" }, [
             renderActionButton(h, {
               type: "button",
@@ -243,14 +244,14 @@ export function createFirstRunActionsRoot(h, onAction) {
           type: "button",
           className: "ghost-button tiny",
           id: "first-run-open-relay",
-          text: "Open relay",
+          text: UI_COPY.relay.firstRun.openRelay,
           onClick: () => onAction("relay.firstRunOpenRelay"),
         }),
         renderActionButton(h, {
           type: "button",
           className: "ghost-button tiny primary",
           id: "first-run-primary-action",
-          text: "Start relay",
+          text: UI_COPY.relay.firstRun.startRelay,
           onClick: () => onAction("relay.firstRunPrimaryAction"),
         }),
         h(

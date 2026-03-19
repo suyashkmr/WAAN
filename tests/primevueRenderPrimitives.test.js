@@ -16,14 +16,14 @@ describe("primevue render primitives", () => {
 
     const vnode = renderActionButton(h, {
       id: "run-search",
-      text: "Search messages",
+      text: "Search",
       className: "ghost-button",
       type: "submit",
     }, globalScope);
 
     expect(vnode.type).toBe(PrimeButton);
     expect(vnode.props.id).toBe("run-search");
-    expect(vnode.props.label).toBe("Search messages");
+    expect(vnode.props.label).toBe("Search");
     expect(vnode.props.unstyled).toBe(true);
     expect(vnode.props["data-ui-runtime"]).toBe("primevue");
   });

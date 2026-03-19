@@ -1,3 +1,4 @@
+import { UI_COPY } from "../uiCopy.js";
 import { clearContainerForVueRenderOnce } from "./renderMountUtils.js";
 
 export function renderSavedViewsComparisonWithVue({
@@ -28,7 +29,7 @@ export function renderSavedViewsComparisonWithVue({
   clearContainerForVueRenderOnce(container);
   if (empty) {
     render(h("div", { class: "saved-views-compare-vue" }, [
-      h("p", null, String(message || "Pick two saved views to compare their activity side-by-side.")),
+      h("p", null, String(message || UI_COPY.savedViews.comparePrompt)),
     ]), container);
     return true;
   }

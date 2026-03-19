@@ -29,6 +29,7 @@ import {
 } from "./search/renderUtils.js";
 import { logPerfDuration } from "./perf.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
+import { UI_COPY } from "./uiCopy.js";
 
 const DEFAULT_RESULT_LIMIT = 200;
 
@@ -104,10 +105,10 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     buildSearchRenderCacheKey,
     hasSearchFilters,
     buildResultsSummaryText,
-    handleStateAction: actionId => {
+        handleStateAction: actionId => {
       if (actionId === "clear-search-filters") {
         resetFilters(false);
-        updateStatus("Search filters cleared.", "info");
+        updateStatus(UI_COPY.search.clearedStatus, "info");
         return;
       }
       if (actionId === "retry-search") {
@@ -149,9 +150,9 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
   function runSearch(query) {
     const entries = getEntries();
     if (!entries.length) {
-      updateStatus("Load a chat file before searching.", "warning");
+      updateStatus(UI_COPY.search.noDataStatus, "warning");
       clearStateOverride();
-      renderErrorState("Load a chat first, then run this search again.");
+      renderErrorState(UI_COPY.search.noDataError);
       hideSearchProgress();
       return;
     }
@@ -193,7 +194,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     });
     requestId = nextRequestId;
     activeSearchRequest = requestId;
-    renderLoadingState("Scanning messages with current filters…");
+    renderLoadingState(UI_COPY.search.progressMessage);
     showSearchProgress(entries.length);
 
     return promise
@@ -212,17 +213,16 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         renderResults();
         if (!total) {
           updateStatus(
-            requestHasFilters ? "No messages matched those filters." : "This chat doesn't have any messages yet.",
+            requestHasFilters ? UI_COPY.search.noMatchesSummary : UI_COPY.search.noMessagesSummary,
             "info",
           );
         } else if (requestHasFilters && total > requestLimit) {
           updateStatus(
-            `Showing the first ${requestLimit} matches out of ${formatNumber(total)}. Narrow your filters for a closer look.`,
+            UI_COPY.search.limitedSummary(formatNumber(requestLimit), formatNumber(total)),
             "info",
           );
         } else {
-          const prefix = requestHasFilters ? "Found" : "Listed";
-          updateStatus(`${prefix} ${formatNumber(total)} messages.`, "success");
+          updateStatus(UI_COPY.search.matchesSummary(total, formatNumber(total)), "success");
         }
         const finishedAt = now();
         logPerfDuration("search.run", finishedAt - startedAt, {
@@ -235,9 +235,9 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
         if (requestId !== activeSearchRequest) return;
         hideSearchProgress();
         console.error(error);
-        updateStatus("Search could not complete.", "error");
+        updateStatus(UI_COPY.search.errorStatus, "error");
         clearStateOverride();
-        renderErrorState("Search could not complete. Try again.");
+        renderErrorState(UI_COPY.search.errorMessage);
         const finishedAt = now();
         logPerfDuration("search.run.failed", finishedAt - startedAt, {
           entries: entries.length,
@@ -275,7 +275,7 @@ export function createSearchController({ elements = {}, options = {} } = {}) {
     clearStateOverride();
     resetParticipantOptionsCache();
     renderResults();
-    if (showToast) updateStatus("Search filters cleared.", "info");
+    if (showToast) updateStatus(UI_COPY.search.clearedStatus, "info");
   }
 
   function handleReset(event) {

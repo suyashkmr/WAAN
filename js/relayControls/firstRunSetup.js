@@ -1,5 +1,7 @@
 // @ts-check
 
+import { UI_COPY } from "../uiCopy.js";
+
 /**
  * @typedef {Record<string, any>} AnyRecord
  */
@@ -73,19 +75,20 @@ export function createFirstRunSetupController({
       firstRunPrimaryActionButton.dataset.action = "connect";
       firstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
       if (state === "running" && chatCount > 0) {
-        firstRunPrimaryActionButton.textContent = "Choose chat";
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.chooseChat;
         firstRunPrimaryActionButton.dataset.action = "select-chat";
       } else if (state === "starting") {
-        firstRunPrimaryActionButton.textContent = "Starting relay...";
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.starting;
         firstRunPrimaryActionButton.disabled = true;
       } else if (state === "waiting_qr") {
-        firstRunPrimaryActionButton.textContent = "Waiting for phone link";
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.waitingPhone;
         firstRunPrimaryActionButton.disabled = true;
       } else if (state === "running") {
-        firstRunPrimaryActionButton.textContent = "Loading chats...";
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;
         firstRunPrimaryActionButton.disabled = true;
       } else {
-        firstRunPrimaryActionButton.textContent = "Start relay";
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.startRelay;
+        firstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
       }
     }
   }

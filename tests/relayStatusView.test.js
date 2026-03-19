@@ -77,7 +77,7 @@ describe("relay status view mapping", () => {
 
     expect(relayBannerEl.dataset.status).toBe("offline");
     expect(relayBannerMessage.textContent).toBe("Relay offline.");
-    expect(relayBannerMeta.textContent).toContain("Start the relay");
+    expect(relayBannerMeta.textContent).toContain("Start relay");
   });
 
   it("applies status and metadata for starting/waiting/running transitions", () => {
@@ -134,14 +134,12 @@ describe("relay status view mapping", () => {
 
     expect(relayBannerEl.dataset.status).toBe("running");
     expect(relayBannerMessage.textContent).toBe("state:running");
-    expect(relayBannerMeta.textContent).toContain("Account: Suyash (1234567890)");
+    expect(relayBannerMeta.textContent).toContain("Suyash (1234567890)");
     expect(relayBannerMeta.textContent).toContain("Synced just now");
-    expect(relayBannerMeta.textContent).toContain("739 chats indexed");
-    expect(relayBannerMeta.textContent).toContain("Sync path: fallback");
-    expect(relayBannerMeta.textContent).toContain(
-      "Fallback reason: Primary sync unavailable: browser session stale",
-    );
-    expect(relayBannerMeta.textContent).toContain("Sync slowdown detected (18s)");
+    expect(relayBannerMeta.textContent).toContain("739 chats");
+    expect(relayBannerMeta.textContent).toContain("Fallback sync");
+    expect(relayBannerMeta.textContent).toContain("Primary sync unavailable: browser session stale");
+    expect(relayBannerMeta.textContent).toContain("Slow sync 18s");
   });
 
   it("maps onboarding step states across relay lifecycle", () => {
@@ -180,7 +178,7 @@ describe("relay status view mapping", () => {
       relayOnboardingStepDetails: details,
     });
     expect(steps[2].dataset.state).toBe("complete");
-    expect(details.start?.textContent).toBe("Relay is running.");
+    expect(details.start?.textContent).toBe("Relay running.");
     expect(details.qr?.textContent).toBe("Phone linked.");
     expect(details.sync?.textContent).toBe("Chats loaded.");
   });
@@ -192,22 +190,22 @@ describe("relay status view mapping", () => {
       status: { status: "starting" },
       relayOnboardingSteps: steps,
     });
-    expect(details.start?.textContent).toBe("Launching the relay…");
+    expect(details.start?.textContent).toBe("Starting relay.");
 
     updateRelayOnboarding({
       status: { status: "waiting_qr" },
       relayOnboardingSteps: steps,
       relayOnboardingStepDetails: { start: details.start, qr: null, sync: details.sync },
     });
-    expect(details.qr?.textContent).toBe("Scan the QR code below.");
+    expect(details.qr?.textContent).toBe("Scan the QR code.");
 
     updateRelayOnboarding({
       status: { status: "running", chatCount: 0 },
       relayOnboardingSteps: steps,
       relayOnboardingStepDetails: { start: null, qr: details.qr, sync: null },
     });
-    expect(details.start?.textContent).toBe("Relay is running.");
-    expect(details.sync?.textContent).toBe("Loading chats...");
+    expect(details.start?.textContent).toBe("Relay running.");
+    expect(details.sync?.textContent).toBe("Loading chats.");
   });
 
   it("can route relay banner and onboarding copy through an injected renderer", () => {
@@ -239,9 +237,9 @@ describe("relay status view mapping", () => {
 
     expect(relayStatusViewRenderer.renderBanner).toHaveBeenCalledWith({
       message: "Relay live",
-      meta: "Sync pending · 5 chats indexed",
+      meta: "Sync pending · 5 chats",
     });
-    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("start", "Relay is running.", details.start);
+    expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("start", "Relay running.", details.start);
     expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("qr", "Phone linked.", details.qr);
     expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("sync", "Chats loaded.", details.sync);
   });
@@ -270,9 +268,9 @@ describe("relay status view mapping", () => {
     });
 
     expect(relayBannerMessage.textContent).toBe("Relay running");
-    expect(relayBannerMeta.textContent).toBe("Sync pending · 3 chats indexed");
-    expect(details.start?.textContent).toBe("Relay is running.");
+    expect(relayBannerMeta.textContent).toBe("Sync pending · 3 chats");
+    expect(details.start?.textContent).toBe("Relay running.");
     expect(details.qr?.textContent).toBe("Phone linked.");
-    expect(details.sync?.textContent).toBe("Loading chats...");
+    expect(details.sync?.textContent).toBe("Loading chats.");
   });
 });

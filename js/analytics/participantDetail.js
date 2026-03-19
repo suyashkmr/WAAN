@@ -5,6 +5,7 @@ import {
   sanitizeText,
 } from "../utils.js";
 import { WEEKDAY_LONG } from "../constants.js";
+import { UI_COPY } from "../uiCopy.js";
 
 function formatSentimentScore(value, digits = 2) {
   if (!Number.isFinite(value)) return "—";
@@ -42,13 +43,13 @@ export function buildParticipantDetailModel(entry) {
 
   const topHourText = entry.top_hour
     ? `${String(entry.top_hour.hour).padStart(2, "0")}:00 (${formatNumber(entry.top_hour.count)} msgs)`
-    : "No hourly data yet";
+    : UI_COPY.analytics.noHourlyData;
   const weekdayName = entry.top_weekday
     ? WEEKDAY_LONG[entry.top_weekday.dayIndex] ?? `Day ${entry.top_weekday.dayIndex + 1}`
     : null;
   const topWeekdayText = weekdayName
     ? `${weekdayName} (${formatNumber(entry.top_weekday.count)} msgs)`
-    : "No weekday data yet";
+    : UI_COPY.analytics.noWeekdayData;
 
   return [
     { label: "Active range", value: rangeText },

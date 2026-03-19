@@ -1,6 +1,7 @@
 // @ts-check
 
 import { clearContainerForVueRenderOnce } from "./renderMountUtils.js";
+import { UI_COPY } from "../uiCopy.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -60,7 +61,7 @@ export function createHeroStatusRenderer({
     /**
      * @param {{ state?: string, message?: string }} [params]
      */
-    renderSyncMeta({ state = "idle", message = "Waiting for relay." } = {}) {
+    renderSyncMeta({ state = "idle", message = UI_COPY.relay.offlineMeta } = {}) {
       if (heroSyncDot) heroSyncDot.dataset.state = state;
       renderText(heroStatusMetaCopy, message);
     },

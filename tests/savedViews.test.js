@@ -218,7 +218,7 @@ describe("savedViews controller", () => {
 
     expect(elements.nameInput.disabled).toBe(true);
     expect(elements.saveButton.disabled).toBe(true);
-    expect(elements.nameInput.placeholder).toBe("Load a chat first");
+    expect(elements.nameInput.placeholder).toBe("Pick a chat");
     expect(elements.gallery.querySelector(".panel-state--loading")).toBeTruthy();
   });
 
@@ -261,7 +261,7 @@ describe("savedViews controller", () => {
     controller.resetForNewDataset();
 
     expect(dependencies.clearSavedViews).toHaveBeenCalledTimes(1);
-    expect(elements.gallery.textContent).toContain("Load a chat to save views");
+    expect(elements.gallery.textContent).toContain("Pick a chat");
   });
 
   it("shows empty gallery recovery actions when data is available", () => {
@@ -295,7 +295,7 @@ describe("savedViews controller", () => {
 
     expect(bridgeSpy).toHaveBeenCalled();
     const payload = bridgeSpy.mock.calls.at(-1)?.[0];
-    expect(payload?.title).toContain("Load a chat");
+    expect(payload?.title).toContain("Pick a chat");
     expect(elements.gallery.querySelector(".panel-state")).toBeNull();
   });
 

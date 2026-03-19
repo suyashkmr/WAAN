@@ -1,6 +1,7 @@
 import { WEEKDAY_LONG, WEEKDAY_SHORT } from "../constants.js";
 import { getHourlyState, updateHourlyState } from "../state.js";
 import { formatFloat, formatNumber } from "../utils.js";
+import { UI_COPY } from "../uiCopy.js";
 
 const MAX_HEATMAP_LEVEL = 4;
 
@@ -101,7 +102,7 @@ export function renderHourlyFromPayload(payload, stateRef) {
   }
   stateRef.filterNote = buildFilterNote(state);
   if (!activeHeatmap || !activeHeatmap.length) {
-    stateRef.model = { mode: "empty", message: "No data available." };
+    stateRef.model = { mode: "empty", message: UI_COPY.analytics.noGenericData };
     stateRef.brushSummary = "No hourly data for this range.";
     stateRef.anomalyBadges = [];
     stateRef.anomalyMessage = "No hourly surprises detected.";
@@ -171,7 +172,7 @@ export function createHourlyRoot(h, state) {
       return () => {
         const model = state.model;
         if (!model || model.mode === "empty") {
-          return h("p", { class: "search-results-empty" }, model?.message || "No data available.");
+          return h("p", { class: "search-results-empty" }, model?.message || UI_COPY.analytics.noGenericData);
         }
         return [
           h("div", { class: "heatmap-grid" }, [

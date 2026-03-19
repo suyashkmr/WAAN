@@ -1,6 +1,7 @@
 import {
   formatNumber,
 } from "../utils.js";
+import { UI_COPY } from "../uiCopy.js";
 
 export function buildResultsSummaryText({
   hasRunSearch,
@@ -11,21 +12,21 @@ export function buildResultsSummaryText({
   resultLimit,
 }) {
   if (!hasRunSearch) {
-    return "Add a keyword, participant, or date range to search this chat. Leave filters blank to scan everything.";
+    return UI_COPY.search.emptySummary;
   }
   if (!total) {
     return lastRunFiltered
-      ? "No messages matched these filters. Try another keyword, participant, or date range."
-      : "This chat doesn't have any messages yet.";
+      ? UI_COPY.search.noMatchesSummary
+      : UI_COPY.search.noMessagesSummary;
   }
   if (!lastRunFiltered) {
-    return `Showing all ${formatNumber(resultsLength)} messages in this chat.`;
+    return UI_COPY.search.allMessagesSummary(formatNumber(resultsLength));
   }
   if (total > resultsLength) {
-    return `Showing ${formatNumber(resultsLength)} of ${formatNumber(total)} matches (first ${resultLimit} shown). Narrow further to see more.`;
+    return UI_COPY.search.limitedSummary(formatNumber(resultsLength), formatNumber(total));
   }
   if (hasFilters) {
-    return `Showing ${formatNumber(resultsLength)} match${resultsLength === 1 ? "" : "es"}.`;
+    return UI_COPY.search.matchesSummary(resultsLength, formatNumber(resultsLength));
   }
-  return `Showing all ${formatNumber(resultsLength)} messages in this chat.`;
+  return UI_COPY.search.allMessagesSummary(formatNumber(resultsLength));
 }

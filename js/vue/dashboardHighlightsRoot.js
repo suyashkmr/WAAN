@@ -1,4 +1,5 @@
 import { renderActionButton } from "./primevueRenderPrimitives.js";
+import { UI_COPY } from "../uiCopy.js";
 
 export function normalizeHighlightEntry(entry) {
   if (!entry || typeof entry !== "object") return null;
@@ -101,7 +102,7 @@ export function createHighlightsRoot({
 
       return () => {
         if (!state.highlights.length) {
-          return h("p", { class: "search-results-empty" }, "Highlights will show up after the chat loads.");
+          return h("p", { class: "search-results-empty" }, UI_COPY.analytics.noHighlights);
         }
         return usePrimeDataView
           ? h(PrimeDataView, {

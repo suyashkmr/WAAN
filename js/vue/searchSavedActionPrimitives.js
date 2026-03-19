@@ -108,7 +108,7 @@ export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatch
           type: "submit",
           className: "ghost-button",
           id: "run-search",
-          text: "Search messages",
+          text: "Search",
         }, globalScope),
         renderActionButton(h, {
           type: "button",

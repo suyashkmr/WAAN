@@ -1,6 +1,7 @@
 // @ts-check
 
 import { createHeroViewState, setHeroBadgeState, setHeroMilestones } from "./dataStatusHeroState.js";
+import { UI_COPY } from "../uiCopy.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -106,7 +107,7 @@ export function createDataStatusController({ elements, deps }) {
   /**
    * @param {{ state?: string, message?: string }} [params]
    */
-  function updateHeroSyncMeta({ state = "idle", message = "Awaiting relay." } = {}) {
+  function updateHeroSyncMeta({ state = "idle", message = UI_COPY.relay.offlineMeta } = {}) {
     heroViewState.syncMetaState = state;
     heroViewState.syncMetaMessage = message;
     if (canRenderSyncMeta) {
@@ -208,8 +209,8 @@ export function createDataStatusController({ elements, deps }) {
     datasetEmptyStateManager.setAvailability(dataAvailable);
     if (!dataAvailable) {
       setDatasetEmptyMessage(
-        "No chat selected",
-        "Start the relay, link your phone, then choose a chat from Loaded chats.",
+        UI_COPY.dataset.emptyHeading,
+        UI_COPY.dataset.emptyMessage,
       );
     }
     savedViewsController.setDataAvailability(Boolean(hasData));
@@ -223,9 +224,9 @@ export function createDataStatusController({ elements, deps }) {
     if (!heroStatusBadge || !heroStatusCopy) return;
     if (!status) {
       renderHeroBadge({ text: "Relay offline", state: "offline" });
-      renderHeroCopy("Start the relay to load a chat and unlock the workspace.");
+      renderHeroCopy(UI_COPY.relay.offlineHero);
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-      updateHeroSyncMeta({ state: "idle", message: "Waiting for relay." });
+      updateHeroSyncMeta({ state: "idle", message: UI_COPY.relay.offlineMeta });
       setDashboardSyncState(false);
       clearReadyCelebration();
       return;
@@ -244,28 +245,28 @@ export function createDataStatusController({ elements, deps }) {
       setDashboardSyncState(isSyncing);
       if (chatCount > 0 && !isSyncing) {
         renderHeroBadge({ text: badgeText, state: "ready" });
-        renderHeroCopy(`${formatNumber(chatCount)} chats loaded. Analysis is ready.`);
+        renderHeroCopy(UI_COPY.relay.runningReadyHero(formatNumber(chatCount)));
         applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
-        updateHeroSyncMeta({ state: "ready", message: `Last updated ${formatStatusTimeFn()}` });
+        updateHeroSyncMeta({ state: "ready", message: UI_COPY.relay.runningReadyMeta(formatStatusTimeFn()) });
         if (!readyCelebrated) {
           triggerReadyCelebration();
           if (typeof notifyRelayReady === "function") {
-            notifyRelayReady(`Analysis ready. ${formatNumber(chatCount)} chats loaded.`);
+            notifyRelayReady(`${formatNumber(chatCount)} chats ready.`);
           }
           readyCelebrated = true;
         }
       } else {
         const copyText = chatCount > 0
-          ? `${formatNumber(chatCount)} chats loaded. Refreshing updates...`
-          : "Connected. Loading chats...";
+          ? UI_COPY.relay.runningRefreshingHero(formatNumber(chatCount))
+          : UI_COPY.relay.runningLoadingHero;
         renderHeroBadge({ text: badgeText, state: "syncing" });
         renderHeroCopy(copyText);
         applyHeroMilestones({ connect: "complete", sync: "active", ready: "pending" });
         updateHeroSyncMeta({
           state: "syncing",
           message: chatCount > 0
-            ? `Refreshing now • ${formatNumber(chatCount)} chats loaded`
-            : "Loading now • preparing chats",
+            ? UI_COPY.relay.runningRefreshingMeta(formatNumber(chatCount))
+            : UI_COPY.relay.runningLoadingMeta,
         });
         clearReadyCelebration({ rearm: chatCount === 0 });
       }
@@ -273,33 +274,33 @@ export function createDataStatusController({ elements, deps }) {
     }
 
     if (status.status === "waiting_qr") {
-      renderHeroBadge({ text: "Link your phone", state: "waiting" });
+      renderHeroBadge({ text: UI_COPY.relay.waitingPhoneStatus.replace(/\.$/, ""), state: "waiting" });
       if (status.lastQr) {
-        renderHeroCopy("Open Linked Devices on your phone and scan this code.");
+        renderHeroCopy(UI_COPY.relay.waitingPhoneHero);
       } else {
-        renderHeroCopy("Start the relay to show a new QR code.");
+        renderHeroCopy(UI_COPY.relay.waitingPhoneFallbackHero);
       }
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-      updateHeroSyncMeta({ state: "idle", message: "Waiting for phone link." });
+      updateHeroSyncMeta({ state: "idle", message: UI_COPY.relay.waitingPhoneMeta });
       setDashboardSyncState(false);
       clearReadyCelebration({ rearm: true });
       return;
     }
 
     if (status.status === "starting") {
-      renderHeroBadge({ text: "Starting relay", state: "starting" });
-      renderHeroCopy("Starting the relay.");
+      renderHeroBadge({ text: UI_COPY.relay.startingStatus.replace(/\.$/, ""), state: "starting" });
+      renderHeroCopy(UI_COPY.relay.startingHero);
       applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-      updateHeroSyncMeta({ state: "idle", message: "Starting session." });
+      updateHeroSyncMeta({ state: "idle", message: UI_COPY.relay.startingMeta });
       setDashboardSyncState(false);
       clearReadyCelebration({ rearm: true });
       return;
     }
 
     renderHeroBadge({ text: "Relay offline", state: "offline" });
-    renderHeroCopy("Start the relay to load a chat and unlock the workspace.");
+    renderHeroCopy(UI_COPY.relay.offlineHero);
     applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
-    updateHeroSyncMeta({ state: "idle", message: "Waiting for relay." });
+    updateHeroSyncMeta({ state: "idle", message: UI_COPY.relay.offlineMeta });
     setDashboardSyncState(false);
     clearReadyCelebration({ rearm: true });
   }

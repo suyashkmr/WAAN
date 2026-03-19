@@ -21,19 +21,19 @@ export const SEARCH_RESULT_LIMIT = 200;
 
 export const ONBOARDING_STEPS = [
   {
-    copy: "Use the relay banner to connect and keep an eye on status messages.",
+    copy: "Use the relay banner to connect.",
     target: "#relay-status-banner",
   },
   {
-    copy: "Track connection details and sync activity with the relay log drawer.",
+    copy: "Open relay logs for sync details.",
     target: "#log-drawer-toggle",
   },
   {
-    copy: "Need extra breathing room? Toggle Compact mode right from the toolbar.",
+    copy: "Use Compact mode for denser controls.",
     target: "#compact-toggle",
   },
   {
-    copy: "Guided insights highlight notable trends for your dataset.",
+    copy: "Start in Highlights.",
     target: "#insight-highlights",
   },
 ];

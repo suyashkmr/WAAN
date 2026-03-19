@@ -1,6 +1,7 @@
 // @ts-check
 
 import { setAppShellRelayStatus } from "../state.js";
+import { UI_COPY } from "../uiCopy.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
@@ -58,8 +59,6 @@ export function createRelayStatusApplyController({
   } = elements;
 
   const {
-    brandName,
-    relayServiceName,
     remoteChatRefreshIntervalMs,
     globalScope = globalThis,
     now = () => Date.now(),
@@ -226,10 +225,9 @@ export function createRelayStatusApplyController({
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);
-      const offlineHelpText =
-        "Start the relay, link your phone, then choose a chat from Loaded chats.";
+      const offlineHelpText = UI_COPY.relay.offlineNextStep;
       renderRelayStatusSurface({
-        statusText: `Relay offline. Start the desktop relay to connect ${brandName}.`,
+        statusText: UI_COPY.relay.offlineStatus,
         accountText: "",
         helpText: offlineHelpText,
         qrSrc: null,
@@ -241,8 +239,8 @@ export function createRelayStatusApplyController({
         refreshChatSelector();
         setDashboardLoadingState(true);
         setDatasetEmptyMessage(
-          "No chat selected",
-          "Start the relay, link your phone, then choose a chat from Loaded chats.",
+          UI_COPY.dataset.offlineHeading,
+          UI_COPY.dataset.offlineMessage,
         );
         setDataAvailabilityState(false);
       }
@@ -257,8 +255,8 @@ export function createRelayStatusApplyController({
       : "";
     const helpText =
       status.status === "running"
-        ? `Your mirrored ${brandName} chats appear in Loaded chats. Pick one to start analysis.`
-        : "Open Linked Devices on your phone and scan the QR code shown here.";
+        ? UI_COPY.dataset.emptyMessage
+        : UI_COPY.relay.waitingPhoneHero;
     renderRelayStatusSurface({
       statusText: description.message,
       accountText,
@@ -277,11 +275,11 @@ export function createRelayStatusApplyController({
     if (!getRemoteChatList().length) {
       if (running) {
         setDatasetEmptyMessage(
-          "Pick a chat",
-          "Choose any conversation from Loaded chats to start analysis.",
+          UI_COPY.dataset.readyHeading,
+          UI_COPY.dataset.readyMessage,
         );
       } else if (waiting) {
-        setDatasetEmptyMessage("Scan the QR code", "Link your phone to start mirroring messages.");
+        setDatasetEmptyMessage(UI_COPY.dataset.waitingHeading, UI_COPY.dataset.waitingMessage);
       }
     }
     updateFirstRunSetup({ status, hasData: Boolean(getDataAvailable?.()) });
@@ -298,7 +296,7 @@ export function createRelayStatusApplyController({
       }
       if (relayUiState.lastStatusKind !== "running") {
         const accountLabel = formatRelayAccountLabel(status.account) || "your account";
-        updateStatus(`Connected as ${accountLabel}.`, "success");
+        updateStatus(`Connected: ${accountLabel}.`, "success");
         relayUiState.lastStatusKind = "running";
       }
     } else {
@@ -308,10 +306,10 @@ export function createRelayStatusApplyController({
         setDashboardLoadingState(true);
       }
       if (waiting && relayUiState.lastStatusKind !== "waiting") {
-        updateStatus("Scan the QR code to finish linking your phone.", "info");
+        updateStatus(UI_COPY.relay.waitingPhoneHero, "info");
         relayUiState.lastStatusKind = "waiting";
       } else if (status.status === "starting" && relayUiState.lastStatusKind !== "starting") {
-        updateStatus(`Starting ${relayServiceName}…`, "info");
+        updateStatus(UI_COPY.relay.startingHero, "info");
         relayUiState.lastStatusKind = "starting";
       }
     }

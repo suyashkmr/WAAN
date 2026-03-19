@@ -51,11 +51,11 @@ describe("dataStatus controller details", () => {
     controller.updateHeroRelayStatus({ status: "waiting_qr", lastQr: false });
     expect(heroStatusBadge.textContent).toBe("Link your phone");
     expect(heroStatusBadge.dataset.state).toBe("waiting");
-    expect(heroStatusCopy.textContent).toContain("Start the relay");
+    expect(heroStatusCopy.textContent).toContain("Start relay");
     expect(heroStatusMetaCopy.textContent).toContain("Waiting for phone link");
 
     controller.updateHeroRelayStatus({ status: "waiting_qr", lastQr: true });
-    expect(heroStatusCopy.textContent).toContain("Linked Devices");
+    expect(heroStatusCopy.textContent).toContain("QR code");
 
     controller.updateHeroRelayStatus({ status: "starting" });
     expect(heroStatusBadge.textContent).toBe("Starting relay");
@@ -64,15 +64,15 @@ describe("dataStatus controller details", () => {
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0 });
     expect(heroStatusBadge.textContent).toBe("Relay connected");
     expect(heroStatusBadge.dataset.state).toBe("syncing");
-    expect(heroStatusCopy.textContent).toBe("Connected. Loading chats...");
+    expect(heroStatusCopy.textContent).toBe("Loading chats.");
     expect(heroSyncDot.dataset.state).toBe("syncing");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(true);
     expect(notifyRelayReady).toHaveBeenCalledTimes(0);
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
-    expect(heroStatusCopy.textContent).toContain("Analysis is ready");
+    expect(heroStatusCopy.textContent).toContain("ready");
     expect(heroSyncDot.dataset.state).toBe("ready");
-    expect(heroStatusMetaCopy.textContent).toContain("Last updated 10:51");
+    expect(heroStatusMetaCopy.textContent).toContain("Updated 10:51");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
     expect(notifyRelayReady).toHaveBeenCalledTimes(1);
     expect(heroStatusBadge.classList.contains("hero-status-badge-ready")).toBe(true);

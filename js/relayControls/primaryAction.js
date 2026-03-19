@@ -1,4 +1,5 @@
 // @ts-check
+import { UI_COPY } from "../uiCopy.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 
 /**
@@ -24,8 +25,8 @@ function getRelayPrimaryAction(status, { relayServiceName } = {}) {
   /** @type {RelayPrimaryAction} */
   const defaultAction = {
     id: "connect",
-    label: "Start relay",
-    hint: "Launch the desktop relay to load chats.",
+    label: UI_COPY.relay.primaryAction.startLabel,
+    hint: UI_COPY.relay.primaryAction.startHint,
     disabled: false,
   };
   if (!status) return defaultAction;
@@ -33,32 +34,32 @@ function getRelayPrimaryAction(status, { relayServiceName } = {}) {
   if (status.lastError || state === "error") {
     return {
       id: "reconnect",
-      label: "Reconnect relay",
-      hint: "Restart the relay and relink your phone.",
+      label: UI_COPY.relay.primaryAction.reconnectLabel,
+      hint: UI_COPY.relay.primaryAction.reconnectHint,
       disabled: false,
     };
   }
   if (state === "running") {
     return {
       id: "resync",
-      label: "Refresh chats",
-      hint: "Fetch the latest chats from the relay.",
+      label: UI_COPY.relay.primaryAction.resyncLabel,
+      hint: UI_COPY.relay.primaryAction.resyncHint,
       disabled: false,
     };
   }
   if (state === "waiting_qr") {
     return {
       id: "waiting",
-      label: "Waiting for phone link",
-      hint: "Open Linked Devices on your phone to finish linking.",
+      label: UI_COPY.relay.primaryAction.waitingLabel,
+      hint: UI_COPY.relay.primaryAction.waitingHint,
       disabled: true,
     };
   }
   if (state === "starting") {
     return {
       id: "starting",
-      label: "Starting…",
-      hint: `Launching ${relayServiceName}…`,
+      label: UI_COPY.relay.primaryAction.startingLabel,
+      hint: UI_COPY.relay.primaryAction.startingHint(relayServiceName),
       disabled: true,
     };
   }

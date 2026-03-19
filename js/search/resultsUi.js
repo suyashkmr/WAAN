@@ -1,4 +1,5 @@
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { UI_COPY } from "../uiCopy.js";
 
 export function createSearchResultsUiController({
   resultsSummaryEl,
@@ -88,18 +89,18 @@ export function createSearchResultsUiController({
     return null;
   }
 
-  function renderLoadingState(message = "Searching messages…") {
+  function renderLoadingState(message = UI_COPY.search.progressMessage) {
     renderResultsState({
       tone: "loading",
-      title: "Searching messages",
+      title: UI_COPY.search.panelTitle,
       message,
     });
   }
 
-  function renderErrorState(message = "Search could not complete.") {
+  function renderErrorState(message = UI_COPY.search.errorMessage) {
     renderResultsState({
       tone: "error",
-      title: "Search failed",
+      title: UI_COPY.search.panelTitle,
       message,
       actions: [{ id: "retry-search", label: "Try again" }],
     });
@@ -148,10 +149,10 @@ export function createSearchResultsUiController({
     if (!total) {
       const renderedStateSource = renderResultsState({
         tone: hasRunSearch ? "empty" : "loading",
-        title: hasRunSearch ? "No matching messages" : "Search messages",
+        title: hasRunSearch ? UI_COPY.search.noMatchesTitle : UI_COPY.search.panelTitle,
         message: hasFilters
-          ? "Try another keyword, participant, or date range."
-          : "Add a keyword, participant, or date range to start.",
+          ? UI_COPY.search.noMatchesMessage
+          : UI_COPY.search.panelPrompt,
         actions: hasFilters ? [{ id: "clear-search-filters", label: "Clear filters" }] : [],
       });
       if (renderedStateSource === "bridge") resultsRenderCacheKey = nextRenderCacheKey;

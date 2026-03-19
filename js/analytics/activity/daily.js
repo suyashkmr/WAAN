@@ -102,7 +102,7 @@ export function renderDailySection(dailyCounts, elements = {}, vueRuntime = null
   clearContainerForVueRenderOnce(container);
 
   if (!Array.isArray(dailyCounts) || !dailyCounts.length) {
-    render(h("p", null, "No data yet."), container);
+    render(h("p", null, UI_COPY.analytics.noData), container);
     if (averageEl) averageEl.textContent = "—";
     return;
   }
@@ -115,7 +115,7 @@ export function renderDailySection(dailyCounts, elements = {}, vueRuntime = null
 
   const model = createDailyCalendarModel(dailyCounts);
   if (!model) {
-    render(h("p", null, "No data yet."), container);
+    render(h("p", null, UI_COPY.analytics.noData), container);
     return;
   }
 
@@ -169,3 +169,4 @@ export function renderDailySection(dailyCounts, elements = {}, vueRuntime = null
     container,
   );
 }
+import { UI_COPY } from "../../uiCopy.js";

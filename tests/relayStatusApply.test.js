@@ -80,6 +80,6 @@ describe("relay status apply", () => {
 
     expect(elements.relayStatusEl.textContent).toBe("Relay running.");
     expect(elements.relayAccountEl.textContent).toBe("Logged in as Alice");
-    expect(elements.relayHelpText.textContent).toContain("Loaded chats");
+    expect(elements.relayHelpText.textContent).toContain("Pick a chat");
   });
 });

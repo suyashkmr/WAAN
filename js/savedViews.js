@@ -12,6 +12,7 @@ import {
 } from "./savedViewsDirtyTracking.js";
 import { syncSavedViewPageControls } from "./savedViewsPageControls.js";
 import { supportsBridgeOwnedSavedViewActions } from "./savedViewsActionOwnership.js";
+import { UI_COPY } from "./uiCopy.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "./vue/bridgeRegistry.js";
 import { readPrimeSelectBridgeValue } from "./vue/primeSelectBridge.js";
 export function createSavedViewsController({ elements = {}, dependencies = {} } = {}) {
@@ -335,7 +336,7 @@ export function createSavedViewsController({ elements = {}, dependencies = {} } 
   function setDataAvailabilityState(flag) {
     dataAvailable = Boolean(flag);
     if (nameInput) {
-      nameInput.placeholder = dataAvailable ? placeholderText : "Load a chat first"; if (!dataAvailable) nameInput.value = "";
+      nameInput.placeholder = dataAvailable ? placeholderText : UI_COPY.savedViews.noDataPlaceholder; if (!dataAvailable) nameInput.value = "";
     }
     updateControlsDisabled();
     refreshUI();

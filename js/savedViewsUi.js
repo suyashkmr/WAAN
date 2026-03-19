@@ -13,6 +13,7 @@ import {
   readPrimeSelectBridgeValue,
   syncPrimeSelectBridge,
 } from "./vue/primeSelectBridge.js";
+import { UI_COPY } from "./uiCopy.js";
 
 export function createSavedViewsUiController({
   elements,
@@ -94,14 +95,13 @@ export function createSavedViewsUiController({
     registerPanelActionHandlers(searchSavedBridge);
     if (!list.length) {
       const tone = dataAvailableGetter() ? "empty" : "loading";
-      const title = dataAvailableGetter() ? "No saved views yet" : "Load a chat to save views";
+      const title = dataAvailableGetter() ? UI_COPY.savedViews.emptyTitle : UI_COPY.savedViews.noDataTitle;
       const message = dataAvailableGetter()
-        ? "Save the current analysis setup so you can return to it quickly."
-        : "Start the relay, choose a chat, then save a view.";
+        ? UI_COPY.savedViews.emptyMessage
+        : UI_COPY.savedViews.noDataMessage;
       const actions = dataAvailableGetter()
         ? [
             { id: "save-view", label: "Save view" },
-            { id: "focus-range", label: "Choose range" },
           ]
         : [];
       if (searchSavedBridge?.renderSavedViewsPanelState) {
@@ -232,7 +232,7 @@ export function createSavedViewsUiController({
       listSelect,
       views,
       preferredListSelection ?? readPrimeSelectBridgeValue(listSelect),
-      "Choose a saved view…",
+      UI_COPY.savedViews.selectPlaceholder,
     );
     populateSavedSelect(compareSelectA, views, primary, "Select view A…");
     populateSavedSelect(compareSelectB, views, secondary, "Select view B…");

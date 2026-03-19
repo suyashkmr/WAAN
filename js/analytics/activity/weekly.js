@@ -1,6 +1,7 @@
 import { formatNumber, formatFloat } from "../../utils.js";
 import { clearContainerForVueRenderOnce } from "../../vue/renderMountUtils.js";
 import { renderActionButton } from "../../vue/primevueRenderPrimitives.js";
+import { UI_COPY } from "../../uiCopy.js";
 
 /**
  * @param {any} entry
@@ -64,7 +65,7 @@ export function renderWeeklySection(weeklyData, summary, options = {}, vueRuntim
   clearContainerForVueRenderOnce(container);
 
   if (!Array.isArray(weeklyData) || !weeklyData.length) {
-    render(h("p", null, "No data yet."), container);
+    render(h("p", null, UI_COPY.analytics.noData), container);
     return;
   }
 

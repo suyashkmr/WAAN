@@ -91,7 +91,7 @@ export function createRelayLogController({
       relayLogState.vueMounted = true;
     }
     if (!relayLogState.entries.length) {
-      render(h("p", { class: "relay-log-empty" }, "No relay logs yet."), logDrawerList);
+      render(h("p", { class: "relay-log-empty" }, UI_COPY.relayLog.empty), logDrawerList);
       return;
     }
     const entries = relayLogState.entries.map((line, index) => ({
@@ -296,3 +296,4 @@ export function createRelayLogController({
     initLogStream,
   };
 }
+import { UI_COPY } from "../uiCopy.js";

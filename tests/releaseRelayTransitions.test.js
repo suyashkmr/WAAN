@@ -126,19 +126,19 @@ describe("release reliability: relay transitions", () => {
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("starting");
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Starting relay...");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Starting…");
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("waiting_qr");
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Waiting for phone link");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Link your phone");
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("running");
-    expect(elements.relayBannerMeta.textContent).toContain("Sync path: primary");
+    expect(elements.relayBannerMeta.textContent).toContain("Primary sync");
     expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose chat");
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("running");
-    expect(elements.relayBannerMeta.textContent).toContain("Sync path: fallback");
+    expect(elements.relayBannerMeta.textContent).toContain("Fallback sync");
   });
 });

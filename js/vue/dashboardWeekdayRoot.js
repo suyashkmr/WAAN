@@ -2,6 +2,7 @@ import {
   buildWeekdayFilterNote,
   computeWeekdayFilteredData,
 } from "../analytics/activity/weekday.js";
+import { UI_COPY } from "../uiCopy.js";
 import { formatFloat, formatNumber } from "../utils.js";
 
 function buildCellLevel(value, maxValue) {
@@ -16,7 +17,7 @@ function buildCellLevel(value, maxValue) {
 export function createWeekdayModel(state) {
   const distribution = Array.isArray(state?.distribution) ? state.distribution : [];
   if (!distribution.length) {
-    return { mode: "empty", message: "No data yet.", filterNote: buildWeekdayFilterNote(state) };
+    return { mode: "empty", message: UI_COPY.analytics.noData, filterNote: buildWeekdayFilterNote(state) };
   }
 
   const { entries, total, std } = computeWeekdayFilteredData(state);
@@ -79,7 +80,7 @@ export function createWeekdayRoot(h, state) {
       return () => {
         const model = state.model;
         if (!model || model.mode === "empty") {
-          return h("p", { class: "search-results-empty" }, model?.message || "No data yet.");
+          return h("p", { class: "search-results-empty" }, model?.message || UI_COPY.analytics.noData);
         }
 
         return [

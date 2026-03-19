@@ -189,7 +189,7 @@ describe("relay integration", () => {
       chatCount: 12,
     });
     expect(heroStatusBadge.textContent).toContain("Connected");
-    expect(heroStatusCopy.textContent).toContain("12 chats loaded.");
+    expect(heroStatusCopy.textContent).toContain("12 chats ready.");
   });
 
   it("registers relay action handlers with Vue shell bridge dispatcher when available", async () => {

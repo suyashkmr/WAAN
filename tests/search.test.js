@@ -243,7 +243,7 @@ describe("search controller", () => {
 
     expect(workerInstances.length).toBe(0);
     expect(elements.resultsListEl.querySelector(".panel-state--error")).toBeTruthy();
-    expect(elements.resultsListEl.textContent).toContain("Load a chat first");
+    expect(elements.resultsListEl.textContent).toContain("Pick a chat");
     expect(elements.resultsListEl.querySelector('[data-panel-action="retry-search"]')).toBeTruthy();
   });
 

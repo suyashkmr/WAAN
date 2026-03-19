@@ -22,32 +22,22 @@
     <header class="hero-shell" id="hero-panel" data-nav-target="hero">
         <div class="hero-layout">
             <div class="hero-blurb app-story-lane" data-story-lane="intro">
-                <div class="hero-shell-meta">
-                    <p class="hero-shell-label">Workspace-first shell</p>
-                    <div class="hero-shell-pills" aria-label="Workspace posture">
-                        <span class="hero-shell-pill">Editorial workspace</span>
-                        <span class="hero-shell-pill subtle">Connect, then review</span>
-                    </div>
-                </div>
                 <div class="hero-brand">
                     <div class="hero-logo">
                         <img src="waanlogo.png" alt="WAAN logo" class="brand-mark" loading="eager" fetchpriority="high"
                             decoding="async">
                     </div>
                     <div class="hero-brand-copy">
-                        <p class="eyebrow section-kicker">Conversation intelligence</p>
                         <h1>WAAN</h1>
-                        <p class="subtitle">Connect the relay, load a chat, and review the signals that matter without
-                            the noise.</p>
                     </div>
                 </div>
                 <div class="hero-status app-signal-stack">
                     <span class="hero-status-badge" id="hero-status-badge">Relay offline</span>
                     <div class="app-status-copy-stack">
-                        <p class="hero-status-copy" id="hero-status-copy">Start the relay to load a chat and unlock the workspace.</p>
+                        <p class="hero-status-copy" id="hero-status-copy">Start the relay.</p>
                         <p class="hero-status-meta" id="hero-status-meta">
                             <span class="hero-sync-dot" id="hero-sync-dot" data-state="idle" aria-hidden="true"></span>
-                            <span id="hero-status-meta-copy">Waiting for relay.</span>
+                            <span id="hero-status-meta-copy">Waiting.</span>
                         </p>
                     </div>
                     <div class="hero-milestones app-signal-strip" id="hero-milestones" aria-label="Setup progress milestones">
@@ -66,7 +56,6 @@
                                         d="M8 3v2h8V3h2v2h1a2 2 0 0 1 2 2v4h-2V8H5v3H3V7a2 2 0 0 1 2-2h1V3h2zm-4 8h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8zm4 2v6h2v-4h4v4h2v-6H8z" />
                                 </svg>
                             </span>Relay workspace</h2>
-                        <p class="card-subtitle">Keep the desktop relay running to link your phone, load chats, and stay current.</p>
                     </div>
                     <div class="card-header-actions">
                         <button type="button" class="ghost-button small" id="relay-reload-all" disabled>Reload chats</button>
@@ -79,21 +68,21 @@
                             <span class="relay-step-index">1</span>
                             <div>
                                 <p class="relay-step-title">Start relay</p>
-                                <p class="relay-step-detail">Open the WAAN Relay desktop app and press Start.</p>
+                                <p class="relay-step-detail">Open WAAN Relay.</p>
                             </div>
                         </div>
                         <div class="relay-step" data-step-id="qr" role="listitem">
                             <span class="relay-step-index">2</span>
                             <div>
                                 <p class="relay-step-title">Link your phone</p>
-                                <p class="relay-step-detail">Open Linked Devices on your phone, choose Link a device, and scan the code below.</p>
+                                <p class="relay-step-detail">Open Linked Devices.</p>
                             </div>
                         </div>
                         <div class="relay-step" data-step-id="sync" role="listitem">
                             <span class="relay-step-index">3</span>
                             <div>
                                 <p class="relay-step-title">Load chats</p>
-                                <p class="relay-step-detail">Keep the relay open until chats finish loading, then pick one to start analysis.</p>
+                                <p class="relay-step-detail">Chats load here.</p>
                             </div>
                         </div>
                     </div>
@@ -108,7 +97,7 @@
                     <p id="relay-account-name" class="live-account"></p>
                     <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
                         <img id="relay-qr-image" alt="Scan this QR code to link your device">
-                        <p>Open Linked Devices on your phone, choose Link a device, and scan this code.</p>
+                        <p>Scan with Linked Devices.</p>
                     </div>
                     <p id="relay-help-text" class="live-help">
                         Need to start manually? Run <code>npm start --workspace apps/server</code>, wait for “Relay listening”, then start the relay here.
@@ -147,24 +136,7 @@
         <section class="workspace-stage full-span" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
             <div class="workspace-stage-header">
                 <div>
-                    <p class="section-kicker">Current workspace</p>
                     <h2>Connect, load, and steer the analysis</h2>
-                    <p class="workspace-stage-copy">Relay status, workspace controls, and setup guidance stay together so the next step is always visible.</p>
-                </div>
-                <div class="workspace-stage-status">
-                    <span class="workspace-stage-chip">PrimeVue workspace</span>
-                    <span class="workspace-stage-chip subtle">Desktop + mobile ready</span>
-                </div>
-            </div>
-            <div class="workspace-stage-rail" aria-label="Workspace structure">
-                <div class="workspace-stage-rail-copy">
-                    <span class="workspace-stage-rail-label">Command surface</span>
-                    <p>Relay state, exports, chat selection, and setup stay together before you move into the analysis.</p>
-                </div>
-                <div class="workspace-stage-rail-metrics" aria-hidden="true">
-                    <span>Relay</span>
-                    <span>Controls</span>
-                    <span>Overview</span>
                 </div>
             </div>
 
@@ -174,7 +146,7 @@
                     <div class="relay-banner-indicator" id="relay-status-dot" aria-hidden="true"></div>
                     <div class="relay-banner-text">
                         <p class="relay-banner-status" id="relay-status-message">Relay offline.</p>
-                        <p class="relay-banner-meta" id="relay-status-meta">Start the relay, link your phone, then choose a chat.</p>
+                        <p class="relay-banner-meta" id="relay-status-meta">Start relay.</p>
                     </div>
                     <div class="relay-banner-actions" id="relay-status-actions" hidden>
                         <button type="button" class="ghost-button small" id="relay-recovery-reconnect">Reconnect</button>
@@ -256,8 +228,8 @@
                         <span></span>
                     </div>
                     <div class="dataset-empty-copy">
-                        <h3 id="dataset-empty-heading">No chat selected</h3>
-                        <p id="dataset-empty-copy">Start the relay, link your phone, then choose a chat from Loaded chats.</p>
+                        <h3 id="dataset-empty-heading">Start relay</h3>
+                        <p id="dataset-empty-copy">Then link your phone.</p>
                         <div class="first-run-setup" id="first-run-setup" aria-label="First run setup guide">
                             <ol class="first-run-steps">
                                 <li class="first-run-step" data-setup-step="connect" data-state="active">
@@ -266,11 +238,11 @@
                                 </li>
                                 <li class="first-run-step" data-setup-step="link" data-state="pending">
                                     <span class="first-run-step-index">2</span>
-                                    <span class="first-run-step-copy">Link your phone from Linked Devices.</span>
+                                    <span class="first-run-step-copy">Link your phone.</span>
                                 </li>
                                 <li class="first-run-step" data-setup-step="load" data-state="pending">
                                     <span class="first-run-step-index">3</span>
-                                    <span class="first-run-step-copy">Choose a chat from Loaded chats.</span>
+                                    <span class="first-run-step-copy">Choose a chat.</span>
                                 </li>
                             </ol>
                             <div class="first-run-actions">
@@ -297,17 +269,10 @@
                 <section class="workspace-overview-shell" id="workspace-overview" data-nav-target="overview">
                     <div class="workspace-overview-header">
                         <div>
-                            <p class="section-kicker">Overview</p>
                             <h2>Read the conversation first</h2>
-                            <p class="workspace-stage-copy">Start with the high-level signal, then drill into activity, sentiment, and participation patterns.</p>
-                        </div>
-                        <div class="workspace-overview-meta" aria-label="Overview reading flow">
-                            <span class="workspace-overview-pill">Start here</span>
-                            <span class="workspace-overview-pill subtle">Then drill down</span>
                         </div>
                     </div>
                     <div class="workspace-overview-frame">
-                        <p class="workspace-overview-note">Use the summary cards to orient yourself before moving into highlights and deeper charts.</p>
                         <section id="summary" class="card-grid summary" data-nav-target="overview"></section>
                     </div>
                 </section>
@@ -338,16 +303,6 @@
                 </div>
             </div>
             <div class="card-content" id="insight-highlights-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Story summary</p>
-                        <p class="analytics-story-copy">Start with the strongest shifts in pace, participation, and risk before moving into the detailed activity panels.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Highlight reading cues">
-                        <span class="analytics-story-pill">What changed</span>
-                        <span class="analytics-story-pill subtle">Why it matters</span>
-                    </div>
-                </div>
                 <div class="highlight-grid" id="highlight-list"></div>
             </div>
         </section>
@@ -381,16 +336,6 @@
             </div>
             <div class="card-content" id="participants-content">
                 <div class="participants-story-grid">
-                    <div class="analytics-story-intro supporting-story-tier">
-                        <div>
-                            <p class="analytics-story-kicker">Participation lens</p>
-                            <p class="analytics-story-copy">Compare who leads the conversation, who falls quiet, and how that balance changes when you narrow the timeframe.</p>
-                        </div>
-                        <div class="analytics-story-pills" aria-label="Participant reading cues">
-                            <span class="analytics-story-pill">Who leads</span>
-                            <span class="analytics-story-pill subtle">Who fades</span>
-                        </div>
-                    </div>
                     <div class="participants-shell-controls">
                         <div class="participants-controls">
                             <label class="control-group" for="participants-top-count">
@@ -419,7 +364,6 @@
                         </div>
                     </div>
                 </div>
-                <p class="analysis-table-note">Open a row to inspect message share, writing density, and how concentrated each contributor is in the selected scope.</p>
                 <div class="table-container scrollable">
                     <table id="top-senders">
                         <thead>
@@ -492,16 +436,6 @@
                 </div>
             </div>
             <div class="card-content" id="hourly-activity-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Timing signal</p>
-                        <p class="analytics-story-copy">Start with the strongest burst, then narrow the hour brush to compare routine activity against outlier spikes.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Hourly reading cues">
-                        <span class="analytics-story-pill">Peak window</span>
-                        <span class="analytics-story-pill subtle">Filter to inspect</span>
-                    </div>
-                </div>
                 <div class="pattern-story-grid">
                     <div class="hourly-summary analysis-summary-strip">
                         <div class="summary-block">
@@ -577,12 +511,6 @@
                 </div>
             </div>
             <div class="card-content" id="daily-activity-content">
-                <div class="analytics-story-intro supporting-story-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Daily cadence</p>
-                        <p class="analytics-story-copy">Scan for streaks and drop-offs across the full range before moving into the denser weekday and time-of-day panels.</p>
-                    </div>
-                </div>
                 <div class="daily-summary">
                     <div class="summary-block">
                         <span class="summary-label">Avg per day</span>
@@ -622,12 +550,6 @@
                 </div>
             </div>
             <div class="card-content" id="weekly-trend-content">
-                <div class="analytics-story-intro supporting-story-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Momentum view</p>
-                        <p class="analytics-story-copy">Use the rolling weekly frame to tell whether the conversation is accelerating, flattening, or cooling off.</p>
-                    </div>
-                </div>
                 <div class="weekly-summary">
                     <div class="summary-block">
                         <span class="summary-label">Total so far</span>
@@ -675,16 +597,6 @@
                 </div>
             </div>
             <div class="card-content" id="weekday-trend-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Weekday pattern</p>
-                        <p class="analytics-story-copy">Compare which days carry the most volume, then narrow the hour window to see when those days actually ignite.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Weekday reading cues">
-                        <span class="analytics-story-pill">Busiest days</span>
-                        <span class="analytics-story-pill subtle">Then narrow hours</span>
-                    </div>
-                </div>
                 <div class="pattern-story-grid">
                     <div class="pattern-controls-shell supporting-story-tier">
                         <div class="weekday-controls">
@@ -758,16 +670,6 @@
                 </div>
             </div>
             <div class="card-content" id="timeofday-trend-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Daypart story</p>
-                        <p class="analytics-story-copy">Scan which time bands dominate the conversation, then tighten the focus range to compare specific hours.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Time-of-day reading cues">
-                        <span class="analytics-story-pill">Dayparts first</span>
-                        <span class="analytics-story-pill subtle">Then focus hours</span>
-                    </div>
-                </div>
                 <div class="pattern-story-grid">
                     <div class="pattern-controls-shell supporting-story-tier">
                         <div class="timeofday-controls">
@@ -836,16 +738,6 @@
                 </div>
             </div>
             <div class="card-content" id="sentiment-overview-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Conversation mood</p>
-                        <p class="analytics-story-copy">Treat sentiment as a directional signal: scan the drift first, then compare which members are pulling the average up or down.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Sentiment reading cues">
-                        <span class="analytics-story-pill">Signal, not verdict</span>
-                        <span class="analytics-story-pill subtle">Inspect contributors</span>
-                    </div>
-                </div>
                 <div class="sentiment-summary" id="sentiment-summary"></div>
                 <div class="sentiment-content">
                     <div class="sentiment-trend sentiment-panel">
@@ -855,7 +747,6 @@
                     </div>
                     <div class="sentiment-participants sentiment-panel">
                         <h3>Members</h3>
-                        <p class="sentiment-note">Average mood score (−1 to +1) for active members.</p>
                         <div class="sentiment-lists">
                             <div class="sentiment-list">
                                 <h4>Most Positive</h4>
@@ -900,20 +791,7 @@
                 </div>
             </div>
             <div class="card-content" id="message-types-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Distribution story</p>
-                        <p class="analytics-story-copy">Start with which content categories dominate the chat, then use the metric cards below to inspect the mix behind that headline.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Message mix reading cues">
-                        <span class="analytics-story-pill">What dominates</span>
-                        <span class="analytics-story-pill subtle">What supports it</span>
-                    </div>
-                </div>
                 <div class="message-type-summary" id="message-type-summary"></div>
-                <div class="lower-lane-intro supporting-story-tier">
-                    <p class="analysis-table-note">These cards separate structural content from system activity so you can tell whether the conversation is mostly people talking, links moving, or events changing the room.</p>
-                </div>
                 <div class="analysis-evidence-frame evidence-panel-tier lower-metrics-frame">
                     <div class="card-grid stats message-basics">
                         <div class="stat" data-stat="media">
@@ -1012,16 +890,6 @@
                 </div>
             </div>
             <div class="card-content" id="polls-content">
-                <div class="analytics-story-intro story-summary-tier">
-                    <div>
-                        <p class="analytics-story-kicker">Decision trail</p>
-                        <p class="analytics-story-copy">Use polls to see when the group switched from discussion into explicit decisions, and who tends to initiate those moments.</p>
-                    </div>
-                    <div class="analytics-story-pills" aria-label="Poll reading cues">
-                        <span class="analytics-story-pill">Decisions surfaced</span>
-                        <span class="analytics-story-pill subtle">Who initiated them</span>
-                    </div>
-                </div>
                 <div class="polls-story-grid">
                     <div class="polls-summary supporting-story-tier">
                         <div class="stat">
@@ -1051,7 +919,6 @@
                                     <path
                                         d="M17 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V7zM7 5h7v4H7zm7 14H7v-6h7zm3-12h-2V5h1z" />
                                 </svg></span>Saved Setups</h2>
-                        <p class="card-subtitle">Save and replay filter combinations to compare patterns faster.</p>
                     </div>
                     <div class="card-header-actions">
                         <button type="button" class="card-toggle" aria-expanded="true"
@@ -1136,11 +1003,11 @@
                         <input type="date" id="search-end">
                     </div>
                     <div class="search-actions">
-                        <button type="submit" class="ghost-button" id="run-search">Search messages</button>
+                        <button type="submit" class="ghost-button" id="run-search">Search</button>
                         <button type="button" class="ghost-button" id="reset-search">Clear filters</button>
                     </div>
                 </form>
-                <div class="search-results-summary" id="search-results-summary">Start with a keyword, participant, or date range. Leave filters open to scan the full chat.</div>
+                <div class="search-results-summary" id="search-results-summary">Search this chat.</div>
                 <div class="search-progress" id="search-progress" aria-live="polite">
                     <div class="search-progress-track" id="search-progress-track" role="progressbar" aria-valuemin="0"
                         aria-valuemax="100" aria-valuenow="0" aria-label="Search progress">
@@ -1162,7 +1029,6 @@
                                     <path
                                         d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" />
                                 </svg></span>FAQ</h2>
-                        <p class="card-subtitle">Short answers for setup, recovery, exports, and account safety.</p>
                     </div>
                     <div class="card-header-actions">
                         <button type="button" class="card-toggle" aria-expanded="true"
@@ -1178,93 +1044,33 @@
                 </div>
                 <ul class="faq-list">
                     <li>
-                        <h3>How do I connect my account?</h3>
-                        <p>Click <strong>Start relay</strong>. On your phone, open chat app → Linked Devices → Link a device,
-                            then scan the QR code shown here. Once the relay is ready, click <strong>Reload chats</strong>
-                            and choose a conversation from <strong>Loaded chats</strong>.</p>
-                    </li>
-                    <li>
                         <h3>Do I need Chrome or Chromium installed for relay sync?</h3>
-                        <p>Yes. WAAN relay requires a local browser engine and currently supports installed Google
-                            Chrome or Chromium on macOS.</p>
-                        <p>If relay will not start on a fresh machine, install Chrome/Chromium and relaunch
-                            <code>WAAN.app</code>.</p>
+                        <p>Yes. WAAN relay needs a local Chrome or Chromium install. If relay will not start on a fresh Mac, install one and relaunch <code>WAAN.app</code>.</p>
                     </li>
                     <li id="faq-macos-gatekeeper">
                         <h3>macOS says the relay app is damaged or from an unidentified developer. What should I do?</h3>
-                        <p>Open <code>WAAN.app</code> from Finder, then go to System Settings → Privacy &amp;
-                            Security and allow the app under Security by clicking <em>Open Anyway</em>.</p>
-                        <p>If blocked again, Control-click the app in Finder and choose <em>Open</em> once.</p>
-                        <p>If macOS asks to move the app to Bin/Trash and no <em>Open Anyway</em> option appears:
-                            confirm you are launching from <code>/Applications/WAAN.app</code>, then run
-                            <code>xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code> and reopen from Finder.
-                        </p>
+                        <p>Open <code>WAAN.app</code> from Finder, then allow it in System Settings → Privacy &amp; Security with <em>Open Anyway</em>. If it is still blocked, Control-click the app once and choose <em>Open</em>. If no override appears, make sure the app is in <code>/Applications/WAAN.app</code>, then run <code>xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code> and reopen it from Finder.</p>
                     </li>
                     <li id="faq-account-safety">
                         <h3>Can WhatsApp block my account for using WAAN?</h3>
-                        <p>It is possible. WAAN is not an official WhatsApp client and uses automation around WhatsApp Web.
-                            WhatsApp/Meta decides enforcement and may apply temporary or permanent restrictions.</p>
-                        <p>Recommended: start with a secondary account before linking a primary one.</p>
-                        <p>Official policies:
+                        <p>Yes, it is possible. WAAN is not an official WhatsApp client, and WhatsApp/Meta can apply temporary or permanent restrictions. Start with a secondary account. Official policies:
                             <a href="https://www.whatsapp.com/legal/terms-of-service" target="_blank" rel="noopener noreferrer">WhatsApp Terms of Service</a>,
                             <a href="https://www.whatsapp.com/legal/business-terms" target="_blank" rel="noopener noreferrer">WhatsApp Business Terms</a>.
                         </p>
                     </li>
                     <li>
-                        <h3>Why do I sometimes see a sync warning, but chats still load?</h3>
-                        <p>Sometimes the first sync method fails. WAAN automatically switches to a backup method so
-                            your chats can still load. In most cases, you can continue using the app normally.</p>
-                    </li>
-                    <li>
-                        <h3>What happens if relay connection drops briefly?</h3>
-                        <p>WAAN automatically retries relay status checks with backoff and recovers when the relay
-                            comes back. If recovery actions appear, use <strong>Reconnect</strong> to restart the relay
-                            link, <strong>Resync</strong> to force a chat refresh, or <strong>Export diagnostics</strong>
-                            before reporting an issue.</p>
+                        <h3>What should I do if syncing looks stuck or the relay drops?</h3>
+                        <p>Use <strong>Resync</strong> first. If that does not recover, use <strong>Reconnect</strong>. Export diagnostics before reporting the issue if the problem keeps returning.</p>
                     </li>
                     <li>
                         <h3>Do I need to keep my phone online?</h3>
-                        <p>Yes. Your phone should stay connected to the internet while syncing, similar to using chat
-                            app Web.</p>
+                        <p>Yes. Keep your phone online while syncing, like WhatsApp Web.</p>
                     </li>
                     <li>
-                        <h3>Why are export buttons disabled?</h3>
-                        <p>Exports are available only after a chat is loaded. Connect first, then pick a chat from the
-                            list.</p>
-                    </li>
-                    <li>
-                        <h3>Where is my data stored?</h3>
-                        <p>Your data is stored locally on your Mac in WAAN’s app data folder. It is not uploaded
-                            unless you explicitly share exported files.</p>
-                    </li>
-                    <li>
-                        <h3>Does WAAN send my chat content to external servers?</h3>
-                        <p>By default, no. WAAN processes mirrored chat data locally on your device for analytics.</p>
-                        <p>Data leaves your device only when you explicitly export/share artifacts (for example
-                            CSV/JSON/PDF/report files or logs).</p>
-                        <p>See full details in the project privacy notice:
+                        <h3>Where is my data stored, and does WAAN send it anywhere?</h3>
+                        <p>WAAN stores data locally on your Mac and processes mirrored chats on-device by default. Data leaves your device only when you explicitly export or share it. See:
                             <a href="https://github.com/suyashkmr/WAAN/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">PRIVACY.md</a>.
                         </p>
-                    </li>
-                    <li>
-                        <h3>What UI runtime does WAAN use now?</h3>
-                        <p>WAAN now runs its production UI through Vue 3 and PrimeVue-backed surfaces, with a small documented bootstrap exception for page controls during startup.</p>
-                    </li>
-                    <li>
-                        <h3>What are saved views?</h3>
-                        <p>Saved views let you bookmark your current filters and chart settings so you can return to
-                            the same analysis later.</p>
-                    </li>
-                    <li>
-                        <h3>What should I do if syncing seems stuck?</h3>
-                        <p>Use the recovery strip first: click <strong>Resync</strong>. If it still looks stalled,
-                            click <strong>Reconnect</strong> to restart the relay session. If needed, click
-                            <strong>Export diagnostics</strong> and attach the file when reporting the issue.</p>
-                    </li>
-                    <li>
-                        <h3>What’s the safest way to close the app?</h3>
-                        <p>Disconnect or stop syncing first, then quit the app. If a relay browser window opened, close
-                            that too.</p>
                     </li>
                 </ul>
             </div>
@@ -1285,7 +1091,7 @@
             </div>
         </div>
         <div class="relay-log-body" id="relay-log-list">
-            <p class="relay-log-empty">No relay logs yet.</p>
+            <p class="relay-log-empty">No logs yet.</p>
         </div>
     </aside>
 
@@ -1295,7 +1101,7 @@
         <div class="onboarding-panel">
             <h2>Welcome to WAAN</h2>
             <p class="onboarding-step-label" id="onboarding-step-label"></p>
-            <p id="onboarding-copy">Start the relay, link your phone, and load a chat to open the workspace.</p>
+            <p id="onboarding-copy">Start relay.</p>
             <div class="onboarding-actions">
                 <button type="button" class="ghost-button" id="onboarding-skip">Skip</button>
                 <button type="button" class="ghost-button primary" id="onboarding-next">Next</button>
@@ -1308,7 +1114,7 @@
             <img src="waanlogo.png" alt="WAAN logo" class="brand-mark brand-mark--small" loading="lazy">
             <div>
                 <p>WAAN Relay</p>
-                <small>Conversation intelligence for your chat app chats.</small>
+                <small>Local chat intelligence.</small>
             </div>
         </div>
         <p class="footer-meta">

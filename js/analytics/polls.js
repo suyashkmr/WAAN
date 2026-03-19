@@ -1,5 +1,6 @@
 import { sanitizeText, formatNumber, formatDisplayDate } from "../utils.js";
 import { clearContainerForVueRenderOnce } from "../vue/renderMountUtils.js";
+import { UI_COPY } from "../uiCopy.js";
 
 export function renderPollsSection({ data, elements = {}, vueRuntime = null } = {}) {
   const { listEl, totalsEl, creatorsEl, noteEl } = elements;
@@ -25,12 +26,12 @@ export function renderPollsSection({ data, elements = {}, vueRuntime = null } = 
   if (!entries.length) {
     if (canRenderWithVue) {
       const { h, render } = vueRuntime;
-      render(h("li", { class: "empty-state" }, "No polls captured yet."), listEl);
+      render(h("li", { class: "empty-state" }, UI_COPY.analytics.noPolls), listEl);
     } else {
       throw new Error("Vue runtime is required for polls rendering.");
     }
     if (noteEl) {
-      noteEl.textContent = "Load a chat that includes poll messages to surface them here.";
+      noteEl.textContent = "Polls appear here when the selected chat includes them.";
     }
     return;
   }

@@ -17,7 +17,7 @@ describe("message types renderer", () => {
       elements: { summaryEl, noteEl },
       vueRuntime: { h, render },
     });
-    expect(summaryEl.textContent).toContain("No message categories for this range.");
+    expect(summaryEl.textContent).toContain("No message types in this range.");
     expect(noteEl.textContent).toBe("");
   });
 

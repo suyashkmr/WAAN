@@ -1,12 +1,14 @@
 // @ts-check
 
+import { UI_COPY } from "../uiCopy.js";
+
 export function createHeroViewState() {
   return {
     badgeText: "",
     badgeState: "offline",
     copyText: "",
     syncMetaState: "idle",
-    syncMetaMessage: "Waiting for relay.",
+    syncMetaMessage: UI_COPY.relay.offlineMeta,
     milestones: {
       connect: "pending",
       sync: "pending",
