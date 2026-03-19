@@ -67,7 +67,7 @@ describe("relay log stream rendering", () => {
     globalThis.EventSource = /** @type {any} */ (FakeEventSource);
 
     const { controller, logDrawerList, logDrawerConnectionLabel } = createController({ vueRuntime });
-    logDrawerList.innerHTML = '<p class="relay-log-empty">No relay logs yet.</p>';
+    logDrawerList.innerHTML = '<p class="relay-log-empty">No relay events yet.</p>';
     controller.initLogStream();
 
     sourceInstance.onmessage?.({ data: "line one" });
@@ -79,7 +79,7 @@ describe("relay log stream rendering", () => {
     expect(logDrawerList.textContent).toContain("line two");
 
     sourceInstance.onopen?.();
-    expect(logDrawerConnectionLabel.textContent).toBe("Live log stream");
+    expect(logDrawerConnectionLabel.textContent).toBe("Live relay log");
   });
 
   it("renders relay logs via PrimeVue DataView when available", () => {
@@ -150,7 +150,29 @@ describe("relay log stream rendering", () => {
     expect(logDrawerConnectionLabel.textContent).toBe("Connecting…");
 
     sourceInstance.onopen?.();
-    expect(logDrawerConnectionLabel.textContent).toBe("Live log stream");
+    expect(logDrawerConnectionLabel.textContent).toBe("Live relay log");
     expect(logDrawerList.querySelectorAll(".relay-log-entry")).toHaveLength(0);
+  });
+
+  it("closes the drawer on escape and outside clicks", () => {
+    const vueRuntime = { h, render, Fragment };
+    const { controller, logDrawerEl } = createController({ vueRuntime });
+    const outside = document.createElement("button");
+    document.body.append(logDrawerEl, outside);
+
+    controller.openLogDrawer();
+    expect(controller.isLogDrawerOpen()).toBe(true);
+    expect(logDrawerEl.getAttribute("aria-hidden")).toBe("false");
+
+    controller.handleLogDrawerKeydown(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(controller.isLogDrawerOpen()).toBe(false);
+    expect(logDrawerEl.getAttribute("aria-hidden")).toBe("true");
+
+    controller.openLogDrawer();
+    const outsideClick = new MouseEvent("click", { bubbles: true });
+    Object.defineProperty(outsideClick, "target", { value: outside, configurable: true });
+    controller.handleLogDrawerDocumentClick(outsideClick);
+    expect(controller.isLogDrawerOpen()).toBe(false);
+    expect(logDrawerEl.getAttribute("aria-hidden")).toBe("true");
   });
 });

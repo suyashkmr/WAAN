@@ -30,6 +30,7 @@ export function createDataStatusController({ elements, deps }) {
     formatStatusTime: formatStatusTimeFn = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     setTimeoutRef = setTimeout,
     clearTimeoutRef = clearTimeout,
+    getRemoteChatsLastFetchedAt = () => 0,
     heroStatusRenderer = null,
   } = deps;
 
@@ -234,7 +235,8 @@ export function createDataStatusController({ elements, deps }) {
 
     if (status.status === "running") {
       const chatCount = Number(status.chatCount ?? 0);
-      const isSyncing = Boolean(status.syncingChats) || chatCount === 0;
+      const isSyncing = Boolean(status.syncingChats);
+      const hasCompletedRemoteChatFetch = Boolean(getRemoteChatsLastFetchedAt());
       const badgeText = status.account
         ? `Connected • ${formatRelayAccount(status.account)}`
         : "Relay connected";
@@ -255,6 +257,13 @@ export function createDataStatusController({ elements, deps }) {
           }
           readyCelebrated = true;
         }
+      } else if (!isSyncing && hasCompletedRemoteChatFetch) {
+        renderHeroBadge({ text: badgeText, state: "ready" });
+        renderHeroCopy(UI_COPY.relay.runningEmptyHero);
+        applyHeroMilestones({ connect: "complete", sync: "complete", ready: "pending" });
+        updateHeroSyncMeta({ state: "ready", message: UI_COPY.relay.runningEmptyMeta });
+        setDashboardSyncState(false);
+        clearReadyCelebration({ rearm: true });
       } else {
         const copyText = chatCount > 0
           ? UI_COPY.relay.runningRefreshingHero(formatNumber(chatCount))
@@ -280,7 +289,7 @@ export function createDataStatusController({ elements, deps }) {
       } else {
         renderHeroCopy(UI_COPY.relay.waitingPhoneFallbackHero);
       }
-      applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
+      applyHeroMilestones({ connect: "complete", sync: "active", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: UI_COPY.relay.waitingPhoneMeta });
       setDashboardSyncState(false);
       clearReadyCelebration({ rearm: true });
@@ -290,7 +299,7 @@ export function createDataStatusController({ elements, deps }) {
     if (status.status === "starting") {
       renderHeroBadge({ text: UI_COPY.relay.startingStatus.replace(/\.$/, ""), state: "starting" });
       renderHeroCopy(UI_COPY.relay.startingHero);
-      applyHeroMilestones({ connect: "active", sync: "pending", ready: "pending" });
+      applyHeroMilestones({ connect: "active", sync: "active", ready: "pending" });
       updateHeroSyncMeta({ state: "idle", message: UI_COPY.relay.startingMeta });
       setDashboardSyncState(false);
       clearReadyCelebration({ rearm: true });

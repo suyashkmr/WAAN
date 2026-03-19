@@ -9,35 +9,82 @@
     --story-tier-border: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, transparent);
 }
 
+.deep-dive-cluster--patterns .analytics-story-card,
+.deep-dive-cluster--exports .analytics-story-card {
+    margin-bottom: 0;
+}
+
+.deep-dive-cluster--patterns .analytics-story-card {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 8%, var(--surface-utility-border));
+    box-shadow: var(--surface-utility-shadow);
+    background-image: none;
+}
+
+.deep-dive-cluster--exports .analytics-story-card {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 8%, var(--surface-utility-border));
+    box-shadow: var(--surface-utility-shadow);
+}
+
+.guided-findings-cluster--signal .analytics-story-card,
+.guided-findings-cluster--drivers .analytics-story-card {
+    margin-bottom: 0;
+}
+
+.guided-findings-cluster--timing .analytics-story-card {
+    margin-bottom: 0;
+    background-image: none;
+}
+
+.guided-findings-cluster--signal #insight-highlights {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, var(--surface-supporting-border));
+    box-shadow: var(--editorial-card-shadow);
+}
+
+.guided-findings-cluster--drivers #participants {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 8%, var(--surface-supporting-border));
+}
+
+.guided-findings-cluster--timing :is(#hourly-activity, #daily-activity) {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, var(--surface-utility-border));
+    box-shadow: var(--surface-utility-shadow);
+}
+
+.guided-findings-cluster--timing :is(#hourly-activity, #daily-activity) .analysis-evidence-frame {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--surface-utility-border));
+    background: color-mix(in srgb, var(--surface-utility-bg) 100%, transparent);
+}
+
+.deep-dive-cluster--patterns .analysis-evidence-frame,
+.deep-dive-cluster--exports .analysis-evidence-frame {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--surface-utility-border));
+    background: color-mix(in srgb, var(--surface-utility-bg) 100%, transparent);
+}
+
 .analytics-story-copy {
     margin: 0;
     max-width: 58ch;
     font-size: var(--type-body-sm);
     line-height: var(--leading-relaxed);
-    color: color-mix(in srgb, var(--text) 78%, var(--muted));
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
     text-wrap: pretty;
 }
 
 .story-summary-tier {
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--analytics-story-tier-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 88%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, transparent), transparent 42%);
-    border-color: var(--analytics-story-tier-border);
-    box-shadow: var(--editorial-card-shadow);
+    background: color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent);
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, var(--surface-supporting-border));
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 .supporting-story-tier {
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--analytics-support-tier-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 86%, transparent)),
-        radial-gradient(circle at top left, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 7%, transparent), transparent 46%);
-    border-color: var(--analytics-support-tier-border);
+    background: color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent);
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, var(--surface-supporting-border));
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 .evidence-panel-tier {
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--analytics-evidence-tier-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 8%, transparent), transparent 48%);
-    border-color: var(--analytics-evidence-tier-border);
+    background: color-mix(in srgb, var(--surface-utility-bg) 100%, transparent);
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, var(--surface-utility-border));
+    box-shadow: var(--surface-utility-shadow);
 }
 
 .pattern-story-grid,
@@ -46,8 +93,27 @@
     gap: 0.95rem;
 }
 
+.guided-findings-cluster--timing .pattern-story-grid {
+    gap: 0.86rem;
+}
+
 .analysis-summary-strip {
     margin: 0;
+}
+
+.guided-findings-cluster--timing .analysis-summary-strip,
+.guided-findings-cluster--timing .daily-summary {
+    padding: 0.84rem 0.92rem;
+    border-radius: calc(var(--shape-medium) + 1px);
+    border: 1px solid color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--surface-supporting-border));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 96%, transparent), color-mix(in srgb, var(--panel-bg) 90%, transparent)),
+        radial-gradient(circle at top left, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 4%, transparent), transparent 50%);
+}
+
+.deep-dive-cluster--patterns :is(.weekly-summary, .pattern-controls-shell, .sentiment-panel),
+.deep-dive-cluster--exports :is(.polls-summary, .message-type-summary) {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--surface-supporting-border));
 }
 
 .participants-shell-controls {
@@ -55,9 +121,17 @@
     gap: 0.8rem;
 }
 
+.guided-findings-cluster--drivers .participants-shell-controls {
+    padding: 0.12rem 0.06rem 0;
+}
+
 .highlight-grid {
     display: grid;
     gap: 1.05rem;
+}
+
+.guided-findings-cluster--signal .highlight-grid {
+    gap: 1rem;
 }
 
 .highlight-grid :is(.p-dataview, .p-dataview-content, .p-dataview-list, .highlight-grid-dataview-root, .highlight-grid-dataview-content, .highlight-grid-dataview-list) {
@@ -72,12 +146,12 @@
 
 .guided-card {
     border-radius: var(--shape-medium);
-    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 14%, var(--border));
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 14%, var(--surface-supporting-border));
     padding: 1rem 1.05rem;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated-strong) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 9%, transparent), transparent 44%);
-    box-shadow: var(--editorial-card-contrast-shadow);
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 7%, transparent), transparent 44%);
+    box-shadow: var(--surface-supporting-shadow);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -114,11 +188,9 @@
     justify-content: space-between;
     gap: 0.82rem;
     min-height: 180px;
-    background: linear-gradient(180deg,
-        color-mix(in srgb, var(--surface-elevated-strong) 98%, transparent) 0%,
-        color-mix(in srgb, var(--bg-raised) 95%, transparent) 100%);
-    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 16%, var(--border));
-    box-shadow: var(--editorial-card-contrast-shadow);
+    background: color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent);
+    border: 1px solid color-mix(in srgb, var(--section-accent, var(--accent)) 10%, var(--surface-supporting-border));
+    box-shadow: var(--surface-supporting-shadow);
     overflow: hidden;
     transition:
         transform var(--motion-duration-fast) var(--motion-ease-out),
@@ -127,15 +199,15 @@
 }
 
 :is(.guided-card, .highlight-card):hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: var(--editorial-card-shadow-hover);
-    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 42%, var(--border));
+    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 16%, var(--surface-supporting-border));
 }
 
 :is(.guided-card, .highlight-card):focus-within {
     box-shadow:
-        var(--control-focus-ring, 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)),
-        var(--shadow-card-strong);
+        var(--control-focus-ring, 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent)),
+        var(--surface-supporting-shadow);
 }
 
 .highlight-card[data-accent="growth"] {
@@ -255,8 +327,8 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 18%, transparent) 0%, transparent 58%);
-    opacity: 0.58;
+    background: radial-gradient(circle at top right, color-mix(in srgb, var(--section-accent, var(--accent)) 12%, transparent) 0%, transparent 58%);
+    opacity: 0.46;
     pointer-events: none;
 }
 

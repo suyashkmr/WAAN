@@ -117,7 +117,7 @@ describe("bootstrap controller", () => {
     onboardingNextButton.click();
     expect(deps.onboardingController.skip).toHaveBeenCalledTimes(0);
     expect(deps.onboardingController.advance).toHaveBeenCalledTimes(0);
-    expect(deps.onboardingController.start).toHaveBeenCalledTimes(1);
+    expect(deps.onboardingController.start).toHaveBeenCalledTimes(0);
 
     expect(deps.buildSectionNav).toHaveBeenCalledTimes(1);
     expect(deps.setupSectionNavTracking).toHaveBeenCalledTimes(1);
@@ -126,7 +126,7 @@ describe("bootstrap controller", () => {
     expect(deps.savedViewsController.setDataAvailability).toHaveBeenCalledWith(true);
     expect(deps.refreshChatSelector).toHaveBeenCalledTimes(1);
     expect(deps.updateStatus).toHaveBeenCalledWith(
-      "Start WAAN Relay to mirror chat app chats here.",
+      "Start WAAN Relay to unlock the workspace.",
       "info",
     );
 
@@ -170,17 +170,20 @@ describe("bootstrap controller", () => {
     const handlers = setShellActionHandlers.mock.calls[0][0];
     expect(typeof handlers["onboarding.skip"]).toBe("function");
     expect(typeof handlers["onboarding.next"]).toBe("function");
+    expect(typeof handlers["onboarding.start"]).toBe("function");
     expect(typeof handlers["ui.compact.toggle"]).toBe("function");
     expect(typeof handlers["ui.motion.cycle"]).toBe("function");
     expect(typeof handlers["ui.contrast.toggle"]).toBe("function");
     expect(typeof handlers["ui.theme.set"]).toBe("function");
 
+    handlers["onboarding.start"]();
     handlers["onboarding.skip"]();
     handlers["onboarding.next"]();
     handlers["ui.compact.toggle"]();
     handlers["ui.motion.cycle"]();
     handlers["ui.contrast.toggle"]();
     handlers["ui.theme.set"]({ preference: "dark" });
+    expect(deps.onboardingController.start).toHaveBeenCalledWith({ force: true });
     expect(deps.onboardingController.skip).toHaveBeenCalledTimes(1);
     expect(deps.onboardingController.advance).toHaveBeenCalledTimes(1);
     expect(deps.toggleCompactMode).toHaveBeenCalledTimes(1);

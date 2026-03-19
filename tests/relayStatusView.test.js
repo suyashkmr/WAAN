@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { h, render } from "vue";
 import { updateRelayBanner, updateRelayOnboarding } from "../js/relayControls/statusView.js";
 import { createRelayStatusViewRenderer } from "../js/vue/relayStatusViewRenderer.js";
+import { UI_COPY } from "../js/uiCopy.js";
 
 function createBannerElements() {
   const relayBannerEl = document.createElement("section");
@@ -77,7 +78,7 @@ describe("relay status view mapping", () => {
 
     expect(relayBannerEl.dataset.status).toBe("offline");
     expect(relayBannerMessage.textContent).toBe("Relay offline.");
-    expect(relayBannerMeta.textContent).toContain("Start relay");
+    expect(relayBannerMeta.textContent).toBe("Workspace locked until relay starts.");
   });
 
   it("applies status and metadata for starting/waiting/running transitions", () => {
@@ -111,6 +112,7 @@ describe("relay status view mapping", () => {
     });
     expect(relayBannerEl.dataset.status).toBe("waiting_qr");
     expect(relayBannerMessage.textContent).toBe("state:waiting_qr");
+    expect(relayBannerMeta.textContent).toBe("Waiting for QR scan.");
 
     updateRelayBanner({
       status: {
@@ -140,6 +142,44 @@ describe("relay status view mapping", () => {
     expect(relayBannerMeta.textContent).toContain("Fallback sync");
     expect(relayBannerMeta.textContent).toContain("Primary sync unavailable: browser session stale");
     expect(relayBannerMeta.textContent).toContain("Slow sync 18s");
+
+    updateRelayBanner({
+      status: {
+        status: "running",
+        account: { pushName: "Suyash" },
+        chatCount: 0,
+        syncingChats: false,
+      },
+      relayBannerEl,
+      relayBannerMessage,
+      relayBannerMeta,
+      describeRelayStatusFn,
+      formatRelayAccountFn: () => "Suyash (1234567890)",
+      formatRelativeTime: () => "just now",
+      formatDisplayDate: () => "today",
+      formatNumber: value => String(value),
+      hasCompletedRemoteChatFetch: true,
+    });
+    expect(relayBannerMeta.textContent).toContain("No chats available yet.");
+
+    updateRelayBanner({
+      status: {
+        status: "running",
+        account: { pushName: "Suyash" },
+        chatCount: 0,
+        syncingChats: false,
+      },
+      relayBannerEl,
+      relayBannerMessage,
+      relayBannerMeta,
+      describeRelayStatusFn,
+      formatRelayAccountFn: () => "Suyash (1234567890)",
+      formatRelativeTime: () => "just now",
+      formatDisplayDate: () => "today",
+      formatNumber: value => String(value),
+      hasCompletedRemoteChatFetch: false,
+    });
+    expect(relayBannerMeta.textContent).toContain(UI_COPY.relay.banner.loadingMeta);
   });
 
   it("maps onboarding step states across relay lifecycle", () => {
@@ -164,13 +204,31 @@ describe("relay status view mapping", () => {
     expect(steps[2].dataset.state).toBe("pending");
 
     updateRelayOnboarding({
-      status: { status: "running", chatCount: 0 },
+      status: { status: "running", chatCount: 0, syncingChats: true },
       relayOnboardingSteps: steps,
       relayOnboardingStepDetails: details,
     });
     expect(steps[0].dataset.state).toBe("complete");
     expect(steps[1].dataset.state).toBe("complete");
     expect(steps[2].dataset.state).toBe("active");
+
+    updateRelayOnboarding({
+      status: { status: "running", chatCount: 0, syncingChats: false },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
+      hasCompletedRemoteChatFetch: false,
+    });
+    expect(steps[2].dataset.state).toBe("pending");
+    expect(details.sync?.textContent).toBe(UI_COPY.relay.onboarding.syncPending);
+
+    updateRelayOnboarding({
+      status: { status: "running", chatCount: 0, syncingChats: false },
+      relayOnboardingSteps: steps,
+      relayOnboardingStepDetails: details,
+      hasCompletedRemoteChatFetch: true,
+    });
+    expect(steps[2].dataset.state).toBe("complete");
+    expect(details.sync?.textContent).toBe("Chats loaded.");
 
     updateRelayOnboarding({
       status: { status: "running", chatCount: 5 },
@@ -200,7 +258,7 @@ describe("relay status view mapping", () => {
     expect(details.qr?.textContent).toBe("Scan the QR code.");
 
     updateRelayOnboarding({
-      status: { status: "running", chatCount: 0 },
+      status: { status: "running", chatCount: 0, syncingChats: true },
       relayOnboardingSteps: steps,
       relayOnboardingStepDetails: { start: null, qr: details.qr, sync: null },
     });
@@ -237,7 +295,7 @@ describe("relay status view mapping", () => {
 
     expect(relayStatusViewRenderer.renderBanner).toHaveBeenCalledWith({
       message: "Relay live",
-      meta: "Sync pending · 5 chats",
+      meta: "Choose a chat to begin. · 5 chats",
     });
     expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("start", "Relay running.", details.start);
     expect(relayStatusViewRenderer.renderOnboardingDetail).toHaveBeenCalledWith("qr", "Phone linked.", details.qr);
@@ -261,14 +319,14 @@ describe("relay status view mapping", () => {
       relayStatusViewRenderer: {},
     });
     updateRelayOnboarding({
-      status: { status: "running", chatCount: 0 },
+      status: { status: "running", chatCount: 0, syncingChats: true },
       relayOnboardingSteps: steps,
       relayOnboardingStepDetails: details,
       relayStatusViewRenderer: { renderBanner: vi.fn() },
     });
 
     expect(relayBannerMessage.textContent).toBe("Relay running");
-    expect(relayBannerMeta.textContent).toBe("Sync pending · 3 chats");
+    expect(relayBannerMeta.textContent).toBe("Choose a chat to begin. · 3 chats");
     expect(details.start?.textContent).toBe("Relay running.");
     expect(details.qr?.textContent).toBe("Phone linked.");
     expect(details.sync?.textContent).toBe("Loading chats.");

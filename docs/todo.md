@@ -16,8 +16,91 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Current State
 
-- [x] All previously tracked implementation tasks are complete.
-- [x] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
+- [x] Previous overhaul waves through Phase 35 are complete.
+- [x] Execute the Guided Analysis Studio overhaul plan in `docs/ui-overhaul-spec.md`.
+
+## Next Wave: Guided Analysis Studio Overhaul
+
+- [x] Phase 36: Studio Architecture Reset.
+  - [x] Redefine the app as four stages: setup, active workspace, guided findings, and deep-dive tools.
+  - [x] Replace the current many-peer-sections flow with one priority-ordered journey.
+  - [x] Decide the final section order and grouping in `index.html` before detailed styling starts.
+  - [x] Keep existing hooks, IDs, and bridge contracts unless a deliberate migration is included in the same phase.
+  - [x] Document one final IA map in `docs/ui-overhaul-spec.md`.
+  - [x] Ensure the top shell no longer behaves like one section among many.
+  - [x] Ensure the page order reflects the new guided studio journey.
+  - [x] Complete validation:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/appShellControllers.test.js tests/sectionNav.test.js tests/sectionNavDetailed.test.js tests/sectionNavVueRender.test.js tests/vueFullShellInteractions.test.js tests/relayStatusView.test.js tests/relayControls.test.js tests/search.test.js tests/savedViews.test.js`
+    - [x] `npm run check:types`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+- [x] Phase 37: Unified Product System.
+  - [x] Rebuild the shared design system so shell, cards, controls, utilities, and support surfaces use one visual language.
+  - [x] Normalize type hierarchy, spacing rhythm, border and shadow rules, accent rules, control geometry, and empty-state framing.
+  - [x] Remove leftover section-specific chrome that still reflects older redesign waves.
+  - [x] Update the primary implementation surfaces in `styles.base.css`, `styles.components.css`, and `styles/components/*`.
+  - [x] Ensure adjacent sections no longer feel like different products.
+  - [x] Ensure primary, supporting, and utility surfaces are visually distinct but clearly related.
+  - [x] Ensure interactive controls are visually consistent across shell, analytics, search, and saved views.
+  - [x] Complete validation:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/appShellControllers.test.js tests/sectionNav.test.js tests/sectionNavDetailed.test.js tests/sectionNavVueRender.test.js tests/vueFullShellInteractions.test.js tests/relayControls.test.js tests/search.test.js tests/savedViews.test.js`
+    - [x] `npm run check:types`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+- [x] Phase 38: Setup and Workspace Unification.
+  - [x] Merge hero, relay banner, first-run state, dataset-empty state, and onboarding into one cohesive setup experience.
+  - [x] Make offline, starting, linking, syncing, and ready states read as one system.
+  - [x] Make the active workspace control bar compact, production-like, and clearly prioritized.
+  - [x] Remove duplicate setup guidance and keep one visible next action per state.
+  - [x] Ensure no adjacent setup surfaces repeat the same instruction.
+  - [x] Ensure setup transitions feel coherent from first launch through ready state.
+  - [x] Ensure page controls and export actions feel like one integrated workspace header.
+  - [x] Complete validation:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/appShellControllers.test.js tests/dataStatusBootstrapSectionNav.test.js tests/relayStatusView.test.js tests/relayStatusApply.test.js tests/relayControls.test.js tests/releaseRelayTransitions.test.js tests/bootstrapKeyboardSharedRuntime.test.js tests/uiModules.test.js tests/shellPrimitiveViews.test.js tests/vueFullShellInteractions.test.js tests/primevueRenderPrimitives.test.js`
+    - [x] `npm run check:types`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+- [x] Phase 39: Guided Findings Lane.
+  - [x] Redesign overview, highlights, participants, and timing/pattern surfaces into the primary guided analysis lane.
+  - [x] Make this lane answer what matters, who is driving it, when it happens, and where to inspect next.
+  - [x] Demote raw controls and utility-heavy framing until deeper inspection sections.
+  - [x] Preserve analytics behavior while reframing hierarchy and sequence.
+  - [x] Ensure the app’s primary reading path is obvious without helper prose.
+  - [x] Ensure the first analysis lane feels like the main product, not one more dashboard row.
+  - [x] Ensure users can understand the conversation quickly before reaching lower-level tools.
+  - [x] Complete validation:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/appShellControllers.test.js tests/sectionNav.test.js tests/sectionNavDetailed.test.js tests/sectionNavVueRender.test.js tests/vueFullShellInteractions.test.js tests/dashboardPanelsIsland.test.js tests/dashboardRenderModules.test.js`
+    - [x] `npm run check:types`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+- [x] Phase 40: Deep-Dive Tools Integration.
+  - [x] Integrate search, saved views, compare, message mix, polls, and lower analytics as secondary tools within the same studio system.
+  - [x] Keep deep-dive tools fast and useful, but make them clearly secondary to guided findings.
+  - [x] Standardize their headers, empty states, comparison states, and action layouts.
+  - [x] Remove utility-surface drift and reduce support/product copy overlap.
+  - [x] Ensure search and saved views feel integrated, not bolted on.
+  - [x] Ensure lower analytics panels no longer reset the product language.
+  - [x] Ensure comparison and export flows feel production-grade and visually subordinate to the primary journey.
+  - [x] Complete validation:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/appShellControllers.test.js tests/vueFullShellInteractions.test.js tests/search.test.js tests/searchSavedIsland.test.js tests/searchSavedActionPrimitives.test.js tests/savedViews.test.js tests/savedViewsUiSelectRender.test.js tests/savedViewsVueBridgeIntegration.test.js tests/dashboardPanelsIsland.test.js tests/messageTypes.test.js tests/pollsRender.test.js`
+    - [x] `npm run check:types`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+- [x] Phase 41: Support, Diagnostics, and Final Production Hardening.
+  - [x] Reduce FAQ to support and exception handling only.
+  - [x] Integrate relay logs and diagnostics as polished secondary support tools.
+  - [x] Complete the responsive parity pass at 1440, 1024, 768, and 390.
+  - [x] Finish accessibility and interaction cleanup.
+  - [x] Refresh all intentional visual baselines and close with full verification.
+  - [x] Run targeted `vitest` suites for every touched subsystem.
+  - [x] Run `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`.
+  - [x] Run `npm run test:visual`.
+  - [x] Run `npm run test:accessibility-smoke`.
+  - [x] Run `npm run ci:verify`.
+  - [x] Complete manual review at 1440 / 1024 / 768 / 390.
+  - [x] Ensure the app feels cohesive in one uninterrupted session.
+  - [x] Ensure support content is present but no longer part of the core product flow.
+  - [x] Ensure the full verification stack passes with final snapshots intentionally reviewed.
 
 ## Next Wave: Lower Deep-Dive Editorial Overhaul
 

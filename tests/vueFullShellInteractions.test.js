@@ -92,6 +92,20 @@ describe("vue full-shell interactions", () => {
     expect(onClearFilters).toHaveBeenCalledWith("search:clear-search-filters", null);
   });
 
+  it("falls back to relay handlers for toolbar actions that are relay-owned", () => {
+    const rootState = mountVueAppShellRoot({ globalScope: globalThis });
+    expect(rootState?.mounted).toBe(true);
+
+    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope: globalThis });
+    const onLogDrawerOpen = vi.fn();
+    shellBridge?.setRelayActionHandlers?.({
+      "relay.logDrawerOpen": onLogDrawerOpen,
+    });
+
+    expect(shellBridge?.dispatchShellAction?.("relay.logDrawerOpen")).toBe(true);
+    expect(onLogDrawerOpen).toHaveBeenCalledTimes(1);
+  });
+
   it("reuses mounted page-controls bridge without recursive sync delegation", () => {
     const firstBridge = mountPageControlsPrimitive(globalThis);
     expect(firstBridge?.syncPageControls?.({

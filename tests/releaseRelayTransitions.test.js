@@ -130,12 +130,12 @@ describe("release reliability: relay transitions", () => {
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("waiting_qr");
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Link your phone");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Link phone");
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("running");
     expect(elements.relayBannerMeta.textContent).toContain("Primary sync");
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose chat");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Pick a chat");
 
     await controller.refreshRelayStatus({ silent: true });
     expect(elements.relayBannerEl.dataset.status).toBe("running");

@@ -20,8 +20,8 @@ import { mountConfiguredShellPrimitive } from "./shellPrimitiveMounting.js";
 function dispatchShellAction(actionId, payload = null, globalScope = globalThis) {
   const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
   if (shellBridge?.dispatchShellAction) {
-    shellBridge.dispatchShellAction(actionId, payload);
-    return;
+    const handled = shellBridge.dispatchShellAction(actionId, payload);
+    if (handled) return;
   }
   if (shellBridge?.dispatchRelayAction) {
     shellBridge.dispatchRelayAction(actionId, payload);

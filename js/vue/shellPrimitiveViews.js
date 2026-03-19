@@ -21,7 +21,7 @@ export function createRelayBannerRoot(h, onAction) {
           h(
             "p",
             { class: "relay-banner-meta", id: "relay-status-meta" },
-            UI_COPY.relay.offlineNextStep,
+            UI_COPY.relay.banner.offlineMeta,
           ),
         ]),
         h("div", { class: "relay-banner-actions", id: "relay-status-actions", hidden: true }, [
@@ -103,6 +103,16 @@ export function createActionsToolbarRoot(h, onAction) {
           renderActionButton(h, {
             type: "button",
             className: "ghost-button",
+            id: "onboarding-start",
+            text: "Setup tips",
+            attrs: {
+              title: "Open the setup reminder.",
+            },
+            onClick: () => onAction("onboarding.start"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
             id: "compact-toggle",
             text: "Compact mode",
             attrs: {
@@ -110,6 +120,16 @@ export function createActionsToolbarRoot(h, onAction) {
               title: "Switch between compact and comfort layouts",
             },
             onClick: () => onAction("ui.compact.toggle"),
+          }),
+          renderActionButton(h, {
+            type: "button",
+            className: "ghost-button",
+            id: "log-drawer-toggle",
+            text: "Diagnostics",
+            attrs: {
+              title: UI_COPY.relayLog.help,
+            },
+            onClick: () => onAction("relay.logDrawerOpen"),
           }),
           h("div", { class: "theme-toggle" }, [
             h("span", "Theme"),
@@ -181,13 +201,6 @@ export function createActionsToolbarRoot(h, onAction) {
               onClick: () => onAction("ui.contrast.toggle"),
             }),
           ]),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button",
-            id: "log-drawer-toggle",
-            text: "Relay logs",
-            onClick: () => onAction("relay.logDrawerOpen"),
-          }),
         ]),
       ];
     },
@@ -204,9 +217,9 @@ export function createOnboardingDialogRoot(h, onAction) {
     render() {
       return renderDialogContainer(h, {
         className: "onboarding-panel",
-        label: "Welcome to WAAN",
+        label: "Need a setup reminder?",
         children: [
-          h("h2", "Welcome to WAAN"),
+          h("h2", "Need a setup reminder?"),
           h("p", { class: "onboarding-step-label", id: "onboarding-step-label" }),
           h("p", { id: "onboarding-copy" }, UI_COPY.relay.offlineNextStep),
           h("div", { class: "onboarding-actions" }, [
@@ -214,14 +227,14 @@ export function createOnboardingDialogRoot(h, onAction) {
               type: "button",
               className: "ghost-button",
               id: "onboarding-skip",
-              text: "Skip",
+              text: "Close",
               onClick: () => onAction("onboarding.skip"),
             }),
             renderActionButton(h, {
               type: "button",
               className: "ghost-button primary",
               id: "onboarding-next",
-              text: "Next",
+              text: "Next tip",
               onClick: () => onAction("onboarding.next"),
             }),
           ]),

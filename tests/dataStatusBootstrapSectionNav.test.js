@@ -24,6 +24,7 @@ describe("dataStatus controller details", () => {
       formatNumber: vi.fn(value => String(value)),
       notifyRelayReady,
       formatStatusTime: vi.fn(() => "10:51"),
+      getRemoteChatsLastFetchedAt: vi.fn(() => 0),
     };
 
     const controller = createDataStatusController({
@@ -61,13 +62,29 @@ describe("dataStatus controller details", () => {
     expect(heroStatusBadge.textContent).toBe("Starting relay");
     expect(heroStatusBadge.dataset.state).toBe("starting");
 
-    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0 });
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: true });
     expect(heroStatusBadge.textContent).toBe("Relay connected");
     expect(heroStatusBadge.dataset.state).toBe("syncing");
     expect(heroStatusCopy.textContent).toBe("Loading chats.");
     expect(heroSyncDot.dataset.state).toBe("syncing");
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(true);
     expect(notifyRelayReady).toHaveBeenCalledTimes(0);
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: false });
+    expect(heroStatusBadge.dataset.state).toBe("syncing");
+    expect(heroStatusCopy.textContent).toBe("Loading chats.");
+    expect(heroStatusMetaCopy.textContent).toBe("Workspace opens when chats load.");
+    expect(heroSyncDot.dataset.state).toBe("syncing");
+    expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
+    expect(notifyRelayReady).toHaveBeenCalledTimes(0);
+
+    deps.getRemoteChatsLastFetchedAt.mockReturnValue(Date.now());
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: false });
+    expect(heroStatusBadge.dataset.state).toBe("ready");
+    expect(heroStatusCopy.textContent).toBe("No chats loaded.");
+    expect(heroStatusMetaCopy.textContent).toBe("This account has no chats yet.");
+    expect(heroSyncDot.dataset.state).toBe("ready");
+    expect(dashboardRoot.classList.contains("is-syncing")).toBe(false);
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: false });
     expect(heroStatusCopy.textContent).toContain("ready");
@@ -146,12 +163,13 @@ describe("dataStatus controller details", () => {
             setDataAvailability: vi.fn(),
             refreshUI: vi.fn(),
           },
-          formatRelayAccount: vi.fn(() => "Alice"),
-          formatNumber: vi.fn(value => String(value)),
-          notifyRelayReady,
-          formatStatusTime: vi.fn(() => "11:11"),
-        },
-      });
+        formatRelayAccount: vi.fn(() => "Alice"),
+        formatNumber: vi.fn(value => String(value)),
+        notifyRelayReady,
+        formatStatusTime: vi.fn(() => "11:11"),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+      },
+    });
 
       controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 5, syncingChats: false });
       expect(notifyRelayReady).toHaveBeenCalledTimes(1);

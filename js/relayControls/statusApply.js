@@ -204,6 +204,9 @@ export function createRelayStatusApplyController({
     const stateKind = status?.status || "offline";
     const previousStateKind = relayUiState.lastAppliedStateKind;
     const isStateTransition = previousStateKind === null || previousStateKind !== stateKind;
+    const hasCompletedRemoteChatFetch = Boolean(
+      typeof getRemoteChatsLastFetchedAt === "function" ? getRemoteChatsLastFetchedAt() : 0,
+    );
 
     updateHeroRelayStatus(status);
     electronAPI?.updateRelayStatus?.(status);
@@ -219,9 +222,16 @@ export function createRelayStatusApplyController({
       formatRelativeTime,
       formatDisplayDate,
       formatNumber,
+      hasCompletedRemoteChatFetch,
       relayStatusViewRenderer,
     });
-    updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails, relayStatusViewRenderer });
+    updateRelayOnboarding({
+      status,
+      relayOnboardingSteps,
+      relayOnboardingStepDetails,
+      hasCompletedRemoteChatFetch,
+      relayStatusViewRenderer,
+    });
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);
@@ -253,9 +263,23 @@ export function createRelayStatusApplyController({
     const accountText = status.account
       ? `Logged in as ${formatRelayAccountLabel(status.account)}`
       : "";
+    const chatCount = Number(status.chatCount ?? 0);
+    const syncingChats = Boolean(status.syncingChats);
+    const lastFetchedAt = typeof getRemoteChatsLastFetchedAt === "function"
+      ? getRemoteChatsLastFetchedAt()
+      : 0;
+    const isConfirmedEmptyAccount =
+      status.status === "running" &&
+      chatCount <= 0 &&
+      !syncingChats &&
+      hasCompletedRemoteChatFetch;
     const helpText =
       status.status === "running"
-        ? UI_COPY.dataset.emptyMessage
+        ? (chatCount > 0
+          ? UI_COPY.dataset.emptyMessage
+          : syncingChats || !hasCompletedRemoteChatFetch
+            ? UI_COPY.dataset.loadingMessage
+            : UI_COPY.dataset.noChatsMessage)
         : UI_COPY.relay.waitingPhoneHero;
     renderRelayStatusSurface({
       statusText: description.message,
@@ -274,10 +298,22 @@ export function createRelayStatusApplyController({
     applyRelayControlButtons({ stopDisabled, clearStorageDisabled, logoutDisabled, reloadAllDisabled });
     if (!getRemoteChatList().length) {
       if (running) {
-        setDatasetEmptyMessage(
-          UI_COPY.dataset.readyHeading,
-          UI_COPY.dataset.readyMessage,
-        );
+        if (chatCount > 0) {
+          setDatasetEmptyMessage(
+            UI_COPY.dataset.readyHeading,
+            UI_COPY.dataset.readyMessage,
+          );
+        } else if (syncingChats || !hasCompletedRemoteChatFetch) {
+          setDatasetEmptyMessage(
+            UI_COPY.dataset.loadingHeading,
+            UI_COPY.dataset.loadingMessage,
+          );
+        } else if (isConfirmedEmptyAccount) {
+          setDatasetEmptyMessage(
+            UI_COPY.dataset.noChatsHeading,
+            UI_COPY.dataset.noChatsMessage,
+          );
+        }
       } else if (waiting) {
         setDatasetEmptyMessage(UI_COPY.dataset.waitingHeading, UI_COPY.dataset.waitingMessage);
       }
@@ -285,11 +321,10 @@ export function createRelayStatusApplyController({
     updateFirstRunSetup({ status, hasData: Boolean(getDataAvailable?.()) });
 
     if (running) {
-      const lastFetchedAt = typeof getRemoteChatsLastFetchedAt === "function"
-        ? getRemoteChatsLastFetchedAt()
-        : 0;
+      const remoteChatList = getRemoteChatList();
       const needsRefresh =
-        !getRemoteChatList().length ||
+        (chatCount > 0 && !remoteChatList.length) ||
+        (!remoteChatList.length && !lastFetchedAt) ||
         (lastFetchedAt && now() - lastFetchedAt > remoteChatRefreshIntervalMs);
       if (needsRefresh) {
         refreshRemoteChats({ silent: true });

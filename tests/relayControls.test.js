@@ -316,7 +316,7 @@ describe("relayControls", () => {
     expect(helpers.fetchJson).toHaveBeenCalledWith("http://127.0.0.1:3334/api/chats");
     expect(helpers.setRemoteChatList).toHaveBeenCalledWith([
       { id: "chat-1", name: "General", messageCount: 10 },
-    ]);
+    ], { successfulFetch: true });
   });
 
   it("updates first-run setup guide state from relay status", async () => {
@@ -361,7 +361,96 @@ describe("relayControls", () => {
     expect(elements.firstRunSetupSteps[0].dataset.state).toBe("complete");
     expect(elements.firstRunSetupSteps[1].dataset.state).toBe("complete");
     expect(elements.firstRunSetupSteps[2].dataset.state).toBe("active");
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose chat");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Pick a chat");
+  });
+
+  it("shows an empty-account fallback instead of a perpetual loading state", async () => {
+    const runningStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 0,
+      syncingChats: false,
+    };
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) return runningStatus;
+          if (url.endsWith("/api/chats")) return { chats: [] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayHelpText.textContent).toBe("This linked account has no chats yet.");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("No chats yet");
+    expect(elements.firstRunPrimaryActionButton.disabled).toBe(true);
+  });
+
+  it("keeps first-run setup in loading mode before the initial chat fetch completes", async () => {
+    const runningStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 0,
+      syncingChats: false,
+    };
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) return runningStatus;
+          if (url.endsWith("/api/chats")) return { chats: [] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => 0),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayHelpText.textContent).toBe("Chat and range controls unlock once chats finish loading.");
+    expect(elements.firstRunSetupSteps[2].dataset.state).toBe("pending");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Loading chats");
+    expect(elements.firstRunPrimaryActionButton.disabled).toBe(true);
   });
 
   it("uses shell bridge page-control targets for first-run chat selection when startup chat ref is missing", async () => {
@@ -411,7 +500,7 @@ describe("relayControls", () => {
     await controller.refreshRelayStatus({ silent: true });
     controller.handleFirstRunPrimaryAction();
 
-    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Choose chat");
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Pick a chat");
     expect(scrollPageControl).toHaveBeenCalledWith("chat");
     expect(focusPageControl).toHaveBeenCalledWith("chat");
   });

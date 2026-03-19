@@ -183,6 +183,7 @@ export function createBootstrapController({
           setThemePreference(payload?.preference);
         }
       },
+      "onboarding.start": () => onboardingController.start({ force: true }),
       "onboarding.skip": onboardingController.skip,
       "onboarding.next": onboardingController.advance,
     });
@@ -195,7 +196,6 @@ export function createBootstrapController({
     setDataAvailabilityState(false);
     void onboardingSkipButton;
     void onboardingNextButton;
-    setTimeoutRef(() => onboardingController.start(), 500);
 
     initElectronRelayBridge();
     buildSectionNav();
@@ -206,7 +206,7 @@ export function createBootstrapController({
     savedViewsController.init();
     savedViewsController.setDataAvailability(getDataAvailable());
     refreshChatSelector();
-    updateStatus(`Start ${relayServiceName} to mirror chat app chats here.`, "info");
+    updateStatus(`Start ${relayServiceName} to unlock the workspace.`, "info");
   }
 
   return {

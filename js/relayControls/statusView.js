@@ -85,6 +85,7 @@ export function formatRelayAccount(account, relayClientLabel) {
  *   formatRelativeTime: (value: any) => string,
  *   formatDisplayDate: (value: any) => string,
  *   formatNumber: (value: number) => string,
+ *   hasCompletedRemoteChatFetch?: boolean | null | undefined,
  *   relayStatusViewRenderer?: { renderBanner?: (payload: { message?: string, meta?: string }) => void } | null | undefined,
  * }} params
  */
@@ -98,6 +99,7 @@ export function updateRelayBanner({
   formatRelativeTime,
   formatDisplayDate,
   formatNumber,
+  hasCompletedRemoteChatFetch = true,
   relayStatusViewRenderer = null,
 }) {
   if (!relayBannerEl || !relayBannerMessage || !relayBannerMeta) return;
@@ -106,26 +108,50 @@ export function updateRelayBanner({
     relayBannerEl.dataset.status = "offline";
     relayStatusViewRenderer?.renderBanner?.({
       message: "Relay offline.",
-    meta: UI_COPY.relay.offlineNextStep,
+      meta: UI_COPY.relay.banner.offlineMeta,
     });
     if (!canRenderBanner) {
       relayBannerMessage.textContent = UI_COPY.relay.offlineStatus;
-      relayBannerMeta.textContent = UI_COPY.relay.offlineNextStep;
+      relayBannerMeta.textContent = UI_COPY.relay.banner.offlineMeta;
     }
     return;
   }
   relayBannerEl.dataset.status = status.status || "unknown";
   const message = describeRelayStatusFn(status).message;
+  if (status.status === "starting") {
+    const meta = UI_COPY.relay.banner.startingMeta;
+    relayStatusViewRenderer?.renderBanner?.({ message, meta });
+    if (!canRenderBanner) {
+      relayBannerMessage.textContent = message;
+      relayBannerMeta.textContent = meta;
+    }
+    return;
+  }
+  if (status.status === "waiting_qr") {
+    const meta = UI_COPY.relay.banner.waitingMeta;
+    relayStatusViewRenderer?.renderBanner?.({ message, meta });
+    if (!canRenderBanner) {
+      relayBannerMessage.textContent = message;
+      relayBannerMeta.textContent = meta;
+    }
+    return;
+  }
   const metaParts = [];
   if (status.account) {
     const accountLabel = formatRelayAccountFn(status.account) || "Linked account";
     metaParts.push(accountLabel);
   }
-  if (status.chatsSyncedAt) {
+  if (Boolean(status.syncingChats)) {
+    metaParts.push(UI_COPY.relay.banner.loadingMeta);
+  } else if (Number.isFinite(status.chatCount) && status.chatCount <= 0 && hasCompletedRemoteChatFetch) {
+    metaParts.push(UI_COPY.relay.banner.emptyMeta);
+  } else if (Number.isFinite(status.chatCount) && status.chatCount <= 0) {
+    metaParts.push(UI_COPY.relay.banner.loadingMeta);
+  } else if (status.chatsSyncedAt) {
     const relative = formatRelativeTime(status.chatsSyncedAt);
     metaParts.push(relative ? `Synced ${relative}` : formatDisplayDate(status.chatsSyncedAt));
   } else {
-    metaParts.push("Sync pending");
+    metaParts.push(UI_COPY.relay.banner.noChatMeta);
   }
   if (Number.isFinite(status.chatCount)) {
     metaParts.push(`${formatNumber(status.chatCount)} chats`);
@@ -156,10 +182,17 @@ export function updateRelayBanner({
  *   status: AnyRecord | null | undefined,
  *   relayOnboardingSteps: Array<HTMLElement> | null | undefined,
  *   relayOnboardingStepDetails?: Record<string, HTMLElement | null> | null | undefined,
+ *   hasCompletedRemoteChatFetch?: boolean | null | undefined,
  *   relayStatusViewRenderer?: { renderOnboardingDetail?: (stepId: string, text: string, fallbackEl?: HTMLElement | null | undefined) => void } | null | undefined,
  * }} params
  */
-export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails, relayStatusViewRenderer = null }) {
+export function updateRelayOnboarding({
+  status,
+  relayOnboardingSteps,
+  relayOnboardingStepDetails,
+  hasCompletedRemoteChatFetch = true,
+  relayStatusViewRenderer = null,
+}) {
   if (!relayOnboardingSteps?.length) return;
   const state = status?.status || "stopped";
   const chatCount = Number(status?.chatCount ?? 0);
@@ -202,8 +235,8 @@ export function updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboa
         if (!canRenderOnboardingDetail) detail.textContent = detailText;
       }
     } else if (id === "sync") {
-      if (state === "running" && chatCount === 0) value = "active";
-      else if (state === "running" && chatCount > 0) value = "complete";
+      if (state === "running" && Boolean(status?.syncingChats)) value = "active";
+      else if (state === "running" && (chatCount > 0 || hasCompletedRemoteChatFetch)) value = "complete";
       else value = "pending";
       if (detail) {
         const detailText =

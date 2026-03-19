@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { ONBOARDING_STEPS } from "../js/appConstants.js";
 import { createPdfPreviewController } from "../js/appShell/pdfPreview.js";
 import { createStatusUiController } from "../js/appShell/statusUi.js";
 import { createOnboardingController } from "../js/appShell/onboarding.js";
@@ -176,6 +177,13 @@ describe("onboarding controller", () => {
     localStorage.clear();
   });
 
+  it("keeps the QR reminder anchored to a visible setup surface", () => {
+    expect(ONBOARDING_STEPS[1]).toMatchObject({
+      copy: "Scan the QR code to link your phone.",
+      target: "#relay-live-card",
+    });
+  });
+
   it("starts onboarding and advances through steps", () => {
     const overlayEl = document.createElement("div");
     const copyEl = document.createElement("div");
@@ -206,13 +214,13 @@ describe("onboarding controller", () => {
     expect(controller.isOpen()).toBe(true);
     expect(copyEl.textContent).toBe("First");
     expect(stepLabelEl.textContent).toBe("Step 1 of 2");
-    expect(nextButtonEl.textContent).toBe("Next");
+    expect(nextButtonEl.textContent).toBe("Next tip");
     expect(sectionA.classList.contains("onboarding-highlight")).toBe(true);
     expect(scrollSpy).toHaveBeenCalledTimes(1);
 
     controller.advance();
     expect(copyEl.textContent).toBe("Second");
-    expect(nextButtonEl.textContent).toBe("Done");
+    expect(nextButtonEl.textContent).toBe("Close");
     expect(sectionA.classList.contains("onboarding-highlight")).toBe(false);
     expect(sectionB.classList.contains("onboarding-highlight")).toBe(true);
 
@@ -243,6 +251,25 @@ describe("onboarding controller", () => {
     overlayEl.setAttribute("aria-hidden", "true");
     controller.start();
     expect(controller.isOpen()).toBe(false);
+  });
+
+  it("can reopen onboarding on demand after dismissal", () => {
+    const overlayEl = document.createElement("div");
+    const copyEl = document.createElement("div");
+
+    const controller = createOnboardingController({
+      overlayEl,
+      copyEl,
+      steps: [{ copy: "Only", target: "" }],
+      storageKey: "test-onboarding",
+    });
+
+    controller.start();
+    controller.skip();
+
+    controller.start({ force: true });
+    expect(controller.isOpen()).toBe(true);
+    expect(copyEl.textContent).toBe("Only");
   });
 
   it("uses injected document and storage refs instead of ambient globals", () => {

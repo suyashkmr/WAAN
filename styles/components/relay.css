@@ -1,11 +1,11 @@
 .relay-sync-progress {
     margin-top: 1rem;
-    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border: 1px solid var(--surface-supporting-border);
     border-radius: 0.85rem;
     padding: 0.85rem 1rem;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 92%, transparent), color-mix(in srgb, var(--panel-bg) 90%, transparent)),
-        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 44%);
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--stage-workspace-accent) 6%, transparent), transparent 44%);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -49,8 +49,8 @@
     width: 100%;
     height: 0.4rem;
     border-radius: var(--shape-full);
-    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    background: var(--surface-quiet-bg);
+    border: 1px solid var(--surface-quiet-border);
     overflow: hidden;
 }
 
@@ -92,11 +92,11 @@
     gap: calc(var(--relay-banner-gap) - 0.15rem);
     align-items: center;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--workspace-shell-raised) 100%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
-        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%);
-    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--edge-strong));
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
+        radial-gradient(circle at top left, color-mix(in srgb, var(--stage-workspace-accent) 8%, transparent), transparent 42%);
+    border: 1px solid var(--surface-supporting-border);
     border-radius: calc(var(--shape-large) - 2px);
-    box-shadow: var(--editorial-card-contrast-shadow);
+    box-shadow: var(--surface-supporting-shadow);
     position: relative;
     z-index: 1;
     transition:
@@ -161,22 +161,22 @@
 }
 
 .relay-status-banner[data-status="running"] {
-    border-color: color-mix(in srgb, var(--success) 35%, var(--glass-border));
-    box-shadow: var(--shadow-card);
+    border-color: color-mix(in srgb, var(--success) 22%, var(--surface-supporting-border));
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 .relay-status-banner[data-status="starting"] {
-    border-color: color-mix(in srgb, var(--accent) 42%, var(--glass-border));
-    box-shadow: var(--shadow-card);
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--surface-supporting-border));
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 .relay-status-banner[data-status="waiting_qr"] {
-    border-color: color-mix(in srgb, var(--warning) 35%, var(--glass-border));
+    border-color: color-mix(in srgb, var(--warning) 24%, var(--surface-supporting-border));
 }
 
 .relay-status-banner[data-status="error"] {
-    border-color: color-mix(in srgb, var(--danger) 35%, var(--glass-border));
-    box-shadow: var(--shadow-card);
+    border-color: color-mix(in srgb, var(--danger) 24%, var(--surface-supporting-border));
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 @keyframes relayIndicatorPulse {
@@ -260,9 +260,10 @@
     gap: 0.95rem;
     margin-bottom: 1rem;
     padding: 0.75rem;
-    border: 1px solid color-mix(in srgb, var(--accent) 8%, var(--edge-subtle));
+    border: 1px solid var(--surface-supporting-border);
     border-radius: var(--shape-large);
-    background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+    background: var(--surface-supporting-bg);
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 .relay-step {
@@ -272,22 +273,22 @@
     min-height: 122px;
     padding: 0.88rem 0.86rem;
     border-radius: var(--shape-medium);
-    border: 1px solid color-mix(in srgb, var(--accent) 8%, var(--edge-subtle));
+    border: 1px solid var(--surface-quiet-border);
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-elevated) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
-        radial-gradient(circle at top right, var(--shell-ridge-secondary), transparent 40%);
-    box-shadow: var(--shadow-soft);
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-quiet-bg) 100%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--stage-workspace-accent) 4%, transparent), transparent 40%);
+    box-shadow: var(--surface-quiet-shadow);
 }
 
 .relay-step[data-state="active"] {
-    border-color: color-mix(in srgb, var(--accent) 62%, transparent);
-    background: color-mix(in srgb, var(--accent) 8%, var(--surface-elevated));
-    box-shadow: var(--shadow-card);
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+    background: color-mix(in srgb, var(--accent) 5%, var(--surface-supporting-bg));
+    box-shadow: var(--surface-supporting-shadow);
 }
 
 .relay-step[data-state="complete"] {
-    border-color: color-mix(in srgb, var(--success) 40%, transparent);
-    background: color-mix(in srgb, var(--success) 7%, var(--surface-elevated));
+    border-color: color-mix(in srgb, var(--success) 22%, transparent);
+    background: color-mix(in srgb, var(--success) 5%, var(--surface-supporting-bg));
     opacity: 0.92;
 }
 
@@ -304,8 +305,8 @@
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1, "lnum" 1;
-    background: color-mix(in srgb, var(--accent) 18%, var(--surface-elevated));
-    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--surface-quiet-bg));
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
     box-shadow: none;
 }
 
@@ -349,11 +350,9 @@
     right: 0;
     width: min(420px, 90vw);
     height: 100vh;
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 96%, transparent), color-mix(in srgb, var(--card-bg) 98%, transparent)),
-        radial-gradient(circle at top left, var(--shell-ridge-primary), transparent 42%);
-    border-left: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
-    box-shadow: -12px 0 26px rgb(var(--shadow-ink-rgb) / 0.32);
+    background: color-mix(in srgb, var(--surface-quiet-bg) 100%, transparent);
+    border-left: 1px solid var(--surface-utility-border);
+    box-shadow: -10px 0 24px rgb(var(--shadow-ink-rgb) / 0.14);
     transform: translateX(100%);
     transition: transform 0.3s ease;
     display: flex;
@@ -366,26 +365,51 @@
 }
 
 .relay-log-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.05rem 1.2rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.9rem 1rem;
+    align-items: start;
+    padding: 1.05rem 1.2rem 1rem;
+    border-bottom: 1px solid var(--panel-header-divider);
+}
+
+.relay-log-copy {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.relay-log-kicker {
+    margin: 0;
+    font-size: var(--type-label-xs);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--text-secondary) 88%, transparent);
 }
 
 .relay-log-title {
     margin: 0;
     font-weight: 600;
+    font-size: 1rem;
 }
 
 .relay-log-subtitle {
-    margin: 0.2rem 0 0;
+    margin: 0;
     font-size: 0.85rem;
     color: var(--muted);
 }
 
+.relay-log-hint {
+    margin: 0.08rem 0 0;
+    max-width: 30ch;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--text) 68%, var(--muted));
+}
+
 .relay-log-actions {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 0.4rem;
 }
 
@@ -396,7 +420,7 @@
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.85rem;
     line-height: 1.5;
-    background: color-mix(in srgb, var(--bg) 38%, var(--panel-bg));
+    background: color-mix(in srgb, var(--surface-quiet-bg) 94%, var(--panel-bg));
 }
 
 .relay-log-body .virtual-items {
@@ -405,6 +429,10 @@
 
 .relay-log-entry {
     margin: 0 0 0.35rem;
+    padding: 0.52rem 0.58rem;
+    border-radius: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--surface-utility-border) 78%, transparent);
+    background: color-mix(in srgb, var(--surface-quiet-bg) 100%, transparent);
     color: var(--muted);
 }
 
@@ -414,18 +442,20 @@
 
 .relay-log-empty {
     margin: 0;
+    padding: 0.82rem 0.88rem;
+    border: 1px dashed color-mix(in srgb, var(--surface-utility-border) 82%, transparent);
+    border-radius: 0.9rem;
     color: var(--muted);
+    background: color-mix(in srgb, var(--surface-quiet-bg) 70%, transparent);
 }
 
 .relay-qr {
     margin: 0.85rem 0;
     padding: 0.95rem;
-    border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--surface-supporting-border));
     border-radius: 1rem;
     text-align: center;
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
-        radial-gradient(circle at top right, var(--shell-ridge-primary), transparent 42%);
+    background: color-mix(in srgb, var(--surface-supporting-bg) 100%, transparent);
 }
 
 .relay-qr img {
@@ -435,4 +465,14 @@
     border-radius: var(--shape-small);
     margin-bottom: 0.5rem;
     filter: drop-shadow(0 10px 20px rgb(var(--shadow-ink-rgb) / 0.25));
+}
+
+@media (max-width: 720px) {
+    .relay-log-header {
+        grid-template-columns: 1fr;
+    }
+
+    .relay-log-actions {
+        justify-content: flex-start;
+    }
 }

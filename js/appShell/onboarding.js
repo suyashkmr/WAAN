@@ -75,12 +75,17 @@ export function createOnboardingController({
     }
     highlightTarget(step.target);
     if (nextButtonEl) {
-      nextButtonEl.textContent = index === steps.length - 1 ? "Done" : "Next";
+      nextButtonEl.textContent = index === steps.length - 1 ? "Close" : "Next tip";
     }
   }
 
-  function start() {
-    if (!overlayEl || storageRef?.getItem(storageKey) === "done") return;
+  /**
+   * @param {{ force?: boolean }} [options]
+   */
+  function start(options = {}) {
+    const { force = false } = options;
+    if (!overlayEl) return;
+    if (!force && storageRef?.getItem(storageKey) === "done") return;
     onboardingIndex = 0;
     documentRef?.body?.classList.add("onboarding-active");
     overlayEl.setAttribute("aria-hidden", "false");

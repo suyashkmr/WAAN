@@ -22,6 +22,7 @@ export function createRelaySupportControllers({
     relayStartButton: elements.relayStartButton,
     getControlsLocked: deps.getControlsLocked,
     getDataAvailable: deps.getDataAvailable,
+    getRemoteChatsLastFetchedAt: deps.getRemoteChatsLastFetchedAt,
     focusChatSelector: () => Boolean(shellBridge()?.focusPageControl?.("chat")),
     scrollChatSelector: () => Boolean(shellBridge()?.scrollPageControl?.("chat")),
   });

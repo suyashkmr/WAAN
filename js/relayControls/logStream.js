@@ -178,7 +178,7 @@ export function createRelayLogController({
       renderRelayLogs();
     } catch (error) {
       console.error("Failed to clear logs", error);
-      updateStatus("Couldn't clear the relay logs.", "warning");
+      updateStatus(UI_COPY.relayLog.clearError, "warning");
     }
   }
 
@@ -214,10 +214,10 @@ export function createRelayLogController({
       });
       const filename = buildDiagnosticsFilename({ brandName, now: new Date() });
       downloadTextFile(filename, JSON.stringify(payload, null, 2));
-      updateStatus("Downloaded diagnostics bundle.", "success");
+      updateStatus(UI_COPY.relayLog.exportSuccess, "success");
     } catch (error) {
       console.error("Failed to export diagnostics bundle", error);
-      updateStatus("Couldn't export diagnostics bundle.", "warning");
+      updateStatus(UI_COPY.relayLog.exportError, "warning");
     }
   }
 
@@ -242,24 +242,24 @@ export function createRelayLogController({
       if (typeof window !== "undefined" && window.open) {
         window.open(url, "_blank", "noopener,noreferrer");
       }
-      updateStatus("Opened prefilled issue report.", "info");
+      updateStatus(UI_COPY.relayLog.reportSuccess, "info");
     } catch (error) {
       console.error("Failed to open issue report", error);
-      updateStatus("Couldn't open prefilled issue report.", "warning");
+      updateStatus(UI_COPY.relayLog.reportError, "warning");
     }
   }
 
   function initLogStream() {
     if (!relayBase || relayLogState.eventSource) return;
     if (typeof EventSource === "undefined") {
-      setLogConnectionLabel("Live log stream not available in this environment.");
+      setLogConnectionLabel(UI_COPY.relayLog.connectionUnavailable);
       return;
     }
     const source = new EventSource(`${relayBase}/relay/logs/stream`);
     relayLogState.eventSource = source;
-    setLogConnectionLabel("Connecting…");
+    setLogConnectionLabel(UI_COPY.relayLog.connectionConnecting);
     source.onopen = () => {
-      setLogConnectionLabel("Live log stream");
+      setLogConnectionLabel(UI_COPY.relayLog.connectionLive);
     };
     source.onmessage = (/** @type {MessageEvent} */ event) => {
       relayLogState.entries.push(event.data);
@@ -272,7 +272,7 @@ export function createRelayLogController({
       }
     };
     source.onerror = () => {
-      setLogConnectionLabel("Log stream disconnected. Retrying…");
+      setLogConnectionLabel(UI_COPY.relayLog.connectionRetrying);
       source.close();
       relayLogState.eventSource = null;
       if (!relayLogState.reconnectTimer) {

@@ -69,10 +69,12 @@ export function createChatSelectionController({
 
   /**
    * @param {AnyRecord[]} [list]
+   * @param {{ successfulFetch?: boolean | null | undefined }} [options]
    */
-  function setRemoteChatList(list = []) {
+  function setRemoteChatList(list = [], options = {}) {
     remoteChatState.list = Array.isArray(list) ? list : [];
-    remoteChatState.lastFetchedAt = now();
+    const successfulFetch = options.successfulFetch ?? (remoteChatState.list.length > 0);
+    remoteChatState.lastFetchedAt = successfulFetch ? now() : 0;
   }
 
   function getRemoteChatList() {

@@ -182,13 +182,13 @@ export function createRelayActionsController({
       const payload = await fetchJson(`${apiBase}/chats`);
       const chats = Array.isArray(payload.chats) ? payload.chats : [];
       chatCount = chats.length;
-      setRemoteChatList(chats);
+      setRemoteChatList(chats, { successfulFetch: true });
       if (!silent) {
         updateStatus(`Fetched ${formatNumber(chats.length)} chats from ${brandName}.`, "info");
       }
     } catch (error) {
       console.error(error);
-      setRemoteChatList([]);
+      setRemoteChatList([], { successfulFetch: false });
       if (!silent) {
         updateStatus("Couldn't load chats from the relay. Make sure the desktop relay is running and connected.", "warning");
       }

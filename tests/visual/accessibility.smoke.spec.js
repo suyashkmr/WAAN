@@ -82,4 +82,38 @@ test.describe("WAAN Accessibility Smoke", () => {
       }
     }
   });
+
+  test("keeps support and diagnostics actions keyboard reachable", async ({ page }) => {
+    const logDrawerToggle = page.locator("#log-drawer-toggle:visible").first();
+    await expect(logDrawerToggle).toBeVisible();
+    await expect(logDrawerToggle).toHaveAttribute("title", /.+/);
+    await logDrawerToggle.focus();
+    await expect
+      .poll(async () => logDrawerToggle.evaluate(element => element === document.activeElement))
+      .toBe(true);
+
+    await page.evaluate(() => {
+      document.getElementById("relay-log-drawer")?.setAttribute("aria-hidden", "false");
+    });
+    const drawer = page.locator("#relay-log-drawer");
+    await expect(drawer).toHaveAttribute("aria-hidden", "false");
+
+    const actionSelectors = [
+      "#relay-log-export",
+      "#relay-log-report",
+      "#relay-log-clear",
+      "#relay-log-close",
+      '#faq-card .card-toggle[data-target="faq-content"]',
+    ];
+
+    for (const selector of actionSelectors) {
+      const target = page.locator(`${selector}:visible`).first();
+      await expect(target).toBeVisible();
+      await expect(target).toHaveAttribute("title", /.+/);
+      await target.focus();
+      await expect
+        .poll(async () => target.evaluate(element => element === document.activeElement))
+        .toBe(true);
+    }
+  });
 });

@@ -1,39 +1,35 @@
 export const SECTION_NAV_ITEMS = [
-  { id: "hero-panel", label: "Home" },
+  { id: "setup-stage", label: "Setup" },
   { id: "workspace-stage", label: "Workspace" },
-  { id: "workspace-overview", label: "Overview" },
+  { id: "guided-findings-stage", label: "Findings" },
   { id: "insight-highlights", label: "Highlights" },
   { id: "participants", label: "Participants" },
   { id: "hourly-activity", label: "Rhythm" },
-  { id: "daily-activity", label: "Day by Day" },
-  { id: "weekly-trend", label: "Week by Week" },
-  { id: "weekday-trend", label: "Day of Week" },
-  { id: "timeofday-trend", label: "Time of Day" },
-  { id: "sentiment-overview", label: "Mood" },
+  { id: "deep-dive-stage", label: "Tools" },
+  { id: "search-panel", label: "Search" },
+  { id: "saved-views-card", label: "Saved" },
   { id: "message-types", label: "Message Mix" },
   { id: "polls-card", label: "Polls" },
-  { id: "saved-views-card", label: "Saved Views" },
-  { id: "search-panel", label: "Search" },
-  { id: "faq-card", label: "FAQ" },
+  { id: "faq-card", label: "Support" },
 ];
 
 export const SEARCH_RESULT_LIMIT = 200;
 
 export const ONBOARDING_STEPS = [
   {
-    copy: "Use the relay banner to connect.",
-    target: "#relay-status-banner",
+    copy: "Start the relay in the setup stage.",
+    target: "#relay-live-card",
   },
   {
-    copy: "Open relay logs for sync details.",
+    copy: "Scan the QR code to link your phone.",
+    target: "#relay-live-card",
+  },
+  {
+    copy: "Pick a chat from Loaded chats when the workspace unlocks.",
+    target: "#chat-selector",
+  },
+  {
+    copy: "Open relay logs if sync stalls.",
     target: "#log-drawer-toggle",
-  },
-  {
-    copy: "Use Compact mode for denser controls.",
-    target: "#compact-toggle",
-  },
-  {
-    copy: "Start in Highlights.",
-    target: "#insight-highlights",
   },
 ];

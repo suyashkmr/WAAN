@@ -16,6 +16,7 @@ import { UI_COPY } from "../uiCopy.js";
  *   relayStartButton?: HTMLButtonElement | null,
  *   getControlsLocked?: (() => boolean) | null,
  *   getDataAvailable?: (() => boolean) | null,
+ *   getRemoteChatsLastFetchedAt?: (() => number) | null,
  *   focusChatSelector?: (() => boolean) | null,
  *   scrollChatSelector?: (() => boolean) | null,
  * }} [params]
@@ -29,6 +30,7 @@ export function createFirstRunSetupController({
   relayStartButton,
   getControlsLocked,
   getDataAvailable,
+  getRemoteChatsLastFetchedAt = null,
   focusChatSelector = null,
   scrollChatSelector = null,
 } = {}) {
@@ -53,6 +55,8 @@ export function createFirstRunSetupController({
 
     const state = status?.status || "offline";
     const chatCount = Number(status?.chatCount ?? 0);
+    const syncingChats = Boolean(status?.syncingChats);
+    const hasCompletedRemoteChatFetch = Boolean(getRemoteChatsLastFetchedAt?.());
 
     firstRunSetupSteps.forEach(/** @param {HTMLElement} step */ step => {
       const stepId = step.dataset.setupStep;
@@ -64,8 +68,8 @@ export function createFirstRunSetupController({
         else if (state === "waiting_qr" || state === "starting") value = "active";
         else value = "complete";
       } else if (stepId === "load") {
-        if (hasData) value = "complete";
-        else if (state === "running" && chatCount > 0) value = "active";
+        if (hasData || (state === "running" && !syncingChats && chatCount <= 0 && hasCompletedRemoteChatFetch)) value = "complete";
+        else if (state === "running" && (syncingChats || chatCount > 0)) value = "active";
         else value = "pending";
       }
       step.dataset.state = value;
@@ -82,6 +86,12 @@ export function createFirstRunSetupController({
         firstRunPrimaryActionButton.disabled = true;
       } else if (state === "waiting_qr") {
         firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.waitingPhone;
+        firstRunPrimaryActionButton.disabled = true;
+      } else if (state === "running" && syncingChats) {
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;
+        firstRunPrimaryActionButton.disabled = true;
+      } else if (state === "running" && hasCompletedRemoteChatFetch) {
+        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.noChats;
         firstRunPrimaryActionButton.disabled = true;
       } else if (state === "running") {
         firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;

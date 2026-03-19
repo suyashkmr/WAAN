@@ -178,6 +178,18 @@ describe("chat selection controller", () => {
     expect(chatSelector.options[0].value).toBe("remote:chat-44");
   });
 
+  it("tracks successful empty fetches separately from reset/error clears", () => {
+    const { controller } = createChatSelection({
+      now: () => 1234567890,
+    });
+
+    controller.setRemoteChatList([], { successfulFetch: true });
+    expect(controller.getRemoteChatsLastFetchedAt()).toBe(1234567890);
+
+    controller.setRemoteChatList([]);
+    expect(controller.getRemoteChatsLastFetchedAt()).toBe(0);
+  });
+
   it("syncs page controls even when legacy chat select is absent", async () => {
     const syncPageControls = vi.fn(() => true);
     const { controller, getActiveChatId } = createChatSelection({

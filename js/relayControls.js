@@ -159,6 +159,7 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     deps: {
       getControlsLocked: () => relayUiState.controlsLocked,
       getDataAvailable,
+      getRemoteChatsLastFetchedAt,
       formatNumber,
       brandName: BRAND_NAME,
       relayServiceName: RELAY_SERVICE_NAME,

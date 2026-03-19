@@ -65,6 +65,11 @@ describe("shell primitive views", () => {
     const root = createActionsToolbarRoot(h, onAction);
     const tree = root.render();
 
+    const onboardingButton = findNode(
+      tree,
+      node => node?.props?.id === "onboarding-start",
+    );
+
     const systemInput = findNode(
       tree,
       node => node?.type === "input" && node?.props?.id === "theme-system",
@@ -81,14 +86,18 @@ describe("shell primitive views", () => {
     expect(systemInput).toBeTruthy();
     expect(lightInput).toBeTruthy();
     expect(darkInput).toBeTruthy();
+    expect(onboardingButton).toBeTruthy();
+
+    onboardingButton.props.onClick();
 
     systemInput.props.onChange({ target: { checked: true } });
     lightInput.props.onChange({ target: { checked: true } });
     darkInput.props.onChange({ target: { checked: true } });
 
-    expect(onAction).toHaveBeenNthCalledWith(1, "ui.theme.set", { preference: "system" });
-    expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "light" });
-    expect(onAction).toHaveBeenNthCalledWith(3, "ui.theme.set", { preference: "dark" });
+    expect(onAction).toHaveBeenNthCalledWith(1, "onboarding.start");
+    expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "system" });
+    expect(onAction).toHaveBeenNthCalledWith(3, "ui.theme.set", { preference: "light" });
+    expect(onAction).toHaveBeenNthCalledWith(4, "ui.theme.set", { preference: "dark" });
   });
 
   it("keeps theme radio actions working when PrimeVue runtime is present", () => {
