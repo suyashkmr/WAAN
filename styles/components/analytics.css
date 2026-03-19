@@ -376,7 +376,8 @@
 #sentiment-overview,
 #weekday-trend,
 #timeofday-trend,
-#message-types {
+#message-types,
+#polls-card {
     scroll-margin-top: 7rem;
 }
 
@@ -393,6 +394,10 @@
 }
 
 .message-types {
+    --section-accent: var(--accent-secondary);
+}
+
+#polls-card {
     --section-accent: var(--accent-secondary);
 }
 
@@ -477,5 +482,11 @@
     #daily-activity .summary-block,
     #weekly-trend .summary-block {
         min-width: 136px;
+    }
+}
+
+@media (max-width: 900px) {
+    .polls-summary {
+        grid-template-columns: 1fr;
     }
 }

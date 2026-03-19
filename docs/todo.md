@@ -19,6 +19,27 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - [x] All previously tracked implementation tasks are complete.
 - [x] Execute the new UI overhaul plan in `docs/ui-overhaul-spec.md`.
 
+## Next Wave: Lower Deep-Dive Editorial Overhaul
+
+- [x] Phase 32: Lower-lane hierarchy pass.
+  - [x] Apply the story-summary / evidence / supporting tier system to lower deep-dive sections that still used flatter utility styling (`index.html`, `styles.components.css`, `styles/components/analytics.css`).
+  - [x] Tighten helper text, control density, and supporting context so the lower lane continues the upgraded analytics story instead of resetting visually.
+- [x] Phase 33: Message types and structured-data sections.
+  - [x] Reframe message mix with narrative intro, supporting context, and evidence framing while preserving message-type render hooks and export actions (`index.html`, `styles.components.css`).
+  - [x] Keep renderer behavior and DOM/test hooks unchanged while regrouping summaries and metrics.
+- [x] Phase 34: Polls and remaining utility-to-story panels.
+  - [x] Refresh polls with the same editorial card language, summary/evidence separation, and stronger lower-lane continuity (`index.html`, `styles.components.css`, `styles/components/analytics.css`).
+  - [x] Preserve collapse behavior, list mount points, and existing runtime-owned rendering.
+- [x] Phase 35: Deep-dive cohesion closeout.
+  - [x] Extend visual regression coverage to the lower-lane sections via message-types and polls baselines (`tests/visual/dashboard.visual.spec.js`).
+  - [x] Update `docs/ui-overhaul-spec.md` to record the lower-lane continuation and unchanged runtime constraints.
+  - [x] Complete validation:
+    - [x] targeted lower-lane/runtime `vitest` suites
+    - [x] `npm run test:visual`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+    - [x] Manual review at 1440 / 1024 / 768 / 390
+
 ## Next Wave: Analytics Story Lane Overhaul
 
 - [x] Phase 28: Analytics shell hierarchy pass.

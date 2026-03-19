@@ -77,6 +77,77 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     }, scenario);
   }
 
+  async function applyLowerLaneScenario(page) {
+    await page.evaluate(() => {
+      const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+      };
+
+      const messageTypeSummary = document.getElementById("message-type-summary");
+      if (messageTypeSummary) {
+        messageTypeSummary.innerHTML =
+          '<p class="message-type-share-summary">Share by type → Text: 58.4% · Media: 21.7% · Links: 13.2% · Polls: 6.7%.</p>';
+      }
+
+      const messageTypeNote = document.getElementById("message-type-note");
+      if (messageTypeNote) {
+        messageTypeNote.textContent =
+          "Text still drives the conversation, while media and links cluster around recap and planning moments.";
+      }
+
+      setText("avg-chars", "86");
+      setText("avg-words", "16");
+      setText("media-count", "184");
+      setText("link-count", "112");
+      setText("poll-count", "14");
+
+      const pollsTotal = document.getElementById("polls-total");
+      if (pollsTotal) pollsTotal.textContent = "14";
+
+      const pollsCreators = document.getElementById("polls-creators");
+      if (pollsCreators) pollsCreators.textContent = "5";
+
+      const pollsNote = document.getElementById("polls-note");
+      if (pollsNote) {
+        pollsNote.textContent = "14 polls recorded · Most polls: Alice (6)";
+      }
+
+      const pollsList = document.getElementById("polls-list");
+      if (pollsList) {
+        pollsList.innerHTML = `
+          <li class="poll-item">
+            <div class="poll-item-title">Which launch window should we lock for the client recap?</div>
+            <div class="poll-item-meta">By Alice · Mar 18, 2026 09:12 PM</div>
+            <div class="poll-item-options">
+              <span>Monday morning</span>
+              <span>Tuesday afternoon</span>
+              <span>Wednesday evening</span>
+            </div>
+          </li>
+          <li class="poll-item">
+            <div class="poll-item-title">What format should the weekly digest use?</div>
+            <div class="poll-item-meta">By Priya · Mar 17, 2026 08:05 PM</div>
+            <div class="poll-item-options">
+              <span>Bullet recap</span>
+              <span>Annotated timeline</span>
+              <span>Voice note summary</span>
+            </div>
+          </li>
+          <li class="poll-item">
+            <div class="poll-item-title">Who should present the findings?</div>
+            <div class="poll-item-meta">By Marco · Mar 16, 2026 07:41 PM</div>
+            <div class="poll-item-options">
+              <span>Ops lead</span>
+              <span>Product manager</span>
+              <span>Joint walkthrough</span>
+            </div>
+          </li>
+        `;
+      }
+    });
+  }
+
   async function prepareStableFrame(page) {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
@@ -216,6 +287,34 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
     await expect(section).toHaveScreenshot(`section-timeofday-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches message-types section baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await applyLowerLaneScenario(page);
+    const section = page.locator("#message-types");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-message-types-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches polls section baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await applyLowerLaneScenario(page);
+    const section = page.locator("#polls-card");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-polls-${testInfo.project.name}.png`, {
       caret: "hide",
       maxDiffPixelRatio: 0.01,
       timeout: 15000,

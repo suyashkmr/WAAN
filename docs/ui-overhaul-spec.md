@@ -42,6 +42,15 @@ The next continuation carries the same editorial system into the deeper analysis
 - chart roots, section IDs, controller entrypoints, bridge hooks, and fallback behavior remain unchanged
 - copy changes stay minimal and serve hierarchy clarity only
 
+### Current Active Refinement: Lower Deep-Dive Editorial Overhaul
+
+The next continuation finishes the editorial pass in the lower dashboard sections that still leaned utility-first:
+
+- message types and polls should read as part of the same story/evidence/supporting tier system as the analytics lane above
+- lower deep-dive cards should separate summary signals from raw lists, tables, and exports without changing runtime ownership
+- existing section IDs, export triggers, chart/list roots, controller entrypoints, and bridge hooks remain unchanged
+- visual coverage should explicitly include lower-lane section baselines so future refreshes do not regress the new hierarchy
+
 ## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.

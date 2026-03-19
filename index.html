@@ -870,7 +870,7 @@
                 </div>
             </div>
         </section>
-        <section class="card message-types" id="message-types" data-nav-target="message-types" data-vue-shell-mount="card-shell"
+        <section class="card message-types analytics-story-card" id="message-types" data-nav-target="message-types" data-vue-shell-mount="card-shell"
             data-accent="message-types">
             <div class="card-header">
                 <div class="card-title-group">
@@ -900,80 +900,95 @@
                 </div>
             </div>
             <div class="card-content" id="message-types-content">
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Distribution story</p>
+                        <p class="analytics-story-copy">Start with which content categories dominate the chat, then use the metric cards below to inspect the mix behind that headline.</p>
+                    </div>
+                    <div class="analytics-story-pills" aria-label="Message mix reading cues">
+                        <span class="analytics-story-pill">What dominates</span>
+                        <span class="analytics-story-pill subtle">What supports it</span>
+                    </div>
+                </div>
                 <div class="message-type-summary" id="message-type-summary"></div>
-                <div class="card-grid stats message-basics">
-                    <div class="stat" data-stat="media">
-                        <span class="stat-value" id="media-count">0</span>
-                        <span class="stat-label">Messages with media</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="media"
-                            title="Download media stats as CSV">Media CSV</button>
-                    </div>
-                    <div class="stat" data-stat="link">
-                        <span class="stat-value" id="link-count">0</span>
-                        <span class="stat-label">Messages with links</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="links"
-                            title="Download link stats as CSV">Links CSV</button>
-                    </div>
-                    <div class="stat" data-stat="poll">
-                        <span class="stat-value" id="poll-count">0</span>
-                        <span class="stat-label">Polls</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="polls"
-                            title="Download poll stats as CSV">Polls CSV</button>
-                    </div>
-                    <div class="stat" data-stat="join">
-                        <span class="stat-value" id="join-events">0</span>
-                        <span class="stat-label">Join events</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="joins"
-                            title="Download join events as CSV">Join events CSV</button>
-                    </div>
-                    <div class="stat" data-stat="added">
-                        <span class="stat-value" id="added-events">0</span>
-                        <span class="stat-label">Members added</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="added"
-                            title="Download member additions as CSV">Members added CSV</button>
-                    </div>
-                    <div class="stat" data-stat="left">
-                        <span class="stat-value" id="left-events">0</span>
-                        <span class="stat-label">Members left</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="left"
-                            title="Download member departures as CSV">Members left CSV</button>
-                    </div>
-                    <div class="stat" data-stat="removed">
-                        <span class="stat-value" id="removed-events">0</span>
-                        <span class="stat-label">Members removed</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="removed"
-                            title="Download member removals as CSV">Members removed CSV</button>
-                    </div>
-                    <div class="stat" data-stat="changed">
-                        <span class="stat-value" id="changed-events">0</span>
-                        <span class="stat-label">Settings changes</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="changed"
-                            title="Download settings changes as CSV">Changes CSV</button>
-                    </div>
-                    <div class="stat" data-stat="other">
-                        <span class="stat-value" id="other-system-events">0</span>
-                        <span class="stat-label">Other system messages</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="other"
-                            title="Download other system messages as CSV">Other systems CSV</button>
-                    </div>
-                    <div class="stat" data-stat="join-requests">
-                        <span class="stat-value" id="join-requests">0</span>
-                        <span class="stat-label">Join requests</span>
-                        <button type="button" class="ghost-button tiny stat-download" data-export="join_requests"
-                            title="Download join requests as CSV">Join requests CSV</button>
-                    </div>
-                    <div class="stat" data-stat="avg-chars">
-                        <span class="stat-value" id="avg-chars">0</span>
-                        <span class="stat-label">Average characters per message</span>
-                    </div>
-                    <div class="stat" data-stat="avg-words">
-                        <span class="stat-value" id="avg-words">0</span>
-                        <span class="stat-label">Average words per message</span>
+                <div class="lower-lane-intro supporting-story-tier">
+                    <p class="analysis-table-note">These cards separate structural content from system activity so you can tell whether the conversation is mostly people talking, links moving, or events changing the room.</p>
+                </div>
+                <div class="analysis-evidence-frame evidence-panel-tier lower-metrics-frame">
+                    <div class="card-grid stats message-basics">
+                        <div class="stat" data-stat="media">
+                            <span class="stat-value" id="media-count">0</span>
+                            <span class="stat-label">Messages with media</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="media"
+                                title="Download media stats as CSV">Media CSV</button>
+                        </div>
+                        <div class="stat" data-stat="link">
+                            <span class="stat-value" id="link-count">0</span>
+                            <span class="stat-label">Messages with links</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="links"
+                                title="Download link stats as CSV">Links CSV</button>
+                        </div>
+                        <div class="stat" data-stat="poll">
+                            <span class="stat-value" id="poll-count">0</span>
+                            <span class="stat-label">Polls</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="polls"
+                                title="Download poll stats as CSV">Polls CSV</button>
+                        </div>
+                        <div class="stat" data-stat="join">
+                            <span class="stat-value" id="join-events">0</span>
+                            <span class="stat-label">Join events</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="joins"
+                                title="Download join events as CSV">Join events CSV</button>
+                        </div>
+                        <div class="stat" data-stat="added">
+                            <span class="stat-value" id="added-events">0</span>
+                            <span class="stat-label">Members added</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="added"
+                                title="Download member additions as CSV">Members added CSV</button>
+                        </div>
+                        <div class="stat" data-stat="left">
+                            <span class="stat-value" id="left-events">0</span>
+                            <span class="stat-label">Members left</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="left"
+                                title="Download member departures as CSV">Members left CSV</button>
+                        </div>
+                        <div class="stat" data-stat="removed">
+                            <span class="stat-value" id="removed-events">0</span>
+                            <span class="stat-label">Members removed</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="removed"
+                                title="Download member removals as CSV">Members removed CSV</button>
+                        </div>
+                        <div class="stat" data-stat="changed">
+                            <span class="stat-value" id="changed-events">0</span>
+                            <span class="stat-label">Settings changes</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="changed"
+                                title="Download settings changes as CSV">Changes CSV</button>
+                        </div>
+                        <div class="stat" data-stat="other">
+                            <span class="stat-value" id="other-system-events">0</span>
+                            <span class="stat-label">Other system messages</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="other"
+                                title="Download other system messages as CSV">Other systems CSV</button>
+                        </div>
+                        <div class="stat" data-stat="join-requests">
+                            <span class="stat-value" id="join-requests">0</span>
+                            <span class="stat-label">Join requests</span>
+                            <button type="button" class="ghost-button tiny stat-download" data-export="join_requests"
+                                title="Download join requests as CSV">Join requests CSV</button>
+                        </div>
+                        <div class="stat" data-stat="avg-chars">
+                            <span class="stat-value" id="avg-chars">0</span>
+                            <span class="stat-label">Average characters per message</span>
+                        </div>
+                        <div class="stat" data-stat="avg-words">
+                            <span class="stat-value" id="avg-words">0</span>
+                            <span class="stat-label">Average words per message</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
-        <section class="card" id="polls-card" data-nav-target="polls" data-accent="polls" data-vue-shell-mount="card-shell">
+        <section class="card analytics-story-card" id="polls-card" data-nav-target="polls" data-accent="polls" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
                     <div class="card-heading">
@@ -997,17 +1012,31 @@
                 </div>
             </div>
             <div class="card-content" id="polls-content">
-                <div class="polls-summary">
-                    <div class="stat">
-                        <span class="stat-label">Total polls</span>
-                        <span class="stat-value" id="polls-total">0</span>
+                <div class="analytics-story-intro story-summary-tier">
+                    <div>
+                        <p class="analytics-story-kicker">Decision trail</p>
+                        <p class="analytics-story-copy">Use polls to see when the group switched from discussion into explicit decisions, and who tends to initiate those moments.</p>
                     </div>
-                    <div class="stat">
-                        <span class="stat-label">Unique poll creators</span>
-                        <span class="stat-value" id="polls-creators">0</span>
+                    <div class="analytics-story-pills" aria-label="Poll reading cues">
+                        <span class="analytics-story-pill">Decisions surfaced</span>
+                        <span class="analytics-story-pill subtle">Who initiated them</span>
                     </div>
                 </div>
-                <ol class="polls-list" id="polls-list"></ol>
+                <div class="polls-story-grid">
+                    <div class="polls-summary supporting-story-tier">
+                        <div class="stat">
+                            <span class="stat-label">Total polls</span>
+                            <span class="stat-value" id="polls-total">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Unique poll creators</span>
+                            <span class="stat-value" id="polls-creators">0</span>
+                        </div>
+                    </div>
+                    <div class="analysis-evidence-frame evidence-panel-tier lower-polls-frame">
+                        <ol class="polls-list" id="polls-list"></ol>
+                    </div>
+                </div>
             </div>
         </section>
 
