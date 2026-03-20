@@ -218,6 +218,63 @@
     --section-accent: var(--accent-success);
 }
 
+.analytics-story-card {
+    --story-tier-border: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, transparent);
+}
+
+.guided-findings-cluster--signal #insight-highlights {
+    border-color: color-mix(in srgb, var(--accent) 14%, var(--surface-supporting-border));
+    box-shadow: var(--editorial-card-shadow);
+}
+
+.guided-findings-cluster--drivers #participants,
+.guided-findings-cluster--timing :is(#hourly-activity, #daily-activity),
+.deep-dive-cluster--patterns .analytics-story-card,
+.deep-dive-cluster--exports .analytics-story-card {
+    border-color: color-mix(in srgb, var(--surface-utility-border) 92%, transparent);
+    box-shadow: none;
+}
+
+.guided-findings-cluster--timing :is(#hourly-activity, #daily-activity) .analysis-evidence-frame,
+.deep-dive-cluster--patterns .analysis-evidence-frame,
+.deep-dive-cluster--exports .analysis-evidence-frame,
+.story-summary-tier,
+.supporting-story-tier,
+.evidence-panel-tier,
+.guided-findings-cluster--timing .analysis-summary-strip,
+.guided-findings-cluster--timing .daily-summary,
+.deep-dive-cluster--patterns :is(.weekly-summary, .pattern-controls-shell, .sentiment-panel),
+.deep-dive-cluster--exports :is(.polls-summary, .message-type-summary) {
+    background: color-mix(in srgb, var(--surface-quiet-bg) 88%, transparent);
+    border-color: color-mix(in srgb, var(--surface-utility-border) 78%, transparent);
+    box-shadow: none;
+}
+
+.highlight-grid {
+    gap: 0.8rem;
+}
+
+.highlight-card {
+    min-height: 160px;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--surface-supporting-bg) 90%, transparent);
+    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 8%, var(--surface-supporting-border));
+    box-shadow: none;
+}
+
+:is(.guided-card, .highlight-card):hover {
+    transform: none;
+    box-shadow: none;
+    border-color: color-mix(in srgb, var(--section-accent, var(--accent)) 12%, var(--surface-supporting-border));
+}
+
+.participants-shell-controls,
+.pattern-story-grid,
+.participants-story-grid {
+    gap: 0.75rem;
+}
+
 .highlight-card[data-accent="risk"] {
     --section-accent: var(--accent-warning);
 }
@@ -505,4 +562,22 @@
     .polls-summary {
         grid-template-columns: 1fr;
     }
+}
+
+/* Shell symmetry bridge */
+.analytics-story-card,
+.guided-findings-cluster--signal #insight-highlights,
+.guided-findings-cluster--drivers #participants,
+.guided-findings-cluster--timing :is(#hourly-activity, #daily-activity),
+.deep-dive-cluster--patterns .analytics-story-card,
+.deep-dive-cluster--exports .analytics-story-card {
+    background-image: none;
+    box-shadow: none;
+}
+
+:is(.story-summary-tier, .supporting-story-tier, .evidence-panel-tier),
+.guided-findings-cluster--timing :is(.analysis-summary-strip, .daily-summary),
+.deep-dive-cluster--patterns :is(.weekly-summary, .pattern-controls-shell, .sentiment-panel),
+.deep-dive-cluster--exports :is(.polls-summary, .message-type-summary) {
+    box-shadow: none;
 }

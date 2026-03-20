@@ -141,7 +141,7 @@ export function updateRelayBanner({
     const accountLabel = formatRelayAccountFn(status.account) || "Linked account";
     metaParts.push(accountLabel);
   }
-  if (Boolean(status.syncingChats)) {
+  if (status.syncingChats) {
     metaParts.push(UI_COPY.relay.banner.loadingMeta);
   } else if (Number.isFinite(status.chatCount) && status.chatCount <= 0 && hasCompletedRemoteChatFetch) {
     metaParts.push(UI_COPY.relay.banner.emptyMeta);

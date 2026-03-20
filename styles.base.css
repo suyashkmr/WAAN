@@ -1094,3 +1094,75 @@ h6 {
 body.onboarding-active {
     overflow: hidden;
 }
+
+:root,
+:root[data-color-scheme="dark"],
+:root[data-color-scheme="light"] {
+    --layout-content-max-width: 1120px;
+    --layout-main-gap: clamp(1.25rem, 2.4vw, 2rem);
+    --layout-main-pad-x: clamp(1rem, 2.8vw, 1.9rem);
+    --hero-shell-pad-top: clamp(1.15rem, 2vw, 1.6rem);
+    --hero-shell-pad-bottom: clamp(0.8rem, 1.4vw, 1rem);
+    --hero-blurb-gap: clamp(0.75rem, 1.4vw, 1rem);
+    --hero-logo-size: clamp(42px, 4.5vw, 52px);
+    --hero-logo-mark-size: clamp(32px, 3.4vw, 40px);
+    --section-nav-shell-margin-top: clamp(0.45rem, 0.8vw, 0.65rem);
+    --section-nav-shell-margin-bottom: clamp(0.8rem, 1.3vw, 1rem);
+    --section-nav-item-pad-y: 0.28rem;
+    --section-nav-item-pad-x: 0.32rem;
+    --surface-primary-stage-bg: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+    --surface-primary-stage-border: color-mix(in srgb, var(--edge-subtle) 56%, transparent);
+    --surface-primary-stage-shadow: 0 8px 18px rgb(var(--shadow-ink-rgb) / 0.08);
+    --surface-supporting-bg: color-mix(in srgb, var(--surface-elevated) 66%, transparent);
+    --surface-supporting-border: color-mix(in srgb, var(--edge-subtle) 50%, transparent);
+    --surface-supporting-shadow: 0 4px 12px rgb(var(--shadow-ink-rgb) / 0.05);
+    --surface-utility-bg: color-mix(in srgb, var(--surface-elevated) 60%, transparent);
+    --surface-utility-border: color-mix(in srgb, var(--edge-subtle) 42%, transparent);
+    --surface-utility-shadow: 0 2px 8px rgb(var(--shadow-ink-rgb) / 0.04);
+    --surface-quiet-bg: color-mix(in srgb, var(--surface-elevated) 54%, transparent);
+    --surface-quiet-border: color-mix(in srgb, var(--edge-subtle) 34%, transparent);
+    --surface-quiet-shadow: 0 1px 4px rgb(var(--shadow-ink-rgb) / 0.03);
+    --workspace-overview-frame-bg: color-mix(in srgb, var(--surface-elevated) 70%, transparent);
+    --workspace-overview-frame-border: color-mix(in srgb, var(--edge-subtle) 60%, transparent);
+    --panel-header-divider: color-mix(in srgb, var(--edge-subtle) 42%, transparent);
+    --hero-shell-border: color-mix(in srgb, var(--edge-subtle) 40%, transparent);
+    --editorial-card-shadow: 0 5px 14px rgb(var(--shadow-ink-rgb) / 0.06);
+    --editorial-card-shadow-hover: 0 7px 18px rgb(var(--shadow-ink-rgb) / 0.08);
+    --nav-shell-border: color-mix(in srgb, var(--edge-subtle) 46%, transparent);
+    --nav-shell-shadow: 0 4px 14px rgb(var(--shadow-ink-rgb) / 0.08);
+    --nav-item-hover-fill: color-mix(in srgb, var(--accent) 6%, transparent);
+    --nav-item-active-fill: color-mix(in srgb, var(--accent) 8%, transparent);
+    --control-height-md: 2.6rem;
+    --control-height-sm: 2.05rem;
+    --control-radius-md: 0.78rem;
+    --ambient-opacity: 0.26;
+    --bg-depth-spot-1: color-mix(in srgb, var(--accent) 5%, transparent);
+    --bg-depth-spot-2: color-mix(in srgb, var(--md-secondary) 4%, transparent);
+    --bg-depth-spot-3: color-mix(in srgb, var(--md-tertiary) 3%, transparent);
+    --bg-depth-ridge: color-mix(in srgb, var(--edge-highlight) 6%, transparent);
+}
+
+body {
+    background:
+        radial-gradient(120% 120% at 0% 0%, var(--bg-depth-spot-1) 0%, transparent 48%),
+        radial-gradient(100% 100% at 100% 8%, var(--bg-depth-spot-2) 0%, transparent 52%),
+        linear-gradient(180deg, var(--bg-depth-base-start), var(--bg-depth-base-end));
+}
+
+.ambient-field {
+    background:
+        radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--accent) 9%, transparent) 0%, transparent 42%),
+        radial-gradient(circle at 78% 14%, color-mix(in srgb, var(--md-secondary) 8%, transparent) 0%, transparent 46%);
+    filter: blur(96px);
+}
+
+h1,
+h2,
+.card-header h2,
+.stat-value,
+.footer-brand p,
+.footer-brand small {
+    font-family: var(--font-family-base);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}

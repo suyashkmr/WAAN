@@ -15,7 +15,6 @@
 <body>
     <div class="ambient-field" aria-hidden="true"></div>
     <nav class="section-nav" aria-label="Section shortcuts">
-        <p class="section-nav-kicker section-kicker">Jump to</p>
         <div class="section-nav-inner"></div>
     </nav>
 
@@ -64,61 +63,69 @@
                         </div>
                     </div>
                     <div class="card-content app-story-panel-content">
-                        <div class="relay-onboarding app-step-lane" role="list">
-                            <div class="relay-step" data-step-id="start" role="listitem">
-                                <span class="relay-step-index">1</span>
-                                <div>
-                                    <p class="relay-step-title">Start relay</p>
-                                    <p class="relay-step-detail">Open WAAN Relay.</p>
+                        <div class="relay-workspace-shell">
+                            <div class="relay-onboarding app-step-lane" role="list">
+                                <div class="relay-step" data-step-id="start" role="listitem">
+                                    <span class="relay-step-index">1</span>
+                                    <div>
+                                        <p class="relay-step-title">Start relay</p>
+                                        <p class="relay-step-detail">Open WAAN Relay.</p>
+                                    </div>
+                                </div>
+                                <div class="relay-step" data-step-id="qr" role="listitem">
+                                    <span class="relay-step-index">2</span>
+                                    <div>
+                                        <p class="relay-step-title">Link your phone</p>
+                                        <p class="relay-step-detail">Open Linked Devices.</p>
+                                    </div>
+                                </div>
+                                <div class="relay-step" data-step-id="sync" role="listitem">
+                                    <span class="relay-step-index">3</span>
+                                    <div>
+                                        <p class="relay-step-title">Load chats</p>
+                                        <p class="relay-step-detail">Chats load here.</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="relay-step" data-step-id="qr" role="listitem">
-                                <span class="relay-step-index">2</span>
-                                <div>
-                                    <p class="relay-step-title">Link your phone</p>
-                                    <p class="relay-step-detail">Open Linked Devices.</p>
+                            <div class="relay-workspace-main">
+                                <div class="relay-workspace-primary">
+                                    <p id="relay-connection-status" class="live-status"></p>
+                                    <div class="live-actions app-action-dock">
+                                        <button type="button" class="ghost-button" id="relay-start">Start relay</button>
+                                        <div class="live-button-group">
+                                            <button type="button" class="ghost-button" id="relay-stop" disabled>Pause sync</button>
+                                            <button type="button" class="ghost-button danger" id="relay-logout" disabled>Log out & unlink</button>
+                                        </div>
+                                    </div>
+                                    <p id="relay-account-name" class="live-account"></p>
+                                    <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
+                                        <img id="relay-qr-image" alt="Scan this QR code to link your device">
+                                        <p>Scan with Linked Devices.</p>
+                                    </div>
+                                    <div class="relay-sync-progress hidden" id="relay-sync-progress" aria-live="polite">
+                                        <h4>Sync progress</h4>
+                                        <div class="relay-sync-steps">
+                                            <div class="relay-sync-step" data-step="chats" data-state="pending">
+                                                <div class="relay-sync-step-label">Chat list</div>
+                                                <div class="relay-sync-step-meta" id="relay-sync-chats-meta">Waiting to sync…</div>
+                                                <div class="relay-sync-bar"><span></span></div>
+                                            </div>
+                                            <div class="relay-sync-step" data-step="messages" data-state="pending">
+                                                <div class="relay-sync-step-label">Messages</div>
+                                                <div class="relay-sync-step-meta" id="relay-sync-messages-meta">Waiting to sync…</div>
+                                                <div class="relay-sync-bar"><span></span></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="relay-step" data-step-id="sync" role="listitem">
-                                <span class="relay-step-index">3</span>
-                                <div>
-                                    <p class="relay-step-title">Load chats</p>
-                                    <p class="relay-step-detail">Chats load here.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <p id="relay-connection-status" class="live-status"></p>
-                        <div class="live-actions app-action-dock">
-                            <button type="button" class="ghost-button" id="relay-start">Start relay</button>
-                            <div class="live-button-group">
-                                <button type="button" class="ghost-button" id="relay-stop" disabled>Pause sync</button>
-                                <button type="button" class="ghost-button danger" id="relay-logout" disabled>Log out & unlink</button>
-                            </div>
-                        </div>
-                        <p id="relay-account-name" class="live-account"></p>
-                        <div id="relay-qr-container" class="relay-qr hidden" aria-live="polite">
-                            <img id="relay-qr-image" alt="Scan this QR code to link your device">
-                            <p>Scan with Linked Devices.</p>
-                        </div>
-                        <p id="relay-help-text" class="live-help">
-                            Need to start manually? Run <code>npm start --workspace apps/server</code>, wait for “Relay listening”, then start the relay here.
-                        </p>
-                        <p class="live-help warning">
-                            Account safety notice: WAAN is not affiliated with WhatsApp/Meta. Non-official client usage or
-                            automation can lead to temporary or permanent account restrictions. Start with a secondary account.
-                        </p>
-                        <div class="relay-sync-progress hidden" id="relay-sync-progress" aria-live="polite">
-                            <h4>Sync progress</h4>
-                            <div class="relay-sync-steps">
-                                <div class="relay-sync-step" data-step="chats" data-state="pending">
-                                    <div class="relay-sync-step-label">Chat list</div>
-                                    <div class="relay-sync-step-meta" id="relay-sync-chats-meta">Waiting to sync…</div>
-                                    <div class="relay-sync-bar"><span></span></div>
-                                </div>
-                                <div class="relay-sync-step" data-step="messages" data-state="pending">
-                                    <div class="relay-sync-step-label">Messages</div>
-                                    <div class="relay-sync-step-meta" id="relay-sync-messages-meta">Waiting to sync…</div>
-                                    <div class="relay-sync-bar"><span></span></div>
+                                <div class="relay-workspace-support">
+                                    <p id="relay-help-text" class="live-help">
+                                        Need to start manually? Run <code>npm start --workspace apps/server</code>, wait for “Relay listening”, then start the relay here.
+                                    </p>
+                                    <p class="live-help warning">
+                                        Account safety notice: WAAN is not affiliated with WhatsApp/Meta. Non-official client usage or
+                                        automation can lead to temporary or permanent account restrictions. Start with a secondary account.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -136,10 +143,8 @@
     <main class="app-shell-layout">
         <section class="studio-stage studio-stage--workspace full-span" data-stage="workspace" aria-labelledby="workspace-stage-title">
             <div class="studio-stage-intro">
-                <p class="studio-stage-kicker">Stage 2</p>
                 <div class="studio-stage-title-group">
-                    <h2 id="workspace-stage-title">Active workspace</h2>
-                    <p class="studio-stage-copy">Status, exports, chat, and range live here.</p>
+                    <h2 id="workspace-stage-title">Workspace</h2>
                 </div>
             </div>
 
@@ -150,8 +155,8 @@
                     </div>
                 </div>
 
-                <div class="workspace-stage-grid">
-                    <div class="workspace-command-surface workspace-strip" data-nav-target="actions">
+                <div class="workspace-stage-grid shell-split shell-split--workspace">
+                    <div class="workspace-command-surface workspace-strip shell-lane shell-lane--primary" data-nav-target="actions">
                         <div class="workspace-command-main">
                             <section class="relay-status-banner" id="relay-status-banner" aria-live="polite"
                                 data-nav-target="relay-status">
@@ -237,7 +242,7 @@
                         </div>
                     </div>
 
-                    <div id="dataset-empty-callout" class="dataset-empty panel-state panel-state--empty hidden" aria-live="polite">
+                    <div id="dataset-empty-callout" class="dataset-empty panel-state panel-state--empty shell-lane shell-lane--secondary shell-lane--quiet hidden" aria-live="polite">
                         <div class="empty-illustration" aria-hidden="true">
                             <span></span>
                             <span></span>
@@ -284,10 +289,8 @@
 
         <section class="studio-stage studio-stage--findings full-span" id="guided-findings-stage" data-stage="findings" aria-labelledby="guided-findings-title">
             <div class="studio-stage-intro">
-                <p class="studio-stage-kicker">Stage 3</p>
                 <div class="studio-stage-title-group">
-                    <h2 id="guided-findings-title">Guided findings</h2>
-                    <p class="studio-stage-copy">Start with the clearest signal, then move into drivers and timing.</p>
+                    <h2 id="guided-findings-title">Findings</h2>
                 </div>
             </div>
 
@@ -296,8 +299,8 @@
                     <section class="workspace-overview-shell" id="workspace-overview" data-nav-target="overview">
                         <div class="workspace-overview-header">
                             <div>
-                                <p class="section-eyebrow">What matters now</p>
-                                <h2>Read the conversation first</h2>
+                                <p class="section-eyebrow">Overview</p>
+                                <h2>Conversation summary</h2>
                             </div>
                         </div>
                         <div class="workspace-overview-frame">
@@ -307,8 +310,7 @@
 
                     <section class="guided-findings-cluster guided-findings-cluster--signal" aria-labelledby="guided-findings-signal-title">
                         <div class="guided-findings-cluster-header">
-                            <p class="guided-findings-step">What changed</p>
-                            <h3 id="guided-findings-signal-title">Signals to scan first</h3>
+                            <h3 id="guided-findings-signal-title">Highlights</h3>
                         </div>
 
                         <section class="card highlights analytics-story-card" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell"
@@ -344,8 +346,7 @@
 
                     <section class="guided-findings-cluster guided-findings-cluster--drivers" aria-labelledby="guided-findings-drivers-title">
                         <div class="guided-findings-cluster-header">
-                            <p class="guided-findings-step">Who is driving it</p>
-                            <h3 id="guided-findings-drivers-title">Participant balance</h3>
+                            <h3 id="guided-findings-drivers-title">Participants</h3>
                         </div>
 
                         <section class="card participants analytics-story-card" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell"
@@ -453,8 +454,7 @@
 
                     <section class="guided-findings-cluster guided-findings-cluster--timing" aria-labelledby="guided-findings-timing-title">
                         <div class="guided-findings-cluster-header">
-                            <p class="guided-findings-step">When it happens</p>
-                            <h3 id="guided-findings-timing-title">Timing and pace</h3>
+                            <h3 id="guided-findings-timing-title">Timing</h3>
                         </div>
 
                         <div class="studio-pattern-entry-grid guided-findings-pattern-grid guided-findings-timing-strip">
@@ -528,55 +528,11 @@
                                 </div>
                             </section>
 
-                            <section class="card analytics-story-card" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
-                                <div class="card-header">
-                                    <div class="card-title-group">
-                                        <div class="card-heading">
-                                            <h2>
-                                                <span class="section-icon" aria-hidden="true">
-                                                    <svg viewBox="0 0 24 24">
-                                                        <path
-                                                            d="M7 2v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5v10h14V8z" />
-                                                    </svg>
-                                                </span>
-                                                Day by day
-                                            </h2>
-                                            <button type="button" class="info-note-button" aria-label="About this section"
-                                                aria-describedby="daily-note">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path
-                                                        d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                                </svg>
-                                                <span class="info-tooltip" id="daily-note" role="tooltip">Messages per day across the full
-                                                    range so you can spot busy streaks and quiet spells.</span>
-                                            </button>
-                                        </div>
-                                        <div class="card-header-actions">
-                                            <button type="button" class="ghost-button" id="download-daily"
-                                                title="Download daily activity as CSV">Download CSV</button>
-                                            <button type="button" class="card-toggle" aria-expanded="true"
-                                                data-target="daily-activity-content">▾</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-content" id="daily-activity-content">
-                                    <div class="daily-summary">
-                                        <div class="summary-block">
-                                            <span class="summary-label">Avg per day</span>
-                                            <span class="summary-value" id="daily-avg-day">—</span>
-                                        </div>
-                                    </div>
-                                    <div class="analysis-evidence-frame evidence-panel-tier">
-                                        <div id="daily-chart" class="calendar-chart"></div>
-                                    </div>
-                                </div>
-                            </section>
                         </div>
                     </section>
 
                     <div class="guided-findings-next">
-                        <p class="guided-findings-step">Where to inspect next</p>
-                        <p class="guided-findings-next-copy">Deep-dive tools continue below with search, saved views, message mix, and longer-range patterns.</p>
+                        <p class="guided-findings-next-copy">Deeper tools continue below.</p>
                     </div>
                 </div>
             </div>
@@ -584,33 +540,26 @@
 
         <section class="studio-stage studio-stage--deep-dive full-span" id="deep-dive-stage" data-stage="deep-dive" aria-labelledby="deep-dive-stage-title">
             <div class="studio-stage-intro">
-                <p class="studio-stage-kicker">Stage 4</p>
                 <div class="studio-stage-title-group">
-                    <h2 id="deep-dive-stage-title">Deep-dive tools</h2>
-                    <p class="studio-stage-copy">Inspect, compare, and export without breaking the reading flow.</p>
+                    <h2 id="deep-dive-stage-title">Tools</h2>
                 </div>
             </div>
 
             <div class="studio-stage-shell studio-stage-shell--deep-dive deep-dive-shell">
-                <div class="deep-dive-stage-context">
-                    <p class="deep-dive-stage-context-copy">Inspect, compare, and export without pulling attention away from the guided findings above.</p>
-                </div>
-
                 <section class="deep-dive-cluster deep-dive-cluster--tools" aria-labelledby="deep-dive-tools-cluster-title">
                     <div class="deep-dive-cluster-header">
-                        <p class="deep-dive-step">Investigate and compare</p>
-                        <h3 id="deep-dive-tools-cluster-title">Working tools</h3>
+                        <h3 id="deep-dive-tools-cluster-title">Search and saved views</h3>
                     </div>
 
                     <div class="studio-deep-dive-primary studio-strip-cluster studio-strip-cluster--tools">
                     <section class="card full-span search-panel" id="search-panel" data-nav-target="search" data-accent="search" data-vue-shell-mount="card-shell">
                         <div class="card-header">
-                            <div class="card-title-group">
-                                <div class="card-heading">
-                                    <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
+                                <div class="card-title-group">
+                                    <div class="card-heading">
+                                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
                                                 <path
                                                     d="M15.5 14h-.79l-.28-.27A6 6 0 1 0 14 15.5l.27.28v.79l5 5 1.5-1.5zm-5.5 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" />
-                                            </svg></span>Search Messages</h2>
+                                            </svg></span>Search</h2>
                                     <button type="button" class="info-note-button" aria-label="About this section"
                                         aria-describedby="search-note">
                                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -675,7 +624,7 @@
                         data-accent="saved-views">
                         <div class="card-header">
                             <div class="card-title-group">
-                                <div>
+                                <div class="card-heading">
                                     <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
                                                 <path
                                                     d="M17 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V7zM7 5h7v4H7zm7 14H7v-6h7zm3-12h-2V5h1z" />
@@ -688,8 +637,8 @@
                             </div>
                         </div>
                         <div class="card-content" id="saved-views-content">
-                            <div class="saved-view-strip">
-                                <div class="saved-view-strip-row saved-view-strip-row--setup">
+                            <div class="saved-view-layout shell-split shell-split--saved-views">
+                                <div class="saved-view-command-lane shell-lane shell-lane--primary">
                                     <div class="saved-view-actions">
                                         <div class="saved-view-save">
                                             <label for="saved-view-name">Name</label>
@@ -705,9 +654,7 @@
                                             <button type="button" class="ghost-button small" id="delete-saved-view">Delete view</button>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="saved-view-strip-row saved-view-strip-row--compare">
-                                    <div class="compare-controls" id="compare-controls">
+                                    <div class="compare-controls saved-view-panel--compare" id="compare-controls">
                                         <div class="compare-select">
                                             <label for="compare-view-a">View A</label>
                                             <div id="compare-view-a-anchor" data-native-select-seed="compare-view-a"></div>
@@ -718,10 +665,10 @@
                                         </div>
                                         <button type="button" class="ghost-button" id="compare-views">Compare views</button>
                                     </div>
-                                    <div class="compare-summary" id="compare-summary"></div>
                                 </div>
-                                <div class="saved-view-strip-row saved-view-strip-row--gallery">
+                                <div class="saved-view-results-lane shell-lane shell-lane--secondary shell-lane--quiet">
                                     <div class="saved-view-gallery" id="saved-view-gallery" aria-live="polite"></div>
+                                    <div class="compare-summary" id="compare-summary"></div>
                                 </div>
                             </div>
                         </div>
@@ -731,8 +678,7 @@
 
                 <section class="deep-dive-cluster deep-dive-cluster--patterns" aria-labelledby="deep-dive-patterns-cluster-title">
                     <div class="deep-dive-cluster-header">
-                        <p class="deep-dive-step">Inspect deeper patterns</p>
-                        <h3 id="deep-dive-patterns-cluster-title">Timing and tone evidence</h3>
+                        <h3 id="deep-dive-patterns-cluster-title">Pattern evidence</h3>
                     </div>
 
                     <div class="studio-deep-dive-analytics">
@@ -779,6 +725,50 @@
                 </div>
                 <div class="analysis-evidence-frame evidence-panel-tier">
                     <div id="weekly-chart" class="weekly-chart"></div>
+                </div>
+            </div>
+                    </section>
+
+                    <section class="card analytics-story-card" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <div class="card-heading">
+                        <h2>
+                            <span class="section-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M7 2v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5v10h14V8z" />
+                                </svg>
+                            </span>
+                            Day by day
+                        </h2>
+                        <button type="button" class="info-note-button" aria-label="About this section"
+                            aria-describedby="daily-note">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path
+                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </svg>
+                            <span class="info-tooltip" id="daily-note" role="tooltip">Messages per day across the full
+                                range so you can spot busy streaks and quiet spells.</span>
+                        </button>
+                    </div>
+                    <div class="card-header-actions">
+                        <button type="button" class="ghost-button" id="download-daily"
+                            title="Download daily activity as CSV">Download CSV</button>
+                        <button type="button" class="card-toggle" aria-expanded="true"
+                            data-target="daily-activity-content">▾</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content" id="daily-activity-content">
+                <div class="daily-summary">
+                    <div class="summary-block">
+                        <span class="summary-label">Avg per day</span>
+                        <span class="summary-value" id="daily-avg-day">—</span>
+                    </div>
+                </div>
+                <div class="analysis-evidence-frame evidence-panel-tier">
+                    <div id="daily-chart" class="calendar-chart"></div>
                 </div>
             </div>
                     </section>
@@ -952,13 +942,13 @@
             </div>
             <div class="card-content" id="sentiment-overview-content">
                 <div class="sentiment-summary" id="sentiment-summary"></div>
-                <div class="sentiment-content">
-                    <div class="sentiment-trend sentiment-panel">
+                <div class="sentiment-content shell-split shell-split--sentiment">
+                    <div class="sentiment-trend sentiment-panel shell-lane shell-lane--primary">
                         <h3>Daily mood</h3>
                         <p class="sentiment-note" id="sentiment-trend-note"></p>
                         <div class="sentiment-calendar-container" id="sentiment-daily-chart"></div>
                     </div>
-                    <div class="sentiment-participants sentiment-panel">
+                    <div class="sentiment-participants sentiment-panel shell-lane shell-lane--secondary shell-lane--quiet">
                         <h3>Members</h3>
                         <div class="sentiment-lists">
                             <div class="sentiment-list">
@@ -979,8 +969,7 @@
 
                 <section class="deep-dive-cluster deep-dive-cluster--exports" aria-labelledby="deep-dive-exports-cluster-title">
                     <div class="deep-dive-cluster-header">
-                        <p class="deep-dive-step">Export and structured detail</p>
-                        <h3 id="deep-dive-exports-cluster-title">Evidence breakdown</h3>
+                        <h3 id="deep-dive-exports-cluster-title">Structured evidence</h3>
                     </div>
 
                     <div class="studio-deep-dive-evidence">
@@ -1138,22 +1127,19 @@
 
         <section class="studio-stage studio-stage--support full-span" data-stage="support" aria-labelledby="support-stage-title">
             <div class="studio-stage-intro">
-                <p class="studio-stage-kicker">Support</p>
                 <div class="studio-stage-title-group">
-                    <h2 id="support-stage-title">Support and recovery</h2>
-                    <p class="studio-stage-copy">Recovery, diagnostics, and local-data help.</p>
+                    <h2 id="support-stage-title">Support</h2>
                 </div>
             </div>
 
             <section class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq" data-vue-shell-mount="card-shell">
             <div class="card-header">
                 <div class="card-title-group">
-                    <div>
+                    <div class="card-heading">
                         <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
                                     <path
                                         d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" />
-                                </svg></span>FAQ</h2>
-                        <p class="support-card-note">Use these when setup or sync needs recovery.</p>
+                                </svg></span>Recovery help</h2>
                     </div>
                     <div class="card-header-actions">
                         <button type="button" class="card-toggle" aria-expanded="true" title="Show or hide recovery help."

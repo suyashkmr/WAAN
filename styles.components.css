@@ -608,10 +608,10 @@
 
 .hero-live-card {
     margin: 0;
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     animation: hero-panel-in var(--motion-duration-slow) var(--motion-ease-out) both;
     animation-delay: var(--motion-delay-hero);
 }
@@ -621,7 +621,8 @@
 }
 
 .hero-live-card .card-content {
-    flex: 1;
+    flex: 0 1 auto;
+    gap: 0.5rem;
 }
 
 .hero-blurb:hover .hero-logo {
@@ -4815,4 +4816,919 @@ body[data-compact="true"] .table-container.scrollable {
     width: 18px;
     height: 18px;
     fill: currentColor;
+}
+
+/* Calm editorial reset */
+.hero-shell {
+    padding-block: clamp(0.85rem, 1.6vw, 1.15rem) clamp(0.55rem, 1vw, 0.75rem);
+    background: transparent;
+}
+
+.hero-layout {
+    gap: 0.7rem;
+}
+
+.hero-blurb {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.5rem;
+    padding: 0 0 0.55rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--hero-shell-border) 58%, transparent);
+    animation: none;
+}
+
+.hero-brand-copy h1 {
+    font-size: clamp(1.35rem, 2vw, 1.7rem);
+    letter-spacing: -0.035em;
+}
+
+.hero-status {
+    justify-items: start;
+    text-align: left;
+    gap: 0.28rem;
+}
+
+.hero-status-badge,
+.hero-milestone {
+    border-radius: 999px;
+    box-shadow: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+.hero-status-badge {
+    padding: 0.25rem 0.65rem;
+    border-color: color-mix(in srgb, currentColor 18%, transparent);
+    background: color-mix(in srgb, currentColor 7%, transparent);
+}
+
+.hero-status-copy {
+    font-size: 0.84rem;
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
+}
+
+.hero-status-meta {
+    justify-self: start;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+}
+
+.hero-milestones {
+    justify-content: flex-start;
+    gap: 0.36rem;
+}
+
+.hero-milestone {
+    text-transform: none;
+    color: color-mix(in srgb, var(--text) 70%, var(--muted));
+    background: transparent;
+    border-color: color-mix(in srgb, var(--edge-subtle) 44%, transparent);
+}
+
+.hero-milestone::before {
+    width: 0.32rem;
+    height: 0.32rem;
+}
+
+.hero-live-card {
+    animation: none;
+}
+
+.studio-stage {
+    gap: 0.85rem;
+}
+
+.studio-stage-intro,
+.workspace-stage-header,
+.workspace-overview-header,
+.guided-findings-cluster-header,
+.deep-dive-cluster-header {
+    padding: 0;
+    border: 0;
+}
+
+.studio-stage-intro {
+    display: block;
+}
+
+.studio-stage-title-group {
+    gap: 0.12rem;
+}
+
+.studio-stage-kicker,
+.studio-stage-copy,
+.guided-findings-step,
+.deep-dive-step,
+.support-card-note,
+.deep-dive-stage-context,
+.section-nav-kicker {
+    display: none;
+}
+
+.studio-stage-title-group h2 {
+    font-size: clamp(1rem, 1.35vw, 1.18rem);
+    letter-spacing: -0.02em;
+}
+
+.workspace-stage {
+    gap: 0.8rem;
+    padding-top: 0.45rem;
+}
+
+.workspace-stage-header h2,
+.workspace-overview-header h2 {
+    margin: 0;
+    font-size: clamp(1.12rem, 1.65vw, 1.35rem);
+    line-height: 1.08;
+}
+
+.workspace-stage-grid,
+.guided-findings-sequence,
+.deep-dive-shell {
+    gap: 1rem;
+}
+
+.workspace-command-surface,
+.workspace-overview-frame,
+.guided-findings-cluster .card,
+.deep-dive-cluster .card,
+#faq-card {
+    border-radius: 1.15rem;
+}
+
+.workspace-command-surface {
+    padding: 0.95rem 1rem;
+    border-color: color-mix(in srgb, var(--surface-primary-stage-border) 82%, transparent);
+    background: color-mix(in srgb, var(--surface-primary-stage-bg) 82%, transparent);
+    box-shadow: var(--surface-primary-stage-shadow);
+}
+
+.workspace-command-main,
+.workspace-strip {
+    gap: 0.7rem;
+}
+
+.workspace-command-surface .page-controls {
+    padding-top: 0.75rem;
+    border-top-color: color-mix(in srgb, var(--panel-header-divider) 88%, transparent);
+}
+
+.workspace-overview-shell {
+    gap: 0.55rem;
+    min-height: 0;
+}
+
+.workspace-overview-frame {
+    padding: 0.95rem 1rem;
+    border-color: color-mix(in srgb, var(--workspace-overview-frame-border) 88%, transparent);
+    background: color-mix(in srgb, var(--workspace-overview-frame-bg) 92%, transparent);
+    box-shadow: var(--editorial-card-shadow);
+}
+
+.section-eyebrow {
+    margin: 0 0 0.18rem;
+    font-size: 0.69rem;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: color-mix(in srgb, var(--text) 54%, var(--muted));
+}
+
+.guided-findings-cluster,
+.deep-dive-cluster {
+    gap: 0.55rem;
+}
+
+.guided-findings-cluster + .guided-findings-cluster,
+.deep-dive-cluster + .deep-dive-cluster,
+.guided-findings-next {
+    padding-top: 0.75rem;
+    border-top-color: color-mix(in srgb, var(--panel-header-divider) 74%, transparent);
+}
+
+.guided-findings-cluster-header h3,
+.deep-dive-cluster-header h3 {
+    font-size: 0.96rem;
+    letter-spacing: -0.015em;
+    color: color-mix(in srgb, var(--text) 88%, transparent);
+}
+
+.guided-findings-next-copy {
+    max-width: 42ch;
+    font-size: 0.84rem;
+    color: color-mix(in srgb, var(--text) 58%, var(--muted));
+}
+
+:is(.card, .app-panel-shell) {
+    margin-bottom: 0;
+    padding: 1rem 1rem 1.05rem;
+    border-radius: 1.1rem;
+    border: 1px solid color-mix(in srgb, var(--surface-supporting-border) 86%, transparent);
+    background: color-mix(in srgb, var(--surface-supporting-bg) 86%, transparent);
+    box-shadow: none;
+}
+
+.studio-stage--findings :is(.card, .app-panel-shell) {
+    background: color-mix(in srgb, var(--surface-supporting-bg) 78%, transparent);
+}
+
+.studio-stage--deep-dive :is(.card, .app-panel-shell),
+.studio-stage--support :is(.card, .app-panel-shell) {
+    background: color-mix(in srgb, var(--surface-utility-bg) 74%, transparent);
+    border-color: color-mix(in srgb, var(--surface-utility-border) 88%, transparent);
+}
+
+#insight-highlights,
+.workspace-command-surface,
+.workspace-overview-frame {
+    border-color: color-mix(in srgb, var(--accent) 12%, var(--surface-primary-stage-border));
+}
+
+#insight-highlights {
+    background: color-mix(in srgb, var(--surface-supporting-bg) 92%, transparent);
+    box-shadow: var(--editorial-card-shadow);
+}
+
+#participants,
+.guided-findings-timing-strip :is(#hourly-activity, #daily-activity) {
+    background: color-mix(in srgb, var(--surface-supporting-bg) 74%, transparent);
+}
+
+.studio-deep-dive-primary,
+.studio-deep-dive-analytics,
+.studio-deep-dive-evidence,
+.studio-pattern-entry-grid {
+    gap: 0.9rem;
+}
+
+.app-shell-primary-lane > :is(.card, .app-panel-shell),
+.app-shell-secondary-lane > :is(.card, .app-panel-shell),
+.workspace-overview-shell > :is(.card-grid, .card, .app-panel-shell) {
+    animation: none;
+}
+
+.section-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 8%, transparent);
+    color: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 62%, var(--text));
+}
+
+.section-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+@media (min-width: 1080px) {
+    .guided-findings-timing-strip {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        align-items: start;
+    }
+}
+
+@media (max-width: 900px) {
+    .hero-blurb {
+        gap: 0.42rem;
+        padding-bottom: 0.48rem;
+    }
+
+    .workspace-command-surface,
+    .workspace-overview-frame,
+    :is(.card, .app-panel-shell) {
+        padding: 0.92rem;
+    }
+}
+
+/* Dashboard shell consistency pass */
+.app-shell-layout {
+    --dashboard-shell-radius: 1.12rem;
+    --dashboard-shell-tier-radius: 0.96rem;
+    --dashboard-shell-gap: 0.9rem;
+    --dashboard-shell-gap-tight: 0.72rem;
+    --dashboard-shell-card-border: color-mix(in srgb, var(--surface-supporting-border) 88%, transparent);
+    --dashboard-shell-card-bg: color-mix(in srgb, var(--surface-supporting-bg) 88%, transparent);
+    --dashboard-shell-tier-border: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 14%, var(--surface-supporting-border));
+    --dashboard-shell-tier-bg:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 7%, transparent), transparent 42%);
+    --dashboard-shell-tier-bg-quiet:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 96%, transparent), color-mix(in srgb, var(--panel-bg) 90%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 5%, transparent), transparent 46%);
+    --dashboard-shell-shadow: 0 1px 0 color-mix(in srgb, var(--edge-highlight) 8%, transparent) inset;
+}
+
+.app-shell-layout :is(.card, .app-panel-shell) {
+    margin-bottom: 0;
+    padding: 1rem 1rem 1.04rem;
+    border-radius: var(--dashboard-shell-radius);
+    border-color: var(--dashboard-shell-card-border);
+    background: var(--dashboard-shell-card-bg);
+    box-shadow: var(--dashboard-shell-shadow);
+}
+
+.studio-stage--findings :is(.card, .app-panel-shell),
+.studio-stage--deep-dive :is(.card, .app-panel-shell),
+.studio-stage--support :is(.card, .app-panel-shell) {
+    border-color: var(--dashboard-shell-card-border);
+    background: var(--dashboard-shell-card-bg);
+}
+
+#insight-highlights,
+#participants,
+.guided-findings-timing-strip :is(#hourly-activity, #daily-activity),
+.studio-stage--deep-dive :is(#search-panel, #saved-views-card, #weekly-trend, #weekday-trend, #timeofday-trend, #sentiment-overview, #message-types, #polls-card),
+#faq-card {
+    background: var(--dashboard-shell-card-bg);
+    box-shadow: var(--dashboard-shell-shadow);
+}
+
+#insight-highlights {
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, var(--dashboard-shell-card-border));
+}
+
+.app-shell-layout :is(.card-header, .app-panel-header) {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--dashboard-shell-gap);
+}
+
+.app-shell-layout :is(.card-title-group, .app-section-intro) {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--dashboard-shell-gap);
+    width: 100%;
+    min-width: 0;
+}
+
+.app-shell-layout :is(.card-title-group, .app-section-intro) .card-heading {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+    align-items: center;
+    gap: 0.58rem;
+}
+
+.app-shell-layout .card-heading h2,
+.app-shell-layout .card-title-group > h2 {
+    margin: 0;
+}
+
+.app-shell-layout :is(.card-header-actions, .app-panel-actions) {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.app-shell-layout .ghost-button {
+    min-height: 2.1rem;
+    padding: 0 0.8rem;
+    border-radius: 0.76rem;
+}
+
+.app-shell-layout .ghost-button.small {
+    min-height: 1.94rem;
+}
+
+.app-shell-layout .ghost-button.tiny {
+    min-height: 1.82rem;
+    padding: 0 0.65rem;
+    border-radius: 0.68rem;
+    font-size: 0.69rem;
+}
+
+.app-shell-layout .card-toggle,
+.app-shell-layout .info-note-button {
+    width: 1.92rem;
+    height: 1.92rem;
+    min-height: 1.92rem;
+    border-radius: 0.68rem;
+}
+
+.app-shell-layout .info-note-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.app-shell-layout .card-content,
+.app-shell-layout .pattern-story-grid,
+.app-shell-layout .participants-story-grid,
+.app-shell-layout .polls-story-grid,
+.app-shell-layout .saved-view-strip,
+.app-shell-layout .search-strip-flow {
+    display: grid;
+    gap: var(--dashboard-shell-gap);
+}
+
+.app-shell-layout :is(.hourly-summary, .daily-summary, .weekly-summary) {
+    gap: var(--dashboard-shell-gap-tight);
+    margin: 0;
+}
+
+.app-shell-layout .participants-shell-controls,
+.app-shell-layout .saved-view-strip-row,
+.app-shell-layout .search-strip-row {
+    display: grid;
+    gap: var(--dashboard-shell-gap-tight);
+}
+
+.app-shell-layout :is(.analysis-evidence-frame, .pattern-controls-shell, .message-type-summary, .polls-summary, .sentiment-panel) {
+    padding: 0.98rem 1rem 1rem;
+    border-radius: var(--dashboard-shell-radius);
+    border: 1px solid var(--dashboard-shell-tier-border);
+    background: var(--dashboard-shell-tier-bg);
+    box-shadow: none;
+}
+
+.app-shell-layout .analysis-evidence-frame {
+    margin-top: 0;
+}
+
+.app-shell-layout .pattern-controls-shell {
+    gap: var(--dashboard-shell-gap-tight);
+}
+
+.app-shell-layout :is(.summary-block, .polls-summary .stat, .sentiment-tile, .sentiment-list li) {
+    border-radius: var(--dashboard-shell-tier-radius);
+    box-shadow: none;
+}
+
+.app-shell-layout .summary-block {
+    min-width: min(164px, 100%);
+    padding: 0.72rem 0.9rem;
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 14%, var(--border));
+    background: var(--dashboard-shell-tier-bg-quiet);
+}
+
+.app-shell-layout .sentiment-summary {
+    margin: 0;
+    gap: var(--dashboard-shell-gap-tight);
+}
+
+.app-shell-layout .sentiment-tile {
+    padding: 0.82rem 0.96rem 0.88rem;
+    border-width: 1px;
+}
+
+.app-shell-layout .sentiment-content {
+    gap: var(--dashboard-shell-gap);
+    margin-top: 0;
+}
+
+.app-shell-layout .sentiment-list ul {
+    gap: var(--dashboard-shell-gap-tight);
+}
+
+.app-shell-layout .sentiment-list li {
+    padding: 0.72rem 0.88rem;
+}
+
+.app-shell-layout .message-type-summary {
+    margin-bottom: 0;
+}
+
+.app-shell-layout #message-types .message-basics {
+    margin-top: 0;
+}
+
+.app-shell-layout .polls-summary {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--dashboard-shell-gap-tight);
+}
+
+.app-shell-layout .polls-summary .stat {
+    padding: 0.82rem 0.92rem;
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, var(--surface-supporting-border));
+    background: var(--dashboard-shell-tier-bg-quiet);
+}
+
+.app-shell-layout .poll-item {
+    border-radius: var(--dashboard-shell-tier-radius);
+    box-shadow: none;
+}
+
+.app-shell-layout .faq-list {
+    margin-top: 0;
+}
+
+@media (max-width: 720px) {
+    .app-shell-layout :is(.card-title-group, .app-section-intro) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .app-shell-layout :is(.card-header-actions, .app-panel-actions) {
+        width: 100%;
+        justify-content: flex-start;
+        margin-left: 0;
+    }
+
+    .app-shell-layout :is(.card-header-actions, .app-panel-actions) :is(.ghost-button, .card-toggle, .info-note-button) {
+        max-width: 100%;
+    }
+
+    .app-shell-layout :is(.analysis-evidence-frame, .pattern-controls-shell, .message-type-summary, .polls-summary, .sentiment-panel) {
+        padding: 0.92rem;
+    }
+}
+
+/* Layout correction pass */
+.app-shell-layout .workspace-stage-grid {
+    gap: 0.82rem;
+}
+
+.app-shell-layout .workspace-command-surface {
+    padding: 0.82rem 0.9rem 0.88rem;
+    gap: 0.78rem;
+}
+
+.app-shell-layout .workspace-command-main {
+    gap: 0.72rem;
+}
+
+.app-shell-layout .workspace-command-surface .actions-toolbar {
+    gap: 0.72rem;
+}
+
+.app-shell-layout .workspace-command-surface .actions-toolbar .toolbar-group.primary,
+.app-shell-layout .workspace-command-surface .actions-toolbar .toolbar-group.secondary {
+    gap: 0.5rem 0.62rem;
+}
+
+.app-shell-layout .page-controls {
+    padding: 0.82rem 0.9rem 0.88rem;
+}
+
+.app-shell-layout .page-controls .primary-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(260px, 0.82fr);
+    grid-template-areas:
+        "dataset period"
+        "custom custom";
+    gap: 0.78rem 0.9rem;
+    align-items: start;
+}
+
+.app-shell-layout .page-controls .control.dataset-control,
+.app-shell-layout .page-controls .control.period-control,
+.app-shell-layout .page-controls .control.custom-range {
+    min-width: 0;
+    max-width: none;
+}
+
+.app-shell-layout .page-controls .control.dataset-control {
+    grid-area: dataset;
+}
+
+.app-shell-layout .page-controls .control.period-control {
+    grid-area: period;
+}
+
+.app-shell-layout .page-controls .control.custom-range {
+    grid-area: custom;
+    padding: 0.72rem 0.78rem;
+    border: 1px solid color-mix(in srgb, var(--control-border) 92%, transparent);
+    border-radius: var(--dashboard-shell-tier-radius);
+    background: var(--dashboard-shell-tier-bg-quiet);
+}
+
+.app-shell-layout .page-controls .custom-range-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    align-items: end;
+}
+
+.app-shell-layout .page-controls .custom-range-inputs :is(input[type="date"], .p-datepicker) {
+    min-height: var(--control-height-md);
+    border-radius: var(--control-radius-md);
+    border: 1px solid var(--control-border);
+    background: var(--control-surface);
+    color: var(--control-text);
+    box-shadow: var(--control-shadow-rest);
+    width: 100%;
+}
+
+.app-shell-layout .page-controls .custom-range-inputs input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0 0.82rem;
+    font: inherit;
+    line-height: 1.2;
+}
+
+.app-shell-layout .page-controls .custom-range-inputs input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.78;
+}
+
+.app-shell-layout .page-controls .custom-range-inputs .ghost-button.small {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+}
+
+.app-shell-layout .page-controls .range-separator {
+    display: none;
+}
+
+@media (min-width: 1180px) {
+    .guided-findings-timing-strip {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .guided-findings-timing-strip #hourly-activity .pattern-story-grid {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+    }
+}
+
+.guided-findings-timing-strip #daily-activity .analysis-evidence-frame {
+    padding: 0.88rem 0.92rem 0.94rem;
+}
+
+@media (max-width: 960px) {
+    .app-shell-layout .page-controls .primary-controls {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "dataset"
+            "period"
+            "custom";
+    }
+
+    .app-shell-layout .page-controls .custom-range-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .app-shell-layout .page-controls .range-separator {
+        display: none;
+    }
+}
+
+/* Dashboard shell symmetry pass */
+.app-shell-layout {
+    --dashboard-stage-gap: 1.12rem;
+    --dashboard-stage-gap-tight: 0.84rem;
+    --dashboard-shell-gutter: clamp(0.92rem, 1vw, 1.08rem);
+    --dashboard-shell-divider: color-mix(in srgb, var(--panel-header-divider) 76%, transparent);
+    --dashboard-shell-quiet-border: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--surface-utility-border));
+    --dashboard-shell-quiet-bg:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-quiet-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 6%, transparent), transparent 48%);
+}
+
+.app-shell-layout .studio-stage {
+    gap: var(--dashboard-stage-gap);
+}
+
+.app-shell-layout :is(.studio-stage-shell, .workspace-stage-grid, .guided-findings-sequence, .deep-dive-shell) {
+    gap: var(--dashboard-stage-gap);
+}
+
+.app-shell-layout :is(.studio-deep-dive-primary, .studio-deep-dive-analytics, .studio-deep-dive-evidence) {
+    gap: var(--dashboard-stage-gap-tight);
+}
+
+.app-shell-layout :is(.studio-stage-intro, .workspace-stage-header, .workspace-overview-header, .guided-findings-cluster-header, .deep-dive-cluster-header) {
+    display: grid;
+    gap: 0.16rem;
+    align-content: start;
+    min-height: 0;
+}
+
+.app-shell-layout :is(.studio-stage-title-group, .workspace-stage-header > div, .workspace-overview-header > div, .guided-findings-cluster-header, .deep-dive-cluster-header) {
+    min-width: 0;
+}
+
+.app-shell-layout :is(.workspace-overview-shell, .guided-findings-cluster, .deep-dive-cluster) {
+    gap: var(--dashboard-stage-gap-tight);
+}
+
+.app-shell-layout .guided-findings-cluster + .guided-findings-cluster,
+.app-shell-layout .deep-dive-cluster + .deep-dive-cluster,
+.app-shell-layout .guided-findings-next {
+    padding-top: 0.92rem;
+}
+
+.app-shell-layout .workspace-stage {
+    gap: var(--dashboard-stage-gap-tight);
+    padding-top: 0.3rem;
+}
+
+.app-shell-layout :is(.workspace-command-surface, .workspace-overview-frame, .card, .app-panel-shell) {
+    border-radius: 1.08rem;
+}
+
+.app-shell-layout .card-content {
+    gap: 0.84rem;
+}
+
+.app-shell-layout :is(.card-content, .pattern-story-grid, .participants-story-grid, .polls-story-grid, .search-strip-flow, .saved-view-layout, .sentiment-content) > * {
+    margin-top: 0;
+}
+
+.app-shell-layout .shell-split {
+    display: grid;
+    gap: var(--dashboard-stage-gap-tight);
+    align-items: start;
+}
+
+.app-shell-layout .shell-lane {
+    min-width: 0;
+    display: grid;
+    gap: var(--dashboard-stage-gap-tight);
+    align-content: start;
+}
+
+.app-shell-layout .shell-lane--quiet {
+    gap: 0.72rem;
+}
+
+.app-shell-layout .workspace-command-surface {
+    padding: 0.82rem 0.88rem;
+    gap: 0.7rem;
+}
+
+.app-shell-layout .workspace-command-main {
+    gap: 0.6rem;
+}
+
+.app-shell-layout .workspace-command-surface .page-controls {
+    padding: 0;
+    border-top: 0;
+    background: none;
+}
+
+.app-shell-layout :is(.relay-status-banner, .actions-toolbar, .page-controls, .relay-onboarding, .relay-workspace-support, .saved-view-panel, .participants-shell-controls) {
+    padding: 0.88rem 0.94rem;
+    border: 1px solid var(--dashboard-shell-tier-border);
+    border-radius: var(--dashboard-shell-tier-radius);
+    background: var(--dashboard-shell-tier-bg);
+    box-shadow: none;
+}
+
+.app-shell-layout .relay-onboarding {
+    padding: 0.4rem;
+}
+
+.app-shell-layout .relay-workspace-support {
+    border-color: var(--dashboard-shell-quiet-border);
+    background: var(--dashboard-shell-quiet-bg);
+}
+
+.app-shell-layout .participants-shell-controls {
+    padding: 0.82rem 0.88rem;
+}
+
+.app-shell-layout .actions-toolbar,
+.app-shell-layout .page-controls,
+.app-shell-layout .saved-view-panel {
+    gap: 0.64rem;
+}
+
+.app-shell-layout .page-controls .primary-controls {
+    grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.8fr);
+    grid-template-areas:
+        "dataset period"
+        "custom custom";
+    gap: 0.72rem;
+}
+
+.app-shell-layout .page-controls .control {
+    gap: 0.36rem;
+}
+
+.app-shell-layout .page-controls .control.custom-range {
+    display: grid;
+    align-items: start;
+    align-content: start;
+    padding: 0.76rem 0.82rem;
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, var(--control-border));
+}
+
+.app-shell-layout .page-controls .custom-range-inputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.52rem;
+    align-items: end;
+}
+
+.app-shell-layout .page-controls .custom-range-inputs .range-separator {
+    display: none;
+}
+
+.app-shell-layout .page-controls .custom-range-inputs .ghost-button.small {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+}
+
+.app-shell-layout :is(.analysis-evidence-frame, .pattern-controls-shell, .message-type-summary, .polls-summary, .sentiment-panel, .saved-view-panel, .relay-workspace-support) {
+    border-radius: var(--dashboard-shell-tier-radius);
+}
+
+.app-shell-layout .summary-block {
+    min-width: 0;
+    width: 100%;
+    padding: 0.76rem 0.92rem;
+}
+
+.app-shell-layout :is(.analysis-summary-strip, .daily-summary, .weekly-summary, .sentiment-summary) {
+    display: grid;
+    gap: 0.72rem;
+}
+
+.app-shell-layout :is(.analysis-summary-strip, .daily-summary) {
+    align-content: start;
+}
+
+.app-shell-layout .analysis-evidence-frame {
+    padding: 0.94rem 0.98rem 1rem;
+}
+
+.app-shell-layout .saved-view-gallery {
+    gap: 0.72rem;
+}
+
+.app-shell-layout .saved-view-card {
+    background: color-mix(in srgb, var(--surface-quiet-bg) 96%, transparent);
+    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, var(--surface-utility-border));
+    box-shadow: none;
+}
+
+.app-shell-layout .saved-view-card.is-active {
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--shell-section-accent, var(--accent)) 64%, transparent);
+}
+
+.app-shell-layout .message-type-summary,
+.app-shell-layout .polls-summary {
+    background: var(--dashboard-shell-tier-bg-quiet);
+}
+
+.app-shell-layout .sentiment-content {
+    align-items: start;
+}
+
+.app-shell-layout .sentiment-panel {
+    gap: 0.72rem;
+}
+
+.app-shell-layout .faq-list {
+    display: grid;
+    gap: 0.86rem;
+}
+
+.app-shell-layout .faq-list li {
+    padding: 0 0 0.86rem;
+    border-bottom: 1px solid var(--dashboard-shell-divider);
+}
+
+.app-shell-layout .faq-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+@media (min-width: 1080px) {
+    .app-shell-layout .shell-split--workspace {
+        grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+        align-items: start;
+    }
+
+    .app-shell-layout .shell-split--workspace:has(> .shell-lane--secondary.hidden) > .shell-lane--primary {
+        grid-column: 1 / -1;
+    }
+
+    .app-shell-layout .shell-split--saved-views {
+        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+    }
+
+    .app-shell-layout .shell-split--sentiment {
+        grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+    }
+}
+
+@media (max-width: 960px) {
+    .app-shell-layout .studio-stage {
+        gap: 0.94rem;
+    }
+
+    .app-shell-layout :is(.studio-stage-shell, .workspace-stage-grid, .guided-findings-sequence, .deep-dive-shell) {
+        gap: 0.94rem;
+    }
+
+    .app-shell-layout .shell-split {
+        grid-template-columns: 1fr !important;
+    }
+
+    .app-shell-layout :is(.relay-status-banner, .actions-toolbar, .page-controls, .relay-workspace-support, .saved-view-panel, .participants-shell-controls) {
+        padding: 0.84rem 0.88rem;
+    }
+
+    .app-shell-layout .page-controls .custom-range-inputs {
+        grid-template-columns: 1fr;
+    }
 }

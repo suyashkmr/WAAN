@@ -300,6 +300,79 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   }
 
+  async function applyWorkspaceScenario(page) {
+    await page.evaluate(() => {
+      const relayBanner = document.getElementById("relay-status-banner");
+      const relayBannerMessage = document.getElementById("relay-status-message");
+      const relayBannerMeta = document.getElementById("relay-status-meta");
+      if (relayBanner) relayBanner.dataset.status = "running";
+      if (relayBannerMessage) relayBannerMessage.textContent = "Connected: Suyash Kumar (916360465282).";
+      if (relayBannerMeta) {
+        relayBannerMeta.textContent = "Suyash Kumar (916360465282) · Synced 2 min ago · 784 chats · Last sync 779ms · Primary sync";
+      }
+
+      const steps = Array.from(document.querySelectorAll(".relay-step"));
+      steps.forEach((step, index) => {
+        step.dataset.state = "complete";
+        const detail = step.querySelector(".relay-step-detail");
+        if (detail && index === 0) detail.textContent = "Relay running.";
+        if (detail && index === 1) detail.textContent = "Phone linked.";
+        if (detail && index === 2) detail.textContent = "Chats loaded.";
+      });
+
+      const connection = document.getElementById("relay-connection-status");
+      if (connection) connection.textContent = "Connected: Suyash Kumar (916360465282).";
+      const account = document.getElementById("relay-account-name");
+      if (account) account.textContent = "Logged in as Suyash Kumar (916360465282)";
+
+      const start = document.getElementById("relay-start");
+      const stop = document.getElementById("relay-stop");
+      const logout = document.getElementById("relay-logout");
+      if (start) start.textContent = "Refresh chats";
+      if (stop) stop.disabled = false;
+      if (logout) logout.disabled = false;
+
+      const reloadAll = document.getElementById("relay-reload-all");
+      const clearStorage = document.getElementById("relay-clear-storage");
+      if (reloadAll) reloadAll.disabled = false;
+      if (clearStorage) clearStorage.disabled = false;
+
+      const chatSelector = document.getElementById("chat-selector");
+      if (chatSelector instanceof HTMLSelectElement) {
+        chatSelector.innerHTML = `
+          <option value="recruitment-route-main" selected>Recruitment Route - Main · 2,056 msgs · Active 20-03-2026</option>
+          <option value="launch-thread">Launch Thread · 784 msgs</option>
+        `;
+        chatSelector.disabled = false;
+      }
+
+      const range = document.getElementById("global-range");
+      if (range instanceof HTMLSelectElement) {
+        range.value = "custom";
+      }
+
+      const customControls = document.getElementById("custom-range-controls");
+      if (customControls) customControls.classList.remove("hidden");
+      const customStart = document.getElementById("custom-start");
+      const customEnd = document.getElementById("custom-end");
+      const customApply = document.getElementById("apply-custom-range");
+      if (customStart instanceof HTMLInputElement) {
+        customStart.disabled = false;
+        customStart.value = "2025-09-03";
+      }
+      if (customEnd instanceof HTMLInputElement) {
+        customEnd.disabled = false;
+        customEnd.value = "2026-03-20";
+      }
+      if (customApply instanceof HTMLButtonElement) {
+        customApply.disabled = false;
+      }
+
+      const emptyCallout = document.getElementById("dataset-empty-callout");
+      if (emptyCallout) emptyCallout.classList.add("hidden");
+    });
+  }
+
   async function applySupportScenario(page) {
     await page.evaluate(() => {
       const drawer = document.getElementById("relay-log-drawer");
@@ -385,6 +458,64 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
+  test("preserves full-width mobile section nav", async ({ page }, testInfo) => {
+    if (testInfo.project.name !== "mobile-390") return;
+    await prepareStableFrame(page);
+    const metrics = await page.evaluate(() => {
+      const nav = document.querySelector(".section-nav");
+      const rect = nav?.getBoundingClientRect();
+      return rect
+        ? { width: Math.round(rect.width), left: Math.round(rect.left), viewport: window.innerWidth }
+        : null;
+    });
+    expect(metrics).toBeTruthy();
+    expect(Math.abs(metrics.width - metrics.viewport)).toBeLessThanOrEqual(1);
+    expect(metrics.left).toBe(0);
+  });
+
+  test("preserves corrected layout contracts", async ({ page }, testInfo) => {
+    await prepareStableFrame(page);
+    await applyWorkspaceScenario(page);
+    await applyDeepDiveScenario(page);
+
+    const metrics = await page.evaluate(() => {
+      const customRangeRoot = document.getElementById("custom-range-controls");
+      const rect = (node) => {
+        const value = node?.getBoundingClientRect();
+        return value
+          ? {
+              top: Math.round(value.top),
+              bottom: Math.round(value.bottom),
+              left: Math.round(value.left),
+              right: Math.round(value.right),
+              width: Math.round(value.width),
+              height: Math.round(value.height),
+            }
+          : null;
+      };
+
+      return {
+        customRangeRoot: rect(customRangeRoot),
+      };
+    });
+
+    expect(metrics.customRangeRoot).toBeTruthy();
+  });
+
+  test("matches long-form dashboard baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await applyDeepDiveScenario(page);
+    await applyLowerLaneScenario(page);
+
+    await expect(page).toHaveScreenshot(`dashboard-longform-${testInfo.project.name}.png`, {
+      fullPage: true,
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
   test("matches interactive states baseline", async ({ page }, testInfo) => {
     await prepareStableFrame(page);
     await page.addStyleTag({
@@ -449,6 +580,20 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
+  test("matches workspace controls baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await applyWorkspaceScenario(page);
+    const section = page.locator(".workspace-command-surface");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-workspace-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
   test("matches search panel baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
@@ -484,6 +629,19 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
     await expect(section).toHaveScreenshot(`section-timeofday-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches sentiment section baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    const section = page.locator("#sentiment-overview");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`section-sentiment-${testInfo.project.name}.png`, {
       caret: "hide",
       maxDiffPixelRatio: 0.01,
       timeout: 15000,

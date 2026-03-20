@@ -177,3 +177,38 @@
     height: 1px;
     background: color-mix(in srgb, var(--panel-header-divider) 72%, transparent);
 }
+
+.app-signal-strip {
+    margin-top: 0.18rem;
+    padding-top: 0.18rem;
+    border-top-color: color-mix(in srgb, var(--edge-subtle) 42%, transparent);
+}
+
+.app-story-panel-content {
+    gap: 0.75rem;
+}
+
+:is(.card-header, .app-panel-header) {
+    padding-bottom: 0.55rem;
+    margin-bottom: 0.12rem;
+}
+
+:is(.card-header, .app-panel-header)::after {
+    background: color-mix(in srgb, var(--panel-header-divider) 52%, transparent);
+}
+
+:is(.card-header, .app-panel-header) h2 {
+    font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+    font-family: var(--font-family-base);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.card-heading {
+    gap: 0.4rem;
+    min-height: 0;
+}
+
+:is(.card-header-actions, .app-panel-actions) .ghost-button {
+    min-height: 1.9rem;
+}
