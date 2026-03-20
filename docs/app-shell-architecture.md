@@ -1,23 +1,117 @@
 # App Shell Architecture
 
-`js/appShell.js` is the top-level orchestrator for the dashboard UI. It composes modules, wires dependencies, and starts app bootstrap.
+`js/appShell.js` is the top-level composition root for the dashboard UI. It does not own product behavior directly; it wires DOM refs, controller construction, runtime composition, and bootstrap config together, then hands execution to the app-shell runtime.
 
-## Runtime Composition Modules
+## Current Composition Shape
+
+The current app-shell is organized around five layers:
+
+1. DOM discovery and grouping
+   - `js/appShell/domCache.js`
+   - `js/appShell/domRefs.js`
+   - `js/appShell/domRefGroups.js`
+2. controller wiring and dependency/config assembly
+   - `js/appShell/controllerWiring.js`
+   - `js/appShell/controllerWiring/*`
+   - `js/appShell/entryConfig.js`
+   - `js/appShell/compositionConfig.js`
+3. runtime composition / orchestration
+   - `js/appShell/compositionAssembly.js`
+   - `js/appShell/assemblyWiring.js`
+   - `js/appShell/runtimeBootstrap.js`
+   - `js/appShell/runtimeBootstrapConfig.js`
+4. focused app-shell feature modules
+   - range, chat selection, onboarding, theme, status, relay, dataset-empty, data-status, export, section-nav
+5. Vue bridge / shell surface ownership
+   - shell/search/saved/dashboard islands under `js/vue/*`
+
+The important boundary is:
+
+- `js/appShell.js` should stay orchestration-only
+- `js/appShell/*` owns composition and runtime rules
+- `js/vue/*` owns Vue-rendered shell/search/saved/dashboard surfaces
+
+## Key Runtime Modules
 
 - `js/appShell/domRefs.js`
-  - Centralized DOM/query registry (`createAppDomRefs`).
-- `js/appShell/bootstrapApp.js`
-  - Startup wiring for status callbacks, event bindings, keyboard shortcuts, and `DOMContentLoaded` bootstrap.
-- `js/appShell/adapters.js`
-  - Shared stateful adapters, currently analytics request token tracking.
-- `js/appShell/exportRuntime.js`
-  - Export summary + exporter + PDF runtime composition.
+  - Centralized DOM/query registry via `createAppDomRefs`.
+- `js/appShell/domRefGroups.js`
+  - Regroups raw DOM refs into runtime/relay/filter/dashboard/export/saved-view/search slices.
+- `js/appShell/entryConfig.js`
+  - Normalizes the arguments used to construct controller wiring and composition assembly.
+- `js/appShell/compositionConfig.js`
+  - Builds the higher-level config objects for controller and assembly creation.
+- `js/appShell/controllerWiring.js`
+  - Creates controller-side runtime wiring from grouped refs/config.
+- `js/appShell/compositionAssembly.js`
+  - Creates the assembled runtime that coordinates relay, dataset lifecycle, rendering, exports, and shell side effects.
+- `js/appShell/assemblyWiring.js`
+  - Shared wiring helpers used by the composition assembly and runtime bootstrap.
+- `js/appShell/runtimeBootstrap.js`
+  - Starts the shell runtime once refs, handlers, and dependencies are ready.
+- `js/appShell/runtimeBootstrapConfig.js`
+  - Shapes the config contract consumed by bootstrap.
+
+## Focused Feature Modules
+
+- `js/appShell/dataStatus.js`
+  - Dashboard loading/data-availability state and hero status messaging.
+- `js/appShell/datasetEmptyState.js`
+  - Dataset-empty callout visibility/message state; also controls the workspace split behavior when the empty-state lane is present or absent.
+- `js/appShell/chatSelection.js`
+  - Chat selector and related active-chat flow.
+- `js/appShell/rangeFilters.js`
+  - Range/custom-range/filter coordination.
+- `js/appShell/relayBootstrap.js`
+  - Relay polling/log stream startup and runtime wiring.
 - `js/appShell/relayRuntime.js`
-  - Relay controller + relay bootstrap runtime composition.
+  - Relay controller composition.
+- `js/appShell/exportRuntime.js`
+  - Export summary and export runtime composition.
 - `js/appShell/compositionRuntime.js`
-  - Dashboard render composition and dataset lifecycle composition.
-- `js/appShell/constants.js`
-  - App-shell-only constants and tiny global initializers.
+  - Dashboard runtime composition plus dataset lifecycle runtime helpers.
+- `js/appShell/keyboardShortcuts.js`
+  - Global shortcut handling.
+- `js/appShell/onboarding.js`
+  - Onboarding overlay controller and persistence.
+- `js/appShell/themeUi.js`
+  - Theme preference UI control logic.
+- `js/appShell/statusUi.js`
+  - Toast/status presentation.
+- `js/appShell/sectionNav.js`
+  - Sticky section-nav behavior and active-state updates.
+
+## Vue-Owned Surface Boundaries
+
+The shell runtime is now Vue-first for the major interactive surfaces:
+
+- shell primitives: `js/vue/shellPrimitivesIsland.js`
+- search/saved bridge: `js/vue/searchSavedIsland.js`
+- saved-view gallery renderer: `js/vue/searchSavedRenderers.js`
+- dashboard card-shell / section islands: `js/vue/dashboardPanelsIsland.js` and related renderers
+
+Important current runtime note:
+
+- the saved-view gallery does not use PrimeVue `DataView` in production
+- gallery cards render directly into the Vue gallery root so the responsive CSS grid controls layout predictably
+
+## Workspace-Specific Contract
+
+After Phase 43, the workspace stage behaves as a compact instrument panel:
+
+- relay status banner first
+- core dataset/range/export controls second
+- setup/diagnostics/display tools behind the utility disclosure
+- empty-state support lane only claims desktop width when dataset-empty is actually visible
+
+That behavior is implemented across:
+
+- `index.html`
+- `styles.components.css`
+- `styles/components/relay.css`
+- `js/appShell/datasetEmptyState.js`
+- `js/vue/shellPrimitiveViews.js`
+- `js/vue/shellPrimitivesIsland.js`
 
 ## Data Policy
 
@@ -31,34 +125,46 @@ Committed fixtures are intentionally small:
 - `chat.sample.json`
 - `analytics.sample.json`
 
-Generated/backup artifacts stay ignored (examples: `*.tgz`, `*.tar.gz`, `apps_prev_*`, `chat.json.gz`, `coverage/`, `__pycache__/`).
+Generated/backup artifacts stay ignored, including examples such as:
+
+- `*.tgz`
+- `*.tar.gz`
+- `apps_prev_*`
+- `chat.json.gz`
+- `coverage/`
+- `__pycache__/`
 
 ## Guardrails
 
-- Local verify: `npm run ci:verify`
-  - Runs lint + tests + circular dependency check.
-- Local smoke: `npm run test:smoke`
-  - Runs fast boundary/bootstrap checks before full test suite.
-- CI workflow: `.github/workflows/ci.yml`
-  - Runs artifact + unused-export checks, smoke tests, full verify, then circular check.
+- Local verify:
+  - `npm run ci:verify`
+- Local smoke:
+  - `npm run test:smoke`
+- Visual/accessibility:
+  - `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run test:accessibility-smoke`
+
+`ci:verify` is the real release-grade gate. `verify` alone is only lint + unit tests.
 
 ## Maintainer Checklist
 
-When adding a new app-shell controller/module:
+When adding or changing app-shell behavior:
 
-1. Add the module under `js/appShell/` with a focused responsibility.
-2. Wire it through the correct composition layer:
-   - controller construction: `js/appShell/controllerWiring/*`
-   - runtime assembly: `js/appShell/compositionAssembly.js`
-   - startup/bootstrap: `js/appShell/runtimeBootstrap.js` or `js/appShell/runtimeConfig.js`
-3. Keep `js/appShell.js` orchestration-only; avoid embedding long controller internals there.
-4. If new DOM nodes are required, register them in `js/appShell/domRefs.js` and group them in `js/appShell/domRefGroups.js`.
-5. Add/adjust tests:
-   - boundary contract tests (`tests/*Contracts.test.js`) for new wiring surface
-   - smoke coverage if startup behavior changes (`tests/appShellBoundaryIntegration.test.js` / `tests/appShellBoot.test.js`)
-6. Run guardrails before merging:
-   - `npm run check:artifacts`
-   - `npm run check:unused-exports`
-   - `npm run test:smoke`
-   - `npm run verify`
-   - `npm run check:circular`
+1. Keep `js/appShell.js` orchestration-only.
+2. Add DOM nodes to `js/appShell/domRefs.js`, then group them in `js/appShell/domRefGroups.js`.
+3. Wire controller/runtime dependencies through:
+   - `js/appShell/entryConfig.js`
+   - `js/appShell/compositionConfig.js`
+   - `js/appShell/controllerWiring.js`
+   - `js/appShell/compositionAssembly.js`
+4. If a surface is Vue-owned, update the matching bridge/island under `js/vue/*` instead of adding controller-owned DOM behavior.
+5. If layout depends on UI state, prefer explicit state-driven classes/contracts over brittle CSS-only parent inference.
+6. Add or update tests:
+   - contract tests for new wiring surfaces
+   - targeted unit/integration tests for the changed module
+   - visual/a11y tests when shell layout or state presentation changes
+7. Run guardrails before merging:
+   - `npm run check:types`
+   - `npm run test:accessibility-smoke`
+   - `npx playwright test tests/visual/dashboard.visual.spec.js`
+   - `npm run ci:verify`

@@ -137,7 +137,8 @@ Use this only for the first release where frontend runtime ownership is fully Vu
 ## Latest Sign-off
 
 - Date: 2026-03-04
-- Status: PRE-RELEASE GATES PASS
+- Status: Historical example only
+- Note: This footer is not the authoritative current release state. Treat it as a stale sample until the next release owner updates it during an actual sign-off.
 - Verified by: automated release gates pass (`ci:verify`, `test:visual`, accessibility smoke, `check:perf-budgets` with `WAAN_PERF_BUDGET_PROFILE=release-ci`, release-notes validation)
 - Recovery checks:
   - Packaged `WAAN.app` manual relay + recovery smoke: latest confirmed PASS is 2026-03-02; re-run required for each new release candidate/tag.
