@@ -285,6 +285,17 @@ Required closeout audit for this phase:
 - confirm visual coverage includes ready, syncing, linking, offline, and no-chat-selected states at 1440 / 1024 / 768 / 390
 - record a dated closure note with any residual-risk boundary before marking the phase complete
 
+Closeout audit status as of 2026-03-20:
+
+- Phase 43 is closed for the implemented workspace instrument-panel surfaces: `index.html`, `styles.components.css`, `styles/components/relay.css`, `js/appShell/datasetEmptyState.js`, `js/vue/shellPrimitiveViews.js`, and `js/vue/shellPrimitivesIsland.js`
+- the workspace now reads as the intended three-tier instrument panel: relay status first, core dataset/range/export controls second, and setup/diagnostics/display tooling behind a compact utility disclosure
+- the empty-state lane no longer reserves desktop width when hidden because workspace split state is now driven by real dataset availability rather than a brittle CSS-only parent selector
+- the original scoped file `js/relayControls/statusView.js` was audited and did not require changes for this phase; its current behavior does not undermine the compact workspace target
+- adjacent-file audit confirmed that the nearby workspace/search shell rules do not reintroduce peer-card drift or dead secondary-lane space after the Phase 43 changes
+- visual coverage now explicitly includes workspace ready, offline, waiting-QR, syncing, and no-chat-selected variants, and those baselines pass at 1440 / 1024 / 768 / 390
+- validation completed with `npm run check:types`, `npm run test:accessibility-smoke`, `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`, and `npx playwright test tests/visual/dashboard.visual.spec.js`
+- residual-risk boundary: Phase 43 closes the workspace operating model and compact-state behavior, but it does not yet redesign the guided findings or deep-dive information architecture, which remain the responsibility of Phases 44 and 45
+
 ### Phase 44: Guided Findings as Editorial Sequence
 
 Phase 44 turns the findings lane into a stronger editorial progression:

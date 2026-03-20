@@ -1,4 +1,4 @@
-import { renderActionButton, renderDialogContainer, renderRadioInput } from "./primevueRenderPrimitives.js";
+import { renderActionButton, renderDialogContainer } from "./primevueRenderPrimitives.js";
 import { UI_COPY } from "../uiCopy.js";
 
 export {
@@ -57,24 +57,9 @@ export function createRelayBannerRoot(h, onAction) {
  * @param {(actionId: string, payload?: any) => void} onAction
  */
 export function createActionsToolbarRoot(h, onAction) {
-  let themePreference = (() => {
-    const theme = globalThis?.document?.documentElement?.dataset?.theme;
-    if (theme === "dark" || theme === "light" || theme === "system") return theme;
-    return "system";
-  })();
-  /**
-   * @param {string} preference
-   */
-  const handleThemeSelection = preference => {
-    if (preference !== "dark" && preference !== "light" && preference !== "system") return;
-    themePreference = preference;
-    onAction("ui.theme.set", { preference });
-  };
-
   return {
     name: "ActionsToolbarPrimitive",
     render() {
-      const selectedTheme = themePreference || "system";
       return [
         h("div", { class: "toolbar-group primary" }, [
           renderActionButton(h, {
@@ -98,109 +83,6 @@ export function createActionsToolbarRoot(h, onAction) {
             text: "Export slides",
             onClick: () => onAction("export.slides"),
           }),
-        ]),
-        h("div", { class: "toolbar-group secondary" }, [
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button",
-            id: "onboarding-start",
-            text: "Setup tips",
-            attrs: {
-              title: "Open the setup reminder.",
-            },
-            onClick: () => onAction("onboarding.start"),
-          }),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button",
-            id: "compact-toggle",
-            text: "Compact mode",
-            attrs: {
-              "aria-pressed": "false",
-              title: "Switch between compact and comfort layouts",
-            },
-            onClick: () => onAction("ui.compact.toggle"),
-          }),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button",
-            id: "log-drawer-toggle",
-            text: "Diagnostics",
-            attrs: {
-              title: UI_COPY.relayLog.help,
-            },
-            onClick: () => onAction("relay.logDrawerOpen"),
-          }),
-          h("div", { class: "theme-toggle" }, [
-            h("span", "Theme"),
-            h("div", { class: "segmented-option" }, [
-              renderRadioInput(h, {
-                name: "theme-option",
-                id: "theme-system",
-                value: "system",
-                modelValue: selectedTheme,
-                onChange: event => {
-                  const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
-                  if (target?.checked) {
-                    handleThemeSelection("system");
-                  }
-                },
-              }),
-              h("label", { for: "theme-system" }, "Auto"),
-            ]),
-            h("div", { class: "segmented-option" }, [
-              renderRadioInput(h, {
-                name: "theme-option",
-                id: "theme-light",
-                value: "light",
-                modelValue: selectedTheme,
-                onChange: event => {
-                  const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
-                  if (target?.checked) {
-                    handleThemeSelection("light");
-                  }
-                },
-              }),
-              h("label", { for: "theme-light" }, "Light"),
-            ]),
-            h("div", { class: "segmented-option" }, [
-              renderRadioInput(h, {
-                name: "theme-option",
-                id: "theme-dark",
-                value: "dark",
-                modelValue: selectedTheme,
-                onChange: event => {
-                  const target = /** @type {HTMLInputElement | null} */ (event?.target ?? null);
-                  if (target?.checked) {
-                    handleThemeSelection("dark");
-                  }
-                },
-              }),
-              h("label", { for: "theme-dark" }, "Dark"),
-            ]),
-          ]),
-          h("div", { class: "a11y-controls", "aria-label": "Accessibility options" }, [
-            renderActionButton(h, {
-              type: "button",
-              className: "ghost-button small",
-              id: "reduce-motion-toggle",
-              text: "Motion: Standard",
-              attrs: {
-                "aria-pressed": "mixed",
-              },
-              onClick: () => onAction("ui.motion.cycle"),
-            }),
-            renderActionButton(h, {
-              type: "button",
-              className: "ghost-button small",
-              id: "high-contrast-toggle",
-              text: "Contrast: Standard",
-              attrs: {
-                "aria-pressed": "false",
-              },
-              onClick: () => onAction("ui.contrast.toggle"),
-            }),
-          ]),
         ]),
       ];
     },

@@ -64,16 +64,22 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Audit adjacent component stylesheets for remaining shell-geometry drift that would materially invalidate the neutral-first reduction.
     - [x] Confirm the dashboard visual suite covers the primary shell states and adjacent high-risk sections touched by the reduction pass.
     - [x] Record closure status and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
-- [ ] Phase 43: Workspace as Instrument Panel.
-  - [ ] Rebuild setup and workspace into one compact operational command surface across `index.html`, `styles.components.css`, `styles/components/relay.css`, and `js/relayControls/statusView.js`.
-  - [ ] Reduce top-of-page real estate, collapse secondary setup guidance behind disclosure, and eliminate reserved empty-state space when content is absent.
-  - [ ] Ensure relay state, chat selection, time range, exports, and diagnostics read as one coherent instrument panel.
-  - [ ] Revalidate workspace-ready, syncing, linking, offline, and no-chat-selected states end to end.
-  - [ ] Complete closure audit:
-    - [ ] Confirm the instrument-panel target is met in every scoped file.
-    - [ ] Audit adjacent workspace/search shell selectors for regressions that re-expand the top lane or split the command surface back into peers.
-    - [ ] Confirm visual coverage includes ready, syncing, linking, offline, and no-chat-selected variants at the required breakpoints.
-    - [ ] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
+- [x] Phase 43: Workspace as Instrument Panel.
+  - [x] Rebuild setup and workspace into one compact operational command surface across `index.html`, `styles.components.css`, `styles/components/relay.css`, and the workspace state/primitive bridge (`js/appShell/datasetEmptyState.js`, `js/vue/shellPrimitiveViews.js`, `js/vue/shellPrimitivesIsland.js`).
+  - [x] Reduce top-of-page real estate, collapse secondary setup guidance behind disclosure, and eliminate reserved empty-state space when content is absent.
+  - [x] Ensure relay state, chat selection, time range, exports, and diagnostics read as one coherent instrument panel.
+  - [x] Revalidate workspace-ready, syncing, linking, offline, and no-chat-selected states end to end.
+  - [x] Complete validation:
+    - [x] `npm run check:types`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - [x] Complete closure audit:
+    - [x] Confirm the instrument-panel target is met in the actual implementation files: `index.html`, `styles.components.css`, `styles/components/relay.css`, `js/appShell/datasetEmptyState.js`, `js/vue/shellPrimitiveViews.js`, and `js/vue/shellPrimitivesIsland.js`.
+    - [x] Confirm the original scoped file `js/relayControls/statusView.js` did not require changes and does not undermine the Phase 43 target in its current state.
+    - [x] Audit adjacent workspace/search shell selectors for regressions that re-expand the top lane or split the command surface back into peers.
+    - [x] Confirm visual coverage includes ready, syncing, linking, offline, and no-chat-selected variants at 1440 / 1024 / 768 / 390.
+    - [x] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
 - [ ] Phase 44: Guided Findings as Editorial Sequence.
   - [ ] Reframe overview, highlights, participants, and timing into a stronger vertical editorial sequence in `index.html`, `styles.components.css`, and `styles/components/analytics.css`.
   - [ ] Promote one key takeaway per section and demote secondary evidence until interaction or deeper inspection.

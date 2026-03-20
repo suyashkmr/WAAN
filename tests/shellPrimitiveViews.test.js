@@ -60,86 +60,39 @@ describe("shell primitive views", () => {
     }
   });
 
-  it("dispatches theme set action from toolbar theme radio controls", () => {
+  it("renders only primary export actions in the toolbar primitive", () => {
     const onAction = vi.fn();
     const root = createActionsToolbarRoot(h, onAction);
     const tree = root.render();
 
+    const pdfButton = findNode(
+      tree,
+      node => node?.props?.id === "download-pdf",
+    );
+    const markdownButton = findNode(
+      tree,
+      node => node?.props?.id === "download-markdown-report",
+    );
+    const slidesButton = findNode(
+      tree,
+      node => node?.props?.id === "download-slides-report",
+    );
     const onboardingButton = findNode(
       tree,
       node => node?.props?.id === "onboarding-start",
     );
+    expect(pdfButton).toBeTruthy();
+    expect(markdownButton).toBeTruthy();
+    expect(slidesButton).toBeTruthy();
+    expect(onboardingButton).toBeNull();
 
-    const systemInput = findNode(
-      tree,
-      node => node?.type === "input" && node?.props?.id === "theme-system",
-    );
-    const lightInput = findNode(
-      tree,
-      node => node?.type === "input" && node?.props?.id === "theme-light",
-    );
-    const darkInput = findNode(
-      tree,
-      node => node?.type === "input" && node?.props?.id === "theme-dark",
-    );
+    pdfButton.props.onClick();
+    markdownButton.props.onClick();
+    slidesButton.props.onClick();
 
-    expect(systemInput).toBeTruthy();
-    expect(lightInput).toBeTruthy();
-    expect(darkInput).toBeTruthy();
-    expect(onboardingButton).toBeTruthy();
-
-    onboardingButton.props.onClick();
-
-    systemInput.props.onChange({ target: { checked: true } });
-    lightInput.props.onChange({ target: { checked: true } });
-    darkInput.props.onChange({ target: { checked: true } });
-
-    expect(onAction).toHaveBeenNthCalledWith(1, "onboarding.start");
-    expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "system" });
-    expect(onAction).toHaveBeenNthCalledWith(3, "ui.theme.set", { preference: "light" });
-    expect(onAction).toHaveBeenNthCalledWith(4, "ui.theme.set", { preference: "dark" });
-  });
-
-  it("keeps theme radio actions working when PrimeVue runtime is present", () => {
-    const originalPrimeVue = globalThis.PrimeVue;
-    try {
-      const PrimeRadioButton = { name: "PrimeRadioButtonStub" };
-      globalThis.PrimeVue = { RadioButton: PrimeRadioButton };
-      const onAction = vi.fn();
-      const root = createActionsToolbarRoot(h, onAction);
-      const tree = root.render();
-
-      const systemInput = findNode(
-        tree,
-        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-system",
-      );
-      const lightInput = findNode(
-        tree,
-        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-light",
-      );
-      const darkInput = findNode(
-        tree,
-        node => node?.type === PrimeRadioButton && node?.props?.inputId === "theme-dark",
-      );
-
-      expect(systemInput).toBeTruthy();
-      expect(lightInput).toBeTruthy();
-      expect(darkInput).toBeTruthy();
-
-      systemInput.props["onUpdate:modelValue"]("system");
-      lightInput.props["onUpdate:modelValue"]("light");
-      darkInput.props["onUpdate:modelValue"]("dark");
-
-      expect(onAction).toHaveBeenNthCalledWith(1, "ui.theme.set", { preference: "system" });
-      expect(onAction).toHaveBeenNthCalledWith(2, "ui.theme.set", { preference: "light" });
-      expect(onAction).toHaveBeenNthCalledWith(3, "ui.theme.set", { preference: "dark" });
-    } finally {
-      if (typeof originalPrimeVue === "undefined") {
-        delete globalThis.PrimeVue;
-      } else {
-        globalThis.PrimeVue = originalPrimeVue;
-      }
-    }
+    expect(onAction).toHaveBeenNthCalledWith(1, "export.pdf");
+    expect(onAction).toHaveBeenNthCalledWith(2, "export.markdown");
+    expect(onAction).toHaveBeenNthCalledWith(3, "export.slides");
   });
 
   it("dispatches first-run relay actions from Vue first-run buttons", () => {

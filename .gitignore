@@ -33,6 +33,9 @@ apps/client/.erb
 .Spotlight-V100
 .Trashes
 
+# Editor files
+.vscode/
+
 # Ignored directories
 _IGNORE_waan/
 

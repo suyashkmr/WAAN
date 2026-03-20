@@ -12,6 +12,7 @@ export function createDatasetEmptyStateManager({ calloutEl, headingEl, copyEl, b
   const defaultHeading = headingEl?.textContent || "";
   const defaultCopy = copyEl?.textContent || "";
   let available = false;
+  const workspaceSplitEl = calloutEl?.closest(".workspace-stage-grid");
 
   /**
    * @param {string} [headingText]
@@ -37,6 +38,15 @@ export function createDatasetEmptyStateManager({ calloutEl, headingEl, copyEl, b
     });
     if (calloutEl) {
       calloutEl.classList.toggle("hidden", available);
+      calloutEl.toggleAttribute("hidden", available);
+      if (available) {
+        calloutEl.style.display = "none";
+      } else {
+        calloutEl.style.removeProperty("display");
+      }
+    }
+    if (workspaceSplitEl) {
+      workspaceSplitEl.classList.toggle("workspace-stage-grid--has-secondary", !available);
     }
     if (!available) {
       setMessage(defaultHeading, defaultCopy);

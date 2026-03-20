@@ -48,6 +48,29 @@ function mountActionsToolbarPrimitive(globalScope = globalThis) {
   });
 }
 
+function bindStaticWorkspaceUtilityActions(globalScope = globalThis) {
+  const documentRef = globalScope?.document;
+  if (!documentRef) return;
+  const actionMap = {
+    "onboarding-start": "onboarding.start",
+    "compact-toggle": "ui.compact.toggle",
+    "log-drawer-toggle": "relay.logDrawerOpen",
+    "reduce-motion-toggle": "ui.motion.cycle",
+    "high-contrast-toggle": "ui.contrast.toggle",
+  };
+
+  Object.entries(actionMap).forEach(([id, actionId]) => {
+    const element = documentRef.getElementById(id);
+    if (!(element instanceof HTMLElement)) return;
+    if (element.dataset.shellActionBound === "true") return;
+    element.dataset.shellActionBound = "true";
+    element.addEventListener("click", event => {
+      event.preventDefault();
+      dispatchShellAction(actionId, null, globalScope);
+    });
+  });
+}
+
 function mountOnboardingDialogPrimitive(globalScope = globalThis) {
   const onboardingEl = globalScope?.document?.getElementById?.("onboarding-overlay");
   mountConfiguredShellPrimitive({
@@ -305,6 +328,7 @@ export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   mountRelayHeaderActionsPrimitive(globalScope);
   mountRelayLiveActionsPrimitive(globalScope);
   mountActionsToolbarPrimitive(globalScope);
+  bindStaticWorkspaceUtilityActions(globalScope);
   mountOnboardingDialogPrimitive(globalScope);
   mountFirstRunActionsPrimitive(globalScope);
   mountDashboardCardShellPrimitives(globalScope);

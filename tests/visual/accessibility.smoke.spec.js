@@ -12,6 +12,10 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("applies reduced-motion and high-contrast states", async ({ page }) => {
+    await page.evaluate(() => {
+      const cluster = document.getElementById("workspace-utility-cluster");
+      if (cluster instanceof HTMLDetailsElement) cluster.open = true;
+    });
     const reduceMotionToggle = page.locator("#reduce-motion-toggle:visible").first();
     const highContrastToggle = page.locator("#high-contrast-toggle:visible").first();
 
@@ -55,10 +59,18 @@ test.describe("WAAN Accessibility Smoke", () => {
         }
       }
       const target = page.locator(selector);
-      await expect(target).toBeVisible();
-      await target.focus();
+      const nestedFocusable = target.locator(
+        'input, textarea, select, button, [role="combobox"], [role="textbox"], [tabindex]:not([tabindex="-1"])',
+      ).first();
+      const focusTarget = await nestedFocusable.count() ? nestedFocusable : target;
+      await expect(focusTarget).toBeVisible();
+      await focusTarget.focus();
       await expect
-        .poll(async () => target.evaluate(element => element === document.activeElement || element.contains(document.activeElement)))
+        .poll(async () =>
+          focusTarget.evaluate(
+            element => element === document.activeElement || element.contains(document.activeElement),
+          ),
+        )
         .toBe(true);
     }
   });
@@ -84,6 +96,10 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("keeps support and diagnostics actions keyboard reachable", async ({ page }) => {
+    await page.evaluate(() => {
+      const cluster = document.getElementById("workspace-utility-cluster");
+      if (cluster instanceof HTMLDetailsElement) cluster.open = true;
+    });
     const logDrawerToggle = page.locator("#log-drawer-toggle:visible").first();
     await expect(logDrawerToggle).toBeVisible();
     await expect(logDrawerToggle).toHaveAttribute("title", /.+/);

@@ -369,7 +369,103 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       }
 
       const emptyCallout = document.getElementById("dataset-empty-callout");
-      if (emptyCallout) emptyCallout.classList.add("hidden");
+      const workspaceSplit = document.querySelector(".workspace-stage-grid");
+      if (emptyCallout) {
+        emptyCallout.classList.add("hidden");
+        emptyCallout.setAttribute("hidden", "");
+        emptyCallout.style.display = "none";
+      }
+      if (workspaceSplit) workspaceSplit.classList.remove("workspace-stage-grid--has-secondary");
+
+      const utilityCluster = document.getElementById("workspace-utility-cluster");
+      if (utilityCluster instanceof HTMLDetailsElement) utilityCluster.open = false;
+    });
+  }
+
+  async function applyWorkspaceEmptyScenario(page) {
+    await page.evaluate(() => {
+      const relayBanner = document.getElementById("relay-status-banner");
+      const relayBannerMessage = document.getElementById("relay-status-message");
+      const relayBannerMeta = document.getElementById("relay-status-meta");
+      if (relayBanner) relayBanner.dataset.status = "running";
+      if (relayBannerMessage) relayBannerMessage.textContent = "Connected.";
+      if (relayBannerMeta) relayBannerMeta.textContent = "Synced a moment ago · 24 chats";
+
+      const chatSelector = document.getElementById("chat-selector");
+      if (chatSelector instanceof HTMLSelectElement) {
+        chatSelector.disabled = false;
+        chatSelector.innerHTML = `
+          <option value="" selected>Select a chat to continue</option>
+          <option value="launch-thread">Launch Thread · 784 msgs</option>
+          <option value="ops-room">Ops Room · 321 msgs</option>
+        `;
+      }
+
+      const range = document.getElementById("global-range");
+      if (range instanceof HTMLSelectElement) range.value = "all";
+
+      const customControls = document.getElementById("custom-range-controls");
+      if (customControls) customControls.classList.add("hidden");
+
+      const emptyCallout = document.getElementById("dataset-empty-callout");
+      const workspaceSplit = document.querySelector(".workspace-stage-grid");
+      if (emptyCallout) {
+        emptyCallout.classList.remove("hidden");
+        emptyCallout.removeAttribute("hidden");
+        emptyCallout.style.removeProperty("display");
+      }
+      if (workspaceSplit) workspaceSplit.classList.add("workspace-stage-grid--has-secondary");
+
+      const emptyHeading = document.getElementById("dataset-empty-heading");
+      const emptyCopy = document.getElementById("dataset-empty-copy");
+      if (emptyHeading) emptyHeading.textContent = "Pick a chat";
+      if (emptyCopy) emptyCopy.textContent = "Choose one loaded chat to unlock findings and exports.";
+
+      const utilityCluster = document.getElementById("workspace-utility-cluster");
+      if (utilityCluster instanceof HTMLDetailsElement) utilityCluster.open = false;
+    });
+  }
+
+  async function applyWorkspaceOfflineScenario(page) {
+    await page.evaluate(() => {
+      const relayBanner = document.getElementById("relay-status-banner");
+      const relayBannerMessage = document.getElementById("relay-status-message");
+      const relayBannerMeta = document.getElementById("relay-status-meta");
+      if (relayBanner) relayBanner.dataset.status = "offline";
+      if (relayBannerMessage) relayBannerMessage.textContent = "Relay offline.";
+      if (relayBannerMeta) relayBannerMeta.textContent = "Start relay to unlock workspace.";
+
+      const chatSelector = document.getElementById("chat-selector");
+      if (chatSelector instanceof HTMLSelectElement) {
+        chatSelector.disabled = true;
+        chatSelector.innerHTML = `<option value="">No chats loaded yet</option>`;
+      }
+
+      const range = document.getElementById("global-range");
+      if (range instanceof HTMLSelectElement) {
+        range.disabled = false;
+        range.value = "all";
+      }
+
+      const customControls = document.getElementById("custom-range-controls");
+      if (customControls) customControls.classList.add("hidden");
+
+      const emptyCallout = document.getElementById("dataset-empty-callout");
+      const workspaceSplit = document.querySelector(".workspace-stage-grid");
+      if (emptyCallout) {
+        emptyCallout.classList.remove("hidden");
+        emptyCallout.removeAttribute("hidden");
+        emptyCallout.style.removeProperty("display");
+      }
+      if (workspaceSplit) workspaceSplit.classList.add("workspace-stage-grid--has-secondary");
+
+      const emptyHeading = document.getElementById("dataset-empty-heading");
+      const emptyCopy = document.getElementById("dataset-empty-copy");
+      if (emptyHeading) emptyHeading.textContent = "Workspace locked";
+      if (emptyCopy) emptyCopy.textContent = "Start relay to unlock chat selection, exports, and findings.";
+
+      const utilityCluster = document.getElementById("workspace-utility-cluster");
+      if (utilityCluster instanceof HTMLDetailsElement) utilityCluster.open = false;
     });
   }
 
@@ -548,10 +644,41 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
       return {
         customRangeRoot: rect(customRangeRoot),
+        customInputs: Array.from(
+          customRangeRoot?.querySelectorAll('input, .p-datepicker, .p-datepicker-input') ?? [],
+        )
+          .slice(0, 2)
+          .map(node => rect(node)),
+        customApply: rect(
+          customRangeRoot?.querySelector('button, [role="button"], .ghost-button') ??
+            document.getElementById("apply-custom-range"),
+        ),
+        utilityClusterOpen:
+          document.getElementById("workspace-utility-cluster") instanceof HTMLDetailsElement
+            ? document.getElementById("workspace-utility-cluster").open
+            : null,
+        workspaceSurface: rect(document.querySelector(".workspace-command-surface")),
+        emptyCallout: {
+          hidden:
+            document.getElementById("dataset-empty-callout")?.classList.contains("hidden") ??
+            null,
+        },
       };
     });
 
     expect(metrics.customRangeRoot).toBeTruthy();
+    expect(metrics.utilityClusterOpen).toBe(false);
+    expect(metrics.customInputs).toHaveLength(2);
+    expect(metrics.customInputs[0]).toBeTruthy();
+    expect(metrics.customInputs[1]).toBeTruthy();
+    expect(metrics.customApply).toBeTruthy();
+    expect(metrics.customApply.top).toBeGreaterThanOrEqual(
+      Math.max(metrics.customInputs[0].bottom, metrics.customInputs[1].bottom) - 1,
+    );
+    if (testInfo.project.name === "desktop-1440") {
+      expect(metrics.emptyCallout.hidden).toBe(true);
+      expect(metrics.workspaceSurface.width).toBeGreaterThan(900);
+    }
   });
 
   test("matches long-form dashboard baseline", async ({ page }, testInfo) => {
@@ -588,9 +715,11 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const card = document.getElementById("participants");
       const focusButton = document.getElementById("reduce-motion-toggle");
       const hoverButton = document.getElementById("download-pdf");
+      const utilityCluster = document.getElementById("workspace-utility-cluster");
       if (toggle) toggle.setAttribute("aria-expanded", "false");
       if (content) content.style.display = "none";
       if (card) card.classList.add("collapsed");
+      if (utilityCluster instanceof HTMLDetailsElement) utilityCluster.open = true;
       focusButton?.classList.add("visual-focus-state");
       hoverButton?.classList.add("visual-hover-state");
     });
@@ -632,13 +761,90 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches workspace controls baseline", async ({ page }, testInfo) => {
-    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     await settleScenario(page, applyWorkspaceScenario);
-    const section = page.locator(".workspace-command-surface");
+    const section = page.locator("#workspace-stage");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
     await expect(section).toHaveScreenshot(`section-workspace-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches workspace offline stage baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await settleScenario(page, applyWorkspaceOfflineScenario);
+    const section = page.locator("#workspace-stage");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`workspace-stage-offline-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches workspace waiting QR stage baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await settleScenario(page, async currentPage => {
+      await applyRelayScenario(currentPage, "waiting_qr");
+      await applyWorkspaceEmptyScenario(currentPage);
+      await currentPage.evaluate(() => {
+        const banner = document.getElementById("relay-status-banner");
+        const message = document.getElementById("relay-status-message");
+        const meta = document.getElementById("relay-status-meta");
+        if (banner) banner.dataset.status = "waiting_qr";
+        if (message) message.textContent = "Link your phone.";
+        if (meta) meta.textContent = "Open Linked Devices to continue.";
+      });
+    });
+    const section = page.locator("#workspace-stage");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`workspace-stage-waiting-qr-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches workspace syncing stage baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await settleScenario(page, async currentPage => {
+      await applyRelayScenario(currentPage, "running_syncing");
+      await applyWorkspaceEmptyScenario(currentPage);
+      await currentPage.evaluate(() => {
+        const emptyCallout = document.getElementById("dataset-empty-callout");
+        if (emptyCallout) {
+          emptyCallout.classList.add("hidden");
+          emptyCallout.setAttribute("hidden", "");
+          emptyCallout.style.display = "none";
+        }
+      });
+    });
+    const section = page.locator("#workspace-stage");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`workspace-stage-syncing-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches workspace no-chat-selected stage baseline", async ({ page }, testInfo) => {
+    if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await settleScenario(page, applyWorkspaceEmptyScenario);
+    const section = page.locator("#workspace-stage");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`workspace-stage-no-chat-${testInfo.project.name}.png`, {
       caret: "hide",
       maxDiffPixelRatio: 0.01,
       timeout: 15000,

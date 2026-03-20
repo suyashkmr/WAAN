@@ -172,19 +172,63 @@
                                 </div>
                             </section>
 
-                            <section class="actions-toolbar" aria-label="Dataset actions" id="actions-toolbar">
-                                <div class="toolbar-group primary">
-                                    <button type="button" class="ghost-button" id="download-pdf">Export PDF</button>
-                                    <button type="button" class="ghost-button" id="download-markdown-report">Export text report</button>
-                                    <button type="button" class="ghost-button" id="download-slides-report">Export slides</button>
+                            <div class="workspace-core-band">
+                                <div class="page-controls">
+                                    <div class="control-row primary-controls" data-vue-page-controls-root="true">
+                                        <label class="control dataset-control" for="chat-selector">
+                                            <span>Loaded chats</span>
+                                            <select id="chat-selector" disabled>
+                                                <option value="">No chats loaded yet</option>
+                                            </select>
+                                        </label>
+                                        <div class="control custom-range hidden" id="custom-range-controls">
+                                            <span>Custom dates</span>
+                                            <div class="custom-range-inputs">
+                                                <input type="date" id="custom-start">
+                                                <span class="range-separator">to</span>
+                                                <input type="date" id="custom-end">
+                                                <button type="button" class="ghost-button small" id="apply-custom-range">Apply</button>
+                                            </div>
+                                        </div>
+                                        <label class="control period-control" for="global-range">
+                                            <span>Time range</span>
+                                            <select id="global-range">
+                                                <option value="all" selected>All time</option>
+                                                <option value="30">Last 30 days</option>
+                                                <option value="90">Last 90 days</option>
+                                                <option value="180">Last 180 days</option>
+                                                <option value="365">Last 365 days</option>
+                                                <option value="custom">Custom range</option>
+                                            </select>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="toolbar-group secondary">
+
+                                <section class="actions-toolbar" aria-label="Dataset actions" id="actions-toolbar">
+                                    <div class="toolbar-group primary">
+                                        <button type="button" class="ghost-button" id="download-pdf">Export PDF</button>
+                                        <button type="button" class="ghost-button" id="download-markdown-report">Export text report</button>
+                                        <button type="button" class="ghost-button" id="download-slides-report">Export slides</button>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+
+                        <details class="workspace-utility-cluster" id="workspace-utility-cluster">
+                            <summary class="workspace-utility-summary">
+                                <span class="workspace-utility-title">Workspace tools</span>
+                                <span class="workspace-utility-meta">Setup, diagnostics, display</span>
+                            </summary>
+                            <div class="workspace-utility-panel">
+                                <div class="workspace-utility-shortcuts">
                                     <button type="button" class="ghost-button" id="onboarding-start"
                                         title="Open the setup reminder.">Setup tips</button>
                                     <button type="button" class="ghost-button" id="compact-toggle" aria-pressed="false"
                                         title="Switch between compact and comfort layouts">Compact mode</button>
                                     <button type="button" class="ghost-button" id="log-drawer-toggle"
                                         title="Use diagnostics if sync stalls or reconnect fails.">Diagnostics</button>
+                                </div>
+                                <div class="workspace-utility-display">
                                     <div class="theme-toggle">
                                         <span>Theme</span>
                                         <div class="segmented-option">
@@ -207,39 +251,8 @@
                                             aria-pressed="false">Contrast: Standard</button>
                                     </div>
                                 </div>
-                            </section>
-                        </div>
-
-                        <div class="page-controls">
-                            <div class="control-row primary-controls" data-vue-page-controls-root="true">
-                                <label class="control dataset-control" for="chat-selector">
-                                    <span>Loaded chats</span>
-                                    <select id="chat-selector" disabled>
-                                        <option value="">No chats loaded yet</option>
-                                    </select>
-                                </label>
-                                <div class="control custom-range hidden" id="custom-range-controls">
-                                    <span>Custom dates</span>
-                                    <div class="custom-range-inputs">
-                                        <input type="date" id="custom-start">
-                                        <span class="range-separator">to</span>
-                                        <input type="date" id="custom-end">
-                                        <button type="button" class="ghost-button small" id="apply-custom-range">Apply</button>
-                                    </div>
-                                </div>
-                                <label class="control period-control" for="global-range">
-                                    <span>Time range</span>
-                                    <select id="global-range">
-                                        <option value="all" selected>All time</option>
-                                        <option value="30">Last 30 days</option>
-                                        <option value="90">Last 90 days</option>
-                                        <option value="180">Last 180 days</option>
-                                        <option value="365">Last 365 days</option>
-                                        <option value="custom">Custom range</option>
-                                    </select>
-                                </label>
                             </div>
-                        </div>
+                        </details>
                     </div>
 
                     <div id="dataset-empty-callout" class="dataset-empty panel-state panel-state--empty shell-lane shell-lane--secondary shell-lane--quiet hidden" aria-live="polite">
