@@ -195,6 +195,137 @@ This completed wave finished the editorial pass in the lower dashboard sections 
 - existing section IDs, export triggers, chart/list roots, controller entrypoints, and bridge hooks remained unchanged
 - visual coverage now explicitly includes lower-lane section baselines so future refreshes do not regress the new hierarchy
 
+## Next Program: Calm Instrument Overhaul
+
+The next program should treat WAAN less like a dashboard and more like a single calm analytical instrument. The current Guided Analysis Studio baseline solved structural cohesion, but it still asks the user to visually parse too many peers at once. The next wave should focus on reduction, hierarchy, and progressive depth.
+
+Design intent:
+
+- make the product feel quieter, more inevitable, and more precise
+- reduce the number of simultaneously competing surfaces
+- turn the top of the product into a compact operational console instead of a large header-plus-tools composition
+- make insight reading feel editorial and sequential instead of widget-based
+- reveal depth on demand instead of keeping every control and evidence block equally present
+
+This program keeps all current runtime ownership and controller contracts intact unless a phase explicitly opens a migration. Existing IDs, chart roots, `data-nav-target` values, native fallback hooks, Vue/PrimeVue ownership, and shell bridge behavior remain protected by default.
+
+### Phase 42: Visual Reduction and Focus System
+
+Phase 42 establishes a stricter visual philosophy on top of the current shell:
+
+- reduce shell vocabulary to a smaller set of surfaces: stage, command surface, insight card, evidence frame, support utility
+- tighten the type hierarchy so only a few elements carry strong emphasis
+- reduce border, radius, tint, and panel-variant drift that still makes some sections feel busier than necessary
+- remove decorative treatments that do not communicate state, priority, or interaction
+- standardize control emphasis so primary actions, quiet actions, and passive state labels are immediately distinguishable
+
+Primary implementation targets:
+
+- `styles.base.css`
+- `styles.components.css`
+- `styles/components/navigation.css`
+- `styles/components/app-shell.css`
+
+Acceptance intent:
+
+- the interface feels calmer at first glance
+- the eye lands on one primary action or one primary insight per stage
+- adjacent surfaces feel related without relying on repeated chrome or accent noise
+
+### Phase 43: Workspace as Instrument Panel
+
+Phase 43 turns setup and workspace into one compact, highly legible operational strip:
+
+- compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
+- remove oversized empty-state framing and any layout that reserves space for absent content
+- move secondary setup guidance behind contextual disclosure instead of keeping it permanently visible
+- ensure the workspace reads as ready/not-ready/focused, not as a collection of separate cards
+- treat the workspace as the control surface for the whole app, not one more section in the reading flow
+
+Primary implementation targets:
+
+- `index.html`
+- `styles.components.css`
+- `styles/components/relay.css`
+- `js/relayControls/statusView.js`
+
+Acceptance intent:
+
+- the top of the product uses materially less space
+- the app feels ready to use faster, even before data loads
+- workspace controls behave like one precise instrument panel
+
+### Phase 44: Guided Findings as Editorial Sequence
+
+Phase 44 turns the findings lane into a stronger editorial progression:
+
+- make `#workspace-overview`, `#insight-highlights`, `#participants`, and timing sections read as one intentional story
+- reduce equal-weight card competition by promoting one key takeaway per section and demoting secondary evidence until interaction
+- use supporting metrics as context blocks, not as peers to the main statement
+- remove side-by-side layouts unless one side is clearly subordinate
+- ensure the user can answer what happened, who drove it, and when it happened without scanning the whole screen
+
+Primary implementation targets:
+
+- `index.html`
+- `styles.components.css`
+- `styles/components/analytics.css`
+
+Acceptance intent:
+
+- the first analysis pass feels narrative rather than dashboard-like
+- findings can be scanned vertically with minimal interpretation overhead
+- each section has a clear primary statement and quieter supporting evidence
+
+### Phase 45: Deep-Dive Tools as Progressive Disclosure
+
+Phase 45 rebuilds the lower tools layer around focused inspection rather than permanent utility density:
+
+- keep search, saved views, compare, structured exports, and diagnostics available but visually secondary
+- collapse advanced compare/manage states until the user opts into them
+- redesign saved views as lightweight snapshots with optional compare, not a management console
+- make weekly, daily, sentiment, message mix, and polls feel like deeper inspection views that open from curiosity, not default clutter
+- introduce tighter section-to-section rhythm so the lower lane feels intentionally quieter than guided findings
+
+Primary implementation targets:
+
+- `index.html`
+- `styles.components.css`
+- `styles/components/search-saved.css`
+- `styles/components/analytics.css`
+- `tests/visual/dashboard.visual.spec.js`
+
+Acceptance intent:
+
+- deep-dive tools do not compete with the primary reading lane
+- compare, export, and management workflows feel powerful but tucked away until needed
+- the lower half of the app feels ordered instead of dense
+
+### Phase 46: Motion, State Quality, and Product Finish
+
+Phase 46 closes the program with polish and behavioral quality:
+
+- add restrained motion for reveal, focus transitions, and state changes without introducing gratuitous animation
+- tune empty, loading, syncing, and compare states so they feel intentional and premium
+- unify chart reveal behavior, collapse/expand motion, and workspace-to-analysis transitions
+- run a full accessibility and responsive fit pass with emphasis on keyboard flow and dense-data readability
+- refresh visual baselines and document the final shell contracts so future UI work does not drift
+
+Primary implementation targets:
+
+- `styles.base.css`
+- `styles.components.css`
+- `styles/components/*`
+- `tests/visual/dashboard.visual.spec.js`
+- `docs/ui-primitives.md`
+- `docs/design-tokens.md`
+
+Acceptance intent:
+
+- the interface feels finished, not merely consistent
+- transitions reinforce hierarchy and orientation
+- the shell remains calm and exact at 1440, 1024, 768, and 390
+
 ## Current Architecture Status (Post-Phase 11)
 
 - Frontend rendering/runtime ownership is handled by Vue islands and bridge contracts.

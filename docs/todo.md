@@ -19,6 +19,39 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - [x] Previous overhaul waves through Phase 35 are complete.
 - [x] Execute the Guided Analysis Studio overhaul plan in `docs/ui-overhaul-spec.md`.
 
+## Next Wave: Calm Instrument Overhaul
+
+- [ ] Phase 42: Visual Reduction and Focus System.
+  - [ ] Reduce the shell to a smaller set of visual primitives so stage, command, insight, evidence, and support surfaces feel deliberate instead of varied for their own sake.
+  - [ ] Tighten type hierarchy, accent usage, border/radius variance, and panel treatments across `styles.base.css`, `styles.components.css`, `styles/components/navigation.css`, and `styles/components/app-shell.css`.
+  - [ ] Remove decorative chrome that does not communicate state, priority, or interaction.
+  - [ ] Verify the first-glance hierarchy is calmer and more obvious at 1440 / 1024 / 768 / 390.
+- [ ] Phase 43: Workspace as Instrument Panel.
+  - [ ] Rebuild setup and workspace into one compact operational command surface across `index.html`, `styles.components.css`, `styles/components/relay.css`, and `js/relayControls/statusView.js`.
+  - [ ] Reduce top-of-page real estate, collapse secondary setup guidance behind disclosure, and eliminate reserved empty-state space when content is absent.
+  - [ ] Ensure relay state, chat selection, time range, exports, and diagnostics read as one coherent instrument panel.
+  - [ ] Revalidate workspace-ready, syncing, linking, offline, and no-chat-selected states end to end.
+- [ ] Phase 44: Guided Findings as Editorial Sequence.
+  - [ ] Reframe overview, highlights, participants, and timing into a stronger vertical editorial sequence in `index.html`, `styles.components.css`, and `styles/components/analytics.css`.
+  - [ ] Promote one key takeaway per section and demote secondary evidence until interaction or deeper inspection.
+  - [ ] Remove equal-weight side-by-side layouts unless one lane is clearly subordinate.
+  - [ ] Confirm users can answer what happened, who drove it, and when it happened without scanning the full page.
+- [ ] Phase 45: Deep-Dive Tools as Progressive Disclosure.
+  - [ ] Redesign search, saved views, compare, weekly/daily patterns, message mix, polls, and related utilities as quieter inspect/compare/export tools.
+  - [ ] Keep current hooks and behavior, but hide management density until the user opts into it.
+  - [ ] Rework `styles/components/search-saved.css`, `styles/components/analytics.css`, `styles.components.css`, and `index.html` so lower tools no longer compete with guided findings.
+  - [ ] Expand visual coverage in `tests/visual/dashboard.visual.spec.js` for collapsed, expanded, and compare-heavy deep-dive states.
+- [ ] Phase 46: Motion, State Quality, and Product Finish.
+  - [ ] Add restrained motion for reveal, focus, and state transitions without introducing gratuitous animation.
+  - [ ] Refine loading, empty, syncing, compare, and export states so they feel intentional and premium.
+  - [ ] Refresh the shell contracts in `docs/ui-primitives.md` and `docs/design-tokens.md`.
+  - [ ] Complete final validation:
+    - [ ] `npm run check:types`
+    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npm run ci:verify`
+
 ## Next Wave: Guided Analysis Studio Overhaul
 
 - [x] Phase 36: Studio Architecture Reset.
