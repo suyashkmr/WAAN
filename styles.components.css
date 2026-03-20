@@ -5814,10 +5814,6 @@ body[data-compact="true"] .table-container.scrollable {
         grid-template-columns: minmax(0, 1fr) minmax(248px, 0.56fr);
     }
 
-    .app-shell-layout .shell-split--saved-views {
-        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-    }
-
     .app-shell-layout .shell-split--sentiment {
         grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
     }

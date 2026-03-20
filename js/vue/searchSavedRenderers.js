@@ -319,28 +319,12 @@ export function renderSavedViewsGalleryWithVue({
         h("span", { style: { width: `${Math.min(100, Math.max(0, card.barWidth))}%` } }),
       ]),
     ]);
-  const DataView = globalScope?.PrimeVue?.DataView || globalScope?.primevue?.DataView || null;
-  const usePrimeDataView = Boolean(DataView && (typeof DataView === "function" || typeof DataView === "object"));
   clearContainerForVueRenderOnce(container);
 
   render(h(
     "div",
     { class: "saved-view-gallery-vue-root" },
-    usePrimeDataView
-      ? [
-        h(DataView, {
-          value: safeCards,
-          layout: "list",
-          unstyled: true,
-          "data-ui-runtime": "primevue",
-        }, {
-          list: slotProps => {
-            const items = Array.isArray(slotProps?.items) ? slotProps.items : safeCards;
-            return items.map(renderGalleryCard);
-          },
-        }),
-      ]
-      : safeCards.map(renderGalleryCard),
+    safeCards.map(renderGalleryCard),
   ), container);
   container.dataset.interactive = interactive ? "true" : "false";
   ensureSavedViewsGalleryActions({ container, dispatchAction });

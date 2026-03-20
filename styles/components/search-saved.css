@@ -190,6 +190,10 @@
     display: contents;
 }
 
+#saved-view-gallery :is(.p-dataview, .p-dataview-content, .p-dataview-list) {
+    display: contents;
+}
+
 .saved-view-gallery-empty {
     margin: 0;
     padding: 0.75rem 0;
@@ -956,6 +960,7 @@ body[data-compact="true"] .saved-view-card {
 .saved-view-layout {
     display: grid;
     gap: 0.9rem;
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .saved-view-command-lane,
@@ -963,6 +968,10 @@ body[data-compact="true"] .saved-view-card {
     display: grid;
     gap: 0.9rem;
     align-content: start;
+}
+
+.saved-view-results-lane {
+    padding-top: 0.12rem;
 }
 
 .saved-view-panel {
@@ -1096,13 +1105,6 @@ body[data-compact="true"] .saved-view-card {
     }
 }
 
-@media (min-width: 1180px) {
-    .saved-view-layout {
-        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-        align-items: start;
-    }
-}
-
 /* Shell symmetry bridge */
 .deep-dive-cluster--tools :is(.saved-views, .search-panel),
 .saved-view-panel,
@@ -1159,6 +1161,12 @@ body[data-compact="true"] .saved-view-card {
 #saved-views-card .saved-view-gallery {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1rem;
+}
+
+@media (min-width: 860px) {
+    #saved-views-card .saved-view-gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 #saved-views-card .compare-controls {

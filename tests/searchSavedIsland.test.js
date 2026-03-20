@@ -210,12 +210,11 @@ describe("search saved island bridge mounting", () => {
     expect(document.querySelectorAll("#saved-view-gallery .saved-view-card").length).toBe(2);
   });
 
-  it("uses PrimeVue DataView for saved-view gallery when runtime component is available", () => {
-    const PrimeDataView = { name: "PrimeDataViewStub" };
+  it("renders saved-view gallery cards directly even when PrimeVue runtime is available", () => {
     const fakeWindow = {
       document,
       console,
-      PrimeVue: { DataView: PrimeDataView },
+      PrimeVue: { DataView: { name: "PrimeDataViewStub" } },
       Vue: {
         h: (type, props = {}, children = []) => ({ type, props, children }),
         render: (vnode, container) => {
@@ -230,16 +229,7 @@ describe("search saved island bridge mounting", () => {
             return;
           }
           const children = Array.isArray(vnode.children) ? vnode.children : [];
-          const dataViewNode = children.find(child => child?.type === PrimeDataView) || null;
-          if (!dataViewNode) {
-            container.innerHTML = '<div class="saved-view-gallery-vue-root"></div>';
-            return;
-          }
-          const slot = dataViewNode.children?.list;
-          const listNodes = typeof slot === "function"
-            ? slot({ items: dataViewNode.props?.value || [] })
-            : [];
-          container.innerHTML = `<div class="saved-view-gallery-vue-root" data-ui-runtime="${String(dataViewNode.props?.["data-ui-runtime"] || "")}">${listNodes
+          container.innerHTML = `<div class="saved-view-gallery-vue-root">${children
             .map(
               child =>
                 `<article class="saved-view-card" data-view-id="${String(child?.props?.["data-view-id"] || "")}"></article>`,
@@ -259,7 +249,7 @@ describe("search saved island bridge mounting", () => {
     });
 
     const root = document.querySelector(".saved-view-gallery-vue-root");
-    expect(root?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(root).toBeTruthy();
     expect(document.querySelectorAll("#saved-view-gallery .saved-view-card").length).toBe(1);
   });
 
