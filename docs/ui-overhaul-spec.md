@@ -296,6 +296,13 @@ Closeout audit status as of 2026-03-20:
 - validation completed with `npm run check:types`, `npm run test:accessibility-smoke`, `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`, and `npx playwright test tests/visual/dashboard.visual.spec.js`
 - residual-risk boundary: Phase 43 closes the workspace operating model and compact-state behavior, but it does not yet redesign the guided findings or deep-dive information architecture, which remain the responsibility of Phases 44 and 45
 
+Post-closeout correction note as of 2026-03-20:
+
+- after the formal Phase 43 closeout, the adjacent `Saved Views` tool was corrected to remove a desktop-side-lane assumption that no longer fit the current workspace/deep-dive shell
+- `Saved Views` now follows a vertical tool flow: command controls first, then the saved-view gallery and comparison output beneath
+- the saved-view gallery no longer relies on the PrimeVue `DataView` wrapper path; gallery cards now render directly into the Vue-managed gallery root so the responsive grid can control the layout predictably at laptop widths
+- this is a shipped adjacent correction to the current baseline, not a reopening of Phase 43; the broader deep-dive information architecture work remains in Phase 45
+
 ### Phase 44: Guided Findings as Editorial Sequence
 
 Phase 44 turns the findings lane into a stronger editorial progression:
@@ -341,6 +348,12 @@ Acceptance intent:
 - deep-dive tools do not compete with the primary reading lane
 - compare, export, and management workflows feel powerful but tucked away until needed
 - the lower half of the app feels ordered instead of dense
+
+Current starting baseline for Phase 45, updated 2026-03-20:
+
+- `Saved Views` already no longer uses the earlier desktop split-lane layout; its current baseline is a stacked flow with command tools above the gallery and compare output
+- the saved-view gallery now renders direct Vue cards into the gallery root instead of a PrimeVue `DataView` list wrapper, so Phase 45 should treat that direct-card path as the protected runtime baseline
+- Phase 45 should therefore focus on disclosure, compare density, and lower-lane hierarchy rather than trying to restore the older side-lane/gallery architecture
 
 ### Phase 46: Motion, State Quality, and Product Finish
 

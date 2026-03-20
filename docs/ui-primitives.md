@@ -11,6 +11,7 @@ WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell
 - PrimeVue adoption is partial by design:
   - adopted now: buttons, radios, dialog surfaces, and selected list/data surfaces
   - deferred to later phase work: production-default `select` / `date` controls
+  - explicit exception: the saved-view gallery is Vue-rendered but does not use PrimeVue `DataView` in production, because the direct-card render path is required to preserve the responsive gallery grid
 
 ## Foundation Files
 
@@ -50,5 +51,6 @@ WAAN now uses Vue 3 islands with PrimeVue-ready primitives for interactive shell
 - `initUiPrimitives()` syncs runtime theme/motion/contrast state markers from `data-color-scheme`, `data-reduce-motion`, and `data-contrast`.
 - Relay status indicator internals intentionally remain custom (`#relay-status-dot.relay-banner-indicator`) to preserve existing pulse/reduced-motion/high-contrast behavior without extra runtime dependencies.
 - Summary cards, relay controls, and search/saved-view controls now run without Shoelace custom-element proxies.
+- Saved-view gallery cards render directly into the Vue gallery root; do not reintroduce a `DataView` wrapper there unless the layout contract is reworked at the same time.
 - Runtime contract: do not introduce new `sl-*` custom elements in app-shell surfaces; use semantic HTML + Vue/PrimeVue wrappers/composables instead.
 - The current theming transition is tracked in Phase 12: `styles/prime-theme-bridge.css` now feeds Prime-style token values into the WAAN alias layer while full token consolidation is still in progress.

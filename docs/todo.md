@@ -93,6 +93,9 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - [ ] Phase 45: Deep-Dive Tools as Progressive Disclosure.
   - [ ] Redesign search, saved views, compare, weekly/daily patterns, message mix, polls, and related utilities as quieter inspect/compare/export tools.
   - [ ] Keep current hooks and behavior, but hide management density until the user opts into it.
+  - [ ] Build from the current shipped deep-dive baseline, not the older split-lane assumption:
+    - saved views now uses a vertical flow with command tools on top and gallery/compare output below
+    - saved-view gallery cards now render directly through the Vue bridge instead of the old PrimeVue `DataView` wrapper path
   - [ ] Rework `styles/components/search-saved.css`, `styles/components/analytics.css`, `styles.components.css`, and `index.html` so lower tools no longer compete with guided findings.
   - [ ] Expand visual coverage in `tests/visual/dashboard.visual.spec.js` for collapsed, expanded, and compare-heavy deep-dive states.
   - [ ] Complete closure audit:
