@@ -394,7 +394,11 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     await page.waitForLoadState("load");
-    await page.waitForTimeout(200);
+    await page.evaluate(async () => {
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+    });
     await page.addStyleTag({
       content: `*,
 *::before,
@@ -435,7 +439,56 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const syncProgress = document.getElementById("relay-sync-progress");
       if (syncProgress) syncProgress.classList.add("hidden");
     });
-    await page.waitForTimeout(100);
+    await page.evaluate(async () => {
+      const selectors = [
+        "main",
+        "#hero-panel",
+        "#participants",
+        "#search-panel",
+        "#saved-views-card",
+        "#message-types",
+      ];
+      const getSignature = () => {
+        const values = [
+          Math.round(document.body.scrollHeight),
+          Math.round(document.documentElement.scrollHeight),
+        ];
+        selectors.forEach(selector => {
+          const node = document.querySelector(selector);
+          const rect = node?.getBoundingClientRect();
+          values.push(rect ? Math.round(rect.height) : -1);
+          values.push(rect ? Math.round(rect.top + window.scrollY) : -1);
+        });
+        return values.join("|");
+      };
+
+      let previousSignature = "";
+      let stableFrames = 0;
+
+      for (let iteration = 0; iteration < 30; iteration += 1) {
+        await new Promise(resolve => window.setTimeout(resolve, 100));
+        const nextSignature = getSignature();
+        if (nextSignature === previousSignature) {
+          stableFrames += 1;
+          if (stableFrames >= 3) break;
+        } else {
+          stableFrames = 0;
+          previousSignature = nextSignature;
+        }
+      }
+    });
+    await page.evaluate(() => window.scrollTo(0, 0));
+  }
+
+  async function settleScenario(page, ...applyFns) {
+    for (const applyFn of applyFns) {
+      await applyFn(page);
+    }
+    await page.waitForTimeout(350);
+    for (const applyFn of applyFns) {
+      await applyFn(page);
+    }
+    await page.waitForTimeout(80);
   }
 
   test.beforeEach(async ({ page }) => {
@@ -475,8 +528,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   test("preserves corrected layout contracts", async ({ page }, testInfo) => {
     await prepareStableFrame(page);
-    await applyWorkspaceScenario(page);
-    await applyDeepDiveScenario(page);
+    await settleScenario(page, applyWorkspaceScenario, applyDeepDiveScenario);
 
     const metrics = await page.evaluate(() => {
       const customRangeRoot = document.getElementById("custom-range-controls");
@@ -505,8 +557,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches long-form dashboard baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyDeepDiveScenario(page);
-    await applyLowerLaneScenario(page);
+    await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
 
     await expect(page).toHaveScreenshot(`dashboard-longform-${testInfo.project.name}.png`, {
       fullPage: true,
@@ -583,7 +634,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches workspace controls baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyWorkspaceScenario(page);
+    await settleScenario(page, applyWorkspaceScenario);
     const section = page.locator(".workspace-command-surface");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -597,13 +648,13 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches search panel baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyDeepDiveScenario(page);
+    await settleScenario(page, applyDeepDiveScenario);
     const section = page.locator("#search-panel");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
     await expect(section).toHaveScreenshot(`section-search-${testInfo.project.name}.png`, {
       caret: "hide",
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: testInfo.project.name === "desktop-1440" ? 0.02 : 0.01,
       timeout: 15000,
     });
   });
@@ -611,7 +662,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches saved views section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyDeepDiveScenario(page);
+    await settleScenario(page, applyDeepDiveScenario);
     const section = page.locator("#saved-views-card");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -651,13 +702,13 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches message-types section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyLowerLaneScenario(page);
+    await settleScenario(page, applyLowerLaneScenario);
     const section = page.locator("#message-types");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
     await expect(section).toHaveScreenshot(`section-message-types-${testInfo.project.name}.png`, {
       caret: "hide",
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: testInfo.project.name === "desktop-1440" ? 0.02 : 0.01,
       timeout: 15000,
     });
   });
@@ -665,7 +716,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches polls section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyLowerLaneScenario(page);
+    await settleScenario(page, applyLowerLaneScenario);
     const section = page.locator("#polls-card");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();

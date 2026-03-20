@@ -58,11 +58,9 @@
 .app-pulse-bar {
     margin-bottom: 0.5rem;
     border-radius: calc(var(--shape-medium) + 6px);
-    border: 1px solid color-mix(in srgb, var(--border-strong) 88%, var(--glass-border));
-    background:
-        radial-gradient(120% 140% at 12% -18%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 58%),
-        linear-gradient(148deg, color-mix(in srgb, var(--bg-raised) 88%, transparent) 0%, color-mix(in srgb, var(--bg-glass) 88%, transparent) 100%);
-    box-shadow: var(--shadow-card), inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-subtle) 82%, transparent);
+    background: color-mix(in srgb, var(--bg-raised) 90%, transparent);
+    box-shadow: var(--shadow-soft);
     backdrop-filter: blur(calc(var(--glass-blur) * 0.75));
 }
 
@@ -189,26 +187,28 @@
 }
 
 :is(.card-header, .app-panel-header) {
-    padding-bottom: 0.55rem;
-    margin-bottom: 0.12rem;
+    padding-bottom: 0.46rem;
+    margin-bottom: 0.04rem;
 }
 
 :is(.card-header, .app-panel-header)::after {
-    background: color-mix(in srgb, var(--panel-header-divider) 52%, transparent);
+    background: color-mix(in srgb, var(--panel-header-divider) 38%, transparent);
 }
 
 :is(.card-header, .app-panel-header) h2 {
-    font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+    font-size: clamp(0.94rem, 1.05vw, 1.02rem);
     font-family: var(--font-family-base);
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.14;
 }
 
 .card-heading {
-    gap: 0.4rem;
+    gap: 0.34rem;
     min-height: 0;
+    line-height: 1;
 }
 
 :is(.card-header-actions, .app-panel-actions) .ghost-button {
-    min-height: 1.9rem;
+    min-height: 1.82rem;
 }

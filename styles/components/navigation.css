@@ -8,10 +8,10 @@
     width: min(1180px, calc(100% - var(--space-4)));
     margin: var(--section-nav-shell-margin-top) auto var(--section-nav-shell-margin-bottom);
     padding: var(--section-nav-shell-pad-y) var(--section-nav-shell-pad-x);
-    background: color-mix(in srgb, var(--bg-room) 72%, transparent);
+    background: color-mix(in srgb, var(--bg-room) 48%, transparent);
     border-radius: calc(var(--shape-large) - 8px);
-    border: 1px solid var(--nav-shell-border);
-    box-shadow: var(--nav-shell-shadow);
+    border: 1px solid color-mix(in srgb, var(--nav-shell-border) 62%, transparent);
+    box-shadow: none;
     backdrop-filter: blur(10px);
     transition:
         background var(--motion-duration-medium) var(--motion-ease-out),
@@ -50,7 +50,7 @@
     background: var(--nav-shell-fade);
     pointer-events: none;
     border-radius: 0 calc(var(--shape-large) - 2px) calc(var(--shape-large) - 2px) 0;
-    opacity: 0.9;
+    opacity: 0.3;
 }
 
 .section-nav-kicker {
@@ -74,7 +74,7 @@
     font-size: var(--type-label-compact);
     font-weight: 600;
     letter-spacing: 0.02em;
-    color: var(--control-text-muted);
+    color: color-mix(in srgb, var(--text) 52%, var(--muted));
     padding: var(--section-nav-item-pad-y) var(--section-nav-item-pad-x);
     border-radius: 0;
     transition:
@@ -94,19 +94,19 @@
 
 .section-nav a.active,
 .section-nav a[aria-current="page"] {
-    color: color-mix(in srgb, var(--accent) 72%, var(--text-primary));
-    background: transparent;
-    border-bottom-color: color-mix(in srgb, var(--accent) 38%, transparent);
-    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--accent) 38%, transparent);
+    color: color-mix(in srgb, var(--text) 86%, var(--accent));
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+    border-bottom-color: transparent;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 6%, transparent);
     transform: none;
 }
 
 .section-nav a:hover,
 .section-nav a:focus-visible {
-    color: color-mix(in srgb, var(--accent) 68%, var(--text-primary));
-    background: var(--nav-item-hover-fill);
-    border-bottom-color: color-mix(in srgb, var(--accent) 28%, transparent);
-    outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    color: color-mix(in srgb, var(--text) 74%, var(--accent));
+    background: color-mix(in srgb, var(--text) 3%, transparent);
+    border-bottom-color: transparent;
+    outline: 2px solid color-mix(in srgb, var(--accent) 14%, transparent);
     outline-offset: 2px;
     transform: none;
     box-shadow: none;
@@ -167,15 +167,15 @@
     align-items: center;
     width: min(1080px, calc(100% - 1.5rem));
     padding: 0.24rem 0.42rem;
-    background: color-mix(in srgb, var(--bg-room) 56%, transparent);
+    background: color-mix(in srgb, var(--bg-room) 42%, transparent);
     border-radius: 999px;
-    border-color: color-mix(in srgb, var(--nav-shell-border) 74%, transparent);
+    border-color: color-mix(in srgb, var(--nav-shell-border) 58%, transparent);
     box-shadow: none;
     backdrop-filter: blur(8px);
 }
 
 .section-nav::after {
-    opacity: 0.55;
+    opacity: 0.18;
 }
 
 .section-nav-inner {
@@ -187,24 +187,24 @@
     font-size: 0.71rem;
     font-weight: 500;
     letter-spacing: 0.015em;
-    color: color-mix(in srgb, var(--text) 56%, var(--muted));
+    color: color-mix(in srgb, var(--text) 48%, var(--muted));
     border-radius: 999px;
     border-bottom: 0;
 }
 
 .section-nav a.active,
 .section-nav a[aria-current="page"] {
-    color: color-mix(in srgb, var(--text) 88%, var(--accent));
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--accent) 32%, transparent);
+    color: color-mix(in srgb, var(--text) 84%, var(--accent));
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .section-nav a:hover,
 .section-nav a:focus-visible {
-    color: color-mix(in srgb, var(--text) 78%, var(--accent));
-    background: color-mix(in srgb, var(--accent) 5%, transparent);
+    color: color-mix(in srgb, var(--text) 72%, var(--accent));
+    background: color-mix(in srgb, var(--text) 3%, transparent);
     border-bottom-color: transparent;
-    outline-color: color-mix(in srgb, var(--accent) 18%, transparent);
+    outline-color: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 @media (max-width: 900px) {

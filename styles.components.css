@@ -902,12 +902,12 @@
     border-color: var(--control-border);
     background: var(--control-surface);
     color: var(--control-text);
-    box-shadow: var(--control-shadow-rest);
+    box-shadow: none;
 }
 
 :root[data-color-scheme="dark"] .ghost-button:hover {
     background: var(--control-surface-hover);
-    border-color: var(--control-border-strong);
+    border-color: color-mix(in srgb, var(--edge-strong) 56%, transparent);
     box-shadow: var(--control-shadow-hover);
 }
 
@@ -917,8 +917,8 @@
 }
 
 :root[data-color-scheme="dark"] .ghost-button[aria-pressed="true"] {
-    border-color: color-mix(in srgb, var(--accent) 34%, transparent);
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
     box-shadow: none;
 }
 
@@ -1547,12 +1547,12 @@ main > :is(.card, .app-panel-shell).half-span {
 }
 
 :is(.card, .app-panel-shell)[data-accent] :is(.card-title-group, .app-section-intro) h2 {
-    color: var(--shell-section-accent, var(--text));
+    color: color-mix(in srgb, var(--text) 92%, var(--muted));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .section-icon {
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, transparent);
-    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 74%, var(--text));
+    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 6%, transparent);
+    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 54%, var(--text));
     box-shadow: none;
     transition:
         transform var(--motion-duration-fast) var(--motion-ease-emphasis),
@@ -1561,28 +1561,28 @@ main > :is(.card, .app-panel-shell).half-span {
 }
 
 :is(.card, .app-panel-shell)[data-accent] .section-note {
-    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 22%, var(--text));
+    color: color-mix(in srgb, var(--text) 70%, var(--muted));
 }
 
 :is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) .ghost-button:not(.primary):not(.danger) {
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, var(--panel-header-action-border));
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 5%, var(--panel-header-action-bg));
-    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 48%, var(--text));
+    border-color: var(--panel-header-action-border);
+    background: var(--panel-header-action-bg);
+    color: var(--panel-header-action-text);
 }
 
 :is(.card, .app-panel-shell)[data-accent] :is(.card-header, .app-panel-header) .ghost-button:not(.primary):not(.danger):hover {
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--panel-header-action-bg));
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 26%, transparent);
+    background: var(--panel-header-action-hover-bg);
+    border-color: var(--panel-header-action-hover-border);
 }
 
 :is(.card, .app-panel-shell)[data-accent] .card-toggle {
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 20%, transparent);
-    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 70%, var(--text));
+    background: color-mix(in srgb, var(--panel-header-action-bg) 92%, transparent);
+    color: color-mix(in srgb, var(--text) 74%, var(--muted));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .card-toggle:hover,
 :is(.card, .app-panel-shell)[data-accent] .card-toggle:focus-visible {
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 36%, transparent);
+    background: var(--panel-header-action-hover-bg);
 }
 
 :is(.card, .app-panel-shell)[data-accent] .card-toggle:focus-visible {
@@ -1591,14 +1591,14 @@ main > :is(.card, .app-panel-shell).half-span {
 }
 
 :is(.card, .app-panel-shell)[data-accent] .info-note-button {
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 14%, var(--glass-bg));
-    color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 54%, var(--text));
+    background: color-mix(in srgb, var(--glass-bg) 82%, transparent);
+    color: color-mix(in srgb, var(--text) 66%, var(--muted));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .info-note-button:hover,
 :is(.card, .app-panel-shell)[data-accent] .info-note-button:focus-visible {
-    background: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 28%, transparent);
-    color: var(--shell-section-accent-ink);
+    background: color-mix(in srgb, var(--text) 6%, transparent);
+    color: color-mix(in srgb, var(--text) 86%, var(--accent));
 }
 
 :is(.card, .app-panel-shell)[data-accent] .info-note-button:focus-visible {
@@ -1751,8 +1751,8 @@ body[data-reduce-motion="true"] .section-nav a {
 .card-toggle {
     appearance: none;
     border: none;
-    background: color-mix(in srgb, var(--muted) 18%, transparent);
-    color: var(--text);
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+    color: color-mix(in srgb, var(--text) 72%, var(--muted));
     font-size: 1.1rem;
     width: var(--control-height-sm);
     height: var(--control-height-sm);
@@ -1765,7 +1765,7 @@ body[data-reduce-motion="true"] .section-nav a {
 
 .card-toggle:hover,
 .card-toggle:focus-visible {
-    background: color-mix(in srgb, var(--card-accent-color, var(--accent)) 40%, transparent);
+    background: color-mix(in srgb, var(--text) 8%, transparent);
     outline: none;
 }
 
@@ -1832,10 +1832,10 @@ main.is-loading .card-content {
 
 .ghost-button {
     appearance: none;
-    border: 1px solid color-mix(in srgb, var(--edge-strong) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--edge-subtle) 78%, transparent);
     border-radius: var(--control-radius-md);
-    background: color-mix(in srgb, var(--bg-room) 92%, transparent);
-    color: color-mix(in srgb, var(--text) 90%, var(--muted));
+    background: color-mix(in srgb, var(--bg-room) 84%, transparent);
+    color: color-mix(in srgb, var(--text) 78%, var(--muted));
     font-size: 0.85rem;
     font-weight: 600;
     min-height: var(--control-height-md);
@@ -1866,14 +1866,14 @@ main.is-loading .card-content {
 }
 
 .ghost-button:hover {
-    background: color-mix(in srgb, var(--accent) 12%, var(--bg-room));
-    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--text) 5%, var(--bg-room));
+    border-color: color-mix(in srgb, var(--edge-strong) 54%, transparent);
+    transform: translateY(0);
     box-shadow: var(--control-shadow-hover);
 }
 
 .ghost-button:active {
-    transform: translateY(1px) scale(0.995);
+    transform: translateY(0);
     box-shadow: var(--control-shadow-active);
 }
 
@@ -1898,9 +1898,9 @@ main.is-loading .card-content {
 }
 
 .ghost-button[aria-pressed="true"] {
-    background: color-mix(in srgb, var(--accent) 25%, transparent);
-    color: var(--md-on-primary-container);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: color-mix(in srgb, var(--text) 90%, var(--accent));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 #compact-toggle[aria-pressed="true"] {
@@ -1947,8 +1947,8 @@ main.is-loading .card-content {
 
 .info-note-button {
     border: none;
-    background: color-mix(in srgb, var(--glass-bg) 70%, transparent);
-    color: color-mix(in srgb, var(--text) 75%, var(--muted));
+    background: color-mix(in srgb, var(--glass-bg) 62%, transparent);
+    color: color-mix(in srgb, var(--text) 62%, var(--muted));
     width: 2rem;
     height: 2rem;
     border-radius: var(--control-radius-pill);
@@ -1973,8 +1973,8 @@ main.is-loading .card-content {
 
 .info-note-button:hover,
 .info-note-button:focus-visible {
-    color: var(--text);
-    background: color-mix(in srgb, var(--accent) 20%, transparent);
+    color: color-mix(in srgb, var(--text) 86%, var(--accent));
+    background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 .info-note-button:focus-visible {
@@ -4795,14 +4795,14 @@ body[data-compact="true"] .table-container.scrollable {
 }
 .section-icon {
     position: relative;
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 10%, transparent);
-    color: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 74%, var(--text));
+    background: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 6%, transparent);
+    color: color-mix(in srgb, var(--shell-section-accent, var(--section-accent, var(--accent))) 58%, var(--text));
     font-size: 1rem;
     box-shadow: none;
     line-height: 0;
@@ -4813,8 +4813,8 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .section-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     fill: currentColor;
 }
 
@@ -5103,23 +5103,19 @@ body[data-compact="true"] .table-container.scrollable {
 .app-shell-layout {
     --dashboard-shell-radius: 1.12rem;
     --dashboard-shell-tier-radius: 0.96rem;
-    --dashboard-shell-gap: 0.9rem;
-    --dashboard-shell-gap-tight: 0.72rem;
-    --dashboard-shell-card-border: color-mix(in srgb, var(--surface-supporting-border) 88%, transparent);
-    --dashboard-shell-card-bg: color-mix(in srgb, var(--surface-supporting-bg) 88%, transparent);
-    --dashboard-shell-tier-border: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 14%, var(--surface-supporting-border));
-    --dashboard-shell-tier-bg:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 7%, transparent), transparent 42%);
-    --dashboard-shell-tier-bg-quiet:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-supporting-bg) 96%, transparent), color-mix(in srgb, var(--panel-bg) 90%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 5%, transparent), transparent 46%);
-    --dashboard-shell-shadow: 0 1px 0 color-mix(in srgb, var(--edge-highlight) 8%, transparent) inset;
+    --dashboard-shell-gap: 0.875rem;
+    --dashboard-shell-gap-tight: 0.625rem;
+    --dashboard-shell-card-border: color-mix(in srgb, var(--surface-supporting-border) 80%, transparent);
+    --dashboard-shell-card-bg: color-mix(in srgb, var(--surface-supporting-bg) 86%, transparent);
+    --dashboard-shell-tier-border: color-mix(in srgb, var(--surface-utility-border) 82%, transparent);
+    --dashboard-shell-tier-bg: color-mix(in srgb, var(--surface-supporting-bg) 92%, transparent);
+    --dashboard-shell-tier-bg-quiet: color-mix(in srgb, var(--surface-quiet-bg) 94%, transparent);
+    --dashboard-shell-shadow: none;
 }
 
 .app-shell-layout :is(.card, .app-panel-shell) {
     margin-bottom: 0;
-    padding: 1rem 1rem 1.04rem;
+    padding: 0.9375rem;
     border-radius: var(--dashboard-shell-radius);
     border-color: var(--dashboard-shell-card-border);
     background: var(--dashboard-shell-card-bg);
@@ -5140,10 +5136,6 @@ body[data-compact="true"] .table-container.scrollable {
 #faq-card {
     background: var(--dashboard-shell-card-bg);
     box-shadow: var(--dashboard-shell-shadow);
-}
-
-#insight-highlights {
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 18%, var(--dashboard-shell-card-border));
 }
 
 .app-shell-layout :is(.card-header, .app-panel-header) {
@@ -5186,28 +5178,28 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .ghost-button {
-    min-height: 2.1rem;
-    padding: 0 0.8rem;
-    border-radius: 0.76rem;
+    min-height: 2.02rem;
+    padding: 0 0.74rem;
+    border-radius: 0.72rem;
 }
 
 .app-shell-layout .ghost-button.small {
-    min-height: 1.94rem;
+    min-height: 1.86rem;
 }
 
 .app-shell-layout .ghost-button.tiny {
-    min-height: 1.82rem;
-    padding: 0 0.65rem;
-    border-radius: 0.68rem;
+    min-height: 1.72rem;
+    padding: 0 0.58rem;
+    border-radius: 0.62rem;
     font-size: 0.69rem;
 }
 
 .app-shell-layout .card-toggle,
 .app-shell-layout .info-note-button {
-    width: 1.92rem;
-    height: 1.92rem;
-    min-height: 1.92rem;
-    border-radius: 0.68rem;
+    width: 1.78rem;
+    height: 1.78rem;
+    min-height: 1.78rem;
+    border-radius: 0.62rem;
 }
 
 .app-shell-layout .info-note-button svg {
@@ -5238,7 +5230,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout :is(.analysis-evidence-frame, .pattern-controls-shell, .message-type-summary, .polls-summary, .sentiment-panel) {
-    padding: 0.98rem 1rem 1rem;
+    padding: 0.875rem 0.9375rem;
     border-radius: var(--dashboard-shell-radius);
     border: 1px solid var(--dashboard-shell-tier-border);
     background: var(--dashboard-shell-tier-bg);
@@ -5260,8 +5252,8 @@ body[data-compact="true"] .table-container.scrollable {
 
 .app-shell-layout .summary-block {
     min-width: min(164px, 100%);
-    padding: 0.72rem 0.9rem;
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 14%, var(--border));
+    padding: 0.6875rem 0.8125rem;
+    border-color: color-mix(in srgb, var(--surface-quiet-border) 92%, transparent);
     background: var(--dashboard-shell-tier-bg-quiet);
 }
 
@@ -5271,7 +5263,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .sentiment-tile {
-    padding: 0.82rem 0.96rem 0.88rem;
+    padding: 0.8125rem 0.9375rem 0.875rem;
     border-width: 1px;
 }
 
@@ -5285,7 +5277,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .sentiment-list li {
-    padding: 0.72rem 0.88rem;
+    padding: 0.75rem 0.875rem;
 }
 
 .app-shell-layout .message-type-summary {
@@ -5302,8 +5294,8 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .polls-summary .stat {
-    padding: 0.82rem 0.92rem;
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, var(--surface-supporting-border));
+    padding: 0.75rem 0.875rem;
+    border-color: color-mix(in srgb, var(--surface-quiet-border) 92%, transparent);
     background: var(--dashboard-shell-tier-bg-quiet);
 }
 
@@ -5333,26 +5325,26 @@ body[data-compact="true"] .table-container.scrollable {
     }
 
     .app-shell-layout :is(.analysis-evidence-frame, .pattern-controls-shell, .message-type-summary, .polls-summary, .sentiment-panel) {
-        padding: 0.92rem;
+        padding: 0.9375rem;
     }
 }
 
 /* Layout correction pass */
 .app-shell-layout .workspace-stage-grid {
-    gap: 0.82rem;
+    gap: 0.8125rem;
 }
 
 .app-shell-layout .workspace-command-surface {
-    padding: 0.82rem 0.9rem 0.88rem;
+    padding: 0.8125rem 0.875rem;
     gap: 0.78rem;
 }
 
 .app-shell-layout .workspace-command-main {
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout .workspace-command-surface .actions-toolbar {
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout .workspace-command-surface .actions-toolbar .toolbar-group.primary,
@@ -5361,7 +5353,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .page-controls {
-    padding: 0.82rem 0.9rem 0.88rem;
+    padding: 0.8125rem 0.875rem;
 }
 
 .app-shell-layout .page-controls .primary-controls {
@@ -5391,7 +5383,7 @@ body[data-compact="true"] .table-container.scrollable {
 
 .app-shell-layout .page-controls .control.custom-range {
     grid-area: custom;
-    padding: 0.72rem 0.78rem;
+    padding: 0.75rem 0.8125rem;
     border: 1px solid color-mix(in srgb, var(--control-border) 92%, transparent);
     border-radius: var(--dashboard-shell-tier-radius);
     background: var(--dashboard-shell-tier-bg-quiet);
@@ -5449,7 +5441,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .guided-findings-timing-strip #daily-activity .analysis-evidence-frame {
-    padding: 0.88rem 0.92rem 0.94rem;
+    padding: 0.875rem 0.9375rem;
 }
 
 @media (max-width: 960px) {
@@ -5473,13 +5465,11 @@ body[data-compact="true"] .table-container.scrollable {
 /* Dashboard shell symmetry pass */
 .app-shell-layout {
     --dashboard-stage-gap: 1.12rem;
-    --dashboard-stage-gap-tight: 0.84rem;
+    --dashboard-stage-gap-tight: 0.8125rem;
     --dashboard-shell-gutter: clamp(0.92rem, 1vw, 1.08rem);
-    --dashboard-shell-divider: color-mix(in srgb, var(--panel-header-divider) 76%, transparent);
-    --dashboard-shell-quiet-border: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 10%, var(--surface-utility-border));
-    --dashboard-shell-quiet-bg:
-        linear-gradient(180deg, color-mix(in srgb, var(--surface-quiet-bg) 98%, transparent), color-mix(in srgb, var(--panel-bg) 92%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--shell-section-accent, var(--accent)) 6%, transparent), transparent 48%);
+    --dashboard-shell-divider: color-mix(in srgb, var(--panel-header-divider) 56%, transparent);
+    --dashboard-shell-quiet-border: color-mix(in srgb, var(--surface-utility-border) 78%, transparent);
+    --dashboard-shell-quiet-bg: color-mix(in srgb, var(--surface-quiet-bg) 96%, transparent);
 }
 
 .app-shell-layout .studio-stage {
@@ -5512,7 +5502,7 @@ body[data-compact="true"] .table-container.scrollable {
 .app-shell-layout .guided-findings-cluster + .guided-findings-cluster,
 .app-shell-layout .deep-dive-cluster + .deep-dive-cluster,
 .app-shell-layout .guided-findings-next {
-    padding-top: 0.92rem;
+    padding-top: 0.9375rem;
 }
 
 .app-shell-layout .workspace-stage {
@@ -5525,7 +5515,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .card-content {
-    gap: 0.84rem;
+    gap: 0.8125rem;
 }
 
 .app-shell-layout :is(.card-content, .pattern-story-grid, .participants-story-grid, .polls-story-grid, .search-strip-flow, .saved-view-layout, .sentiment-content) > * {
@@ -5546,16 +5536,16 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .shell-lane--quiet {
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout .workspace-command-surface {
-    padding: 0.82rem 0.88rem;
-    gap: 0.7rem;
+    padding: 0.8125rem 0.875rem;
+    gap: 0.6875rem;
 }
 
 .app-shell-layout .workspace-command-main {
-    gap: 0.6rem;
+    gap: 0.625rem;
 }
 
 .app-shell-layout .workspace-command-surface .page-controls {
@@ -5565,7 +5555,7 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout :is(.relay-status-banner, .actions-toolbar, .page-controls, .relay-onboarding, .relay-workspace-support, .saved-view-panel, .participants-shell-controls) {
-    padding: 0.88rem 0.94rem;
+    padding: 0.8125rem 0.875rem;
     border: 1px solid var(--dashboard-shell-tier-border);
     border-radius: var(--dashboard-shell-tier-radius);
     background: var(--dashboard-shell-tier-bg);
@@ -5582,13 +5572,13 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .participants-shell-controls {
-    padding: 0.82rem 0.88rem;
+    padding: 0.8125rem 0.875rem;
 }
 
 .app-shell-layout .actions-toolbar,
 .app-shell-layout .page-controls,
 .app-shell-layout .saved-view-panel {
-    gap: 0.64rem;
+    gap: 0.625rem;
 }
 
 .app-shell-layout .page-controls .primary-controls {
@@ -5596,7 +5586,7 @@ body[data-compact="true"] .table-container.scrollable {
     grid-template-areas:
         "dataset period"
         "custom custom";
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout .page-controls .control {
@@ -5607,8 +5597,8 @@ body[data-compact="true"] .table-container.scrollable {
     display: grid;
     align-items: start;
     align-content: start;
-    padding: 0.76rem 0.82rem;
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 16%, var(--control-border));
+    padding: 0.75rem 0.8125rem;
+    border-color: color-mix(in srgb, var(--control-border) 86%, transparent);
 }
 
 .app-shell-layout .page-controls .custom-range-inputs {
@@ -5634,12 +5624,12 @@ body[data-compact="true"] .table-container.scrollable {
 .app-shell-layout .summary-block {
     min-width: 0;
     width: 100%;
-    padding: 0.76rem 0.92rem;
+    padding: 0.75rem 0.9375rem;
 }
 
 .app-shell-layout :is(.analysis-summary-strip, .daily-summary, .weekly-summary, .sentiment-summary) {
     display: grid;
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout :is(.analysis-summary-strip, .daily-summary) {
@@ -5647,21 +5637,21 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .analysis-evidence-frame {
-    padding: 0.94rem 0.98rem 1rem;
+    padding: 0.9375rem 1rem;
 }
 
 .app-shell-layout .saved-view-gallery {
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout .saved-view-card {
     background: color-mix(in srgb, var(--surface-quiet-bg) 96%, transparent);
-    border-color: color-mix(in srgb, var(--shell-section-accent, var(--accent)) 12%, var(--surface-utility-border));
+    border-color: color-mix(in srgb, var(--surface-utility-border) 90%, transparent);
     box-shadow: none;
 }
 
 .app-shell-layout .saved-view-card.is-active {
-    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--shell-section-accent, var(--accent)) 64%, transparent);
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 44%, transparent);
 }
 
 .app-shell-layout .message-type-summary,
@@ -5674,16 +5664,16 @@ body[data-compact="true"] .table-container.scrollable {
 }
 
 .app-shell-layout .sentiment-panel {
-    gap: 0.72rem;
+    gap: 0.75rem;
 }
 
 .app-shell-layout .faq-list {
     display: grid;
-    gap: 0.86rem;
+    gap: 0.875rem;
 }
 
 .app-shell-layout .faq-list li {
-    padding: 0 0 0.86rem;
+    padding: 0 0 0.875rem;
     border-bottom: 1px solid var(--dashboard-shell-divider);
 }
 
@@ -5713,11 +5703,11 @@ body[data-compact="true"] .table-container.scrollable {
 
 @media (max-width: 960px) {
     .app-shell-layout .studio-stage {
-        gap: 0.94rem;
+        gap: 0.9375rem;
     }
 
     .app-shell-layout :is(.studio-stage-shell, .workspace-stage-grid, .guided-findings-sequence, .deep-dive-shell) {
-        gap: 0.94rem;
+        gap: 0.9375rem;
     }
 
     .app-shell-layout .shell-split {
@@ -5725,7 +5715,7 @@ body[data-compact="true"] .table-container.scrollable {
     }
 
     .app-shell-layout :is(.relay-status-banner, .actions-toolbar, .page-controls, .relay-workspace-support, .saved-view-panel, .participants-shell-controls) {
-        padding: 0.84rem 0.88rem;
+        padding: 0.8125rem 0.875rem;
     }
 
     .app-shell-layout .page-controls .custom-range-inputs {

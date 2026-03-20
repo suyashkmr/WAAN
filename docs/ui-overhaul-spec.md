@@ -209,6 +209,20 @@ Design intent:
 
 This program keeps all current runtime ownership and controller contracts intact unless a phase explicitly opens a migration. Existing IDs, chart roots, `data-nav-target` values, native fallback hooks, Vue/PrimeVue ownership, and shell bridge behavior remain protected by default.
 
+Program-level completion rule:
+
+- The Calm Instrument Overhaul is considered complete only when the final phase closeout also passes a whole-app finish sweep.
+- That sweep must verify the entire product journey, not just the most recently edited slice:
+  - setup
+  - workspace
+  - guided findings
+  - deep-dive tools
+  - support and recovery
+- The program is not complete if any of those areas still reads as a visibly older design wave, a breakpoint-specific exception, or a competing interaction model.
+- Final closeout must therefore certify both:
+  - phase-by-phase intent was met
+  - the combined result behaves and reads as one app-wide overhaul
+
 ### Phase 42: Visual Reduction and Focus System
 
 Phase 42 establishes a stricter visual philosophy on top of the current shell:
@@ -232,6 +246,15 @@ Acceptance intent:
 - the eye lands on one primary action or one primary insight per stage
 - adjacent surfaces feel related without relying on repeated chrome or accent noise
 
+Closeout audit status as of 2026-03-20:
+
+- Phase 42 is closed for its scoped shell files: `styles.base.css`, `styles.components.css`, `styles/components/navigation.css`, and `styles/components/app-shell.css`
+- the neutral-first reduction is now the active shell baseline across the dashboard: calmer surface tokens, quieter nav/header chrome, lower accent saturation in idle states, and tighter control hierarchy
+- adjacent component stylesheet audit confirmed that remaining stronger local treatments in `styles/components/analytics.css`, `styles/components/search-saved.css`, and `styles/components/relay.css` are content-specific or phase-local, not evidence that the shell layer still has an unresolved parallel chrome system
+- dashboard visual coverage now passes cleanly after stabilizing the screenshot harness against late post-load state settlement, which was the only meaningful closeout blocker
+- validation completed with `npm run check:types`, `npm run test:accessibility-smoke`, `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`, and `npx playwright test tests/visual/dashboard.visual.spec.js`
+- residual-risk boundary: Phase 42 does not certify every possible future section-specific redesign choice; it certifies that the shared shell reduction baseline is established and that no audited adjacent file currently invalidates that baseline
+
 ### Phase 43: Workspace as Instrument Panel
 
 Phase 43 turns setup and workspace into one compact, highly legible operational strip:
@@ -254,6 +277,13 @@ Acceptance intent:
 - the top of the product uses materially less space
 - the app feels ready to use faster, even before data loads
 - workspace controls behave like one precise instrument panel
+
+Required closeout audit for this phase:
+
+- verify the target in every scoped file, not only in the most visible workspace screenshot
+- inspect adjacent workspace/search shell rules for regressions that reintroduce peer-card behavior or reserved empty-state space
+- confirm visual coverage includes ready, syncing, linking, offline, and no-chat-selected states at 1440 / 1024 / 768 / 390
+- record a dated closure note with any residual-risk boundary before marking the phase complete
 
 ### Phase 44: Guided Findings as Editorial Sequence
 

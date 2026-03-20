@@ -14,6 +14,34 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - If validation is pending, keep the parent task unchecked and add explicit validation subtasks.
 - Add detailed subtasks whenever work spans multiple files, phases, or verification steps.
 
+## Phase Exit Audit Rule
+
+- Every major phase from this point forward requires an explicit closure audit before the parent task can be marked complete.
+- The closure audit must answer all of the following:
+  - Was the phase target met in every file explicitly named in the phase scope?
+  - Did any out-of-scope files retain overrides or structures that materially undermine the phase goal?
+  - Do visual baselines cover the primary states, breakpoint variants, and the highest-risk adjacent sections for that phase?
+  - Were residual risks either fixed in-phase or captured as concrete follow-up TODO items?
+- Every phase closure must leave a dated audit note in `docs/ui-overhaul-spec.md` and update this file with:
+  - completed implementation subtasks
+  - completed validation subtasks
+  - completed closure-audit subtasks
+- If the audit finds meaningful drift outside the immediate implementation files, the phase stays open until either:
+  - the drift is fixed, or
+  - the drift is explicitly re-scoped into a named follow-up task with clear ownership
+
+## Whole-App Finish Checklist
+
+- The Calm Instrument program is not complete when the last phase implementation lands; it is complete only after a whole-app finish sweep passes.
+- Before the program can be considered done, all of the following must be true:
+  - setup, workspace, guided findings, deep-dive tools, and support all reflect the same final product language
+  - no section reads like a prior redesign wave because of leftover layout, chrome, motion, or state treatment
+  - the primary user journey is coherent in one uninterrupted session from relay setup to export/support recovery
+  - desktop, laptop, tablet, and mobile all preserve the intended hierarchy instead of regressing into breakpoint-specific exceptions
+  - visual coverage includes the highest-risk states from every completed phase, not only the last phase worked on
+  - final residual issues are either fixed before closeout or captured as explicit post-program follow-up items
+- Phase 46 cannot be marked complete until this whole-app finish checklist is satisfied and documented in both `docs/todo.md` and `docs/ui-overhaul-spec.md`.
+
 ## Current State
 
 - [x] Previous overhaul waves through Phase 35 are complete.
@@ -21,36 +49,71 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Next Wave: Calm Instrument Overhaul
 
-- [ ] Phase 42: Visual Reduction and Focus System.
-  - [ ] Reduce the shell to a smaller set of visual primitives so stage, command, insight, evidence, and support surfaces feel deliberate instead of varied for their own sake.
-  - [ ] Tighten type hierarchy, accent usage, border/radius variance, and panel treatments across `styles.base.css`, `styles.components.css`, `styles/components/navigation.css`, and `styles/components/app-shell.css`.
-  - [ ] Remove decorative chrome that does not communicate state, priority, or interaction.
-  - [ ] Verify the first-glance hierarchy is calmer and more obvious at 1440 / 1024 / 768 / 390.
+- [x] Phase 42: Visual Reduction and Focus System.
+  - [x] Reduce the shell to a smaller set of visual primitives so stage, command, insight, evidence, and support surfaces feel deliberate instead of varied for their own sake.
+  - [x] Tighten type hierarchy, accent usage, border/radius variance, and panel treatments across `styles.base.css`, `styles.components.css`, `styles/components/navigation.css`, and `styles/components/app-shell.css`.
+  - [x] Remove decorative chrome that does not communicate state, priority, or interaction.
+  - [x] Verify the first-glance hierarchy is calmer and more obvious at 1440 / 1024 / 768 / 390.
+  - [x] Complete validation:
+    - [x] `npm run check:types`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+  - [x] Complete closure audit:
+    - [x] Confirm the Phase 42 target is met in the scoped shell files: `styles.base.css`, `styles.components.css`, `styles/components/navigation.css`, and `styles/components/app-shell.css`.
+    - [x] Audit adjacent component stylesheets for remaining shell-geometry drift that would materially invalidate the neutral-first reduction.
+    - [x] Confirm the dashboard visual suite covers the primary shell states and adjacent high-risk sections touched by the reduction pass.
+    - [x] Record closure status and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
 - [ ] Phase 43: Workspace as Instrument Panel.
   - [ ] Rebuild setup and workspace into one compact operational command surface across `index.html`, `styles.components.css`, `styles/components/relay.css`, and `js/relayControls/statusView.js`.
   - [ ] Reduce top-of-page real estate, collapse secondary setup guidance behind disclosure, and eliminate reserved empty-state space when content is absent.
   - [ ] Ensure relay state, chat selection, time range, exports, and diagnostics read as one coherent instrument panel.
   - [ ] Revalidate workspace-ready, syncing, linking, offline, and no-chat-selected states end to end.
+  - [ ] Complete closure audit:
+    - [ ] Confirm the instrument-panel target is met in every scoped file.
+    - [ ] Audit adjacent workspace/search shell selectors for regressions that re-expand the top lane or split the command surface back into peers.
+    - [ ] Confirm visual coverage includes ready, syncing, linking, offline, and no-chat-selected variants at the required breakpoints.
+    - [ ] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
 - [ ] Phase 44: Guided Findings as Editorial Sequence.
   - [ ] Reframe overview, highlights, participants, and timing into a stronger vertical editorial sequence in `index.html`, `styles.components.css`, and `styles/components/analytics.css`.
   - [ ] Promote one key takeaway per section and demote secondary evidence until interaction or deeper inspection.
   - [ ] Remove equal-weight side-by-side layouts unless one lane is clearly subordinate.
   - [ ] Confirm users can answer what happened, who drove it, and when it happened without scanning the full page.
+  - [ ] Complete closure audit:
+    - [ ] Confirm the editorial-sequence target is met in every scoped file.
+    - [ ] Audit neighboring deep-dive/support sections for layout patterns that still break the findings hierarchy.
+    - [ ] Confirm visual coverage includes the key guided-reading path and breakpoint parity.
+    - [ ] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
 - [ ] Phase 45: Deep-Dive Tools as Progressive Disclosure.
   - [ ] Redesign search, saved views, compare, weekly/daily patterns, message mix, polls, and related utilities as quieter inspect/compare/export tools.
   - [ ] Keep current hooks and behavior, but hide management density until the user opts into it.
   - [ ] Rework `styles/components/search-saved.css`, `styles/components/analytics.css`, `styles.components.css`, and `index.html` so lower tools no longer compete with guided findings.
   - [ ] Expand visual coverage in `tests/visual/dashboard.visual.spec.js` for collapsed, expanded, and compare-heavy deep-dive states.
+  - [ ] Complete closure audit:
+    - [ ] Confirm the progressive-disclosure target is met in every scoped file.
+    - [ ] Audit adjacent shell/findings selectors for new chrome drift or disclosure-state regressions.
+    - [ ] Confirm visual coverage includes collapsed, expanded, empty, compare-heavy, and breakpoint variants.
+    - [ ] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
 - [ ] Phase 46: Motion, State Quality, and Product Finish.
   - [ ] Add restrained motion for reveal, focus, and state transitions without introducing gratuitous animation.
   - [ ] Refine loading, empty, syncing, compare, and export states so they feel intentional and premium.
   - [ ] Refresh the shell contracts in `docs/ui-primitives.md` and `docs/design-tokens.md`.
+  - [ ] Complete the whole-app finish sweep:
+    - [ ] Audit setup, workspace, guided findings, deep-dive tools, and support together as one uninterrupted product session.
+    - [ ] Confirm no previously completed phase regressed into a visibly older or competing design language.
+    - [ ] Confirm breakpoint parity at 1440 / 1024 / 768 / 390 for the full journey, not only isolated sections.
+    - [ ] Capture any post-program residual issues as explicit follow-up TODO items before final closure.
   - [ ] Complete final validation:
     - [ ] `npm run check:types`
     - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
     - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
     - [ ] `npm run test:accessibility-smoke`
     - [ ] `npm run ci:verify`
+  - [ ] Complete closure audit:
+    - [ ] Confirm motion/state-finish targets are met in every scoped file and state family.
+    - [ ] Audit all previously touched shell, findings, and deep-dive surfaces for regressions introduced by finish work.
+    - [ ] Confirm final visual/accessibility/release gates cover the shipped interaction states and breakpoint set.
+    - [ ] Record dated final closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
 
 ## Next Wave: Guided Analysis Studio Overhaul
 
