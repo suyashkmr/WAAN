@@ -39,8 +39,10 @@
     "check:release-notes": "node scripts/validate-release-notes.mjs",
     "verify": "npm run lint && npm test",
     "ci:verify": "npm run check:artifacts && npm run check:vendor-runtime && npm run check:prime-theme-bridge && npm run check:module-size && npm run check:legacy-primitives && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-layout-only && npm run check:appshell-contracts && npm run check:release-reliability && npm run verify && npm run check:circular",
-    "coverage": "vitest --run --coverage",
-    "start": "node serve.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite"
   },
   "author": "WAAN",
   "engines": {
@@ -56,15 +58,19 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.58.2",
+    "@vitejs/plugin-vue": "^6.0.5",
     "@vitest/coverage-v8": "^4.0.14",
+    "autoprefixer": "^10.4.27",
     "depcheck": "1.4.7",
     "eslint": "^9.39.1",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.5.0",
     "happy-dom": "^20.0.11",
     "madge": "8.0.0",
+    "postcss": "^8.5.8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.3",
+    "vite": "^7.3.1",
     "vitest": "^4.0.14"
   }
 }

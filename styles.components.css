@@ -5938,3 +5938,73 @@ h1, h2, h3, h4, .studio-stage-title-group h2, .workspace-stage-header h2, .datas
     background: var(--surface-elevated-strong) !important;
     border-color: var(--text) !important;
 }
+
+/* --- PRODUCTION UX POLISH --- */
+/* Skeletons */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+.skeleton-box, .skeleton-text, .skeleton-chart {
+    background: var(--surface-elevated);
+    background-image: linear-gradient(90deg, transparent 0px, rgba(255, 255, 255, 0.04) 40px, transparent 80px);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: 4px;
+}
+.skeleton-text { height: 1em; margin-bottom: 0.5rem; }
+.skeleton-chart { height: 200px; width: 100%; }
+
+/* Refined Global Spinner */
+.global-progress-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(142, 163, 148, 0.2);
+    border-top-color: #8ea394;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+#global-progress {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface-elevated-strong);
+    border: 1px solid var(--border);
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+    z-index: 1000;
+}
+#global-progress-label {
+    font-family: var(--font-family-base);
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+/* Upgraded Empty States */
+.dataset-empty-callout, .dataset-empty {
+    text-align: center;
+    padding: 4rem 2rem !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.dataset-empty-heading {
+    font-size: 2rem;
+    color: var(--text) !important;
+    margin-bottom: 1rem;
+}
+.dataset-empty-copy {
+    color: var(--muted) !important;
+    max-width: 440px;
+    line-height: 1.6;
+    font-family: var(--font-family-base) !important;
+}

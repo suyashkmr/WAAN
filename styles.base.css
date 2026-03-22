@@ -476,6 +476,38 @@
     --p-primary-color: var(--accent);
     --p-primary-contrast-color: var(--bg);
     --p-border-color: var(--border);
+
+    /* --- PRODUCTION UX POLISH --- */
+    --chart-grid-line: rgba(255, 255, 255, 0.08) !important;
+    --chart-axis-label: var(--muted) !important;
+    --chart-focus-band: rgba(142, 163, 148, 0.08) !important;
+    --chart-weekend-line: rgba(255, 255, 255, 0.04) !important;
+    --chart-gradient-top: rgba(142, 163, 148, 0.15) !important;
+    --chart-gradient-bottom: transparent !important;
+    --chart-peak-fill: #8ea394 !important;
+    --chart-peak-stroke: #c49c8c !important;
+}
+
+/* Elegant Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Accessibility Focus Rings */
+:focus-visible {
+    outline: 2px solid #8ea394;
+    outline-offset: 2px;
 }
 
 html {
@@ -602,7 +634,8 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 58%, transparent);
 }
 
-@media (prefers-color-scheme: light) {
+/* Priority: Editorial Dark Mode */
+@media (prefers-color-scheme: DO_NOT_USE) {
     :root {
         color-scheme: light;
         --md-primary: var(--p-primary-color, #9c7332);
