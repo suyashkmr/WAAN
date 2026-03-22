@@ -48,17 +48,10 @@
     },
     "extraResources": [
       {
-        "from": "..",
+        "from": "../dist",
         "to": "waan/web",
         "filter": [
-          "index.html",
-          "styles.css",
-          "styles.base.css",
-          "styles.components.css",
-          "styles/**/*",
-          "js/**/*",
-          "vendor/**/*",
-          "waanlogo.png"
+          "**/*"
         ]
       },
       {

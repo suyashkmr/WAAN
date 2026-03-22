@@ -64,7 +64,7 @@ const getRuntimeRoot = () =>
   app.isPackaged ? path.join(process.resourcesPath, "waan") : path.resolve(__dirname, "..");
 
 const getWebRoot = () =>
-  app.isPackaged ? path.join(process.resourcesPath, "waan", "web") : path.resolve(__dirname, "..");
+  app.isPackaged ? path.join(process.resourcesPath, "waan", "web") : path.resolve(__dirname, "..", "dist");
 
 const getServerRoot = () =>
   app.isPackaged
