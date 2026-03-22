@@ -3050,14 +3050,11 @@ main.is-loading .card-content {
 .page-controls {
     display: grid;
     gap: 0.9rem;
-    padding: 1.08rem 1.2rem 1.15rem;
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--workspace-shell-raised) 98%, transparent), color-mix(in srgb, var(--panel-bg) 94%, transparent)),
-        radial-gradient(circle at top right, color-mix(in srgb, var(--md-secondary) 14%, transparent), transparent 42%);
-    backdrop-filter: blur(18px);
-    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
-    border-radius: calc(var(--shape-medium) + 6px);
-    box-shadow: var(--editorial-card-contrast-shadow);
+    padding: 1.2rem 1.5rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px; /* Sharp, clean corners */
+    box-shadow: none;
 }
 
 
@@ -3103,6 +3100,22 @@ main.is-loading .card-content {
     width: 100%;
     min-width: 0;
     max-width: none;
+}
+
+/* Base form resets for an editorial dark mode */
+select, input[type="date"], input[type="text"], input[type="search"] {
+    background-color: transparent !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-family: var(--font-family-base);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color var(--motion-duration-fast) var(--motion-ease-out);
+}
+select:focus, input[type="date"]:focus, input[type="text"]:focus, input[type="search"]:focus {
+    border-color: var(--accent) !important;
 }
 
 .polls-summary {
@@ -5844,4 +5857,84 @@ body[data-compact="true"] .table-container.scrollable {
     .app-shell-layout .workspace-utility-panel {
         padding-inline: 0.75rem;
     }
+}
+
+/* Editorial Desktop Sidebar Layout Override */
+@media (min-width: 1080px) {
+    .app-shell-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 2.5rem;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 2rem;
+        align-items: start;
+    }
+    .app-shell-layout > .studio-stage--workspace {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        position: sticky;
+        top: 2rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none;
+        padding-right: 0.5rem;
+    }
+    .app-shell-layout > .studio-stage--workspace::-webkit-scrollbar {
+        display: none;
+    }
+    .app-shell-layout > .studio-stage--findings {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    .app-shell-layout > .studio-stage--deep-dive {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    .app-shell-layout .shell-split--workspace {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* --- PREMIUM EDITORIAL UI OVERRIDES --- */
+/* Eradicate gradients and glowing borders to ensure a cohesive flat design */
+:is(.page-controls, .polls-summary, .stat, .analytics-story-tier, .analytics-evidence-tier, .analytics-support-tier, .relay-status-banner, .info-panel, .panel-state, .deep-dive-card, .workspace-utility-panel, .card-header, .app-panel) {
+    background: var(--card-bg) !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    backdrop-filter: none !important;
+    margin-bottom: 1rem;
+}
+
+.workspace-command-surface {
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Strict Typography Enforcement */
+h1, h2, h3, h4, .studio-stage-title-group h2, .workspace-stage-header h2, .dataset-empty-heading {
+    font-family: var(--font-family-display) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* Elegant Buttons */
+.ghost-button {
+    background: transparent !important;
+    background-image: none !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: none !important;
+    border-radius: 4px !important;
+    color: var(--text) !important;
+    transition: all var(--motion-duration-fast) var(--motion-ease-out);
+}
+.ghost-button:hover {
+    background: var(--surface-elevated-strong) !important;
+    border-color: var(--text) !important;
 }

@@ -88,7 +88,7 @@
     --surface-tint: color-mix(in srgb, var(--p-primary-color, #c9a86a) 10%, transparent);
 
     --font-family-base: "Plus Jakarta Sans", "Manrope", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-family-display: "Clash Display Variable", "Clash Display", "Plus Jakarta Sans", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-display: "Playfair Display", "Merriweather", "Georgia", serif;
     --font-size-xs: 0.78rem;
     --font-size-sm: 0.92rem;
     --font-size-md: 1rem;
@@ -174,22 +174,22 @@
     --relay-banner-gap: var(--space-3);
     --relay-banner-indicator-size: 0.85rem;
 
-    --bg: var(--p-surface-950, #0b1017);
-    --card-bg: color-mix(in srgb, var(--p-surface-800, #171f2a) 100%, transparent);
-    --surface-elevated: color-mix(in srgb, var(--p-surface-900, #121924) 92%, var(--p-surface-800, #171f2a));
-    --surface-elevated-strong: color-mix(in srgb, var(--p-surface-900, #121924) 98%, var(--p-surface-950, #0b1017));
-    --text: var(--p-text-color, #edf1f7);
-    --muted: var(--p-text-muted-color, #aeb8c8);
-    --accent: var(--p-primary-color, #c9a86a);
-    --accent-soft: color-mix(in srgb, var(--p-primary-color, #c9a86a) 14%, transparent);
-    --border: var(--p-app-outline-variant-color, rgba(84, 96, 117, 0.28));
-    --edge-subtle: color-mix(in srgb, var(--border) 82%, transparent);
-    --edge-strong: color-mix(in srgb, var(--border) 118%, transparent);
-    --edge-highlight: color-mix(in srgb, white 11%, transparent);
-    --text-on-strong: #fffdf8;
-    --glass-bg: color-mix(in srgb, var(--card-bg) 96%, transparent);
-    --glass-border: color-mix(in srgb, var(--border) 100%, transparent);
-    --glass-blur: 3px;
+    --bg: #1e1e1a;
+    --card-bg: #262622;
+    --surface-elevated: #282824;
+    --surface-elevated-strong: #2f2f2b;
+    --text: #e6e4dc;
+    --muted: #a19f97;
+    --accent: #8ea394;
+    --accent-soft: rgba(142, 163, 148, 0.15);
+    --border: rgba(255, 255, 255, 0.06);
+    --edge-subtle: rgba(255, 255, 255, 0.03);
+    --edge-strong: rgba(255, 255, 255, 0.10);
+    --edge-highlight: rgba(0, 0, 0, 0.4);
+    --text-on-strong: #1e1e1a;
+    --glass-bg: rgba(38, 38, 34, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.04);
+    --glass-blur: 16px;
 
     --bg-canvas: var(--bg);
     --bg-room: var(--card-bg);
@@ -344,11 +344,11 @@
     --control-shadow-hover: 0 8px 18px rgba(7, 10, 20, 0.22);
     --control-shadow-active: 0 2px 8px rgba(7, 10, 20, 0.16);
 
-    --shadow-soft: 0 4px 16px rgba(7, 10, 20, 0.12);
-    --shadow-float: 0 14px 30px rgba(4, 8, 18, 0.26);
-    --shadow-card: 0 10px 24px rgba(7, 10, 20, 0.14);
-    --shadow-card-strong: 0 14px 30px rgba(7, 10, 20, 0.18);
-    --shadow-card-deep: 0 18px 36px rgba(7, 10, 20, 0.22);
+    --shadow-soft: 0 2px 8px rgba(30, 41, 59, 0.04);
+    --shadow-float: 0 8px 24px rgba(30, 41, 59, 0.08);
+    --shadow-card: 0 4px 12px rgba(30, 41, 59, 0.03);
+    --shadow-card-strong: 0 8px 16px rgba(30, 41, 59, 0.05);
+    --shadow-card-deep: 0 12px 24px rgba(30, 41, 59, 0.07);
     --shadow-ink: rgba(7, 10, 20, 0.18);
     --shadow-ink-rgb: 7 10 20;
     --shadow-chip: 0 10px 18px rgba(15, 23, 42, 0.12);
@@ -390,10 +390,10 @@
     --button-danger-border: color-mix(in srgb, var(--negative) 45%, transparent);
     --button-danger-border-hover: color-mix(in srgb, var(--negative) 70%, transparent);
     --button-danger-fill-hover: color-mix(in srgb, var(--negative) 12%, transparent);
-    --ghost-button-shadow-dark: 0 10px 22px rgb(var(--shadow-ink-rgb) / 0.52), 0 1px 0 color-mix(in srgb, var(--edge-specular) 32%, transparent) inset;
-    --ghost-button-shadow-dark-hover: 0 14px 28px color-mix(in srgb, var(--accent) 18%, rgb(var(--shadow-ink-rgb) / 0.62)), 0 1px 0 color-mix(in srgb, var(--edge-specular) 38%, transparent) inset;
-    --ghost-button-shadow-dark-active: 0 7px 14px color-mix(in srgb, var(--accent) 16%, rgb(var(--shadow-ink-rgb) / 0.55)), 0 1px 0 color-mix(in srgb, var(--edge-specular) 22%, transparent) inset;
-    --ghost-button-shadow-dark-pressed: 0 0 0 1px color-mix(in srgb, var(--accent) 38%, transparent), 0 12px 26px color-mix(in srgb, var(--accent) 16%, rgb(var(--shadow-ink-rgb) / 0.58));
+    --ghost-button-shadow-dark: none;
+    --ghost-button-shadow-dark-hover: none;
+    --ghost-button-shadow-dark-active: none;
+    --ghost-button-shadow-dark-pressed: none;
     --toolbar-ghost-button-shadow-dark: 0 8px 18px rgb(var(--shadow-ink-rgb) / 0.5), 0 1px 0 color-mix(in srgb, var(--edge-specular) 30%, transparent) inset;
     --theme-toggle-shadow-dark: 0 8px 18px rgb(var(--shadow-ink-rgb) / 0.45), 0 1px 0 color-mix(in srgb, var(--edge-specular) 26%, transparent) inset;
     --theme-toggle-checked-shadow-dark: 0 8px 18px color-mix(in srgb, var(--accent) 18%, rgb(var(--shadow-ink-rgb) / 0.52));
@@ -458,6 +458,24 @@
     --motion-distance-md: 12px;
     --motion-delay-hero: 120ms;
     --motion-delay-card-step: 40ms;
+
+    /* PrimeVue Premium Overrides */
+    --p-content-background: var(--bg);
+    --p-surface-0: var(--text);
+    --p-surface-50: var(--bg);
+    --p-surface-100: var(--bg);
+    --p-surface-200: var(--card-bg);
+    --p-surface-300: var(--border);
+    --p-surface-400: color-mix(in srgb, white 15%, transparent);
+    --p-surface-500: var(--accent);
+    --p-surface-600: var(--muted);
+    --p-surface-700: var(--text);
+    --p-surface-800: var(--card-bg);
+    --p-surface-900: var(--bg);
+    --p-surface-950: var(--bg);
+    --p-primary-color: var(--accent);
+    --p-primary-contrast-color: var(--bg);
+    --p-border-color: var(--border);
 }
 
 html {
