@@ -39,7 +39,7 @@
     "verify": "npm run lint && npm test",
     "ci:verify": "npm run check:artifacts && npm run check:module-size && npm run check:legacy-primitives && npm run check:unused-exports && npm run check:types && npm run check:dead-code && npm run tailwind:build && npm run check:tailwind-size && npm run check:tailwind-layout-only && npm run check:appshell-contracts && npm run check:release-reliability && npm run verify && npm run check:circular",
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run tailwind:build && vite build",
     "preview": "vite preview",
     "start": "vite"
   },
