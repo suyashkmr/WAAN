@@ -1,1083 +1,153 @@
 <template>
-<div id="global-progress" aria-live="polite" hidden>
-        <span class="global-progress-spinner" aria-hidden="true"></span>
-        <span id="global-progress-label">Working…</span>
+  <!-- Global Progress Bar -->
+  <div id="global-progress" aria-live="polite" class="hidden fixed top-0 left-0 w-full h-1 bg-[var(--surface-sunken)] z-[100] overflow-hidden">
+    <div class="h-full bg-[var(--accent)] w-1/3 animate-pulse transition-all"></div>
+    <span class="sr-only" id="global-progress-label">Working…</span>
+  </div>
+
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col gap-16">
+    
+    <!-- Workspace Stage -->
+    <section class="flex flex-col gap-10 w-full opacity-0 animate-fade-in-up" data-stage="workspace" aria-labelledby="workspace-stage-title" style="animation-delay: 50ms;">
+      <!-- Stage Header -->
+      <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
+        <h2 id="workspace-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Workspace</h2>
+      </div>
+
+      <section class="flex flex-col gap-6 w-full" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
+        <div class="flex flex-col lg:flex-row gap-8 lg:items-start" id="workspace-stage-grid">
+          
+          <WorkspaceSidebar />
+
+          <div class="flex-1 w-full min-h-[400px] flex items-center justify-center bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl relative shadow-inner">
+            <EmptyWorkspaceCallout />
+          </div>
+
+        </div>
+        <div id="data-status" class="hidden px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] text-sm rounded-lg" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <FindingsStage class="opacity-0 animate-fade-in-up" style="animation-delay: 150ms;" />
+
+    <DeepDiveStage class="opacity-0 animate-fade-in-up" style="animation-delay: 250ms;" />
+
+    <!-- Support Stage -->
+    <section class="flex flex-col gap-10 w-full opacity-0 animate-fade-in-up" data-stage="support" aria-labelledby="support-stage-title" style="animation-delay: 350ms;">
+      <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
+        <h2 id="support-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Support</h2>
+      </div>
+
+      <!-- FAQ Card -->
+      <section class="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col w-full" id="faq-card" data-nav-target="faq" data-accent="faq" data-vue-shell-mount="card-shell">
+        <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <div class="flex items-center gap-3">
+            <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
+              <span aria-hidden="true" class="text-[var(--accent)] flex">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" /></svg>
+              </span>
+              Recovery help
+            </h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="faq-content">▾</button>
+          </div>
+        </div>
+        <div class="p-6 flex flex-col gap-6" id="faq-content">
+          <ul class="flex flex-col gap-6 m-0 p-0 list-none text-[var(--text)] text-sm leading-relaxed" id="faq-list">
+            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
+              <h3 class="font-semibold text-base m-0 text-[var(--text)]">Do I need Chrome or Chromium installed for relay sync?</h3>
+              <p class="m-0 text-[var(--text-muted)]">Yes. Install Chrome or Chromium locally, then relaunch <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">WAAN.app</code> if relay will not start on a fresh Mac.</p>
+            </li>
+            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]" id="faq-macos-gatekeeper">
+              <h3 class="font-semibold text-base m-0 text-[var(--text)]">macOS says the relay app is damaged or from an unidentified developer. What should I do?</h3>
+              <p class="m-0 text-[var(--text-muted)]">Open <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">WAAN.app</code> from Finder, then allow it in System Settings → Privacy & Security with <em class="text-[var(--text)] font-medium">Open Anyway</em>. If it is still blocked, Control-click the app once and choose <em class="text-[var(--text)] font-medium">Open</em>. If no override appears, make sure the app is in <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">/Applications/WAAN.app</code>, then run <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code> and reopen it from Finder.</p>
+            </li>
+            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]" id="faq-account-safety">
+              <h3 class="font-semibold text-base m-0 text-[var(--text)]">Can WhatsApp block my account for using WAAN?</h3>
+              <p class="m-0 text-[var(--text-muted)]">Yes, it is possible. WAAN is not an official WhatsApp client, and WhatsApp/Meta can apply temporary or permanent restrictions. Start with a secondary account. Official policies:
+                <a href="https://www.whatsapp.com/legal/terms-of-service" class="text-[#3b82f6] hover:underline transition-colors" target="_blank" rel="noopener noreferrer">WhatsApp Terms of Service</a>,
+                <a href="https://www.whatsapp.com/legal/business-terms" class="text-[#3b82f6] hover:underline transition-colors" target="_blank" rel="noopener noreferrer">WhatsApp Business Terms</a>.
+              </p>
+            </li>
+            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
+              <h3 class="font-semibold text-base m-0 text-[var(--text)]">What should I do if syncing looks stuck or the relay drops?</h3>
+              <p class="m-0 text-[var(--text-muted)]">Use <strong class="text-[var(--text)] font-medium">Resync</strong> first. If it still fails, use <strong class="text-[var(--text)] font-medium">Reconnect</strong>, then <strong class="text-[var(--text)] font-medium">Export diagnostics</strong> before reporting the issue.</p>
+            </li>
+            <li class="flex flex-col gap-2">
+              <h3 class="font-semibold text-base m-0 text-[var(--text)]">Where is my data stored, and does WAAN send it anywhere?</h3>
+              <p class="m-0 text-[var(--text-muted)]">WAAN stores mirrored chats locally on your Mac by default. Data leaves your device only when you explicitly export or share it. See:
+                <a href="https://github.com/suyashkmr/WAAN/blob/main/PRIVACY.md" class="text-[#3b82f6] hover:underline transition-colors" target="_blank" rel="noopener noreferrer">PRIVACY.md</a>.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </section>
+
+  </main>
+
+  <!-- Global Offcanvas Utilities -->
+  
+  <aside class="fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-[var(--card-bg)] border-l border-[var(--border)] shadow-2xl translate-x-full transition-transform duration-300 z-50 flex flex-col" id="relay-log-drawer" aria-hidden="true" aria-label="Diagnostics and relay log">
+    <div class="flex flex-col gap-4 p-6 border-b border-[var(--border)] bg-[var(--surface-sunken)] shrink-0">
+      <div class="flex flex-col gap-1">
+        <p class="text-[var(--accent)] text-xs font-semibold uppercase tracking-wider m-0">Recovery tools</p>
+        <p class="text-xl font-display font-semibold text-[var(--text)] m-0">Diagnostics</p>
+        <p class="text-xs text-[var(--text-muted)] m-0" id="relay-log-connection">Connecting…</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="relay-log-export" title="Download a diagnostics bundle">Export</button>
+        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="relay-log-report" title="Open issue report">Report</button>
+        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors col-span-2 mt-2" id="relay-log-close">Close</button>
+      </div>
     </div>
-
-    <main class="app-shell-layout">
-        <section class="studio-stage studio-stage--workspace full-span" data-stage="workspace" aria-labelledby="workspace-stage-title">
-            <div class="studio-stage-intro">
-                <div class="studio-stage-title-group">
-                    <h2 id="workspace-stage-title">Workspace</h2>
-                </div>
-            </div>
-
-            <section class="workspace-stage full-span" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
-                <div class="workspace-stage-header">
-                    <div>
-                        <h2>Run the session</h2>
-                    </div>
-                </div>
-
-                <div class="workspace-stage-grid shell-split shell-split--workspace">
-                    <div class="workspace-command-surface workspace-strip shell-lane shell-lane--primary" data-nav-target="actions">
-                        <div class="workspace-command-main">
-                            <section class="relay-status-banner" id="relay-status-banner" aria-live="polite"
-                                data-nav-target="relay-status">
-                                <div class="relay-banner-indicator" id="relay-status-dot" aria-hidden="true"></div>
-                                <div class="relay-banner-text">
-                                    <p class="relay-banner-status" id="relay-status-message">Relay offline.</p>
-                                    <p class="relay-banner-meta" id="relay-status-meta">Workspace locked until relay starts.</p>
-                                </div>
-                                <div class="relay-banner-actions" id="relay-status-actions" hidden>
-                                    <button type="button" class="ghost-button small" id="relay-recovery-reconnect">Reconnect</button>
-                                    <button type="button" class="ghost-button small" id="relay-recovery-resync">Resync</button>
-                                    <button type="button" class="ghost-button small" id="relay-recovery-export">Export diagnostics</button>
-                                </div>
-                            </section>
-
-                            <div class="workspace-core-band">
-                                <div class="page-controls">
-                                    <div class="control-row primary-controls" data-vue-page-controls-root="true">
-                                        <label class="control dataset-control" for="chat-selector">
-                                            <span>Loaded chats</span>
-                                            <select id="chat-selector" disabled>
-                                                <option value="">No chats loaded yet</option>
-                                            </select>
-                                        </label>
-                                        <div class="control custom-range hidden" id="custom-range-controls">
-                                            <span>Custom dates</span>
-                                            <div class="custom-range-inputs">
-                                                <input type="date" id="custom-start">
-                                                <span class="range-separator">to</span>
-                                                <input type="date" id="custom-end">
-                                                <button type="button" class="ghost-button small" id="apply-custom-range">Apply</button>
-                                            </div>
-                                        </div>
-                                        <label class="control period-control" for="global-range">
-                                            <span>Time range</span>
-                                            <select id="global-range">
-                                                <option value="all" selected>All time</option>
-                                                <option value="30">Last 30 days</option>
-                                                <option value="90">Last 90 days</option>
-                                                <option value="180">Last 180 days</option>
-                                                <option value="365">Last 365 days</option>
-                                                <option value="custom">Custom range</option>
-                                            </select>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <section class="actions-toolbar" aria-label="Dataset actions" id="actions-toolbar">
-                                    <div class="toolbar-group primary">
-                                        <button type="button" class="ghost-button" id="download-pdf">Export PDF</button>
-                                        <button type="button" class="ghost-button" id="download-markdown-report">Export text report</button>
-                                        <button type="button" class="ghost-button" id="download-slides-report">Export slides</button>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-
-                        <details class="workspace-utility-cluster" id="workspace-utility-cluster">
-                            <summary class="workspace-utility-summary">
-                                <span class="workspace-utility-title">Workspace tools</span>
-                                <span class="workspace-utility-meta">Setup, diagnostics, display</span>
-                            </summary>
-                            <div class="workspace-utility-panel">
-                                <div class="workspace-utility-shortcuts">
-                                    <button type="button" class="ghost-button" id="onboarding-start"
-                                        title="Open the setup reminder.">Setup tips</button>
-                                    <button type="button" class="ghost-button" id="compact-toggle" aria-pressed="false"
-                                        title="Switch between compact and comfort layouts">Compact mode</button>
-                                    <button type="button" class="ghost-button" id="log-drawer-toggle"
-                                        title="Use diagnostics if sync stalls or reconnect fails.">Diagnostics</button>
-                                </div>
-                                <div class="workspace-utility-display">
-                                    <div class="theme-toggle">
-                                        <span>Theme</span>
-                                        <div class="segmented-option">
-                                            <input type="radio" name="theme-option" id="theme-system" value="system" checked>
-                                            <label for="theme-system">Auto</label>
-                                        </div>
-                                        <div class="segmented-option">
-                                            <input type="radio" name="theme-option" id="theme-light" value="light">
-                                            <label for="theme-light">Light</label>
-                                        </div>
-                                        <div class="segmented-option">
-                                            <input type="radio" name="theme-option" id="theme-dark" value="dark">
-                                            <label for="theme-dark">Dark</label>
-                                        </div>
-                                    </div>
-                                    <div class="a11y-controls" aria-label="Accessibility options">
-                                        <button type="button" class="ghost-button small" id="reduce-motion-toggle"
-                                            aria-pressed="mixed">Motion: Standard</button>
-                                        <button type="button" class="ghost-button small" id="high-contrast-toggle"
-                                            aria-pressed="false">Contrast: Standard</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </details>
-                    </div>
-
-                    <EmptyWorkspaceCallout />
-
-                    <div id="data-status" class="status-snackbar hidden" aria-live="polite"></div>
-                </div>
-            </section>
-        </section>
-
-        <section class="studio-stage studio-stage--findings full-span" id="guided-findings-stage" data-stage="findings" aria-labelledby="guided-findings-title">
-            <div class="studio-stage-intro">
-                <div class="studio-stage-title-group">
-                    <h2 id="guided-findings-title">Findings</h2>
-                </div>
-            </div>
-
-            <div class="studio-stage-shell studio-stage-shell--findings guided-findings-shell">
-                <div class="app-shell-primary-lane guided-findings-sequence">
-                    <section class="workspace-overview-shell" id="workspace-overview" data-nav-target="overview">
-                        <div class="workspace-overview-header">
-                            <div>
-                                <p class="section-eyebrow">Overview</p>
-                                <h2>Conversation summary</h2>
-                            </div>
-                        </div>
-                        <div class="workspace-overview-frame">
-                            <section id="summary" class="card-grid summary" data-nav-target="overview"></section>
-                        </div>
-                    </section>
-
-                    <section class="guided-findings-cluster guided-findings-cluster--signal" aria-labelledby="guided-findings-signal-title">
-                        <div class="guided-findings-cluster-header">
-                            <h3 id="guided-findings-signal-title">Highlights</h3>
-                        </div>
-
-                        <section class="card highlights analytics-story-card" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell"
-                            data-accent="highlights">
-                            <div class="card-header">
-                                <div class="card-title-group">
-                                    <div class="card-heading">
-                                        <h2><span class="section-icon" aria-hidden="true">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path
-                                                        d="M12 2l1.76 5.15L19 7.5l-4 3.34L16.5 16l-4.5-2.8L7.5 16 9 10.84 5 7.5l5.24-.35z" />
-                                                </svg>
-                                            </span>Highlights</h2>
-                                        <button type="button" class="info-note-button" aria-label="About this section"
-                                            aria-describedby="highlights-note">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                <path
-                                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                            </svg>
-                                            <span class="info-tooltip" id="highlights-note" role="tooltip">Activity outlooks anchor on
-                                                the dataset end date.</span>
-                                        </button>
-                                    </div>
-                                    <button type="button" class="card-toggle" aria-expanded="true"
-                                        data-target="insight-highlights-content">▾</button>
-                                </div>
-                            </div>
-                            <div class="card-content" id="insight-highlights-content">
-                                <div class="highlight-grid" id="highlight-list"></div>
-                            </div>
-                        </section>
-                    </section>
-
-                    <section class="guided-findings-cluster guided-findings-cluster--drivers" aria-labelledby="guided-findings-drivers-title">
-                        <div class="guided-findings-cluster-header">
-                            <h3 id="guided-findings-drivers-title">Participants</h3>
-                        </div>
-
-                        <section class="card participants analytics-story-card" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell"
-                            data-accent="participants">
-                            <div class="card-header">
-                                <div class="card-title-group">
-                                    <div class="card-heading">
-                                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                                    <path
-                                                        d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-                                                </svg></span>Participants</h2>
-                                        <button type="button" class="info-note-button" aria-label="About this section"
-                                            aria-describedby="participants-note">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                <path
-                                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                            </svg>
-                                            <span class="info-tooltip" id="participants-note" role="tooltip">See who speaks the most,
-                                                and filter to spotlight the quietest members or recent activity.</span>
-                                        </button>
-                                    </div>
-                                    <div class="card-header-actions">
-                                        <button type="button" class="ghost-button" id="download-participants"
-                                            title="Download the participants table as CSV">Download CSV</button>
-                                        <button type="button" class="card-toggle" aria-expanded="true"
-                                            data-target="participants-content">▾</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-content" id="participants-content">
-                                <div class="participants-story-grid">
-                                    <div class="participants-shell-controls">
-                                        <div class="participants-controls">
-                                            <label class="control-group" for="participants-top-count">
-                                                <span>Show Top</span>
-                                                <div id="participants-top-count-anchor" data-native-select-seed="participants-top-count"></div>
-                                            </label>
-                                            <label class="control-group" for="participants-sort">
-                                                <span>Sort</span>
-                                                <div id="participants-sort-anchor" data-native-select-seed="participants-sort"></div>
-                                            </label>
-                                            <label class="control-group" for="participants-timeframe">
-                                                <span>Timeframe</span>
-                                                <div id="participants-timeframe-anchor" data-native-select-seed="participants-timeframe"></div>
-                                            </label>
-                                        </div>
-                                        <div class="participants-quick-filters">
-                                            <span>Quick filters:</span>
-                                            <button type="button" class="ghost-button tiny" data-participants-preset="top-week"
-                                                aria-pressed="false">
-                                                Top 5 this week
-                                            </button>
-                                            <button type="button" class="ghost-button tiny" data-participants-preset="quiet"
-                                                aria-pressed="false">
-                                                Quietest 5
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="table-container scrollable">
-                                    <table id="top-senders">
-                                        <thead>
-                                            <tr>
-                                                <th>Rank</th>
-                                                <th>Participant</th>
-                                                <th>Messages</th>
-                                                <th>
-                                                    <span class="table-th-label">
-                                                        Share
-                                                        <button type="button" class="info-note-button info-note-inline table-metric-help"
-                                                            aria-label="Share means percent of messages in the current participant scope"
-                                                            aria-describedby="participants-share-note">
-                                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                                <path
-                                                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                                            </svg>
-                                                            <span class="info-tooltip" id="participants-share-note" role="tooltip">Share is
-                                                                the participant's message percentage in the selected timeframe/filter.</span>
-                                                        </button>
-                                                    </span>
-                                                </th>
-                                                <th>
-                                                    <span class="table-th-label">
-                                                        Avg Words
-                                                        <button type="button" class="info-note-button info-note-inline table-metric-help"
-                                                            aria-label="Average words per message for each participant"
-                                                            aria-describedby="participants-avg-words-note">
-                                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                                <path
-                                                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                                            </svg>
-                                                            <span class="info-tooltip" id="participants-avg-words-note" role="tooltip">Avg
-                                                                Words is the mean words used per message by that participant.</span>
-                                                        </button>
-                                                    </span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </section>
-                    </section>
-
-                    <section class="guided-findings-cluster guided-findings-cluster--timing" aria-labelledby="guided-findings-timing-title">
-                        <div class="guided-findings-cluster-header">
-                            <h3 id="guided-findings-timing-title">Timing</h3>
-                        </div>
-
-                        <div class="studio-pattern-entry-grid guided-findings-pattern-grid guided-findings-timing-strip">
-                            <section class="card analytics-story-card" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
-                                <div class="card-header">
-                                    <div class="card-title-group">
-                                        <div class="card-heading">
-                                            <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                                        <path
-                                                            d="M11 7h2v6h-4v-2h2zm1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                                    </svg></span>Hourly rhythm</h2>
-                                            <button type="button" class="info-note-button" aria-label="About this section"
-                                                aria-describedby="hourly-note">
-                                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path
-                                                        d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                                </svg>
-                                                <span class="info-tooltip" id="hourly-note" role="tooltip">Track when conversations spike
-                                                    during the day, and filter to compare weekdays vs weekends or work vs off hours.</span>
-                                            </button>
-                                        </div>
-                                        <div class="card-header-actions">
-                                            <button type="button" class="ghost-button" id="download-hourly"
-                                                title="Download hourly activity as CSV">Download CSV</button>
-                                            <button type="button" class="card-toggle" aria-expanded="true"
-                                                data-target="hourly-activity-content">▾</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-content" id="hourly-activity-content">
-                                    <div class="pattern-story-grid">
-                                        <div class="hourly-summary analysis-summary-strip">
-                                            <div class="summary-block">
-                                                <span class="summary-label">Top Hour</span>
-                                                <span class="summary-value" id="hourly-top-hour">—</span>
-                                            </div>
-                                        </div>
-                                        <div class="pattern-controls-shell supporting-story-tier">
-                                            <div class="hourly-controls">
-                                                <div class="toggle-group">
-                                                    <span class="toggle-label">Days</span>
-                                                    <label><input type="checkbox" id="filter-weekdays" checked> Weekdays</label>
-                                                    <label><input type="checkbox" id="filter-weekends" checked> Weekends</label>
-                                                </div>
-                                                <div class="toggle-group">
-                                                    <span class="toggle-label">Hours</span>
-                                                    <label><input type="checkbox" id="filter-working" checked> Working (09-17)</label>
-                                                    <label><input type="checkbox" id="filter-offhours" checked> Off Hours</label>
-                                                </div>
-                                                <div class="brush-group">
-                                                    <label for="hourly-brush-start">Hour Range</label>
-                                                    <div class="brush-inputs">
-                                                        <input type="range" id="hourly-brush-start" min="0" max="23" value="0">
-                                                        <input type="range" id="hourly-brush-end" min="0" max="23" value="23">
-                                                    </div>
-                                                    <div class="brush-labels">
-                                                        <span id="hourly-brush-start-label">00:00</span>
-                                                        <span>–</span>
-                                                        <span id="hourly-brush-end-label">23:00</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="hourly-filter-note" id="hourly-filter-note"></div>
-                                            <div class="brush-summary" id="hourly-brush-summary">Select hour range to view details.</div>
-                                        </div>
-                                    </div>
-                                    <div class="analysis-evidence-frame evidence-panel-tier">
-                                        <div id="hourly-chart" class="hourly-heatmap"></div>
-                                        <div class="hourly-anomalies" id="hourly-anomalies"></div>
-                                    </div>
-                                </div>
-                            </section>
-
-                        </div>
-                    </section>
-
-                    <div class="guided-findings-next">
-                        <p class="guided-findings-next-copy">Deeper tools continue below.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="studio-stage studio-stage--deep-dive full-span" id="deep-dive-stage" data-stage="deep-dive" aria-labelledby="deep-dive-stage-title">
-            <div class="studio-stage-intro">
-                <div class="studio-stage-title-group">
-                    <h2 id="deep-dive-stage-title">Tools</h2>
-                </div>
-            </div>
-
-            <div class="studio-stage-shell studio-stage-shell--deep-dive deep-dive-shell">
-                <section class="deep-dive-cluster deep-dive-cluster--tools" aria-labelledby="deep-dive-tools-cluster-title">
-                    <div class="deep-dive-cluster-header">
-                        <h3 id="deep-dive-tools-cluster-title">Search and saved views</h3>
-                    </div>
-
-                    <div class="studio-deep-dive-primary studio-strip-cluster studio-strip-cluster--tools">
-                    <section class="card full-span search-panel" id="search-panel" data-nav-target="search" data-accent="search" data-vue-shell-mount="card-shell">
-                        <div class="card-header">
-                                <div class="card-title-group">
-                                    <div class="card-heading">
-                                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                                <path
-                                                    d="M15.5 14h-.79l-.28-.27A6 6 0 1 0 14 15.5l.27.28v.79l5 5 1.5-1.5zm-5.5 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" />
-                                            </svg></span>Search</h2>
-                                    <button type="button" class="info-note-button" aria-label="About this section"
-                                        aria-describedby="search-note">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <path
-                                                d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                                        </svg>
-                                        <span class="info-tooltip" id="search-note" role="tooltip">Add words, pick people, and
-                                            optional dates to find messages.</span>
-                                    </button>
-                                </div>
-                                <div class="card-header-actions">
-                                    <button type="button" class="ghost-button" id="download-search-results"
-                                        title="Download the current search results as CSV">Download CSV</button>
-                                    <button type="button" class="card-toggle" aria-expanded="true"
-                                        data-target="search-panel-content">▾</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-content" id="search-panel-content">
-                            <div class="search-strip-flow">
-                                <form id="advanced-search-form" class="search-controls search-strip-row search-strip-row--controls">
-                                    <div class="search-control">
-                                        <label for="search-keyword">Keywords</label>
-                                        <input type="text" id="search-keyword" placeholder="e.g. launch plan" autocomplete="off">
-                                    </div>
-                                    <div class="search-control">
-                                        <label for="search-participant">Participant</label>
-                                        <div id="search-participant-anchor" data-native-select-seed="search-participant"></div>
-                                    </div>
-                                    <div class="search-control">
-                                        <label for="search-start">Start date</label>
-                                        <input type="date" id="search-start">
-                                    </div>
-                                    <div class="search-control">
-                                        <label for="search-end">End date</label>
-                                        <input type="date" id="search-end">
-                                    </div>
-                                    <div class="search-actions">
-                                        <button type="submit" class="ghost-button" id="run-search">Search</button>
-                                        <button type="button" class="ghost-button" id="reset-search">Clear filters</button>
-                                    </div>
-                                </form>
-                                <div class="search-strip-row search-strip-row--status">
-                                    <div class="search-results-summary" id="search-results-summary">Search this chat.</div>
-                                    <div class="search-progress" id="search-progress" aria-live="polite">
-                                        <div class="search-progress-track" id="search-progress-track" role="progressbar" aria-valuemin="0"
-                                            aria-valuemax="100" aria-valuenow="0" aria-label="Search progress">
-                                            <div class="search-progress-bar" id="search-progress-bar"></div>
-                                        </div>
-                                        <div class="search-progress-label" id="search-progress-label"></div>
-                                    </div>
-                                    <div class="search-insights hidden" id="search-insights" aria-live="polite"></div>
-                                </div>
-                                <div class="search-strip-row search-strip-row--results">
-                                    <div class="search-results-list" id="search-results-list"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="card full-span saved-views" id="saved-views-card" data-nav-target="saved-views" data-vue-shell-mount="card-shell"
-                        data-accent="saved-views">
-                        <div class="card-header">
-                            <div class="card-title-group">
-                                <div class="card-heading">
-                                    <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                                <path
-                                                    d="M17 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V7zM7 5h7v4H7zm7 14H7v-6h7zm3-12h-2V5h1z" />
-                                            </svg></span>Saved Views</h2>
-                                </div>
-                                <div class="card-header-actions">
-                                    <button type="button" class="card-toggle" aria-expanded="true"
-                                        data-target="saved-views-content">▾</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-content" id="saved-views-content">
-                            <div class="saved-view-layout shell-split shell-split--saved-views">
-                                <div class="saved-view-command-lane shell-lane shell-lane--primary">
-                                    <div class="saved-view-actions">
-                                        <div class="saved-view-save">
-                                            <label for="saved-view-name">Name</label>
-                                            <input type="text" id="saved-view-name" placeholder="e.g. Last 30 days weekdays">
-                                            <button type="button" class="ghost-button" id="save-view">Save current view</button>
-                                        </div>
-                                        <div class="saved-view-manage">
-                                            <label class="control-group" for="saved-view-list">
-                                                <span>Saved views</span>
-                                                <div id="saved-view-list-anchor" data-native-select-seed="saved-view-list"></div>
-                                            </label>
-                                            <button type="button" class="ghost-button small" id="apply-saved-view">Load view</button>
-                                            <button type="button" class="ghost-button small" id="delete-saved-view">Delete view</button>
-                                        </div>
-                                    </div>
-                                    <div class="compare-controls saved-view-panel--compare" id="compare-controls">
-                                        <div class="compare-select">
-                                            <label for="compare-view-a">View A</label>
-                                            <div id="compare-view-a-anchor" data-native-select-seed="compare-view-a"></div>
-                                        </div>
-                                        <div class="compare-select">
-                                            <label for="compare-view-b">View B</label>
-                                            <div id="compare-view-b-anchor" data-native-select-seed="compare-view-b"></div>
-                                        </div>
-                                        <button type="button" class="ghost-button" id="compare-views">Compare views</button>
-                                    </div>
-                                </div>
-                                <div class="saved-view-results-lane shell-lane shell-lane--secondary shell-lane--quiet">
-                                    <div class="saved-view-gallery" id="saved-view-gallery" aria-live="polite"></div>
-                                    <div class="compare-summary" id="compare-summary"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                    </div>
-                </section>
-
-                <section class="deep-dive-cluster deep-dive-cluster--patterns" aria-labelledby="deep-dive-patterns-cluster-title">
-                    <div class="deep-dive-cluster-header">
-                        <h3 id="deep-dive-patterns-cluster-title">Pattern evidence</h3>
-                    </div>
-
-                    <div class="studio-deep-dive-analytics">
-                    <section class="card analytics-story-card" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly" data-vue-shell-mount="card-shell">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path d="M9 16.17l-3.5-3.5-1.41 1.41L9 19 20.5 7.5 19.09 6z" />
-                                </svg></span>Week by Week</h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="weekly-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="weekly-note" role="tooltip">Messages per calendar week, with
-                                rolling averages to highlight trends. Week labels follow ISO week notation (ISO
-                                8601).</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-weekly"
-                            title="Download weekly activity as CSV">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="weekly-trend-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="weekly-trend-content">
-                <div class="weekly-summary">
-                    <div class="summary-block">
-                        <span class="summary-label">Total so far</span>
-                        <span class="summary-value" id="weekly-cumulative">—</span>
-                    </div>
-                    <div class="summary-block">
-                        <span class="summary-label">Avg of last 3 weeks</span>
-                        <span class="summary-value" id="weekly-rolling">—</span>
-                    </div>
-                    <div class="summary-block">
-                        <span class="summary-label">Avg per week</span>
-                        <span class="summary-value" id="weekly-average">—</span>
-                    </div>
-                </div>
-                <div class="analysis-evidence-frame evidence-panel-tier">
-                    <div id="weekly-chart" class="weekly-chart"></div>
-                </div>
-            </div>
-                    </section>
-
-                    <section class="card analytics-story-card" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2>
-                            <span class="section-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24">
-                                    <path
-                                        d="M7 2v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 6H5v10h14V8z" />
-                                </svg>
-                            </span>
-                            Day by day
-                        </h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="daily-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="daily-note" role="tooltip">Messages per day across the full
-                                range so you can spot busy streaks and quiet spells.</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-daily"
-                            title="Download daily activity as CSV">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="daily-activity-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="daily-activity-content">
-                <div class="daily-summary">
-                    <div class="summary-block">
-                        <span class="summary-label">Avg per day</span>
-                        <span class="summary-value" id="daily-avg-day">—</span>
-                    </div>
-                </div>
-                <div class="analysis-evidence-frame evidence-panel-tier">
-                    <div id="daily-chart" class="calendar-chart"></div>
-                </div>
-            </div>
-                    </section>
-
-                    <section class="card analytics-story-card" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday" data-vue-shell-mount="card-shell">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path
-                                        d="M21 3h-3V1h-2v2H8V1H6v2H3a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h18a2 2 0 0 0 2-2V5c0-1.1-.9-2-2-2zm0 18H3V9h18zm0-14H3V5h18z" />
-                                </svg></span>Busiest Weekdays</h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="weekday-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="weekday-note" role="tooltip">Compare average messages for
-                                each day of the week, or zero in on specific hours using the filters.</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-weekday"
-                            title="Download weekday distribution as CSV">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="weekday-trend-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="weekday-trend-content">
-                <div class="pattern-story-grid">
-                    <div class="pattern-controls-shell supporting-story-tier">
-                        <div class="weekday-controls">
-                            <div class="toggle-group">
-                                <span class="toggle-label">Days</span>
-                                <label class="segmented-option">
-                                    <input type="checkbox" id="weekday-toggle-weekdays" checked>
-                                    <span>Weekdays</span>
-                                </label>
-                                <label class="segmented-option">
-                                    <input type="checkbox" id="weekday-toggle-weekends" checked>
-                                    <span>Weekends</span>
-                                </label>
-                            </div>
-                            <div class="toggle-group">
-                                <span class="toggle-label">Hours</span>
-                                <label class="segmented-option">
-                                    <input type="checkbox" id="weekday-toggle-working" checked>
-                                    <span>Work hours (09-17)</span>
-                                </label>
-                                <label class="segmented-option">
-                                    <input type="checkbox" id="weekday-toggle-offhours" checked>
-                                    <span>Off hours</span>
-                                </label>
-                            </div>
-                            <div class="brush-group">
-                                <label for="weekday-hour-start">Hour Range</label>
-                                <div class="brush-inputs">
-                                    <input type="range" id="weekday-hour-start" min="0" max="23" value="0">
-                                    <input type="range" id="weekday-hour-end" min="0" max="23" value="23">
-                                </div>
-                                <div class="brush-labels">
-                                    <span id="weekday-hour-start-label">00:00</span>
-                                    <span>–</span>
-                                    <span id="weekday-hour-end-label">23:00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="weekday-filter-note" id="weekday-filter-note"></div>
-                    </div>
-                </div>
-                <div class="analysis-evidence-frame evidence-panel-tier">
-                    <div id="weekday-chart" class="weekday-chart"></div>
-                </div>
-            </div>
-                    </section>
-
-                    <section class="card analytics-story-card" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday" data-vue-shell-mount="card-shell">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path d="M12 7V3h-2v4H7l5 6 5-6h-3zM5 17h14v2H5z" />
-                                </svg></span>Time of Day</h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="timeofday-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="timeofday-note" role="tooltip">Average messages per hour so
-                                you can see when mornings, afternoons, or evenings are most active.</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-timeofday"
-                            title="Download the time-of-day summary as CSV">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="timeofday-trend-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="timeofday-trend-content">
-                <div class="pattern-story-grid">
-                    <div class="pattern-controls-shell supporting-story-tier">
-                        <div class="timeofday-controls">
-                            <div class="toggle-group">
-                                <span class="toggle-label">Days to Include</span>
-                                <label class="segmented-option">
-                                    <input type="checkbox" id="timeofday-toggle-weekdays" checked>
-                                    <span>Weekdays</span>
-                                </label>
-                                <label class="segmented-option">
-                                    <input type="checkbox" id="timeofday-toggle-weekends" checked>
-                                    <span>Weekends</span>
-                                </label>
-                            </div>
-                            <div class="brush-group">
-                                <label for="timeofday-hour-start">Focus Hours</label>
-                                <div class="brush-inputs">
-                                    <input type="range" id="timeofday-hour-start" min="0" max="23" value="0">
-                                    <input type="range" id="timeofday-hour-end" min="0" max="23" value="23">
-                                </div>
-                                <div class="brush-labels">
-                                    <span id="timeofday-hour-start-label">00:00</span>
-                                    <span>–</span>
-                                    <span id="timeofday-hour-end-label">23:00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="analysis-evidence-frame evidence-panel-tier">
-                    <div class="timeofday-chart" id="timeofday-chart">
-                        <div class="timeofday-sparkline" id="timeofday-sparkline"></div>
-                        <div class="timeofday-band-grid" id="timeofday-bands"></div>
-                        <div class="timeofday-callouts" id="timeofday-callouts"></div>
-                    </div>
-                </div>
-            </div>
-                    </section>
-
-                    <section class="card sentiment analytics-story-card" id="sentiment-overview" data-nav-target="sentiment-overview" data-vue-shell-mount="card-shell"
-                        data-accent="sentiment">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6.003 6.003 0 0 1 19 3c3.04 0 5.5 2.46 5.5 5.5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                </svg></span>Mood & sentiment</h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="sentiment-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="sentiment-note" role="tooltip">Estimated mood (positive,
-                                neutral, negative) based on the message text—use it as a loose signal, not a
-                                verdict.</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-sentiment"
-                            title="Download the sentiment timeline as CSV">Download CSV</button>
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="sentiment-overview-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="sentiment-overview-content">
-                <div class="sentiment-summary" id="sentiment-summary"></div>
-                <div class="sentiment-content shell-split shell-split--sentiment">
-                    <div class="sentiment-trend sentiment-panel shell-lane shell-lane--primary">
-                        <h3>Daily mood</h3>
-                        <p class="sentiment-note" id="sentiment-trend-note"></p>
-                        <div class="sentiment-calendar-container" id="sentiment-daily-chart"></div>
-                    </div>
-                    <div class="sentiment-participants sentiment-panel shell-lane shell-lane--secondary shell-lane--quiet">
-                        <h3>Members</h3>
-                        <div class="sentiment-lists">
-                            <div class="sentiment-list">
-                                <h4>Most Positive</h4>
-                                <ul id="sentiment-top-positive"></ul>
-                            </div>
-                            <div class="sentiment-list">
-                                <h4>Most Negative</h4>
-                                <ul id="sentiment-top-negative"></ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                    </section>
-                    </div>
-                </section>
-
-                <section class="deep-dive-cluster deep-dive-cluster--exports" aria-labelledby="deep-dive-exports-cluster-title">
-                    <div class="deep-dive-cluster-header">
-                        <h3 id="deep-dive-exports-cluster-title">Structured evidence</h3>
-                    </div>
-
-                    <div class="studio-deep-dive-evidence">
-                        <section class="card message-types analytics-story-card" id="message-types" data-nav-target="message-types" data-vue-shell-mount="card-shell"
-                            data-accent="message-types">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
-                                </svg></span>Message Mix</h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="message-types-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="message-types-note" role="tooltip">Break down chat volume by
-                                media, links, polls, and system events. Join events and members added are counted as
-                                non-overlapping categories.</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="ghost-button" id="download-message-types"
-                            title="Download the message mix as CSV">Download CSV</button>
-                        <button type="button" class="ghost-button" id="download-chat-json"
-                            title="Download the current chat as raw JSON">Download JSON</button>
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="message-types-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="message-types-content">
-                <div class="message-type-summary" id="message-type-summary"></div>
-                <div class="analysis-evidence-frame evidence-panel-tier lower-metrics-frame">
-                    <div class="card-grid stats message-basics">
-                        <div class="stat" data-stat="media">
-                            <span class="stat-value" id="media-count">0</span>
-                            <span class="stat-label">Messages with media</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="media"
-                                title="Download media stats as CSV">Media CSV</button>
-                        </div>
-                        <div class="stat" data-stat="link">
-                            <span class="stat-value" id="link-count">0</span>
-                            <span class="stat-label">Messages with links</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="links"
-                                title="Download link stats as CSV">Links CSV</button>
-                        </div>
-                        <div class="stat" data-stat="poll">
-                            <span class="stat-value" id="poll-count">0</span>
-                            <span class="stat-label">Polls</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="polls"
-                                title="Download poll stats as CSV">Polls CSV</button>
-                        </div>
-                        <div class="stat" data-stat="join">
-                            <span class="stat-value" id="join-events">0</span>
-                            <span class="stat-label">Join events</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="joins"
-                                title="Download join events as CSV">Join events CSV</button>
-                        </div>
-                        <div class="stat" data-stat="added">
-                            <span class="stat-value" id="added-events">0</span>
-                            <span class="stat-label">Members added</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="added"
-                                title="Download member additions as CSV">Members added CSV</button>
-                        </div>
-                        <div class="stat" data-stat="left">
-                            <span class="stat-value" id="left-events">0</span>
-                            <span class="stat-label">Members left</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="left"
-                                title="Download member departures as CSV">Members left CSV</button>
-                        </div>
-                        <div class="stat" data-stat="removed">
-                            <span class="stat-value" id="removed-events">0</span>
-                            <span class="stat-label">Members removed</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="removed"
-                                title="Download member removals as CSV">Members removed CSV</button>
-                        </div>
-                        <div class="stat" data-stat="changed">
-                            <span class="stat-value" id="changed-events">0</span>
-                            <span class="stat-label">Settings changes</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="changed"
-                                title="Download settings changes as CSV">Changes CSV</button>
-                        </div>
-                        <div class="stat" data-stat="other">
-                            <span class="stat-value" id="other-system-events">0</span>
-                            <span class="stat-label">Other system messages</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="other"
-                                title="Download other system messages as CSV">Other systems CSV</button>
-                        </div>
-                        <div class="stat" data-stat="join-requests">
-                            <span class="stat-value" id="join-requests">0</span>
-                            <span class="stat-label">Join requests</span>
-                            <button type="button" class="ghost-button tiny stat-download" data-export="join_requests"
-                                title="Download join requests as CSV">Join requests CSV</button>
-                        </div>
-                        <div class="stat" data-stat="avg-chars">
-                            <span class="stat-value" id="avg-chars">0</span>
-                            <span class="stat-label">Average characters per message</span>
-                        </div>
-                        <div class="stat" data-stat="avg-words">
-                            <span class="stat-value" id="avg-words">0</span>
-                            <span class="stat-label">Average words per message</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                        </section>
-
-                        <section class="card analytics-story-card" id="polls-card" data-nav-target="polls" data-accent="polls" data-vue-shell-mount="card-shell">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path d="M6 19h2V5H6zm5 6h2V2h-2zm5-11v13h2V14z" />
-                                </svg></span>Poll Highlights</h2>
-                        <button type="button" class="info-note-button" aria-label="About this section"
-                            aria-describedby="polls-note">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                            </svg>
-                            <span class="info-tooltip" id="polls-note" role="tooltip">Poll questions detected in your
-                                mirrored chats, with total counts and creators.</span>
-                        </button>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="card-toggle" aria-expanded="true"
-                            data-target="polls-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="polls-content">
-                <div class="polls-story-grid">
-                    <div class="polls-summary supporting-story-tier">
-                        <div class="stat">
-                            <span class="stat-label">Total polls</span>
-                            <span class="stat-value" id="polls-total">0</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Unique poll creators</span>
-                            <span class="stat-value" id="polls-creators">0</span>
-                        </div>
-                    </div>
-                    <div class="analysis-evidence-frame evidence-panel-tier lower-polls-frame">
-                        <ol class="polls-list" id="polls-list"></ol>
-                    </div>
-                </div>
-            </div>
-                        </section>
-                    </div>
-                </section>
-            </div>
-        </section>
-
-        <section class="studio-stage studio-stage--support full-span" data-stage="support" aria-labelledby="support-stage-title">
-            <div class="studio-stage-intro">
-                <div class="studio-stage-title-group">
-                    <h2 id="support-stage-title">Support</h2>
-                </div>
-            </div>
-
-            <section class="card full-span" id="faq-card" data-nav-target="faq" data-accent="faq" data-vue-shell-mount="card-shell">
-            <div class="card-header">
-                <div class="card-title-group">
-                    <div class="card-heading">
-                        <h2><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24">
-                                    <path
-                                        d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" />
-                                </svg></span>Recovery help</h2>
-                    </div>
-                    <div class="card-header-actions">
-                        <button type="button" class="card-toggle" aria-expanded="true" title="Show or hide recovery help."
-                            data-target="faq-content">▾</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-content" id="faq-content">
-                <ul class="faq-list">
-                    <li>
-                        <h3>Do I need Chrome or Chromium installed for relay sync?</h3>
-                        <p>Yes. Install Chrome or Chromium locally, then relaunch <code>WAAN.app</code> if relay will not start on a fresh Mac.</p>
-                    </li>
-                    <li id="faq-macos-gatekeeper">
-                        <h3>macOS says the relay app is damaged or from an unidentified developer. What should I do?</h3>
-                        <p>Open <code>WAAN.app</code> from Finder, then allow it in System Settings → Privacy &amp; Security with <em>Open Anyway</em>. If it is still blocked, Control-click the app once and choose <em>Open</em>. If no override appears, make sure the app is in <code>/Applications/WAAN.app</code>, then run <code>xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code> and reopen it from Finder.</p>
-                    </li>
-                    <li id="faq-account-safety">
-                        <h3>Can WhatsApp block my account for using WAAN?</h3>
-                        <p>Yes, it is possible. WAAN is not an official WhatsApp client, and WhatsApp/Meta can apply temporary or permanent restrictions. Start with a secondary account. Official policies:
-                            <a href="https://www.whatsapp.com/legal/terms-of-service" target="_blank" rel="noopener noreferrer">WhatsApp Terms of Service</a>,
-                            <a href="https://www.whatsapp.com/legal/business-terms" target="_blank" rel="noopener noreferrer">WhatsApp Business Terms</a>.
-                        </p>
-                    </li>
-                    <li>
-                        <h3>What should I do if syncing looks stuck or the relay drops?</h3>
-                        <p>Use <strong>Resync</strong> first. If it still fails, use <strong>Reconnect</strong>, then <strong>Export diagnostics</strong> before reporting the issue.</p>
-                    </li>
-                    <li>
-                        <h3>Where is my data stored, and does WAAN send it anywhere?</h3>
-                        <p>WAAN stores mirrored chats locally on your Mac by default. Data leaves your device only when you explicitly export or share it. See:
-                            <a href="https://github.com/suyashkmr/WAAN/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">PRIVACY.md</a>.
-                        </p>
-                    </li>
-                </ul>
-            </div>
-            </section>
-        </section>
-    </main>
-
-    <aside class="relay-log-drawer" id="relay-log-drawer" aria-hidden="true" aria-label="Diagnostics and relay log">
-        <div class="relay-log-header">
-            <div class="relay-log-copy">
-                <p class="relay-log-kicker">Recovery tools</p>
-                <p class="relay-log-title">Diagnostics and relay log</p>
-                <p class="relay-log-subtitle" id="relay-log-connection">Connecting…</p>
-                <p class="relay-log-hint">Use this if sync stalls or reconnect fails.</p>
-            </div>
-            <div class="relay-log-actions">
-                <button type="button" class="ghost-button small" id="relay-log-export" title="Download a diagnostics bundle for support or bug reports.">Export diagnostics</button>
-                <button type="button" class="ghost-button small" id="relay-log-report" title="Open a prefilled issue report using the latest diagnostics snapshot.">Report issue</button>
-                <button type="button" class="ghost-button small" id="relay-log-clear" title="Clear the visible relay log history.">Clear log</button>
-                <button type="button" class="ghost-button small" id="relay-log-close" title="Close diagnostics and return to the workspace.">Close</button>
-            </div>
-        </div>
-        <div class="relay-log-body" id="relay-log-list">
-            <p class="relay-log-empty">No relay events yet.</p>
-        </div>
-    </aside>
-
-    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
-
-    <div class="onboarding-overlay" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
-        <div class="onboarding-panel">
-            <h2>Need a setup reminder?</h2>
-            <p class="onboarding-step-label" id="onboarding-step-label"></p>
-            <p id="onboarding-copy">Start relay.</p>
-            <div class="onboarding-actions">
-                <button type="button" class="ghost-button" id="onboarding-skip">Close</button>
-                <button type="button" class="ghost-button primary" id="onboarding-next">Next tip</button>
-            </div>
-        </div>
+    <div class="p-4 overflow-y-auto flex-1 text-xs font-mono text-[var(--text-muted)] bg-black/40" id="relay-log-list">
+      <p class="m-0">No relay events yet.</p>
     </div>
+  </aside>
 
-    <footer>
-        <div class="footer-brand">
-            <img src="/waanlogo.png" alt="WAAN logo" class="brand-mark brand-mark--small" loading="lazy">
-            <div>
-                <p>WAAN Relay</p>
-                <small>Local chat intelligence.</small>
-            </div>
-        </div>
-        <p class="footer-meta">
-            Local-first analysis
-            <a href="https://github.com/suyashkmr/WAAN" target="_blank" rel="noopener noreferrer"
-                class="footer-github-link" aria-label="View WAAN on GitHub">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                        d="M12 2C6.48 2 2 6.59 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.64-1.38-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05A9.31 9.31 0 0 1 12 6.84c.85 0 1.71.12 2.51.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.95-2.34 4.82-4.57 5.07.36.32.68.94.68 1.89 0 1.36-.01 2.45-.01 2.79 0 .27.18.59.69.49A10.25 10.25 0 0 0 22 12.26C22 6.59 17.52 2 12 2z" />
-                </svg>
-            </a>
-        </p>
-        <p class="footer-disclaimer">
-            WhatsApp is a trademark of Meta Platforms, Inc. WAAN is an independent project and is not affiliated with
-            Meta or WhatsApp.
-        </p>
-    </footer>
+  <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50 pointer-events-none" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="bg-[var(--card-bg)] border border-[var(--border)] shadow-2xl rounded-2xl p-8 max-w-md w-full mx-4 flex flex-col gap-6 translate-y-4 transition-transform duration-300">
+      <div class="flex flex-col gap-2">
+        <h2 class="text-2xl font-display font-semibold text-[var(--text)] m-0">Need a setup reminder?</h2>
+        <p class="text-xs text-[var(--accent)] font-semibold uppercase tracking-wider m-0" id="onboarding-step-label"></p>
+      </div>
+      <p class="text-[var(--text-muted)] text-base m-0 leading-relaxed" id="onboarding-copy">Start relay.</p>
+      <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-[var(--border)]">
+        <button type="button" class="px-4 py-2 text-sm font-medium rounded-md text-[var(--text-muted)] hover:text-[var(--text)] transition-colors" id="onboarding-skip">Close</button>
+        <button type="button" class="px-5 py-2 text-sm font-medium rounded-md bg-[var(--accent)] text-black hover:bg-opacity-90 transition-colors shadow-lg" id="onboarding-next">Next tip</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="w-full mt-12 py-8 border-t border-[var(--border)] bg-[var(--surface-sunken)] flex flex-colitems-center text-center justify-center gap-6 px-6 relative z-10">
+    <div class="flex items-center gap-3 justify-center mb-2">
+      <img src="/waanlogo.png" alt="WAAN logo" class="w-8 h-8 rounded-lg shadow-md" loading="lazy">
+      <div class="text-left flex flex-col">
+        <p class="m-0 text-lg font-display font-semibold text-[var(--text)]">WAAN Relay</p>
+        <small class="m-0 text-xs text-[var(--text-muted)] uppercase tracking-wider">Local chat intelligence.</small>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2 items-center">
+      <p class="text-sm text-[var(--text-muted)] flex items-center gap-2 m-0 mt-4">
+        Local-first analysis
+        <a href="https://github.com/suyashkmr/WAAN" class="text-[var(--text-muted)] hover:text-[#3b82f6] transition-colors" aria-label="View WAAN on GitHub" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current"><path d="M12 2C6.48 2 2 6.59 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.64-1.38-2.22-.26-4.56-1.14-4.56-5.08 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05A9.31 9.31 0 0 1 12 6.84c.85 0 1.71.12 2.51.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.95-2.34 4.82-4.57 5.07.36.32.68.94.68 1.89 0 1.36-.01 2.45-.01 2.79 0 .27.18.59.69.49A10.25 10.25 0 0 0 22 12.26C22 6.59 17.52 2 12 2z"/></svg>
+        </a>
+      </p>
+      <p class="text-xs text-[var(--text-muted)] max-w-xl mx-auto m-0 opacity-70">
+        WhatsApp is a trademark of Meta Platforms, Inc. WAAN is an independent project and is not affiliated with Meta or WhatsApp.
+      </p>
+    </div>
+  </footer>
 </template>
 
 <script setup>
+import DeepDiveStage from './components/DeepDiveStage.vue';
+import FindingsStage from './components/FindingsStage.vue';
+import WorkspaceSidebar from './components/WorkspaceSidebar.vue';
 import EmptyWorkspaceCallout from './components/EmptyWorkspaceCallout.vue';
 </script>
