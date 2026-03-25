@@ -304,7 +304,7 @@ Closeout status as of 2026-03-26:
   - `npm run ci:verify`
   - `npm run test:accessibility-smoke`
   - `npx playwright test tests/visual/dashboard.visual.spec.js`
-- final repo status: frontend UI/runtime/accessibility closure is now consistent with the recorded completion state in `docs/todo.md`
+- final repo status: frontend UI/runtime/accessibility closure is now consistent with the recorded completion state in `docs/tasks.md`
 
 - compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
 - remove oversized empty-state framing and any layout that reserves space for absent content

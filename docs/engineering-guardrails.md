@@ -23,7 +23,7 @@ Open a focused refactor task only when one of these happens:
 
 ## What To Do When Triggered
 
-1. Add a task in `docs/todo.md` with the specific file and reason.
+1. Add a task in `docs/tasks.md` with the specific file and reason.
 2. Keep scope narrow: split only the hotspot module/concern involved.
 3. Add/adjust tests for the extracted behavior before merge.
 4. Run `npm run ci:verify`.

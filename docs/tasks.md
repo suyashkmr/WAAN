@@ -34,7 +34,7 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 - Deferred issues are not considered resolved by being mentioned in a closure note; they remain open until they are either:
   - fixed with recorded validation, or
-  - explicitly re-scoped into a dated follow-up task with clear ownership in `docs/todo.md`
+  - explicitly re-scoped into a dated follow-up task with clear ownership in `docs/tasks.md`
 - No deferred item may be closed implicitly by a later phase summary or by the completion of adjacent work.
 - Every phase that inherits deferred work must list the carried items explicitly in its own checklist before the parent phase can be marked complete.
 - If a deferred issue affects runtime behavior, visual correctness, accessibility, or release validation, the receiving phase must include the relevant automated checks and any required manual verification in its validation block.
@@ -50,7 +50,7 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
   - desktop, laptop, tablet, and mobile all preserve the intended hierarchy instead of regressing into breakpoint-specific exceptions
   - visual coverage includes the highest-risk states from every completed phase, not only the last phase worked on
   - final residual issues are either fixed before closeout or captured as explicit post-program follow-up items
-- Phase 46 cannot be marked complete until this whole-app finish checklist is satisfied and documented in both `docs/todo.md` and `docs/ui-overhaul-spec.md`.
+- Phase 46 cannot be marked complete until this whole-app finish checklist is satisfied and documented in both `docs/tasks.md` and `docs/ui-overhaul-spec.md`.
 
 ## Current State
 
@@ -547,8 +547,8 @@ Historical completed phases remain below. They are retained for audit history on
 
 - [x] Phase 17 (1-2 days): Release discipline and workflow hardening.
   - [x] Separate standing process rules from active engineering phases.
-    - [x] Converted completion policy and commit/process expectations from unchecked pseudo-tasks into standing rules so the active backlog reflects real engineering work only (`docs/todo.md`).
-    - [x] Reframed the top-of-file state note so open checklist items are no longer conflated with product implementation debt (`docs/todo.md`).
+    - [x] Converted completion policy and commit/process expectations from unchecked pseudo-tasks into standing rules so the active backlog reflects real engineering work only (`docs/tasks.md`).
+    - [x] Reframed the top-of-file state note so open checklist items are no longer conflated with product implementation debt (`docs/tasks.md`).
   - [x] Turn commit/push expectations into one explicit reusable workflow.
     - [x] Added `docs/release-discipline.md` covering the required `commit and sync` flow: identify batch with `git status --short`, run focused tests, run `npm run ci:verify`, re-check worktree, push, and verify the pushed SHA in GitHub Actions.
     - [x] Documented the UI-change addendum: `test:visual`, `test:accessibility-smoke`, intentional snapshot updates, and snapshot review notes (`docs/release-discipline.md`).
@@ -556,7 +556,7 @@ Historical completed phases remain below. They are retained for audit history on
     - [x] Updated `docs/release-smoke-checklist.md` so visual diffs must be followed by `test:visual` + accessibility smoke reruns and a snapshot review note.
     - [x] Added post-push GitHub Actions verification as an explicit release follow-through step (`docs/release-smoke-checklist.md`).
   - [x] Clean up stale open roadmap leftovers so the tracker matches the completed migration state.
-    - [x] Archived the stale old PrimeVue/migration follow-through as completed historical context instead of leaving misleading unchecked implementation bullets under already-closed phases (`docs/todo.md`).
+    - [x] Archived the stale old PrimeVue/migration follow-through as completed historical context instead of leaving misleading unchecked implementation bullets under already-closed phases (`docs/tasks.md`).
   - [x] Acceptance: release/process expectations are now explicit, reusable, and aligned with the commands the repo already treats as required gates.
 
 ## Next Wave: Excellence Across Core Quality
