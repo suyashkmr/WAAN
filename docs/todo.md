@@ -30,6 +30,16 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
   - the drift is fixed, or
   - the drift is explicitly re-scoped into a named follow-up task with clear ownership
 
+## Deferred Work Policy
+
+- Deferred issues are not considered resolved by being mentioned in a closure note; they remain open until they are either:
+  - fixed with recorded validation, or
+  - explicitly re-scoped into a dated follow-up task with clear ownership in `docs/todo.md`
+- No deferred item may be closed implicitly by a later phase summary or by the completion of adjacent work.
+- Every phase that inherits deferred work must list the carried items explicitly in its own checklist before the parent phase can be marked complete.
+- If a deferred issue affects runtime behavior, visual correctness, accessibility, or release validation, the receiving phase must include the relevant automated checks and any required manual verification in its validation block.
+- This policy applies to all future phases and post-closeout corrections, not only the current overhaul wave.
+
 ## Whole-App Finish Checklist
 
 - The Calm Instrument program is not complete when the last phase implementation lands; it is complete only after a whole-app finish sweep passes.
@@ -46,6 +56,62 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 - [x] Previous overhaul waves through Phase 35 are complete.
 - [x] Execute the Guided Analysis Studio overhaul plan in `docs/ui-overhaul-spec.md`.
+
+## Active Snapshot
+
+- In progress: post-Phase-46 frontend regression cleanup
+- Active phases: 3
+- Completed overhaul phases remain archived below for reference and audit history
+
+## Active Phases
+
+- [ ] Phase 47: Runtime Contract Repair.
+  - [ ] Fix the Electron relay autostart preference regression so `autostartRelay: false` is not overridden by unconditional `WAAN_AUTOSTART=1` startup wiring.
+  - [ ] Remove the workspace accessibility-toggle double-binding bug so `#reduce-motion-toggle` and `#high-contrast-toggle` do not dispatch both direct preference listeners and shell action handlers on the same click.
+  - [ ] Reconcile the live relay banner markup/CSS contract so the shipped `#relay-status-banner` surface still carries the `.relay-status-banner` class hook that its state styling, motion rules, and accessibility overrides depend on.
+  - [ ] Restore visible first-run setup progression: the shipped `first-run-steps` list is still rendered with `hidden`, while the runtime only unhides the parent setup surface.
+  - [ ] Reconcile the hero sync-indicator contract so `#hero-sync-dot` can actually become visible when runtime state changes, or remove the surface and its runtime ownership intentionally in the same pass.
+  - [ ] Reconcile the hero setup markup/CSS contract so shipped hero nodes carry the class hooks their styling and accessibility states still depend on (`.hero-status-badge`, `.hero-status-copy`, `.hero-status-meta`, `.hero-sync-dot`), or intentionally migrate the styles to the current ID-based contract.
+  - [ ] Reconcile the hero milestone progression contract: either restore shipped `#hero-milestones` markup for the runtime-owned connect/sync/ready progression, or remove the runtime/test ownership of that deleted surface entirely.
+  - [ ] Restore or intentionally remove the dashboard note surfaces that runtime still writes into but shipped markup no longer provides (`participants-note`, `message-types-note`, `polls-note`).
+
+- [ ] Phase 48: Contract and Documentation Cleanup.
+  - [ ] Remove remaining stale setup-state assumptions from active runtime and test helpers, including `.relay-step`, `.relay-step-detail`, and `#hero-milestones` paths that no longer match the shipped SFC layout.
+  - [ ] Remove or retire dead runtime ownership of legacy relay onboarding surfaces now that `relayOnboardingSteps` is intentionally empty in the shipped SFC contract.
+  - [ ] Reconcile stale onboarding/runtime test fixtures so contract tests no longer validate deleted relay onboarding or hero milestone surfaces as if they were still part of the shipped DOM.
+  - [ ] Refresh stale capture/docs references that still target deleted UI such as `#hero-panel`, `relay-status-message`, and `relay-status-meta`, including `docs/ui-phase1-baseline-capture.md` and the phase-capture scripts.
+  - [ ] Reconcile docs/runtime architecture claims around fallback removal so current docs and release notes do not overstate a no-fallback runtime while active app-shell/dashboard/status fallback branches still exist in production code.
+  - [ ] Update stale DOM-contract tests so fixtures/assertions no longer treat deleted setup surfaces as part of the active shipped contract, including `tests/domRefs.test.js` and the visual helper setup in `tests/visual/dashboard.visual.spec.js`.
+  - [ ] Update `docs/ui-overhaul-spec.md` so the recorded frontend closeout status matches actual repo health after this reopened cleanup pass.
+
+- [ ] Phase 49: Validation and Reclose.
+  - [ ] Reconcile the current desktop accessibility-smoke failures:
+    - [ ] reduced-motion and high-contrast toggle state application must complete after activating `#reduce-motion-toggle` and `#high-contrast-toggle`
+    - [ ] migrated command controls must remain keyboard-focusable in the real browser path after bridge/mount settlement
+  - [ ] Reconcile the current visual regressions in the dirty tree and decide explicitly whether each failure is a real UI bug or a stale baseline before updating snapshots:
+    - [ ] `long-form-dashboard-desktop`
+    - [ ] `search-panel-desktop`
+    - [ ] `message-types-desktop`
+    - [ ] `relay-state-offline-desktop`
+    - [ ] `relay-state-offline-mobile`
+  - [ ] Validate with:
+    - [ ] `npm run ci:verify`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] Manual verification at `1440 / 1024 / 768 / 390` for:
+      - [ ] saved autostart-off launch behavior
+      - [ ] first-run setup progression visibility
+      - [ ] hero sync/milestone setup states
+      - [ ] accessibility toggles and bridged command-control focus
+  - [ ] Complete closure audit:
+    - [ ] Confirm runtime, markup, tests, scripts, and docs now agree on the setup/hero/relay contracts.
+    - [ ] Confirm no deleted setup/hero surfaces remain active runtime targets unless they were intentionally restored in markup in the same pass.
+    - [ ] Confirm no workspace utility control is double-bound through both direct listeners and shell-action dispatch.
+    - [ ] Confirm the reopened regressions are fixed with recorded validation rather than silently folded into prior closed phases.
+
+## Completed Archive
+
+Historical completed phases remain below. They are retained for audit history only and are not active work.
 
 ## Next Wave: Calm Instrument Overhaul
 
@@ -80,49 +146,86 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Audit adjacent workspace/search shell selectors for regressions that re-expand the top lane or split the command surface back into peers.
     - [x] Confirm visual coverage includes ready, syncing, linking, offline, and no-chat-selected variants at 1440 / 1024 / 768 / 390.
     - [x] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
-- [ ] Phase 44: Guided Findings as Editorial Sequence.
-  - [ ] Reframe overview, highlights, participants, and timing into a stronger vertical editorial sequence in `index.html`, `styles.components.css`, and `styles/components/analytics.css`.
-  - [ ] Promote one key takeaway per section and demote secondary evidence until interaction or deeper inspection.
-  - [ ] Remove equal-weight side-by-side layouts unless one lane is clearly subordinate.
-  - [ ] Confirm users can answer what happened, who drove it, and when it happened without scanning the full page.
-  - [ ] Complete closure audit:
-    - [ ] Confirm the editorial-sequence target is met in every scoped file.
-    - [ ] Audit neighboring deep-dive/support sections for layout patterns that still break the findings hierarchy.
-    - [ ] Confirm visual coverage includes the key guided-reading path and breakpoint parity.
-    - [ ] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
-- [ ] Phase 45: Deep-Dive Tools as Progressive Disclosure.
-  - [ ] Redesign search, saved views, compare, weekly/daily patterns, message mix, polls, and related utilities as quieter inspect/compare/export tools.
-  - [ ] Keep current hooks and behavior, but hide management density until the user opts into it.
-  - [ ] Build from the current shipped deep-dive baseline, not the older split-lane assumption:
-    - saved views now uses a vertical flow with command tools on top and gallery/compare output below
-    - saved-view gallery cards now render directly through the Vue bridge instead of the old PrimeVue `DataView` wrapper path
-  - [ ] Rework `styles/components/search-saved.css`, `styles/components/analytics.css`, `styles.components.css`, and `index.html` so lower tools no longer compete with guided findings.
-  - [ ] Expand visual coverage in `tests/visual/dashboard.visual.spec.js` for collapsed, expanded, and compare-heavy deep-dive states.
-  - [ ] Complete closure audit:
-    - [ ] Confirm the progressive-disclosure target is met in every scoped file.
-    - [ ] Audit adjacent shell/findings selectors for new chrome drift or disclosure-state regressions.
-    - [ ] Confirm visual coverage includes collapsed, expanded, empty, compare-heavy, and breakpoint variants.
-    - [ ] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
-- [ ] Phase 46: Motion, State Quality, and Product Finish.
-  - [ ] Add restrained motion for reveal, focus, and state transitions without introducing gratuitous animation.
-  - [ ] Refine loading, empty, syncing, compare, and export states so they feel intentional and premium.
-  - [ ] Refresh the shell contracts in `docs/ui-primitives.md` and `docs/design-tokens.md`.
-  - [ ] Complete the whole-app finish sweep:
-    - [ ] Audit setup, workspace, guided findings, deep-dive tools, and support together as one uninterrupted product session.
-    - [ ] Confirm no previously completed phase regressed into a visibly older or competing design language.
-    - [ ] Confirm breakpoint parity at 1440 / 1024 / 768 / 390 for the full journey, not only isolated sections.
-    - [ ] Capture any post-program residual issues as explicit follow-up TODO items before final closure.
-  - [ ] Complete final validation:
-    - [ ] `npm run check:types`
-    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
-    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
-    - [ ] `npm run test:accessibility-smoke`
-    - [ ] `npm run ci:verify`
-  - [ ] Complete closure audit:
-    - [ ] Confirm motion/state-finish targets are met in every scoped file and state family.
-    - [ ] Audit all previously touched shell, findings, and deep-dive surfaces for regressions introduced by finish work.
-    - [ ] Confirm final visual/accessibility/release gates cover the shipped interaction states and breakpoint set.
-    - [ ] Record dated final closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
+- [x] Proceeding Phase 44: Relay Surface State Repair.
+  - [x] Fix the relay QR visibility contract so `waiting_qr` reliably reveals [`#relay-qr-container`](/Users/suyash/Antigravity/WAAN/src/components/WorkspaceSidebar.vue).
+  - [x] Fix the relay sync-progress visibility contract so syncing states reliably reveal [`#relay-sync-progress`](/Users/suyash/Antigravity/WAAN/src/components/WorkspaceSidebar.vue).
+  - [x] Standardize relay state visibility toggles to use one mechanism consistently across markup and runtime.
+  - [x] Verify the relay sidebar connected/waiting/syncing states render their intended visible sub-surfaces instead of only updating detached or hidden nodes.
+  - [x] Add regression coverage for visible relay sidebar states: connected, waiting for QR, and syncing.
+  - [x] Validate with:
+    - [x] `npx vitest --run tests/relayControls.test.js tests/relayStatusApply.test.js tests/relayStatusRenderer.test.js`
+    - [x] `npm run build`
+    - [x] Adjacent confidence check: `npx vitest --run tests/releaseRelayTransitions.test.js`
+  - [x] Complete closure audit:
+    - [x] Confirm QR visibility is controlled consistently in the DOM fallback and Vue-rendered status surface paths.
+    - [x] Confirm sync-progress visibility is controlled consistently in the sync-progress controller and that relay controller wiring includes the sync step refs required for visible syncing-state updates.
+    - [x] Confirm connected, waiting, and syncing states update the visible sidebar-owned relay surface instead of detached nodes.
+    - [x] Confirm remaining onboarding, bootstrap, mobile overlay, and broader visual/accessibility issues remain explicitly deferred to Phases 45-46.
+    - [x] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
+
+- [x] Proceeding Phase 45: Bootstrap and Onboarding Contract Repair.
+  - [x] Keep all Phase 44 deferred frontend issues explicitly owned by Phase 45 or Phase 46; do not close this phase while any inherited item is unowned.
+  - [x] Retarget onboarding steps from deleted selectors like `#relay-live-card` to the current sidebar relay surfaces.
+  - [x] Remove or replace dead relay onboarding selector paths that still read `.relay-step` / `data-step-id` nodes no longer present in the shipped SFC layout.
+  - [x] Repair first-run relay helper flows that still depend on `relayLiveCard`, including the "open relay" jump path and any DOM refs that silently resolve to removed nodes.
+  - [x] Fix tablet/mobile workspace utility interaction blocking so accessibility toggles and first-run actions are not covered by section-nav, dataset-empty, or other overlaying surfaces during real browser interaction.
+  - [x] Make relay bootstrap tolerant of mount timing so missing Vue-managed relay controls do not hard-fail app-shell startup.
+  - [x] Restore `appShell` boot coverage against the current sidebar contract and make the boot path pass without brittle sequencing assumptions.
+  - [x] Re-check startup, onboarding, and first-run relay flows end to end after the bootstrap changes.
+  - [x] Validate with:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/bootstrapBridgeReadiness.test.js tests/vueAppShellRoot.test.js tests/relayControls.test.js`
+    - [x] `npm run build`
+    - [x] real-browser startup / onboarding / first-run verification
+  - [x] Complete closure audit:
+    - [x] Confirm onboarding targets, first-run relay helpers, bootstrap sequencing, and app-shell boot coverage all reflect the current sidebar contract.
+    - [x] Confirm tablet/mobile utility controls no longer suffer pointer interception in the stacked layout.
+    - [x] Confirm inherited Phase 44 issues were either fixed here or explicitly carried into Phase 46.
+    - [x] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
+
+- [x] Proceeding Phase 46: Shell Contract and Coverage Reconciliation.
+  - [x] Do not close the Calm Instrument frontend work while any deferred UI/runtime/accessibility issue from Phases 44-45 remains open.
+  - [x] Fix the Playwright web-server contract so the default visual/accessibility sweep starts the app on the same host/port it waits for instead of requiring a manual workaround (`playwright.config.js` vs `vite.config.js` / `npm start`).
+  - [x] Remove remaining stale shell mount assumptions that still point at pre-overhaul DOM contracts such as `#relay-live-card` and `#actions-toolbar`.
+  - [x] Reconcile shipped workspace markup with shell primitive mounts so runtime targets like the export toolbar mount point actually exist in the SFC layout.
+  - [x] Repair the custom range control row layout so the apply button sits below or in line with the date inputs across desktop, tablet, and mobile according to the visual contract checks.
+  - [x] Reconcile workspace-stage geometry with the shipped baselines: the current sidebar/content composition materially changes workspace height and width at desktop, tablet, and mobile breakpoints.
+  - [x] Reconcile dashboard panel mount contracts: the runtime still looks for `.participants-controls`, `.participants-quick-filters`, `.hourly-controls`, `.weekday-controls`, and `.timeofday-controls`, but those hooks are absent from the shipped findings/deep-dive components.
+  - [x] Decide whether those missing dashboard control mount roots should be restored in markup or removed from the runtime/test contract entirely, then update implementation accordingly.
+  - [x] Reconcile participant control option/value contracts between the shipped SFC selects and the dashboard bridge/runtime defaults so top-count, sort, and timeframe controls cannot drift into mismatched or invalid states.
+  - [x] Restore participant metric-help accessibility affordances or update the accessibility contract intentionally: the real UI currently lacks the expected `aria-describedby`-linked help targets for participants metrics.
+  - [x] Add missing accessibility metadata on support/diagnostics actions such as `#relay-log-close`, which is visible but currently lacks the title text expected by the smoke suite.
+  - [x] Fix mobile command-surface keyboard focus flow so migrated search and workspace controls remain focusable in the real browser path, not only in unit tests.
+  - [x] Reconcile the mobile relay visual contract: current Playwright relay-state scenarios still target `#hero-panel`, but the shipped SFC layout no longer provides that node.
+  - [x] Align visual/integration tests with the shipped relay sidebar contract (`relay-connection-status`, `relay-account-name`, current toolbar and action containers).
+  - [x] Refresh stale spec/docs references that still describe deleted DOM such as `#relay-live-card` and `#actions-toolbar`.
+  - [x] Sweep remaining old control-anchor and legacy contract references so runtime and tests reflect the current SFC layout consistently.
+  - [x] Carry forward and explicitly close the inherited deferred frontend items from earlier phases:
+    - [x] onboarding retargeting and dead relay onboarding selectors
+    - [x] bootstrap hard-failure repair
+    - [x] tablet/mobile pointer interception over utility and first-run controls
+    - [x] Playwright host/port mismatch
+    - [x] accessibility smoke failures
+    - [x] mobile relay visual contract drift
+  - [x] Complete the final frontend stabilization pass before treating the overhaul as closed:
+    - [x] Remove duplicate relay object-key drift from shared relay wiring and contract fixtures so `ci:verify` passes cleanly.
+    - [x] Stabilize migrated command-control accessibility smoke coverage against the final bridged control contract instead of transient pre-bridge nodes.
+    - [x] Stabilize mobile relay and workspace visual scenarios against late runtime state settlement so the full dashboard visual matrix is deterministic.
+    - [x] Reconfirm docs only claim completion after the repo is actually green.
+  - [x] Re-run targeted visual and interaction coverage for relay, onboarding, section nav, toolbar, and deep-dive control surfaces.
+  - [x] Complete closure audit:
+    - [x] Confirm runtime selectors, shell mounts, and tests all target the same shipped DOM contract.
+    - [x] Confirm no deleted pre-overhaul relay/search/saved-view selectors remain in active runtime paths.
+    - [x] Confirm no runtime bridge expects mount containers that are absent from the shipped SFC markup.
+    - [x] Confirm targeted visual and bootstrap coverage exercises the current SFC layout instead of archived DOM shapes.
+    - [x] Confirm every deferred issue inherited by this phase was either fixed with validation or re-scoped in a dated closure note with clear ownership.
+    - [x] Record dated closeout and residual-risk boundaries in `docs/ui-overhaul-spec.md`.
+  - [x] Validate with:
+    - [x] `npx vitest --run tests/appShellBoot.test.js tests/domRefs.test.js tests/vueAppShellRoot.test.js tests/relayControls.test.js tests/shellPrimitiveViews.test.js tests/dashboardPanelsIsland.test.js tests/mainBootSequence.test.js`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+    - [x] Manual breakpoint verification at `1440 / 1024 / 768 / 390`
 
 ## Next Wave: Guided Analysis Studio Overhaul
 
