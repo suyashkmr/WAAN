@@ -62,7 +62,6 @@ export function createAppDomRefGroups(refs) {
       firstRunSetupSteps: refs.firstRunSetupSteps,
       firstRunOpenRelayButton: refs.firstRunOpenRelayButton,
       firstRunPrimaryActionButton: refs.firstRunPrimaryActionButton,
-      relayLiveCard: refs.relayLiveCard,
       chatSelector: refs.chatSelector,
       logDrawerToggleButton: refs.logDrawerToggleButton,
       logDrawerEl: refs.logDrawerEl,

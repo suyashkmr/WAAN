@@ -8,52 +8,6 @@ export {
 
 /**
  * @param {any} h
- * @param {(actionId: string) => void} onAction
- */
-export function createRelayBannerRoot(h, onAction) {
-  return {
-    name: "RelayBannerPrimitive",
-    render() {
-      return [
-        h("div", { class: "relay-banner-indicator", id: "relay-status-dot", "aria-hidden": "true" }),
-        h("div", { class: "relay-banner-text" }, [
-          h("p", { class: "relay-banner-status", id: "relay-status-message" }, "Relay offline."),
-          h(
-            "p",
-            { class: "relay-banner-meta", id: "relay-status-meta" },
-            UI_COPY.relay.banner.offlineMeta,
-          ),
-        ]),
-        h("div", { class: "relay-banner-actions", id: "relay-status-actions", hidden: true }, [
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button small",
-            id: "relay-recovery-reconnect",
-            text: "Reconnect",
-            onClick: () => onAction("relay.recoveryReconnect"),
-          }),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button small",
-            id: "relay-recovery-resync",
-            text: "Resync",
-            onClick: () => onAction("relay.recoveryResync"),
-          }),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button small",
-            id: "relay-recovery-export",
-            text: "Export diagnostics",
-            onClick: () => onAction("relay.recoveryExportDiagnostics"),
-          }),
-        ]),
-      ];
-    },
-  };
-}
-
-/**
- * @param {any} h
  * @param {(actionId: string, payload?: any) => void} onAction
  */
 export function createActionsToolbarRoot(h, onAction) {

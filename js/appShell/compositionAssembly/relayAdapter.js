@@ -43,7 +43,6 @@ export function createRelayCompositionAdapter({ dom, state, wiring, withGlobalBu
       firstRunSetupSteps: dom.firstRunSetupSteps,
       firstRunOpenRelayButton: dom.firstRunOpenRelayButton,
       firstRunPrimaryActionButton: dom.firstRunPrimaryActionButton,
-      relayLiveCard: dom.relayLiveCard,
       chatSelector: dom.chatSelector,
     },
     relayHelpers: {

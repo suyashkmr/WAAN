@@ -21,6 +21,10 @@
     min-width: 0;
 }
 
+.waan-prime-select-icon {
+    color: var(--text-muted);
+}
+
 .waan-native-bridge-control {
     position: absolute !important;
     width: 1px !important;
@@ -1789,15 +1793,6 @@ body[data-reduce-motion="true"] :is(.card, .app-panel-shell):hover .section-icon
     transform: none;
 }
 
-body[data-reduce-motion="true"] .hero-sync-dot[data-state="syncing"] {
-    animation: none;
-}
-
-body[data-reduce-motion="true"] .hero-status-badge.hero-status-badge-ready,
-body[data-reduce-motion="true"] .hero-status-badge[data-state="starting"],
-body[data-reduce-motion="true"] .hero-milestone.is-ready-celebration::after {
-    animation: none;
-}
 
 body[data-reduce-motion="true"] .section-nav a.active {
     transform: none;
@@ -1809,12 +1804,6 @@ body[data-reduce-motion="true"] .section-nav a[aria-current="page"] {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
-body[data-reduce-motion="true"] #search-panel .search-control :is(input, select),
-body[data-reduce-motion="true"] #saved-views-card :is(.saved-view-actions, .saved-view-compare) :is(input, select, .ghost-button),
-body[data-reduce-motion="true"] #search-panel .search-actions .ghost-button,
-body[data-reduce-motion="true"] .section-nav a {
-    transition: none;
-}
 
 @keyframes card-in {
     from {
@@ -3109,7 +3098,7 @@ select, input[type="date"], input[type="text"], input[type="search"] {
     color: var(--text) !important;
     padding: 0.5rem 0.75rem;
     border-radius: 4px;
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-display);
     font-size: 0.9rem;
     outline: none;
     transition: border-color var(--motion-duration-fast) var(--motion-ease-out);
@@ -5983,7 +5972,7 @@ h1, h2, h3, h4, .studio-stage-title-group h2, .workspace-stage-header h2, .datas
     z-index: 1000;
 }
 #global-progress-label {
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-display);
     color: var(--text);
     font-size: 0.9rem;
 }
@@ -6006,5 +5995,5 @@ h1, h2, h3, h4, .studio-stage-title-group h2, .workspace-stage-header h2, .datas
     color: var(--muted) !important;
     max-width: 440px;
     line-height: 1.6;
-    font-family: var(--font-family-base) !important;
+    font-family: var(--font-family-display) !important;
 }

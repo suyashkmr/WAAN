@@ -122,6 +122,7 @@ function startRelayProcess({ autostart = true } = {}) {
       WAAN_API_PORT: String(DEFAULT_API_PORT),
       WAAN_RELAY_PORT: String(DEFAULT_RELAY_PORT),
       WAAN_RELAY_HEADLESS: "false",
+      WAAN_AUTOSTART: "1",
     },
   });
 }
@@ -420,6 +421,7 @@ app
   .whenReady()
   .then(async () => {
     try {
+      await require("electron").session.defaultSession.clearCache();
       initAutostartPreference();
       await startBackend();
       createWindow();

@@ -54,11 +54,14 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     logDrawerList,
     logDrawerConnectionLabel,
     relaySyncProgressEl,
+    relaySyncChatsStep,
+    relaySyncMessagesStep,
     relaySyncChatsMeta,
     relaySyncMessagesMeta,
     firstRunSetup,
     firstRunSetupSteps,
     firstRunPrimaryActionButton,
+    chatSelector,
   } = elements;
 
   const {
@@ -147,8 +150,12 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       firstRunSetup,
       firstRunSetupSteps,
       firstRunPrimaryActionButton,
+      relayBannerEl,
+      chatSelector,
       relayStartButton,
       relaySyncProgressEl,
+      relaySyncChatsStep,
+      relaySyncMessagesStep,
       relaySyncChatsMeta,
       relaySyncMessagesMeta,
       logDrawerToggleButton,

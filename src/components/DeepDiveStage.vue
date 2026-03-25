@@ -27,7 +27,9 @@
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors" id="download-search-results">Download CSV</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="search-panel-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="search-panel-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="search-panel-content">
@@ -36,10 +38,12 @@
                   <label for="search-keyword" class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider transition-colors">Keywords</label>
                   <input type="text" id="search-keyword" placeholder="e.g. launch plan" autocomplete="off" class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
                 </div>
-                <div class="flex flex-col gap-1.5">
-                  <label for="search-participant" class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Participant</label>
-                  <div id="search-participant-anchor" data-native-select-seed="search-participant" class="w-full"></div>
-                </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label for="search-participant" class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Participant</label>
+                    <select id="search-participant" class="w-full appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                      <option value="">All participants</option>
+                    </select>
+                  </div>
                 <div class="flex flex-col gap-1.5">
                   <label for="search-start" class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Start date</label>
                   <input type="date" id="search-start" class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
@@ -79,7 +83,9 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2">
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="saved-views-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="saved-views-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col lg:flex-row gap-6" id="saved-views-content">
@@ -92,10 +98,12 @@
                   </div>
                 </div>
                 <div class="flex flex-col gap-3 bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
-                  <label class="flex flex-col gap-1.5" for="saved-view-list">
-                    <span class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Manage Views</span>
-                    <div id="saved-view-list-anchor" data-native-select-seed="saved-view-list"></div>
-                  </label>
+                      <label class="flex flex-col gap-1.5" for="saved-view-list">
+                      <span class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Manage Views</span>
+                      <select id="saved-view-list" class="w-full appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                        <option value="">No saved views yet</option>
+                      </select>
+                    </label>
                   <div class="flex gap-2">
                     <button type="button" class="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="apply-saved-view">Load</button>
                     <button type="button" class="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-red-900/40 hover:bg-red-900/20 text-red-400 transition-colors" id="delete-saved-view">Delete</button>
@@ -105,11 +113,15 @@
                   <span class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider border-b border-[var(--border)] pb-2 mb-1">Compare</span>
                   <div class="flex flex-col gap-1.5">
                     <label for="compare-view-a" class="text-[var(--text)] text-sm">View A</label>
-                    <div id="compare-view-a-anchor" data-native-select-seed="compare-view-a"></div>
+                    <select id="compare-view-a" class="w-full appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                      <option value="">Select view</option>
+                    </select>
                   </div>
                   <div class="flex flex-col gap-1.5">
                     <label for="compare-view-b" class="text-[var(--text)] text-sm">View B</label>
-                    <div id="compare-view-b-anchor" data-native-select-seed="compare-view-b"></div>
+                    <select id="compare-view-b" class="w-full appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                      <option value="">Select view</option>
+                    </select>
                   </div>
                   <button type="button" class="w-full mt-2 px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors" id="compare-views">Compare views</button>
                 </div>
@@ -142,7 +154,9 @@
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-weekly">Download CSV</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="weekly-trend-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="weekly-trend-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="weekly-trend-content">
@@ -179,7 +193,9 @@
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-daily">Download CSV</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="daily-activity-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="daily-activity-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="daily-activity-content">
@@ -206,11 +222,13 @@
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-weekday">Download CSV</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="weekday-trend-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="weekday-trend-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="weekday-trend-content">
-              <div class="flex flex-col gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
+              <div class="weekday-controls flex flex-col gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                  <div class="flex items-center gap-4">
                     <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="weekday-toggle-weekdays" checked class="accent-[#8b5cf6] h-4 w-4"> Weekdays</label>
                     <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="weekday-toggle-weekends" checked class="accent-[#8b5cf6] h-4 w-4"> Weekends</label>
@@ -240,11 +258,13 @@
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-timeofday">Download CSV</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="timeofday-trend-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="timeofday-trend-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="timeofday-trend-content">
-              <div class="flex flex-col gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
+              <div class="timeofday-controls flex flex-col gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                  <div class="flex items-center gap-4">
                     <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="timeofday-toggle-weekdays" checked class="accent-[#f59e0b] h-4 w-4"> Weekdays</label>
                     <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="timeofday-toggle-weekends" checked class="accent-[#f59e0b] h-4 w-4"> Weekends</label>
@@ -273,7 +293,9 @@
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-sentiment">Download CSV</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="sentiment-overview-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="sentiment-overview-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="sentiment-overview-content">
@@ -324,7 +346,9 @@
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-message-types">Download CSV</button>
                 <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-chat-json">Download JSON</button>
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="message-types-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="message-types-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col gap-6" id="message-types-content">
@@ -390,7 +414,9 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="polls-content">▾</button>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="polls-content">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
               </div>
             </div>
             <div class="p-5 flex flex-col md:flex-row gap-6" id="polls-content">

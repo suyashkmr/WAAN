@@ -77,6 +77,7 @@ function ensureBridgeMount(selectEl, inputId, preserveNativeId = false) {
   const mount = ownerDocument.createElement("div");
   mount.id = createBridgeMountId(inputId);
   mount.className = "prime-select-bridge";
+  mount.dataset.bridgeReady = "false";
   if (preserveNativeId) {
     const wrappingLabel = selectEl.parentElement instanceof HTMLLabelElement ? selectEl.parentElement : null;
     if (wrappingLabel) {
@@ -239,6 +240,8 @@ export function syncPrimeSelectBridge({
     configurePrimeVueApp(VueRuntime.createApp(Root), globalScope).mount(mountEl);
     hideNativeSelect(selectEl, inputId, preserveNativeId, detachPreservedNative);
     syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
+    mountEl.dataset.bridgeReady = "true";
+    mountEl.dataset.bridgeInputId = inputId;
     bridge = { state, mountEl };
     registerBridgeState(selectEl.ownerDocument, inputId, bridge);
     registerBridgeState(selectEl.ownerDocument, resolvedVisibleInputId, bridge);
@@ -249,6 +252,10 @@ export function syncPrimeSelectBridge({
   bridge.state.disabled = Boolean(disabled);
   hideNativeSelect(selectEl, inputId, preserveNativeId, detachPreservedNative);
   syncVisibleLabelTarget(selectEl, inputId, preserveNativeId, resolvedVisibleInputId);
+  if (bridge?.mountEl) {
+    bridge.mountEl.dataset.bridgeReady = "true";
+    bridge.mountEl.dataset.bridgeInputId = inputId;
+  }
   return true;
 }
 

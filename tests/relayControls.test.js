@@ -5,9 +5,6 @@ import { clearVueBridgeRuntime, installShellVueBridge } from "./vueBridgeTestUti
 import { installTestUiGlobals, resetTestUiGlobals } from "./uiTestHarness.js";
 
 function buildRelayElements() {
-  const relayLiveCard = document.createElement("section");
-  relayLiveCard.id = "relay-live-card";
-  document.body.appendChild(relayLiveCard);
   const chatSelector = document.createElement("select");
   chatSelector.id = "chat-selector";
   document.body.appendChild(chatSelector);
@@ -18,13 +15,15 @@ function buildRelayElements() {
   const relayReloadAllButton = document.createElement("button");
   const relayClearStorageButton = document.createElement("button");
   const relayStatusEl = document.createElement("div");
+  relayStatusEl.id = "relay-connection-status";
   const relayAccountEl = document.createElement("div");
+  relayAccountEl.id = "relay-account-name";
   const relayQrContainer = document.createElement("div");
   const relayQrImage = document.createElement("img");
   const relayHelpText = document.createElement("div");
   const relayBannerEl = document.createElement("div");
-  const relayBannerMessage = document.createElement("div");
-  const relayBannerMeta = document.createElement("div");
+  const relayBannerMessage = relayStatusEl;
+  const relayBannerMeta = relayAccountEl;
   const relayBannerActions = document.createElement("div");
   relayBannerActions.setAttribute("hidden", "");
   const relayRecoveryReconnectButton = document.createElement("button");
@@ -41,6 +40,8 @@ function buildRelayElements() {
   const logDrawerList = document.createElement("div");
   const logDrawerConnectionLabel = document.createElement("div");
   const relaySyncProgressEl = document.createElement("div");
+  relaySyncProgressEl.classList.add("hidden");
+  relaySyncProgressEl.setAttribute("hidden", "");
   const chatsStep = document.createElement("div");
   chatsStep.dataset.step = "chats";
   const messagesStep = document.createElement("div");
@@ -91,7 +92,6 @@ function buildRelayElements() {
     firstRunSetupSteps,
     firstRunOpenRelayButton,
     firstRunPrimaryActionButton,
-    relayLiveCard,
     chatSelector,
   };
 }
@@ -279,6 +279,140 @@ describe("relayControls", () => {
     await controller.refreshRelayStatus({ silent: true });
 
     expect(elements.relayBannerActions.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("updates the visible sidebar connected state when banner and status nodes are shared", async () => {
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) {
+            return {
+              status: "running",
+              account: { pushName: "Alice" },
+              chatCount: 7,
+              syncingChats: false,
+              syncPath: "primary",
+              lastSyncDurationMs: 820,
+            };
+          }
+          if (url.endsWith("/api/chats")) return { chats: [{ id: "chat-1", name: "General" }] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayStatusEl.textContent).toBe("Connected: Alice.");
+    expect(elements.relayAccountEl.textContent).toBe("Logged in as Alice");
+  });
+
+  it("reveals the visible QR panel when relay status enters waiting_qr", async () => {
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) {
+            return {
+              status: "waiting_qr",
+              lastQr: "data:image/png;base64,qr",
+            };
+          }
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => 0),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relayQrContainer.classList.contains("hidden")).toBe(false);
+    expect(elements.relayQrContainer.hasAttribute("hidden")).toBe(false);
+    expect(elements.relayQrImage.getAttribute("src")).toBe("data:image/png;base64,qr");
+  });
+
+  it("reveals the visible sync panel when relay status is syncing chats", async () => {
+    const elements = buildRelayElements();
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) {
+            return {
+              status: "running",
+              account: { pushName: "Alice" },
+              chatCount: 4,
+              syncingChats: true,
+              syncPath: "primary",
+            };
+          }
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => 0),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(elements.relaySyncProgressEl.classList.contains("hidden")).toBe(false);
+    expect(elements.relaySyncProgressEl.hasAttribute("hidden")).toBe(false);
+    expect(elements.relaySyncChatsStep.dataset.state).toBe("complete");
+    expect(elements.relaySyncMessagesStep.dataset.state).toBe("active");
   });
 
   it("primary action switches to resync when running and triggers sync path", async () => {
@@ -503,6 +637,119 @@ describe("relayControls", () => {
     expect(elements.firstRunPrimaryActionButton.textContent).toBe("Pick a chat");
     expect(scrollPageControl).toHaveBeenCalledWith("chat");
     expect(focusPageControl).toHaveBeenCalledWith("chat");
+  });
+
+  it("falls back to the live chat selector when first-run chat selection runs without shell bridge controls", async () => {
+    const runningStatus = {
+      status: "running",
+      account: { pushName: "Alice" },
+      chatCount: 2,
+      syncingChats: false,
+    };
+    const elements = buildRelayElements();
+    const scrollSpy = vi.spyOn(elements.chatSelector, "scrollIntoView").mockImplementation(() => {});
+    const focusSpy = vi.spyOn(elements.chatSelector, "focus").mockImplementation(() => {});
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async url => {
+          if (url.endsWith("/relay/status")) return runningStatus;
+          if (url.endsWith("/api/chats")) return { chats: [] };
+          return {};
+        }),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+    controller.handleFirstRunPrimaryAction();
+
+    expect(elements.firstRunPrimaryActionButton.textContent).toBe("Pick a chat");
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: "auto", block: "center" });
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("scrolls the visible relay banner when first-run open relay is triggered", () => {
+    const elements = buildRelayElements();
+    const scrollSpy = vi.spyOn(elements.relayBannerEl, "scrollIntoView").mockImplementation(() => {});
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async () => ({})),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => 0),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    controller.handleFirstRunOpenRelay();
+
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: "auto", block: "center" });
+  });
+
+  it("uses the live relay start button when first-run primary action is triggered offline", () => {
+    const elements = buildRelayElements();
+    const clickSpy = vi.spyOn(elements.relayStartButton, "click").mockImplementation(() => {});
+    const controller = createRelayController({
+      elements,
+      helpers: {
+        updateStatus: vi.fn(),
+        withGlobalBusy: vi.fn(async task => task()),
+        fetchJson: vi.fn(async () => ({})),
+        setRemoteChatList: vi.fn(),
+        getRemoteChatList: vi.fn(() => []),
+        getRemoteChatsLastFetchedAt: vi.fn(() => 0),
+        refreshChatSelector: vi.fn(async () => {}),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        getDataAvailable: vi.fn(() => false),
+        updateHeroRelayStatus: vi.fn(),
+        applyEntriesToApp: vi.fn(async () => {}),
+        encodeChatSelectorValue: vi.fn((source, id) => `${source}:${id}`),
+      },
+      electronAPI: {
+        setRelayAutostart: vi.fn(),
+        updateRelayStatus: vi.fn(),
+        notifySyncSummary: vi.fn(),
+      },
+    });
+
+    controller.handleFirstRunPrimaryAction();
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 
   it("shows guided recovery actions for degraded sync and runs recovery handlers", async () => {

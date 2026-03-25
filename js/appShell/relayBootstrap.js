@@ -90,7 +90,8 @@ export function createRelayBootstrapController({
    * @param {any} [payload]
    */
   function dispatchRelayPrimaryAction(payload = null) {
-    const startButton = resolveRelayButtonFromPayload(payload, relayStartButton);
+    const startButton = resolveRelayButtonFromPayload(payload, relayStartButton)
+      ?? /** @type {HTMLButtonElement | null} */ (documentRef?.getElementById?.("relay-start") ?? null);
     handleRelayPrimaryActionClick({
       ...(payload && typeof payload === "object" ? payload : {}),
       currentTarget: startButton,
@@ -125,8 +126,15 @@ export function createRelayBootstrapController({
   }
 
   function initRelayControls() {
-    if (!relayStartButton || !relayStatusEl) {
-      return;
+    // Re-query: relay-start is Vue-rendered, may be null in domRefs initially.
+    const liveStartButton = relayStartButton
+      ?? /** @type {HTMLButtonElement | null} */ (documentRef?.getElementById?.("relay-start") ?? null);
+    const liveStatusEl = relayStatusEl
+      ?? documentRef?.getElementById?.("relay-connection-status")
+      ?? null;
+
+    if (!liveStartButton || !liveStatusEl) {
+      // Continue anyway; guards below will catch mounting state.
     }
 
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
@@ -150,15 +158,21 @@ export function createRelayBootstrapController({
       "relay.recoveryExportDiagnostics": handleRecoveryExportDiagnostics,
     });
 
-    const liveActionsVueManaged =
-      relayStartButton?.closest?.(".live-actions")?.dataset?.vuePrimitiveMounted === "true";
-    const headerActionsVueManaged =
-      relayReloadAllButton?.closest?.(".card-header-actions")?.dataset?.vuePrimitiveMounted === "true";
-    if (!liveActionsVueManaged || !headerActionsVueManaged) {
-      throw new Error("Relay action groups must be Vue-managed before relay controls initialize.");
+    // Consistently re-query at runtime: all relay controls are now Vue-rendered into 
+    // #relay-sidebar-live-actions. Outer references from domRefs may be null 
+    // if initialization happens before Vue finishes mounting.
+    const liveActionsContainer = documentRef?.getElementById?.("relay-sidebar-live-actions")
+      ?? relayStartButton?.closest?.(".live-actions")
+      ?? null;
+    
+    const liveActionsVueManaged = liveActionsContainer?.dataset?.vuePrimitiveMounted === "true";
+
+    if (!liveActionsVueManaged) {
+      console.warn("Relay action group is not Vue-managed yet; continuing bootstrap and relying on late-mounted shell actions.");
     }
     void relayStopButton;
     void relayLogoutButton;
+    void relayReloadAllButton;
     void relayClearStorageButton;
     void logDrawerToggleButton;
     logDrawerCloseButton?.addEventListener("click", closeLogDrawer);

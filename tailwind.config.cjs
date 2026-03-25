@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./index.html", "./js/**/*.{js,mjs}", "./docs/**/*.md"],
+  content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}", "./js/**/*.{js,mjs}", "./docs/**/*.md"],
   corePlugins: {
     preflight: false,
   },

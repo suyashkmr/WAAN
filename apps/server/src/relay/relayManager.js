@@ -104,7 +104,9 @@ class RelayManager extends EventEmitter {
     setupRelayClient(this);
 
     try {
+      this.logger.info("Initializing WAAN client…");
       await this.client.initialize();
+      this.logger.info("WAAN client initialized.");
     } catch (error) {
       handleFatalError(this, error);
       await this.stop();

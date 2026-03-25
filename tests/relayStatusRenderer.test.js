@@ -9,6 +9,7 @@ describe("relayStatusRenderer", () => {
     const relayAccountEl = document.createElement("div");
     const relayQrContainer = document.createElement("div");
     relayQrContainer.classList.add("hidden");
+    relayQrContainer.setAttribute("hidden", "");
     const relayQrImage = document.createElement("img");
     const relayHelpText = document.createElement("div");
 
@@ -35,6 +36,7 @@ describe("relayStatusRenderer", () => {
     expect(relayHelpText.textContent).toBe("Pick a chat.");
     expect(relayQrImage.getAttribute("src")).toBe("data:image/png;base64,abc");
     expect(relayQrContainer.classList.contains("hidden")).toBe(false);
+    expect(relayQrContainer.hasAttribute("hidden")).toBe(false);
   });
 
   it("requires a Vue runtime with h/render", () => {
@@ -88,5 +90,28 @@ describe("relayStatusRenderer", () => {
     expect(relayStatusEl.textContent).toBe("Relay connected.");
     expect(relayAccountEl.textContent).toBe("Logged in as Alice");
     expect(relayHelpText.textContent).toBe("Your mirrored WAAN chats appear under “Loaded chats”. Pick one to view insights.");
+  });
+
+  it("rehides the QR container through both class and hidden attribute when qrSrc clears", () => {
+    const relayQrContainer = document.createElement("div");
+    const relayQrImage = document.createElement("img");
+
+    const renderer = createRelayStatusRenderer({
+      elements: {
+        relayStatusEl: document.createElement("div"),
+        relayAccountEl: document.createElement("div"),
+        relayQrContainer,
+        relayQrImage,
+        relayHelpText: document.createElement("div"),
+      },
+      vueRuntime: { h, render },
+    });
+
+    renderer.renderStatusSurface({ qrSrc: "data:image/png;base64,abc" });
+    renderer.renderStatusSurface({ qrSrc: null });
+
+    expect(relayQrContainer.classList.contains("hidden")).toBe(true);
+    expect(relayQrContainer.hasAttribute("hidden")).toBe(true);
+    expect(relayQrImage.hasAttribute("src")).toBe(false);
   });
 });

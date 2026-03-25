@@ -7,6 +7,17 @@
         </div>
         <div class="dataset-empty-copy">
             <p class="dataset-empty-kicker">Workspace state</p>
+            
+            <!-- Hero Status (for visibility during setup) -->
+            <div class="flex items-center gap-3 mb-4">
+                <div id="hero-status-badge" class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-500 text-white">Offline</div>
+                <div id="hero-sync-dot" class="w-2 h-2 rounded-full bg-gray-500 hidden"></div>
+                <div class="flex flex-col">
+                    <span id="hero-status-copy" class="text-sm font-semibold text-[var(--text)]">Relay is offline</span>
+                    <span id="hero-status-meta-copy" class="text-[10px] text-[var(--text-muted)]">Connect to start analysis</span>
+                </div>
+            </div>
+
             <h3 id="dataset-empty-heading">Workspace locked</h3>
             <p id="dataset-empty-copy">Start relay to unlock chat and range controls.</p>
             <div class="first-run-setup" id="first-run-setup" aria-label="First run setup guide">
@@ -35,6 +46,7 @@
                         macOS launch help
                     </a>
                 </div>
+
             </div>
         </div>
     </div>

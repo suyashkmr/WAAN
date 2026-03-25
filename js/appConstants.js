@@ -18,11 +18,11 @@ export const SEARCH_RESULT_LIMIT = 200;
 export const ONBOARDING_STEPS = [
   {
     copy: "Start the relay in the setup stage.",
-    target: "#relay-live-card",
+    target: "#relay-status-banner",
   },
   {
     copy: "Scan the QR code to link your phone.",
-    target: "#relay-live-card",
+    target: "#relay-qr-container",
   },
   {
     copy: "Pick a chat from Loaded chats when the workspace unlocks.",

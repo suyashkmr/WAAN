@@ -396,7 +396,7 @@ describe("relay integration", () => {
     expect(liveClearStorageButton.disabled).toBe(false);
   });
 
-  it("fails fast when relay action groups are not fully Vue-managed", () => {
+  it("continues bootstrap without throwing when relay controls mount late", async () => {
     const liveActionsContainer = document.createElement("div");
     liveActionsContainer.className = "live-actions";
     liveActionsContainer.dataset.vuePrimitiveMounted = "true";
@@ -451,8 +451,10 @@ describe("relay integration", () => {
       handlers,
       deps,
     });
-    expect(() => initRelayControls()).toThrow(
-      "Relay action groups must be Vue-managed before relay controls initialize.",
-    );
+    expect(() => initRelayControls()).not.toThrow();
+    expect(handlers.refreshRelayStatus).toHaveBeenCalledWith({ silent: true });
+    await Promise.resolve();
+    expect(handlers.startStatusPolling).toHaveBeenCalledTimes(1);
+    expect(handlers.initLogStream).toHaveBeenCalledTimes(1);
   });
 });

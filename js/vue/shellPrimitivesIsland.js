@@ -3,8 +3,6 @@ import {
   createActionsToolbarRoot,
   createFirstRunActionsRoot,
   createOnboardingDialogRoot,
-  createRelayBannerRoot,
-  createRelayHeaderActionsRoot,
   createRelayLiveActionsRoot,
 } from "./shellPrimitiveViews.js";
 import { mountPageControlsPrimitive } from "./shellPageControlsIsland.js";
@@ -21,25 +19,27 @@ function dispatchShellAction(actionId, payload = null, globalScope = globalThis)
   const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
   if (shellBridge?.dispatchShellAction) {
     const handled = shellBridge.dispatchShellAction(actionId, payload);
-    if (handled) return;
+    if (handled) return true;
   }
   if (shellBridge?.dispatchRelayAction) {
-    shellBridge.dispatchRelayAction(actionId, payload);
+    return Boolean(shellBridge.dispatchRelayAction(actionId, payload));
   }
+  return false;
 }
 
-function mountRelayBannerPrimitive(globalScope = globalThis) {
-  const bannerEl = globalScope?.document?.getElementById?.("relay-status-banner");
-  mountConfiguredShellPrimitive({
-    globalScope,
-    mountEl: bannerEl,
-    createRoot: h => createRelayBannerRoot(h, (actionId, payload = null) =>
-      dispatchShellAction(actionId, payload, globalScope)),
-  });
+function dispatchShellActionWhenReady(actionId, payload = null, globalScope = globalThis, retriesRemaining = 10) {
+  const handled = dispatchShellAction(actionId, payload, globalScope);
+  if (handled || retriesRemaining <= 0) return handled;
+  const setTimer = globalScope?.setTimeout ? globalScope.setTimeout.bind(globalScope) : globalThis.setTimeout.bind(globalThis);
+  setTimer(() => {
+    dispatchShellActionWhenReady(actionId, payload, globalScope, retriesRemaining - 1);
+  }, 50);
+  return false;
 }
 
 function mountActionsToolbarPrimitive(globalScope = globalThis) {
-  const toolbarEl = globalScope?.document?.getElementById?.("actions-toolbar");
+  const toolbarEl = globalScope?.document?.getElementById?.("actions-toolbar")
+    ?? globalScope?.document?.querySelector?.(".actions-toolbar");
   mountConfiguredShellPrimitive({
     globalScope,
     mountEl: toolbarEl,
@@ -66,7 +66,7 @@ function bindStaticWorkspaceUtilityActions(globalScope = globalThis) {
     element.dataset.shellActionBound = "true";
     element.addEventListener("click", event => {
       event.preventDefault();
-      dispatchShellAction(actionId, null, globalScope);
+      dispatchShellActionWhenReady(actionId, null, globalScope);
     });
   });
 }
@@ -91,18 +91,8 @@ function mountFirstRunActionsPrimitive(globalScope = globalThis) {
   });
 }
 
-function mountRelayHeaderActionsPrimitive(globalScope = globalThis) {
-  const actionsEl = globalScope?.document?.querySelector?.("#relay-live-card .card-header-actions");
-  mountConfiguredShellPrimitive({
-    globalScope,
-    mountEl: actionsEl,
-    createRoot: h => createRelayHeaderActionsRoot(h, (actionId, payload = null) =>
-      dispatchShellAction(actionId, payload, globalScope)),
-  });
-}
-
 function mountRelayLiveActionsPrimitive(globalScope = globalThis) {
-  const actionsEl = globalScope?.document?.querySelector?.("#relay-live-card .live-actions");
+  const actionsEl = globalScope?.document?.getElementById?.("relay-sidebar-live-actions");
   mountConfiguredShellPrimitive({
     globalScope,
     mountEl: actionsEl,
@@ -324,8 +314,6 @@ function mountFeedbackPrimitiveBridge(globalScope = globalThis) {
 }
 export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   if (typeof globalScope?.document === "undefined") return;
-  mountRelayBannerPrimitive(globalScope);
-  mountRelayHeaderActionsPrimitive(globalScope);
   mountRelayLiveActionsPrimitive(globalScope);
   mountActionsToolbarPrimitive(globalScope);
   bindStaticWorkspaceUtilityActions(globalScope);

@@ -53,7 +53,20 @@ function resolveBrowserExecutablePath(explicitPath) {
   return resolveAutoBrowserPath();
 }
 
+function clearStaleBrowserLock(dataDir) {
+  // When the process is killed abruptly (crash, SIGKILL, Ctrl+Z) Chromium
+  // leaves a SingletonLock file behind, causing the next launch to fail with
+  // "The browser is already running". Remove it before each start.
+  const lockFile = path.join(dataDir, "relay-session", "session-waan", "SingletonLock");
+  try {
+    fs.unlinkSync(lockFile);
+  } catch {
+    // Not present – nothing to do.
+  }
+}
+
 function createRelayClient({ dataDir, headless, browserPath, disableGpu }) {
+  clearStaleBrowserLock(dataDir);
   const sessionDir = path.join(dataDir, "relay-session");
   const puppeteerArgs = [
     "--no-sandbox",
@@ -63,9 +76,6 @@ function createRelayClient({ dataDir, headless, browserPath, disableGpu }) {
   ];
   if (disableGpu) {
     puppeteerArgs.push("--disable-gpu");
-  }
-  if (!headless) {
-    puppeteerArgs.push("--start-minimized");
   }
   const executablePath = resolveBrowserExecutablePath(browserPath);
 

@@ -48,14 +48,11 @@ The completed workspace-first, analytics-story, and lower deep-dive editorial wa
 
 ### Phase 36 IA Map
 
-Phase 36 establishes the structural baseline for the guided studio:
+Phase 36 establishes the structural baseline for the guided studio. The current shipped SFC contract replaces the earlier hero/live-card split with a sidebar-owned workspace shell:
 
-- Setup stage:
-  - `#setup-stage`
-  - `#hero-panel`
-  - `#relay-live-card`
-- Active workspace stage:
+- Workspace and setup stage:
   - `#workspace-stage`
+  - `#relay-status-panel`
   - `#relay-status-banner`
   - `#actions-toolbar`
   - page controls and dataset-empty fallback remain inside the workspace shell
@@ -265,6 +262,56 @@ Phase 43 turns setup and workspace into one compact, highly legible operational 
 - ensure the workspace reads as ready/not-ready/focused, not as a collection of separate cards
 - treat the workspace as the control surface for the whole app, not one more section in the reading flow
 
+### Phase 45 Closure Note
+
+Closeout status as of 2026-03-26:
+
+- onboarding and first-run relay flows now target the shipped sidebar surfaces instead of deleted relay-card DOM
+- bootstrap no longer hard-fails when Vue-managed relay actions mount late; the boot path now degrades gracefully and coverage reflects that contract
+- tablet/mobile stacked workspace layouts no longer let the utility cluster or first-run actions get covered by sticky/overlapping surfaces
+- startup, onboarding, and first-run relay interactions were revalidated in the browser against `#relay-status-banner`, `#relay-qr-container`, and the live `#relay-start` path
+- residual-risk boundary: broader shell/test/spec reconciliation and browser harness normalization remained explicitly owned by Phase 46
+
+### Phase 46 Closure Note
+
+Closeout status as of 2026-03-26:
+
+- the current SFC DOM is now the canonical frontend contract for runtime, tests, and docs; deleted selectors such as `#hero-panel` and `#relay-live-card` are no longer active targets
+- Playwright now boots against the same Vite host/port contract it waits for, eliminating the previous manual visual/accessibility workaround
+- shell mounts and shipped markup are reconciled around the current sidebar/workspace surfaces, including the dataset action toolbar and relay sidebar mounts
+- findings and deep-dive stages now expose the dashboard control mount roots the runtime expects: `.participants-controls`, `.participants-quick-filters`, `.hourly-controls`, `.weekday-controls`, and `.timeofday-controls`
+- participant control defaults/options, participant metric-help affordances, diagnostics action titles, and command-surface keyboard focus behavior are aligned with the accessibility and runtime contracts
+- the visual harness now waits for the mounted shell contract, freezes auxiliary relay action rows, and drives deterministic relay QR/sync states before capture; baselines were refreshed against that stabilized contract
+- validation completed with:
+  - `npx vitest --run tests/appShellBoot.test.js tests/domRefs.test.js tests/vueAppShellRoot.test.js tests/relayControls.test.js tests/shellPrimitiveViews.test.js tests/dashboardPanelsIsland.test.js tests/mainBootSequence.test.js`
+  - `npm run build`
+  - `npm run test:accessibility-smoke`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js`
+- manual breakpoint verification was completed at `1440 / 1024 / 768 / 390` through the live browser sweeps used to close the visual and accessibility matrix
+- residual-risk boundary at phase closeout: no unresolved frontend UI/runtime/accessibility items remained carried from Phases 44-45
+
+### Final Frontend Stabilization Note
+
+Closeout status as of 2026-03-26:
+
+- the post-closeout audit found four real blockers after the initial Phase 46 completion claim: duplicate relay object keys breaking `ci:verify`, bridged command-control focus instability in accessibility smoke, remaining mobile relay/workspace visual timing drift, and docs that no longer matched repo health
+- shared relay wiring and the matching contract fixture were corrected so `ci:verify` is green again
+- the search participant PrimeVue bridge now exposes a stable ready contract for the final mounted control, and the accessibility smoke now validates selector-level focus/state behavior against the post-bridge DOM instead of transient bootstrap nodes
+- relay waiting/syncing visual scenarios now reapply state through the same settled timing path as the workspace scenarios, which removed the last late-runtime visual drift in the full matrix
+- the remaining stale visual baseline was refreshed only after the mobile/laptop workspace and relay scenarios were deterministic under repeated reruns
+- final acceptance revalidated with:
+  - `npm run ci:verify`
+  - `npm run test:accessibility-smoke`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js`
+- final repo status: frontend UI/runtime/accessibility closure is now consistent with the recorded completion state in `docs/todo.md`
+
+- compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
+- remove oversized empty-state framing and any layout that reserves space for absent content
+- move secondary setup guidance behind contextual disclosure instead of keeping it permanently visible
+- ensure the workspace reads as ready/not-ready/focused, not as a collection of separate cards
+- treat the workspace as the control surface for the whole app, not one more section in the reading flow
+
 Primary implementation targets:
 
 - `index.html`
@@ -302,6 +349,21 @@ Post-closeout correction note as of 2026-03-20:
 - `Saved Views` now follows a vertical tool flow: command controls first, then the saved-view gallery and comparison output beneath
 - the saved-view gallery no longer relies on the PrimeVue `DataView` wrapper path; gallery cards now render directly into the Vue-managed gallery root so the responsive grid can control the layout predictably at laptop widths
 - this is a shipped adjacent correction to the current baseline, not a reopening of Phase 43; the broader deep-dive information architecture work remains in Phase 45
+
+Proceeding relay-surface closeout note as of 2026-03-26:
+
+- the relay QR and sync-progress surfaces were corrected so the shipped sidebar contract now uses one visibility mechanism across the active runtime paths: the DOM fallback status surface, the Vue-rendered status surface, and the sync-progress controller all toggle both the `hidden` attribute and the `hidden` class consistently
+- relay controller wiring now forwards the sync step refs used by the visible sync-progress surface, so syncing-state step labels update on the same sidebar-owned DOM that the user sees
+- verified runtime paths for this closeout: `js/relayControls/statusApply.js`, `js/vue/relayStatusRenderer.js`, `js/relayControls/syncProgress.js`, and the relay-controller support wiring in `js/relayControls.js`
+- validation recorded for closeout:
+  - `npx vitest --run tests/relayControls.test.js tests/relayStatusApply.test.js tests/relayStatusRenderer.test.js`
+  - `npx vitest --run tests/releaseRelayTransitions.test.js`
+  - `npm run build`
+- acceptance confirmed for the scoped relay-surface repair:
+  - `waiting_qr` visibly reveals `#relay-qr-container`
+  - syncing states visibly reveal `#relay-sync-progress`
+  - connected, waiting, and syncing states update the visible sidebar-owned relay surface rather than detached nodes
+- residual-risk boundary: this closeout does not cover onboarding retargeting, bootstrap timing hard-failures, mobile overlay/pointer interception, or broader visual/accessibility drift; those remain explicitly deferred to Proceeding Phases 45-46
 
 ### Phase 44: Guided Findings as Editorial Sequence
 

@@ -15,7 +15,7 @@ export default defineConfig({
     colorScheme: "dark",
   },
   webServer: {
-    command: "npm start",
+    command: "npm start -- --host 127.0.0.1 --port 4173 --strictPort",
     url: "http://127.0.0.1:4173",
     timeout: 120000,
     reuseExistingServer: true,

@@ -87,8 +87,8 @@
     --md-on-surface-variant: var(--p-text-muted-color, #aeb8c8);
     --surface-tint: color-mix(in srgb, var(--p-primary-color, #c9a86a) 10%, transparent);
 
-    --font-family-base: "Plus Jakarta Sans", "Manrope", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-family-display: "Playfair Display", "Merriweather", "Georgia", serif;
+    --font-family-base: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+    --font-family-display: "Clash Display", "Playfair Display", "Georgia", serif;
     --font-size-xs: 0.78rem;
     --font-size-sm: 0.92rem;
     --font-size-md: 1rem;
@@ -554,9 +554,17 @@ body[data-reduce-motion="true"] .status-snackbar {
 body[data-reduce-motion="true"] *,
 body[data-reduce-motion="true"] *::before,
 body[data-reduce-motion="true"] *::after {
-    animation: none !important;
-    transition: none !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+}
+
+body[data-reduce-motion="true"] [data-stage],
+body[data-reduce-motion="true"] .hero-live-card,
+body[data-reduce-motion="true"] .hero-blurb {
+    opacity: 1 !important;
+    transform: none !important;
 }
 
 body[data-contrast="high"] {
@@ -1034,6 +1042,26 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     box-sizing: border-box;
 }
 
+button {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+svg {
+    display: block;
+    shape-rendering: auto;
+}
+
 body {
     margin: 0;
     min-height: 100vh;
@@ -1136,7 +1164,7 @@ h4,
 h5,
 h6 {
     margin: 0;
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-display);
     font-weight: var(--font-weight-semibold);
     letter-spacing: -0.015em;
     line-height: 1.2;
@@ -1213,7 +1241,7 @@ h2,
 .stat-value,
 .footer-brand p,
 .footer-brand small {
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-display);
     font-weight: 600;
     letter-spacing: -0.02em;
 }

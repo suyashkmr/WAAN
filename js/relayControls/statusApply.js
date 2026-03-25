@@ -37,6 +37,17 @@ export function createRelayStatusApplyController({
   elements,
   deps,
 }) {
+  /**
+   * @param {HTMLElement | null | undefined} el
+   * @param {boolean} shouldShow
+   */
+  function setElementVisibility(el, shouldShow) {
+    if (!el) return;
+    el.classList.toggle("hidden", !shouldShow);
+    if (shouldShow) el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
+  }
+
   const {
     relayStatusEl,
     relayAccountEl,
@@ -111,7 +122,7 @@ export function createRelayStatusApplyController({
       if (qrSrc) relayQrImage.src = qrSrc;
       else relayQrImage.removeAttribute("src");
     }
-    if (relayQrContainer) relayQrContainer.classList.toggle("hidden", !qrSrc);
+    setElementVisibility(relayQrContainer, Boolean(qrSrc));
   }
 
   /**

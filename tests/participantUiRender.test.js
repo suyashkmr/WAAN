@@ -100,6 +100,8 @@ describe("search participant UI rendering", () => {
     const mountEl = document.getElementById("search-participant--mount");
     expect(mountEl?.classList.contains("prime-select-bridge")).toBe(true);
     expect(mountEl?.isConnected).toBe(true);
+    expect(mountEl?.dataset.bridgeReady).toBe("true");
+    expect(mountEl?.dataset.bridgeInputId).toBe("search-participant");
   });
 
   it("keeps bridged participant state in sync after user selection", () => {

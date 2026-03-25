@@ -180,7 +180,7 @@ describe("onboarding controller", () => {
   it("keeps the QR reminder anchored to a visible setup surface", () => {
     expect(ONBOARDING_STEPS[1]).toMatchObject({
       copy: "Scan the QR code to link your phone.",
-      target: "#relay-live-card",
+      target: "#relay-qr-container",
     });
   });
 

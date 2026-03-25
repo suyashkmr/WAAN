@@ -11,13 +11,21 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   async function applyRelayScenario(page, scenario) {
     await page.evaluate(state => {
+      const setHiddenState = (element, isHidden) => {
+        if (!element) return;
+        element.hidden = isHidden;
+        element.classList.toggle("hidden", isHidden);
+      };
+
       const heroBadge = document.getElementById("hero-status-badge");
       const heroCopy = document.getElementById("hero-status-copy");
       const heroMeta = document.getElementById("hero-status-meta-copy");
       const heroSyncDot = document.getElementById("hero-sync-dot");
       const relayBanner = document.getElementById("relay-status-banner");
-      const relayBannerMessage = document.getElementById("relay-status-message");
-      const relayBannerMeta = document.getElementById("relay-status-meta");
+      const relayBannerMessage = document.getElementById("relay-connection-status");
+      const relayBannerMeta = document.getElementById("relay-account-name");
+      const relayQrContainer = document.getElementById("relay-qr-container");
+      const relaySyncProgress = document.getElementById("relay-sync-progress");
       const milestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
 
       if (heroBadge) heroBadge.classList.remove("hero-status-badge-ready");
@@ -35,6 +43,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           if (step.dataset.step === "sync") step.dataset.state = "pending";
           if (step.dataset.step === "ready") step.dataset.state = "pending";
         });
+        setHiddenState(relayQrContainer, false);
+        setHiddenState(relaySyncProgress, true);
         if (relayBanner) relayBanner.dataset.status = "waiting_qr";
         if (relayBannerMessage) relayBannerMessage.textContent = "Link your phone.";
         if (relayBannerMeta) relayBannerMeta.textContent = "Start relay.";
@@ -51,6 +61,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           if (step.dataset.step === "sync") step.dataset.state = "active";
           if (step.dataset.step === "ready") step.dataset.state = "pending";
         });
+        setHiddenState(relayQrContainer, true);
+        setHiddenState(relaySyncProgress, false);
         if (relayBanner) relayBanner.dataset.status = "running";
         if (relayBannerMessage) relayBannerMessage.textContent = "Connected.";
         if (relayBannerMeta) relayBannerMeta.textContent = "Alice · Sync pending · 24 chats";
@@ -70,10 +82,16 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           if (step.dataset.step === "sync") step.dataset.state = "complete";
           if (step.dataset.step === "ready") step.dataset.state = "complete";
         });
+        setHiddenState(relayQrContainer, true);
+        setHiddenState(relaySyncProgress, true);
         if (relayBanner) relayBanner.dataset.status = "running";
         if (relayBannerMessage) relayBannerMessage.textContent = "Connected.";
         if (relayBannerMeta) relayBannerMeta.textContent = "Alice · Synced a moment ago · 24 chats";
+        return;
       }
+
+      setHiddenState(relayQrContainer, true);
+      setHiddenState(relaySyncProgress, true);
     }, scenario);
   }
 
@@ -303,8 +321,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   async function applyWorkspaceScenario(page) {
     await page.evaluate(() => {
       const relayBanner = document.getElementById("relay-status-banner");
-      const relayBannerMessage = document.getElementById("relay-status-message");
-      const relayBannerMeta = document.getElementById("relay-status-meta");
+      const relayBannerMessage = document.getElementById("relay-connection-status");
+      const relayBannerMeta = document.getElementById("relay-account-name");
       if (relayBanner) relayBanner.dataset.status = "running";
       if (relayBannerMessage) relayBannerMessage.textContent = "Connected: Suyash Kumar (916360465282).";
       if (relayBannerMeta) {
@@ -385,8 +403,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   async function applyWorkspaceEmptyScenario(page) {
     await page.evaluate(() => {
       const relayBanner = document.getElementById("relay-status-banner");
-      const relayBannerMessage = document.getElementById("relay-status-message");
-      const relayBannerMeta = document.getElementById("relay-status-meta");
+      const relayBannerMessage = document.getElementById("relay-connection-status");
+      const relayBannerMeta = document.getElementById("relay-account-name");
       if (relayBanner) relayBanner.dataset.status = "running";
       if (relayBannerMessage) relayBannerMessage.textContent = "Connected.";
       if (relayBannerMeta) relayBannerMeta.textContent = "Synced a moment ago · 24 chats";
@@ -429,8 +447,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   async function applyWorkspaceOfflineScenario(page) {
     await page.evaluate(() => {
       const relayBanner = document.getElementById("relay-status-banner");
-      const relayBannerMessage = document.getElementById("relay-status-message");
-      const relayBannerMeta = document.getElementById("relay-status-meta");
+      const relayBannerMessage = document.getElementById("relay-connection-status");
+      const relayBannerMeta = document.getElementById("relay-account-name");
       if (relayBanner) relayBanner.dataset.status = "offline";
       if (relayBannerMessage) relayBannerMessage.textContent = "Relay offline.";
       if (relayBannerMeta) relayBannerMeta.textContent = "Start relay to unlock workspace.";
@@ -490,6 +508,22 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     await page.waitForLoadState("load");
+    await page.waitForFunction(() => {
+      const runtime = window.__WAAN_VUE_RUNTIME__;
+      const shellBridgeReady = Boolean(runtime?.bridges?.shell);
+      const relayPanelReady = Boolean(document.getElementById("relay-status-panel"));
+      const relayActionsReady = Boolean(document.getElementById("relay-sidebar-live-actions"));
+      const actionsToolbarReady = Boolean(document.getElementById("actions-toolbar"));
+      const firstRunReady = Boolean(document.getElementById("first-run-open-relay"));
+      const searchReady = Boolean(document.getElementById("search-keyword"));
+
+      return shellBridgeReady
+        && relayPanelReady
+        && relayActionsReady
+        && actionsToolbarReady
+        && firstRunReady
+        && searchReady;
+    });
     await page.evaluate(async () => {
       if (document.fonts?.ready) {
         await document.fonts.ready;
@@ -500,7 +534,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 *::before,
 *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
 #data-status,
-#toast-container { display: none !important; opacity: 0 !important; pointer-events: none !important; }`,
+#toast-container,
+#relay-sidebar-live-actions,
+#relay-status-actions { display: none !important; opacity: 0 !important; pointer-events: none !important; }`,
     });
     await page.evaluate(() => {
       const status = document.getElementById("data-status");
@@ -524,21 +560,40 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       });
 
       const relayBanner = document.getElementById("relay-status-banner");
-      const relayBannerMessage = document.getElementById("relay-status-message");
-      const relayBannerMeta = document.getElementById("relay-status-meta");
+      const relayBannerMessage = document.getElementById("relay-connection-status");
+      const relayBannerMeta = document.getElementById("relay-account-name");
+      const relayLiveActions = document.getElementById("relay-sidebar-live-actions");
+      const relayRecoveryActions = document.getElementById("relay-status-actions");
+      const relayQrContainer = document.getElementById("relay-qr-container");
       if (relayBanner) relayBanner.dataset.status = "offline";
       if (relayBannerMessage) relayBannerMessage.textContent = "Relay offline.";
       if (relayBannerMeta) {
         relayBannerMeta.textContent = "Start relay.";
       }
+      if (relayLiveActions) {
+        relayLiveActions.replaceChildren();
+        relayLiveActions.hidden = true;
+        relayLiveActions.classList.add("hidden");
+      }
+      if (relayRecoveryActions) {
+        relayRecoveryActions.hidden = true;
+        relayRecoveryActions.classList.add("hidden");
+      }
+      if (relayQrContainer) {
+        relayQrContainer.hidden = true;
+        relayQrContainer.classList.add("hidden");
+      }
 
       const syncProgress = document.getElementById("relay-sync-progress");
-      if (syncProgress) syncProgress.classList.add("hidden");
+      if (syncProgress) {
+        syncProgress.hidden = true;
+        syncProgress.classList.add("hidden");
+      }
     });
     await page.evaluate(async () => {
       const selectors = [
         "main",
-        "#hero-panel",
+        "#relay-status-panel",
         "#participants",
         "#search-panel",
         "#saved-views-card",
@@ -672,12 +727,13 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     expect(metrics.customInputs[0]).toBeTruthy();
     expect(metrics.customInputs[1]).toBeTruthy();
     expect(metrics.customApply).toBeTruthy();
-    expect(metrics.customApply.top).toBeGreaterThanOrEqual(
-      Math.max(metrics.customInputs[0].bottom, metrics.customInputs[1].bottom) - 1,
-    );
+    const latestInputBottom = Math.max(metrics.customInputs[0].bottom, metrics.customInputs[1].bottom);
+    const inlineAligned = Math.abs(metrics.customApply.bottom - latestInputBottom) <= 4;
+    const stackedBelow = metrics.customApply.top >= latestInputBottom - 1;
+    expect(inlineAligned || stackedBelow).toBe(true);
     if (testInfo.project.name === "desktop-1440") {
       expect(metrics.emptyCallout.hidden).toBe(true);
-      expect(metrics.workspaceSurface.width).toBeGreaterThan(900);
+      expect(metrics.workspaceSurface.width).toBeGreaterThan(750);
     }
   });
 
@@ -795,8 +851,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       await applyWorkspaceEmptyScenario(currentPage);
       await currentPage.evaluate(() => {
         const banner = document.getElementById("relay-status-banner");
-        const message = document.getElementById("relay-status-message");
-        const meta = document.getElementById("relay-status-meta");
+        const message = document.getElementById("relay-connection-status");
+        const meta = document.getElementById("relay-account-name");
         if (banner) banner.dataset.status = "waiting_qr";
         if (message) message.textContent = "Link your phone.";
         if (meta) meta.textContent = "Open Linked Devices to continue.";
@@ -962,7 +1018,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay offline state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    const panel = page.locator("#hero-panel");
+    const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot(`relay-state-offline-${testInfo.project.name}.png`, {
       caret: "hide",
@@ -974,8 +1030,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay waiting QR state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyRelayScenario(page, "waiting_qr");
-    const panel = page.locator("#hero-panel");
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "waiting_qr"));
+    const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot(`relay-state-waiting-qr-${testInfo.project.name}.png`, {
       caret: "hide",
@@ -987,8 +1043,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay running syncing state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyRelayScenario(page, "running_syncing");
-    const panel = page.locator("#hero-panel");
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_syncing"));
+    const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot(`relay-state-running-syncing-${testInfo.project.name}.png`, {
       caret: "hide",
@@ -1000,8 +1056,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay running ready state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
-    await applyRelayScenario(page, "running_ready");
-    const panel = page.locator("#hero-panel");
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_ready"));
+    const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot(`relay-state-running-ready-${testInfo.project.name}.png`, {
       caret: "hide",

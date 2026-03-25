@@ -18,6 +18,17 @@ export function createRelaySyncProgressController({
   relaySyncMessagesMeta,
   formatNumber,
 }) {
+  /**
+   * @param {HTMLElement | null | undefined} el
+   * @param {boolean} shouldShow
+   */
+  function setElementVisibility(el, shouldShow) {
+    if (!el) return;
+    el.classList.toggle("hidden", !shouldShow);
+    if (shouldShow) el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
+  }
+
   const SLOW_SYNC_THRESHOLD_MS = 12_000;
 
   const relaySyncUiState = {
@@ -43,13 +54,11 @@ export function createRelaySyncProgressController({
   }
 
   function showRelaySyncProgress() {
-    if (!relaySyncProgressEl) return;
-    relaySyncProgressEl.classList.remove("hidden");
+    setElementVisibility(relaySyncProgressEl, true);
   }
 
   function hideRelaySyncProgress() {
-    if (!relaySyncProgressEl) return;
-    relaySyncProgressEl.classList.add("hidden");
+    setElementVisibility(relaySyncProgressEl, false);
   }
 
   function beginManualSyncUi() {

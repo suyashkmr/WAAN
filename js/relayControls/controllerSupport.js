@@ -17,7 +17,7 @@ export function createRelaySupportControllers({
     firstRunSetup: elements.firstRunSetup,
     firstRunSetupSteps: elements.firstRunSetupSteps,
     firstRunPrimaryActionButton: elements.firstRunPrimaryActionButton,
-    relayLiveCard: elements.relayLiveCard,
+    relayBannerEl: elements.relayBannerEl,
     chatSelector: elements.chatSelector,
     relayStartButton: elements.relayStartButton,
     getControlsLocked: deps.getControlsLocked,

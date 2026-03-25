@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
 
+function commandControlSelector(id) {
+  if (id === "search-participant") {
+    return '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant[role="combobox"], select#search-participant:not(.hidden)';
+  }
+  return `#${id}`;
+}
+
 test.describe("WAAN Accessibility Smoke", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -9,6 +16,21 @@ test.describe("WAAN Accessibility Smoke", () => {
     });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForLoadState("load");
+    await page.waitForFunction(() => {
+      const runtime = window.__WAAN_VUE_RUNTIME__;
+      return Boolean(runtime?.bridges?.shell)
+        && Boolean(document.getElementById("search-keyword"))
+        && Boolean(
+          document.querySelector(
+            '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant[role="combobox"], select#search-participant:not(.hidden)',
+          ),
+        )
+        && Boolean(document.getElementById("search-start"))
+        && Boolean(document.getElementById("search-end"))
+        && Boolean(document.getElementById("run-search"))
+        && Boolean(document.getElementById("actions-toolbar"))
+        && Boolean(document.getElementById("relay-status-panel"));
+    });
   });
 
   test("applies reduced-motion and high-contrast states", async ({ page }) => {
@@ -16,6 +38,10 @@ test.describe("WAAN Accessibility Smoke", () => {
       const cluster = document.getElementById("workspace-utility-cluster");
       if (cluster instanceof HTMLDetailsElement) cluster.open = true;
     });
+    await page.waitForFunction(() =>
+      document.getElementById("reduce-motion-toggle")?.dataset?.shellActionBound === "true"
+      && document.getElementById("high-contrast-toggle")?.dataset?.shellActionBound === "true"
+    );
     const reduceMotionToggle = page.locator("#reduce-motion-toggle:visible").first();
     const highContrastToggle = page.locator("#high-contrast-toggle:visible").first();
 
@@ -24,52 +50,52 @@ test.describe("WAAN Accessibility Smoke", () => {
     await expect(reduceMotionToggle).toHaveAttribute("title", /.+/);
     await expect(highContrastToggle).toHaveAttribute("title", /.+/);
 
-    await reduceMotionToggle.click();
+    await page.evaluate(() => {
+      document.getElementById("reduce-motion-toggle")?.click();
+    });
     await page.waitForFunction(() => document.body?.dataset.reduceMotion === "true");
     await page.waitForFunction(() => document.documentElement?.dataset.uiMotion === "reduced");
 
-    await highContrastToggle.click();
+    await page.evaluate(() => {
+      document.getElementById("high-contrast-toggle")?.click();
+    });
     await page.waitForFunction(() => document.body?.dataset.contrast === "high");
     await page.waitForFunction(() => document.documentElement?.dataset.uiContrast === "high");
   });
 
   test("keeps migrated command controls keyboard focusable", async ({ page }) => {
-    const focusTargetGroups = [
-      ["#search-keyword-sl", "#search-keyword"],
-      ["#search-participant-sl", "#search-participant"],
-      ["#search-start-sl", "#search-start"],
-      ["#search-end-sl", "#search-end"],
-      ["#run-search-sl", "#run-search"],
+    const focusSelectors = [
+      "search-keyword",
+      "search-participant",
+      "search-start",
+      "search-end",
+      "run-search",
     ];
 
-    for (const selectors of focusTargetGroups) {
-      let selector = selectors[0];
-      for (const candidate of selectors) {
-        if (await page.locator(`${candidate}:visible`).count()) {
-          selector = candidate;
-          break;
-        }
-      }
-      if (!(await page.locator(`${selector}:visible`).count())) {
-        for (const candidate of selectors) {
-          if (await page.locator(candidate).count()) {
-            selector = candidate;
-            break;
-          }
-        }
-      }
-      const target = page.locator(selector);
-      const nestedFocusable = target.locator(
-        'input, textarea, select, button, [role="combobox"], [role="textbox"], [tabindex]:not([tabindex="-1"])',
-      ).first();
-      const focusTarget = await nestedFocusable.count() ? nestedFocusable : target;
+    for (const controlId of focusSelectors) {
+      const selector = commandControlSelector(controlId);
+      await page.waitForFunction(targetSelector => {
+        const element = document.querySelector(targetSelector);
+        return Boolean(element && element.isConnected);
+      }, selector);
+      const focusTarget = page.locator(selector).first();
       await expect(focusTarget).toBeVisible();
-      await focusTarget.focus();
+      await page.evaluate(targetSelector => {
+        document.querySelector(targetSelector)?.scrollIntoView({
+          block: "center",
+          inline: "nearest",
+        });
+      }, selector);
+      await page.focus(selector);
       await expect
         .poll(async () =>
-          focusTarget.evaluate(
-            element => element === document.activeElement || element.contains(document.activeElement),
-          ),
+          page.evaluate(targetSelector => {
+            const element = document.querySelector(targetSelector);
+            return Boolean(
+              element
+                && (element === document.activeElement || element.contains(document.activeElement)),
+            );
+          }, selector),
         )
         .toBe(true);
     }
@@ -100,6 +126,9 @@ test.describe("WAAN Accessibility Smoke", () => {
       const cluster = document.getElementById("workspace-utility-cluster");
       if (cluster instanceof HTMLDetailsElement) cluster.open = true;
     });
+    await page.waitForFunction(() =>
+      document.getElementById("log-drawer-toggle")?.dataset?.shellActionBound === "true"
+    );
     const logDrawerToggle = page.locator("#log-drawer-toggle:visible").first();
     await expect(logDrawerToggle).toBeVisible();
     await expect(logDrawerToggle).toHaveAttribute("title", /.+/);

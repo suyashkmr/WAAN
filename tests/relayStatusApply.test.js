@@ -3,10 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { createRelayStatusApplyController } from "../js/relayControls/statusApply.js";
 
 function createElements() {
+  const relayQrContainer = document.createElement("div");
+  relayQrContainer.classList.add("hidden");
+  relayQrContainer.setAttribute("hidden", "");
   return {
     relayStatusEl: document.createElement("div"),
     relayAccountEl: document.createElement("div"),
-    relayQrContainer: document.createElement("div"),
+    relayQrContainer,
     relayQrImage: document.createElement("img"),
     relayHelpText: document.createElement("div"),
     relayBannerEl: document.createElement("div"),
@@ -203,6 +206,61 @@ describe("relay status apply", () => {
       "Chat and range controls unlock once chats finish loading.",
     );
     expect(refreshRemoteChats).toHaveBeenCalledWith({ silent: true });
+  });
+
+  it("reveals the QR surface through both class and hidden attribute in DOM fallback mode", () => {
+    const elements = createElements();
+    const relayUiState = {
+      status: null,
+      lastAppliedStateKind: null,
+      lastStatusKind: null,
+      controlsLocked: false,
+    };
+    const controller = createRelayStatusApplyController({
+      relayUiState,
+      elements,
+      deps: {
+        brandName: "WAAN",
+        relayServiceName: "WAAN Relay",
+        remoteChatRefreshIntervalMs: 60_000,
+        now: () => Date.now(),
+        formatNumber: value => String(value),
+        formatDisplayDate: () => "today",
+        formatRelativeTime: () => "just now",
+        describeRelayStatusForUi: status => ({ message: `Relay ${status?.status || "offline"}.` }),
+        formatRelayAccountLabel: account => account?.pushName || "",
+        electronAPI: null,
+        updateHeroRelayStatus: vi.fn(),
+        updateRelayBanner: vi.fn(),
+        updateRelayOnboarding: vi.fn(),
+        relayStatusViewRenderer: null,
+        applyRelayPrimaryAction: vi.fn(),
+        updateFirstRunSetup: vi.fn(),
+        updateSyncProgressFromStatus: vi.fn(),
+        getRemoteChatList: () => [],
+        getRemoteChatsLastFetchedAt: () => 0,
+        setRemoteChatList: vi.fn(),
+        refreshChatSelector: vi.fn(),
+        setDashboardLoadingState: vi.fn(),
+        setDatasetEmptyMessage: vi.fn(),
+        setDataAvailabilityState: vi.fn(),
+        refreshRemoteChats: vi.fn(),
+        updateStatus: vi.fn(),
+        getDataAvailable: () => false,
+        relayStatusRenderer: {},
+      },
+    });
+
+    controller.applyRelayStatus({
+      status: "waiting_qr",
+      lastQr: "data:image/png;base64,abc",
+      chatCount: 0,
+      syncingChats: false,
+    });
+
+    expect(elements.relayQrContainer.classList.contains("hidden")).toBe(false);
+    expect(elements.relayQrContainer.hasAttribute("hidden")).toBe(false);
+    expect(elements.relayQrImage.getAttribute("src")).toBe("data:image/png;base64,abc");
   });
 
   it("does not refresh remote chats on every status tick for steady-state empty accounts", () => {

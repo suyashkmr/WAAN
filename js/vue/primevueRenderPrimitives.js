@@ -24,7 +24,6 @@ function allowNativePrimitiveFallback(globalScope = globalThis) {
 function resolvePrimeVisibleInputId(id = "", preserveNativeElement = false) {
   return preserveNativeElement && id ? `${id}--primevue` : id;
 }
-
 export function renderActionButton(h, options = {}, globalScope = globalThis) {
   const {
     id = "",
@@ -122,7 +121,6 @@ export function renderTextInput(h, options, globalScope = globalThis) {
     onInput,
     attrs = {},
   } = options;
-
   const PrimeInputText = resolvePrimeVueComponent("InputText", globalScope);
   if (PrimeInputText) {
     return h(PrimeInputText, {
@@ -139,11 +137,9 @@ export function renderTextInput(h, options, globalScope = globalThis) {
       ...attrs,
     });
   }
-
   if (!allowNativePrimitiveFallback(globalScope)) {
     throw new Error("renderTextInput requires PrimeVue InputText at runtime");
   }
-
   return h("input", {
     type: "text",
     id,
@@ -166,7 +162,6 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
     preserveNativeElement = false,
     visibleInputId = "",
   } = options;
-
   const normalizedOptions = Array.isArray(selectOptions)
     ? selectOptions.map(option => ({
       value: normalizePrimitiveValue(option?.value),
@@ -219,6 +214,25 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
           onChange({ target: { value: normalizePrimitiveValue(nextValue) } });
         },
         ...componentAttrs,
+      }, {
+        dropdownicon: () => h(
+          "svg",
+          {
+            class: "w-4 h-4 waan-prime-select-icon",
+            fill: "none",
+            stroke: "currentColor",
+            viewBox: "0 0 24 24",
+            "aria-hidden": "true",
+          },
+          [
+            h("path", {
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round",
+              "stroke-width": "2",
+              d: "M19 9l-7 7-7-7",
+            }),
+          ],
+        ),
       }),
     ].filter(Boolean),
   );
@@ -321,7 +335,6 @@ export function renderDialogContainer(h, options = {}, globalScope = globalThis)
   if (!allowNativePrimitiveFallback(globalScope)) {
     throw new Error("renderDialogContainer requires PrimeVue Dialog at runtime");
   }
-
   return h(
     "div",
     {

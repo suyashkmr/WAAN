@@ -11,7 +11,7 @@ import { UI_COPY } from "../uiCopy.js";
  *   firstRunSetup?: HTMLElement | null,
  *   firstRunSetupSteps?: Array<HTMLElement> | null,
  *   firstRunPrimaryActionButton?: HTMLButtonElement | null,
- *   relayLiveCard?: HTMLElement | null,
+ *   relayBannerEl?: HTMLElement | null,
  *   chatSelector?: HTMLElement | null,
  *   relayStartButton?: HTMLButtonElement | null,
  *   getControlsLocked?: (() => boolean) | null,
@@ -25,7 +25,7 @@ export function createFirstRunSetupController({
   firstRunSetup,
   firstRunSetupSteps,
   firstRunPrimaryActionButton,
-  relayLiveCard,
+  relayBannerEl,
   chatSelector,
   relayStartButton,
   getControlsLocked,
@@ -104,7 +104,7 @@ export function createFirstRunSetupController({
   }
 
   function handleFirstRunOpenRelay() {
-    scrollToElement(relayLiveCard);
+    scrollToElement(relayBannerEl);
   }
 
   function handleFirstRunPrimaryAction() {

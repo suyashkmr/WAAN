@@ -5,6 +5,11 @@
     <span class="sr-only" id="global-progress-label">Working…</span>
   </div>
 
+  <!-- Section Navigation Rail -->
+  <nav class="section-nav" aria-label="Page sections">
+    <div class="section-nav-inner"></div>
+  </nav>
+
   <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col gap-16">
     
     <!-- Workspace Stage -->
@@ -15,11 +20,11 @@
       </div>
 
       <section class="flex flex-col gap-6 w-full" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
-        <div class="flex flex-col lg:flex-row gap-8 lg:items-start" id="workspace-stage-grid">
+        <div class="workspace-stage-grid flex flex-col lg:flex-row gap-8 lg:items-start" id="workspace-stage-grid">
           
           <WorkspaceSidebar />
 
-          <div class="flex-1 w-full min-h-[400px] flex items-center justify-center bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl relative shadow-inner">
+          <div class="workspace-command-surface flex-1 w-full min-h-[400px] flex items-center justify-center bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl relative shadow-inner">
             <EmptyWorkspaceCallout />
           </div>
 
@@ -50,8 +55,10 @@
             </h2>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="faq-content">▾</button>
-          </div>
+                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="faq-content" title="Collapse or expand recovery help">
+                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+              </div>
         </div>
         <div class="p-6 flex flex-col gap-6" id="faq-content">
           <ul class="flex flex-col gap-6 m-0 p-0 list-none text-[var(--text)] text-sm leading-relaxed" id="faq-list">
@@ -89,17 +96,18 @@
 
   <!-- Global Offcanvas Utilities -->
   
-  <aside class="fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-[var(--card-bg)] border-l border-[var(--border)] shadow-2xl translate-x-full transition-transform duration-300 z-50 flex flex-col" id="relay-log-drawer" aria-hidden="true" aria-label="Diagnostics and relay log">
+  <aside class="relay-log-drawer fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-[var(--card-bg)] border-l border-[var(--border)] shadow-2xl z-50 flex flex-col" id="relay-log-drawer" aria-hidden="true" aria-label="Diagnostics and relay log">
     <div class="flex flex-col gap-4 p-6 border-b border-[var(--border)] bg-[var(--surface-sunken)] shrink-0">
       <div class="flex flex-col gap-1">
         <p class="text-[var(--accent)] text-xs font-semibold uppercase tracking-wider m-0">Recovery tools</p>
         <p class="text-xl font-display font-semibold text-[var(--text)] m-0">Diagnostics</p>
         <p class="text-xs text-[var(--text-muted)] m-0" id="relay-log-connection">Connecting…</p>
       </div>
-      <div class="grid grid-cols-2 gap-2 mt-2">
+      <div class="grid grid-cols-3 gap-2 mt-2">
         <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="relay-log-export" title="Download a diagnostics bundle">Export</button>
         <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="relay-log-report" title="Open issue report">Report</button>
-        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors col-span-2 mt-2" id="relay-log-close">Close</button>
+        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" id="relay-log-clear" title="Clear log entries">Clear</button>
+        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors col-span-3 mt-2" id="relay-log-close" title="Close diagnostics drawer">Close</button>
       </div>
     </div>
     <div class="p-4 overflow-y-auto flex-1 text-xs font-mono text-[var(--text-muted)] bg-black/40" id="relay-log-list">
@@ -109,7 +117,7 @@
 
   <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50 pointer-events-none" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="onboarding-overlay" aria-hidden="true" role="dialog" aria-modal="true" style="visibility: hidden;">
     <div class="bg-[var(--card-bg)] border border-[var(--border)] shadow-2xl rounded-2xl p-8 max-w-md w-full mx-4 flex flex-col gap-6 translate-y-4 transition-transform duration-300">
       <div class="flex flex-col gap-2">
         <h2 class="text-2xl font-display font-semibold text-[var(--text)] m-0">Need a setup reminder?</h2>
@@ -123,7 +131,7 @@
     </div>
   </div>
 
-  <footer class="w-full mt-12 py-8 border-t border-[var(--border)] bg-[var(--surface-sunken)] flex flex-colitems-center text-center justify-center gap-6 px-6 relative z-10">
+  <footer class="w-full mt-12 py-8 border-t border-[var(--border)] bg-[var(--surface-sunken)] flex flex-col items-center text-center justify-center gap-6 px-6 relative z-10">
     <div class="flex items-center gap-3 justify-center mb-2">
       <img src="/waanlogo.png" alt="WAAN logo" class="w-8 h-8 rounded-lg shadow-md" loading="lazy">
       <div class="text-left flex flex-col">

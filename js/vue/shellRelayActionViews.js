@@ -45,33 +45,64 @@ export function createRelayLiveActionsRoot(h, onAction) {
     name: "RelayLiveActionsPrimitive",
     render() {
       return [
-        renderActionButton(h, {
-          type: "button",
-          className: "ghost-button",
-          id: "relay-start",
-          text: "Start relay",
-          onClick: event => onAction("relay.primaryAction", {
-            currentTarget: event?.currentTarget ?? null,
-            target: event?.target ?? null,
-          }),
-        }),
-        h("div", { class: "live-button-group" }, [
+        h("div", { class: "flex flex-col gap-3 w-full" }, [
+          // Primary Action
           renderActionButton(h, {
             type: "button",
             className: "ghost-button",
-            id: "relay-stop",
-            text: "Pause sync",
-            disabled: true,
-            onClick: () => onAction("relay.stop"),
+            id: "relay-start",
+            text: "Start relay",
+            onClick: event => onAction("relay.primaryAction", {
+              currentTarget: event?.currentTarget ?? null,
+              target: event?.target ?? null,
+            }),
           }),
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button danger",
-            id: "relay-logout",
-            text: "Log out & unlink",
-            disabled: true,
-            onClick: () => onAction("relay.logout"),
-          }),
+          
+          // Secondary Sync Actions
+          h("div", { class: "live-button-group flex gap-2" }, [
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button flex-1",
+              id: "relay-stop",
+              text: "Pause sync",
+              disabled: true,
+              onClick: () => onAction("relay.stop"),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button danger flex-1",
+              id: "relay-logout",
+              text: "Logout",
+              disabled: true,
+              onClick: () => onAction("relay.logout"),
+            }),
+          ]),
+
+          // Utility Actions
+          h("div", { class: "flex gap-2" }, [
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button tiny flex-1",
+              id: "relay-reload-all",
+              text: "Reload",
+              disabled: true,
+              onClick: event => onAction("relay.reloadAll", {
+                currentTarget: event?.currentTarget ?? null,
+                target: event?.target ?? null,
+              }),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "ghost-button tiny danger flex-1",
+              id: "relay-clear-storage",
+              text: "Clear cache",
+              disabled: true,
+              onClick: event => onAction("relay.clearStorage", {
+                currentTarget: event?.currentTarget ?? null,
+                target: event?.target ?? null,
+              }),
+            }),
+          ]),
         ]),
       ];
     },

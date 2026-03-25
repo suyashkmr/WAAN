@@ -90,7 +90,6 @@ describe("compositionAssembly contracts", () => {
         relaySyncMessagesMeta: document.createElement("div"),
         logDrawerCloseButton: document.createElement("button"),
         logDrawerClearButton: document.createElement("button"),
-        relayLiveCard: document.createElement("section"),
         chatSelector: document.createElement("select"),
       },
       state: {

@@ -197,7 +197,7 @@
 
 :is(.card-header, .app-panel-header) h2 {
     font-size: clamp(0.94rem, 1.05vw, 1.02rem);
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-display);
     font-weight: 500;
     letter-spacing: -0.015em;
     line-height: 1.14;
@@ -211,4 +211,81 @@
 
 :is(.card-header-actions, .app-panel-actions) .ghost-button {
     min-height: 1.82rem;
+}
+
+/* Section Navigation Rail */
+.section-nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    width: 100%;
+    background: var(--surface-sunken, #111);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.section-nav-inner {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.section-nav-inner::-webkit-scrollbar {
+    display: none;
+}
+
+.section-nav-inner a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.section-nav-inner a:hover {
+    color: var(--text);
+}
+
+.section-nav-inner a.active,
+.section-nav-inner a[aria-current="page"] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+/* Onboarding overlay — aria-hidden driven visibility */
+#onboarding-overlay[aria-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#onboarding-overlay[aria-hidden="false"] {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/* Card collapse — rotate chevron when collapsed */
+.card-toggle[aria-expanded="false"] svg {
+    transform: rotate(-90deg);
+}
+
+.card-toggle svg {
+    transition: transform 0.2s ease;
+}
+
+/* Native select styling */
+select.native-select,
+select[id] {
+    cursor: pointer;
 }
