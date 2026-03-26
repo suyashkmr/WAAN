@@ -1298,7 +1298,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     }
   });
 
-  test("keeps participants, search results, and hourly heatmap locally scroll-bounded", async ({ page }) => {
+  test("keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded", async ({ page }) => {
     await prepareStableFrame(page);
     await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
 
@@ -1331,6 +1331,18 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         `).join("");
       }
 
+      const savedViewGallery = document.getElementById("saved-view-gallery");
+      if (savedViewGallery) {
+        savedViewGallery.innerHTML = Array.from({ length: 30 }, (_, index) => `
+          <article class="saved-view-card">
+            <div class="saved-view-card-header">
+              <strong>View ${index + 1}</strong>
+            </div>
+            <p class="saved-view-card-summary">Saved view ${index + 1} with enough content to grow the gallery.</p>
+          </article>
+        `).join("");
+      }
+
       const hourlyChart = document.getElementById("hourly-chart");
       const hourlyHeatmap = hourlyChart?.querySelector(".hourly-heatmap");
       if (hourlyHeatmap instanceof HTMLElement) {
@@ -1358,6 +1370,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         participants: measure(participantsContainer),
         searchResults: measure(searchResultsList),
         hourlyChart: measure(hourlyChart),
+        savedViews: measure(savedViewGallery),
       };
     });
 
@@ -1366,8 +1379,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     expect(metrics.participants.scrollHeight).toBeGreaterThan(metrics.participants.clientHeight);
     expect(
       ["auto", "scroll"].includes(metrics.participants.overflowY)
-      || ["auto", "scroll"].includes(metrics.participants.overflow)
-      || metrics.viewportWidth <= 390,
+      || ["auto", "scroll"].includes(metrics.participants.overflow),
     ).toBe(true);
 
     expect(metrics.searchResults).toBeTruthy();
@@ -1384,6 +1396,14 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     expect(
       ["auto", "scroll"].includes(metrics.hourlyChart.overflowY)
       || ["auto", "scroll"].includes(metrics.hourlyChart.overflow),
+    ).toBe(true);
+
+    expect(metrics.savedViews).toBeTruthy();
+    expect(metrics.savedViews.clientHeight).toBeGreaterThan(0);
+    expect(metrics.savedViews.scrollHeight).toBeGreaterThan(metrics.savedViews.clientHeight);
+    expect(
+      ["auto", "scroll"].includes(metrics.savedViews.overflowY)
+      || ["auto", "scroll"].includes(metrics.savedViews.overflow),
     ).toBe(true);
   });
 
@@ -1636,5 +1656,66 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       maxDiffPixelRatio: 0.01,
       timeout: 15000,
     });
+  });
+
+  test("keeps the workspace state panel visible through relay connection transitions", async ({ page }) => {
+    await prepareStableFrame(page);
+
+    const panel = page.locator("#relay-status-panel");
+    const banner = page.locator("#relay-status-banner");
+
+    const captureState = async (label, options = {}) => {
+      const { requireMetaText = false } = options;
+      await expect(panel, `${label}: workspace state panel should stay visible`).toBeVisible();
+      await expect(banner, `${label}: relay status banner should stay visible`).toBeVisible();
+
+      const metrics = await page.evaluate(() => {
+        const panelEl = document.getElementById("relay-status-panel");
+        const bannerEl = document.getElementById("relay-status-banner");
+        const messageEl = document.getElementById("relay-connection-status");
+        const metaEl = document.getElementById("relay-account-name");
+        const summarize = element => {
+          if (!(element instanceof HTMLElement)) return null;
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return {
+            hiddenAttr: element.hidden || element.hasAttribute("hidden"),
+            hiddenClass: element.classList.contains("hidden"),
+            display: style.display,
+            visibility: style.visibility,
+            opacity: style.opacity,
+            width: rect.width,
+            height: rect.height,
+          };
+        };
+        return {
+          panel: summarize(panelEl),
+          banner: summarize(bannerEl),
+          statusText: messageEl?.textContent?.trim() ?? "",
+          metaText: metaEl?.textContent?.trim() ?? "",
+        };
+      });
+
+      expect(metrics.panel?.hiddenAttr, `${label}: panel should not carry hidden attr`).toBe(false);
+      expect(metrics.panel?.hiddenClass, `${label}: panel should not carry hidden class`).toBe(false);
+      expect(metrics.panel?.display, `${label}: panel display should stay visible`).not.toBe("none");
+      expect(metrics.panel?.visibility, `${label}: panel visibility should stay visible`).not.toBe("hidden");
+      expect(Number(metrics.panel?.width ?? 0), `${label}: panel width should stay meaningfully visible`).toBeGreaterThan(160);
+      expect(Number(metrics.panel?.height ?? 0), `${label}: panel height should stay meaningfully visible`).toBeGreaterThan(80);
+      expect(metrics.banner?.display, `${label}: banner display should stay visible`).not.toBe("none");
+      expect(metrics.banner?.visibility, `${label}: banner visibility should stay visible`).not.toBe("hidden");
+      expect(metrics.statusText, `${label}: status copy should stay populated`).not.toBe("");
+      if (requireMetaText) {
+        expect(metrics.metaText, `${label}: meta copy should stay populated`).not.toBe("");
+      }
+    };
+
+    await captureState("offline");
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "waiting_qr"));
+    await captureState("waiting_qr");
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_syncing"));
+    await captureState("running_syncing", { requireMetaText: true });
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_ready"));
+    await captureState("running_ready", { requireMetaText: true });
   });
 });

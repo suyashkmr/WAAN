@@ -466,14 +466,31 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 - [ ] Phase 56: Surface Recomposition.
   - [ ] Recompose the major high-impact surfaces onto the shared layout system:
     - [ ] Highlights
-    - [ ] Participants
+    - [x] Participants regression reclose: preserve the restored local-scroll containment while keeping the recomposed section visually intentional across desktop and mobile.
+      - [x] Live-path root cause: the participants table still expanded in the real app because the leaf scroll node had overflow rules, but the evidence frame and story-grid parents still allowed growth instead of constraining the scroll stage.
     - [ ] Timing cluster
+      - [x] Hourly regression reclose: restore local scroll on the live hourly chart container instead of relying on the nested Vue heatmap root alone.
+      - [x] Live-path root cause: the real `#hourly-chart` frame owned the visible height, but overflow remained on the nested `.hourly-heatmap`, so the live chart could still clip or expand incorrectly depending on the rendered payload.
     - [ ] Search
-    - [ ] Saved Views
-    - [ ] workspace, export, and support panels
+      - [x] Search-results regression reclose: keep the live results list locally scrollable without forcing an always-expanded search panel on desktop.
+      - [x] Live-path root cause: the current proof was styling the results leaf, but the surrounding search flex/grid containers still needed `min-height: 0` and a real overflow owner to keep the live list bounded.
+    - [x] Saved Views regression reclose: preserve the restored local-scroll gallery behavior without reopening the deleted `.search-actions` or export-anchor contracts.
+      - [x] Live-path root cause: the gallery still expanded in the real app because the results lane and gallery stage did not both participate in the bounded-height contract; leaf-only overflow rules were not enough.
+    - [x] workspace, export, and support panels:
+      - [x] Investigate the reported post-connect workspace-state disappearance in running relay paths without assuming the whole panel should hide.
+      - [x] Result: `#relay-status-panel` remains the canonical workspace-state surface and stays visible through `offline -> waiting_qr -> running_syncing -> running_ready`; the current repair need was a live-path visibility/footprint correction, not a runtime hide/show contract change.
+      - [x] Live-path root cause: the panel remained mounted, but connected states collapsed into too little visible footprint to read as a persistent workspace-state surface, especially after the recent layout wave.
   - [ ] Use desktop/tablet space more efficiently with grids and grouped rows while preserving mobile readability.
-  - [ ] Keep dense surfaces locally bounded and scrollable where appropriate, but do not own already-tracked functional containment or export/anchor defects from Phase 52.
+  - [x] Keep dense surfaces locally bounded and scrollable where appropriate, but do not own already-tracked functional containment or export/anchor defects from Phase 52.
+    - [x] Reclosed the current regression cluster by tightening container-only scroll contracts for participants and the saved-view gallery while preserving the already-restored search results and hourly heatmap behavior.
   - [ ] Preserve current runtime-owned IDs and interactive anchors unless another active repair task explicitly owns a contract change.
+  - [x] Record the regression repair and visual reclose evidence for the currently touched surfaces:
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded|keeps the workspace state panel visible through relay connection transitions|matches relay running ready state baseline|matches relay running syncing state baseline"`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --project=mobile-390 --grep "matches relay offline state baseline|matches relay waiting QR state baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run ci:verify`
+    - [x] Adjacent regression-class result: the same live-path containment class also affected the saved-view gallery and the surrounding search/saved flex-grid parents, so the final repair moved from leaf-only overflow rules to the actual flex/grid overflow owners.
   - [ ] Complete closure audit:
     - [ ] Confirm the app no longer relies on long stacked panel flows where denser grouped composition is the intended UX.
     - [ ] Confirm visual improvements do not introduce new functional regressions in the touched surfaces.

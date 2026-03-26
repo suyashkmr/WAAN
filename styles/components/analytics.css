@@ -92,6 +92,8 @@
     display: grid;
     gap: 0.95rem;
     align-items: start;
+    min-width: 0;
+    min-height: 0;
 }
 
 .guided-findings-cluster--timing .pattern-story-grid {
@@ -109,6 +111,7 @@
     display: grid;
     gap: 0.85rem;
     min-width: 0;
+    min-height: 0;
     align-content: start;
 }
 
@@ -574,6 +577,39 @@
 #participants .table-container.scrollable td:first-child,
 #message-types .table-container.scrollable td:first-child {
     font-weight: 600;
+}
+
+#participants .table-container.scrollable,
+#message-types .table-container.scrollable {
+    display: block;
+    min-width: 0;
+    block-size: clamp(240px, 42vh, 360px);
+    max-height: clamp(240px, 42vh, 360px);
+    min-height: 240px;
+    overflow-x: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#hourly-activity-content,
+#hourly-activity .analysis-evidence-frame,
+#hourly-chart {
+    min-width: 0;
+    min-height: 0;
+}
+
+#hourly-chart {
+    display: block;
+    height: clamp(320px, 52vh, 420px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#hourly-chart > .hourly-heatmap {
+    min-width: max-content;
+    min-height: max-content;
 }
 
 @media (max-width: 1024px) {
