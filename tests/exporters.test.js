@@ -17,8 +17,31 @@ function buildAnalyticsSample() {
         last_message: "2025-01-02T12:00:00.000Z",
       },
     ],
+    daily_counts: [
+      { date: "2025-01-01", count: 5 },
+      { date: "2025-01-02", count: 7 },
+    ],
+    weekly_counts: [
+      { week: "2025-W01", count: 12, cumulative: 12 },
+      { week: "2025-W02", count: 9, cumulative: 21 },
+    ],
+    weekday_distribution: [
+      { label: "Monday", count: 6, share: 0.4, deviation: 1.2 },
+      { label: "Tuesday", count: 9, share: 0.6, deviation: 0.8 },
+    ],
+    sentiment: {
+      daily: [
+        { date: "2025-01-01", count: 5, positive: 3, neutral: 1, negative: 1, average: 0.25 },
+        { date: "2025-01-02", count: 7, positive: 4, neutral: 2, negative: 1, average: 0.31 },
+      ],
+    },
     sentiments: {},
-    message_types: { summary: [] },
+    message_types: {
+      summary: [
+        { label: "Text", count: 8, share: 0.67 },
+        { label: "Media", count: 4, share: 0.33 },
+      ],
+    },
   };
 }
 
@@ -26,6 +49,15 @@ function buildController({
   analytics = buildAnalyticsSample(),
   participantView = analytics.top_senders,
   searchResults = [],
+  computeTimeOfDayDataset = () => ({
+    total: 12,
+    includeWeekdays: true,
+    includeWeekends: true,
+    points: [
+      { hour: 9, total: 4, share: 0.33, weekday: 3, weekend: 1 },
+      { hour: 18, total: 8, share: 0.67, weekday: 5, weekend: 3 },
+    ],
+  }),
 } = {}) {
   const updateStatus = vi.fn();
   const exporters = createExporters({
@@ -40,7 +72,7 @@ function buildController({
     formatNumber: value => Number(value || 0).toString(),
     formatFloat: value => Number(value || 0).toFixed(1),
     formatTimestampDisplay: value => (value ? String(value) : ""),
-    computeTimeOfDayDataset: () => ({ points: [] }),
+    computeTimeOfDayDataset,
     formatHourLabel: hour => `${hour}:00`,
     describeRange: () => "entire history",
     filterEntriesByRange: entries => entries,
@@ -85,5 +117,63 @@ describe("exporters smoke tests", () => {
     });
     exporters.exportSearchResults();
     expect(urlSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["daily", controller => controller.exporters.exportDaily()],
+    ["weekly", controller => controller.exporters.exportWeekly()],
+    ["weekday", controller => controller.exporters.exportWeekday()],
+    ["time-of-day", controller => controller.exporters.exportTimeOfDay()],
+    ["message types", controller => controller.exporters.exportMessageTypes()],
+    ["sentiment", controller => controller.exporters.exportSentiment()],
+  ])("downloads %s CSV when loaded analytics data exists", (_label, runExport) => {
+    const controller = buildController();
+    runExport(controller);
+    expect(urlSpy).toHaveBeenCalledTimes(1);
+    expect(revokeSpy).toHaveBeenCalledTimes(1);
+    expect(controller.updateStatus).not.toHaveBeenCalledWith(expect.stringContaining("No "), "warning");
+  });
+
+  it("silently no-ops export handlers when no dataset is loaded", async () => {
+    const updateStatus = vi.fn();
+    const exporters = createExporters({
+      getDatasetAnalytics: () => null,
+      getDatasetEntries: () => [],
+      getDatasetLabel: () => "Demo chat",
+      getCurrentRange: () => "all",
+      getParticipantView: () => [],
+      getExportFilterSummary: () => [],
+      getSearchState: () => ({ results: [] }),
+      updateStatus,
+      formatNumber: value => Number(value || 0).toString(),
+      formatFloat: value => Number(value || 0).toFixed(1),
+      formatTimestampDisplay: value => (value ? String(value) : ""),
+      computeTimeOfDayDataset: () => null,
+      formatHourLabel: hour => `${hour}:00`,
+      describeRange: () => "entire history",
+      filterEntriesByRange: entries => entries,
+      normalizeRangeValue: value => value,
+      generateMarkdownReport: async () => ({ content: "" }),
+      generateSlidesHtml: async () => ({ content: "" }),
+      getExportThemeConfig: () => ({ label: "Clean" }),
+      getDatasetFingerprint: () => "empty",
+    });
+
+    exporters.exportParticipants();
+    exporters.exportHourly();
+    exporters.exportDaily();
+    exporters.exportWeekly();
+    exporters.exportWeekday();
+    exporters.exportTimeOfDay();
+    exporters.exportMessageTypes();
+    exporters.exportChatJson();
+    exporters.exportSentiment();
+    exporters.exportMessageSubtype("media");
+    await exporters.handleDownloadMarkdownReport();
+    await exporters.handleDownloadSlidesReport();
+
+    expect(urlSpy).not.toHaveBeenCalled();
+    expect(revokeSpy).not.toHaveBeenCalled();
+    expect(updateStatus).not.toHaveBeenCalled();
   });
 });

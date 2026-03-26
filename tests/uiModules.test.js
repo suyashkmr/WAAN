@@ -16,7 +16,7 @@ describe("pdf preview controller", () => {
     vi.restoreAllMocks();
   });
 
-  it("warns when analytics are not loaded", async () => {
+  it("silently no-ops when analytics are not loaded", async () => {
     const updateStatus = vi.fn();
     const controller = createPdfPreviewController({
       getDatasetAnalytics: () => null,
@@ -27,10 +27,7 @@ describe("pdf preview controller", () => {
 
     await controller.handleDownloadPdfReport();
 
-    expect(updateStatus).toHaveBeenCalledWith(
-      "Load the chat summary before exporting a report.",
-      "warning",
-    );
+    expect(updateStatus).not.toHaveBeenCalled();
   });
 
   it("opens printable preview and reports success", async () => {

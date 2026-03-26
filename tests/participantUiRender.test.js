@@ -4,6 +4,14 @@ import { Fragment, h, render } from "vue";
 import { createSearchParticipantUiController } from "../js/search/participantUi.js";
 import { readPrimeSelectBridgeValue } from "../js/vue/primeSelectBridge.js";
 
+function renderPrimeSelectLabel(vnode) {
+  const selectNode = vnode?.children?.[0];
+  const options = Array.isArray(selectNode?.props?.options) ? selectNode.props.options : [];
+  const modelValue = selectNode?.props?.modelValue ?? "";
+  const selected = options.find(option => String(option?.value ?? "") === String(modelValue ?? ""));
+  return String(selected?.label ?? "");
+}
+
 describe("search participant UI rendering", () => {
   const originalVitestEnv = process.env.VITEST;
 
@@ -76,7 +84,7 @@ describe("search participant UI rendering", () => {
           },
           mount(container) {
             const vnode = root.render();
-            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}">${renderPrimeSelectLabel(vnode)}</div>`;
           },
         };
       },
@@ -102,6 +110,41 @@ describe("search participant UI rendering", () => {
     expect(mountEl?.isConnected).toBe(true);
     expect(mountEl?.dataset.bridgeReady).toBe("true");
     expect(mountEl?.dataset.bridgeInputId).toBe("search-participant");
+  });
+
+  it("renders the visible participant placeholder label through the bridged PrimeVue mount", () => {
+    const participantSelect = document.createElement("select");
+    participantSelect.id = "search-participant";
+    document.body.appendChild(participantSelect);
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    const vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select">${renderPrimeSelectLabel(vnode)}</div>`;
+          },
+        };
+      },
+    };
+
+    const controller = createSearchParticipantUiController({
+      participantSelect,
+      getEntries: () => [{ type: "message", sender: "Ana" }],
+      getDatasetFingerprint: () => "fp-1",
+      getSearchState: () => ({ query: { participant: "" } }),
+      buildParticipantOptionsCacheKey: ({ datasetFingerprint }) => datasetFingerprint,
+      vueRuntime,
+    });
+
+    controller.populateParticipants();
+
+    expect(document.getElementById("search-participant--mount")?.textContent).toContain("All participants");
   });
 
   it("keeps bridged participant state in sync after user selection", () => {

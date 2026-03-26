@@ -163,7 +163,10 @@ export function seedFullShellDom({ ownerDocument = document } = {}) {
     <div id="data-status"></div>
     <div id="toast-container"></div>
     <div class="page-controls"><div class="control-row primary-controls"></div></div>
-    <form id="advanced-search-form"><div class="search-actions"></div></form>
+    <form id="advanced-search-form">
+      <button id="reset-search" type="button">Clear filters</button>
+      <button id="run-search" type="submit">Search</button>
+    </form>
     <div id="search-results-list"></div>
     <div id="search-insights"></div>
     <div id="saved-view-gallery"></div>

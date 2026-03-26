@@ -319,6 +319,60 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         `;
       }
 
+      const savedViewName = document.getElementById("saved-view-name");
+      if (savedViewName instanceof HTMLInputElement) {
+        savedViewName.disabled = false;
+        savedViewName.value = "";
+      }
+
+      const enableButton = id => {
+        const button = document.getElementById(id);
+        if (button instanceof HTMLButtonElement) {
+          button.disabled = false;
+          button.removeAttribute("disabled");
+        }
+      };
+
+      ["save-view", "apply-saved-view", "delete-saved-view", "compare-views"].forEach(enableButton);
+
+      const seedSavedViewSelect = (id, options, value) => {
+        const select = document.getElementById(id);
+        if (!(select instanceof HTMLSelectElement)) return;
+        select.disabled = false;
+        select.innerHTML = options
+          .map(option => `<option value="${option.value}">${option.label}</option>`)
+          .join("");
+        select.value = value;
+      };
+
+      seedSavedViewSelect(
+        "saved-view-list",
+        [
+          { value: "", label: "Choose a saved view…" },
+          { value: "launch-last-30", label: "Launch last 30 days · Mar 1, 2026 to Mar 18, 2026" },
+          { value: "recap-evenings", label: "Recap evenings · Feb 10, 2026 to Mar 18, 2026" },
+        ],
+        "launch-last-30",
+      );
+      seedSavedViewSelect(
+        "compare-view-a",
+        [
+          { value: "", label: "Select view A…" },
+          { value: "launch-last-30", label: "Launch last 30 days · Mar 1, 2026 to Mar 18, 2026" },
+          { value: "recap-evenings", label: "Recap evenings · Feb 10, 2026 to Mar 18, 2026" },
+        ],
+        "launch-last-30",
+      );
+      seedSavedViewSelect(
+        "compare-view-b",
+        [
+          { value: "", label: "Select view B…" },
+          { value: "launch-last-30", label: "Launch last 30 days · Mar 1, 2026 to Mar 18, 2026" },
+          { value: "recap-evenings", label: "Recap evenings · Feb 10, 2026 to Mar 18, 2026" },
+        ],
+        "recap-evenings",
+      );
+
       const compareSummary = document.getElementById("compare-summary");
       if (compareSummary) {
         compareSummary.classList.remove("empty");
@@ -581,12 +635,33 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
       const range = document.getElementById("global-range");
       if (range instanceof HTMLSelectElement) {
-        range.disabled = false;
+        range.disabled = true;
         range.value = "all";
       }
 
       const customControls = document.getElementById("custom-range-controls");
       if (customControls) customControls.classList.add("hidden");
+      const customStart = document.getElementById("custom-start");
+      const customEnd = document.getElementById("custom-end");
+      const customApply = document.getElementById("apply-custom-range");
+      if (customStart instanceof HTMLInputElement) customStart.disabled = true;
+      if (customEnd instanceof HTMLInputElement) customEnd.disabled = true;
+      if (customApply instanceof HTMLButtonElement) customApply.disabled = true;
+
+      const logout = document.getElementById("relay-logout");
+      if (logout instanceof HTMLButtonElement) logout.disabled = true;
+
+      const recoveryActions = document.getElementById("relay-status-actions");
+      const reconnect = document.getElementById("relay-recovery-reconnect");
+      const resync = document.getElementById("relay-recovery-resync");
+      const exportDiagnostics = document.getElementById("relay-recovery-export");
+      if (recoveryActions) {
+        recoveryActions.hidden = false;
+        recoveryActions.classList.remove("hidden");
+      }
+      if (reconnect instanceof HTMLButtonElement) reconnect.disabled = false;
+      if (resync instanceof HTMLButtonElement) resync.disabled = true;
+      if (exportDiagnostics instanceof HTMLButtonElement) exportDiagnostics.disabled = false;
 
       const emptyCallout = document.getElementById("dataset-empty-callout");
       const workspaceSplit = document.querySelector(".workspace-stage-grid");
@@ -756,6 +831,53 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       await applyFn(page);
     }
     await page.waitForTimeout(350);
+    await page.evaluate(async () => {
+      const selectors = [
+        "#workspace-stage",
+        "#dataset-empty-callout",
+        "#relay-status-banner",
+        "#chat-selector",
+        "#global-range",
+        "#custom-range-controls",
+        "#relay-qr-container",
+        "#relay-sync-progress",
+      ];
+      const getSignature = () =>
+        selectors.map(selector => {
+          const node = document.querySelector(selector);
+          if (!node) return `${selector}:missing`;
+          const rect = node.getBoundingClientRect();
+          const hiddenAttr = node.hasAttribute("hidden");
+          const hiddenClass = node.classList.contains("hidden");
+          const text = node.textContent?.trim().slice(0, 120) || "";
+          const value = "value" in node ? String(node.value ?? "") : "";
+          return [
+            selector,
+            Math.round(rect.width),
+            Math.round(rect.height),
+            hiddenAttr ? "attr-hidden" : "attr-visible",
+            hiddenClass ? "class-hidden" : "class-visible",
+            node.getAttribute("data-status") || "",
+            value,
+            text,
+          ].join("|");
+        }).join("::");
+
+      let previousSignature = "";
+      let stableFrames = 0;
+
+      for (let iteration = 0; iteration < 20; iteration += 1) {
+        await new Promise(resolve => window.setTimeout(resolve, 100));
+        const nextSignature = getSignature();
+        if (nextSignature === previousSignature) {
+          stableFrames += 1;
+          if (stableFrames >= 3) break;
+        } else {
+          stableFrames = 0;
+          previousSignature = nextSignature;
+        }
+      }
+    });
     for (const applyFn of applyFns) {
       await applyFn(page);
     }
@@ -1027,6 +1149,244 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
+  test("keeps workspace no-chat-selected guidance and control state coherent", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, applyWorkspaceEmptyScenario);
+
+    const state = await page.evaluate(() => {
+      const emptyCallout = document.getElementById("dataset-empty-callout");
+      const emptyHeading = document.getElementById("dataset-empty-heading");
+      const emptyCopy = document.getElementById("dataset-empty-copy");
+      const chatSelector = document.getElementById("chat-selector");
+      const range = document.getElementById("global-range");
+      const customControls = document.getElementById("custom-range-controls");
+      const utilityCluster = document.getElementById("workspace-utility-cluster");
+
+      return {
+        emptyCalloutVisible: Boolean(
+          emptyCallout
+            && !emptyCallout.hidden
+            && !emptyCallout.classList.contains("hidden")
+            && emptyCallout.style.display !== "none",
+        ),
+        emptyHeading: emptyHeading?.textContent || "",
+        emptyCopy: emptyCopy?.textContent || "",
+        chatDisabled: chatSelector instanceof HTMLSelectElement ? chatSelector.disabled : null,
+        chatValue: chatSelector instanceof HTMLSelectElement ? chatSelector.value : null,
+        rangeValue: range instanceof HTMLSelectElement ? range.value : null,
+        customControlsHidden: Boolean(
+          customControls?.classList.contains("hidden") || customControls?.hasAttribute("hidden"),
+        ),
+        utilityClusterOpen: utilityCluster instanceof HTMLDetailsElement ? utilityCluster.open : null,
+      };
+    });
+
+    expect(state.emptyCalloutVisible).toBe(true);
+    expect(state.emptyHeading).toBe("Pick a chat");
+    expect(state.emptyCopy).toBe("Choose one loaded chat to unlock findings and exports.");
+    expect(state.chatDisabled).toBe(false);
+    expect(state.chatValue).toBe("");
+    expect(state.rangeValue).toBe("all");
+    expect(state.customControlsHidden).toBe(true);
+    expect(state.utilityClusterOpen).toBe(false);
+  });
+
+  test("keeps workspace offline guidance and control state coherent", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, applyWorkspaceOfflineScenario);
+
+    const state = await page.evaluate(() => {
+      const emptyHeading = document.getElementById("dataset-empty-heading");
+      const emptyCopy = document.getElementById("dataset-empty-copy");
+      const chatSelector = document.getElementById("chat-selector");
+      const range = document.getElementById("global-range");
+      const customControls = document.getElementById("custom-range-controls");
+      const logout = document.getElementById("relay-logout");
+      const reconnect = document.getElementById("relay-recovery-reconnect");
+      const resync = document.getElementById("relay-recovery-resync");
+      const exportDiagnostics = document.getElementById("relay-recovery-export");
+      const recoveryActions = document.getElementById("relay-status-actions");
+
+      return {
+        emptyHeading: emptyHeading?.textContent || "",
+        emptyCopy: emptyCopy?.textContent || "",
+        chatDisabled: chatSelector instanceof HTMLSelectElement ? chatSelector.disabled : null,
+        rangeDisabled: range instanceof HTMLSelectElement ? range.disabled : null,
+        rangeValue: range instanceof HTMLSelectElement ? range.value : null,
+        customControlsHidden: Boolean(
+          customControls?.classList.contains("hidden") || customControls?.hasAttribute("hidden"),
+        ),
+        logoutDisabled: logout instanceof HTMLButtonElement ? logout.disabled : null,
+        recoveryVisible: Boolean(
+          recoveryActions
+            && !recoveryActions.hidden
+            && !recoveryActions.classList.contains("hidden"),
+        ),
+        reconnectDisabled: reconnect instanceof HTMLButtonElement ? reconnect.disabled : null,
+        resyncDisabled: resync instanceof HTMLButtonElement ? resync.disabled : null,
+        exportDisabled: exportDiagnostics instanceof HTMLButtonElement ? exportDiagnostics.disabled : null,
+      };
+    });
+
+    expect(state.emptyHeading).toBe("Workspace locked");
+    expect(state.emptyCopy).toBe("Start relay to unlock chat selection, exports, and findings.");
+    expect(state.chatDisabled).toBe(true);
+    expect(state.rangeDisabled).toBe(true);
+    expect(state.rangeValue).toBe("all");
+    expect(state.customControlsHidden).toBe(true);
+    expect([true, null]).toContain(state.logoutDisabled);
+    expect(state.recoveryVisible).toBe(true);
+    expect(state.reconnectDisabled).toBe(false);
+    expect(state.resyncDisabled).toBe(true);
+    expect(state.exportDisabled).toBe(false);
+  });
+
+  test("keeps loaded search and saved-view controls reachable across breakpoints", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, applyDeepDiveScenario);
+
+    await page.locator("#search-panel").scrollIntoViewIfNeeded();
+    await expect(page.locator("#search-panel")).toBeVisible();
+    await expect(page.locator("#run-search")).toBeVisible();
+    await expect(page.locator("#run-search")).toBeEnabled();
+    await expect(page.locator("#reset-search")).toBeVisible();
+    await expect(page.locator("#reset-search")).toBeEnabled();
+    await expect(page.locator("#search-results-summary")).toContainText("12 matches");
+
+    await page.locator("#saved-views-card").scrollIntoViewIfNeeded();
+    await expect(page.locator("#saved-views-card")).toBeVisible();
+    await expect(page.locator("#save-view")).toBeVisible();
+    await expect(page.locator("#save-view")).toBeEnabled();
+    await expect(page.locator("#apply-saved-view")).toBeVisible();
+    await expect(page.locator("#apply-saved-view")).toBeEnabled();
+    await expect(page.locator("#delete-saved-view")).toBeVisible();
+    await expect(page.locator("#delete-saved-view")).toBeEnabled();
+    await expect(page.locator("#compare-views")).toBeVisible();
+    await expect(page.locator("#compare-views")).toBeEnabled();
+    await expect(page.locator("#saved-view-gallery .saved-view-card")).toHaveCount(2);
+    await expect(page.locator("#compare-summary .compare-summary-grid")).toBeVisible();
+
+    const reachability = await page.evaluate(() => {
+      const resolveBridgeOrNative = id =>
+        document.getElementById(`${id}--mount`) || document.getElementById(id);
+      const targets = [
+        document.getElementById("run-search"),
+        document.getElementById("reset-search"),
+        resolveBridgeOrNative("saved-view-list"),
+        document.getElementById("save-view"),
+        document.getElementById("apply-saved-view"),
+        document.getElementById("delete-saved-view"),
+        resolveBridgeOrNative("compare-view-a"),
+        resolveBridgeOrNative("compare-view-b"),
+        document.getElementById("compare-views"),
+      ].filter(Boolean);
+
+      return targets.map(element => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return {
+          id: element.id || element.getAttribute("data-ui-owner") || "unknown",
+          visible: rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none",
+          reachableHorizontally: rect.left >= 0 && rect.right <= window.innerWidth,
+        };
+      });
+    });
+
+    for (const target of reachability) {
+      expect(target.visible, `${target.id} should be visible`).toBe(true);
+      expect(target.reachableHorizontally, `${target.id} should stay within the viewport width`).toBe(true);
+    }
+  });
+
+  test("keeps participants, search results, and hourly heatmap locally scroll-bounded", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
+
+    const metrics = await page.evaluate(() => {
+      const participantsContainer = document.querySelector("#participants .table-container.scrollable");
+      const participantsBody = document.querySelector("#top-senders tbody");
+      if (participantsBody) {
+        const rows = Array.from({ length: 80 }, (_, index) => `
+          <tr>
+            <td class="p-3">${index + 1}</td>
+            <td class="p-3">Participant ${index + 1}</td>
+            <td class="p-3">${200 - index}</td>
+            <td class="p-3">${(10 + (index % 50)) / 10}</td>
+            <td class="p-3">${(5 + (index % 20)) / 10}</td>
+          </tr>
+        `).join("");
+        participantsBody.innerHTML = rows;
+      }
+
+      const searchResultsList = document.getElementById("search-results-list");
+      if (searchResultsList) {
+        searchResultsList.innerHTML = Array.from({ length: 60 }, (_, index) => `
+          <article class="search-result">
+            <header class="search-result-header">
+              <span class="search-result-sender">Sender ${index + 1}</span>
+              <time>2026-03-2${index % 9}</time>
+            </header>
+            <p class="search-result-message">Result ${index + 1} with enough copy to keep the cards realistic.</p>
+          </article>
+        `).join("");
+      }
+
+      const hourlyChart = document.getElementById("hourly-chart");
+      const hourlyHeatmap = hourlyChart?.querySelector(".hourly-heatmap");
+      if (hourlyHeatmap instanceof HTMLElement) {
+        hourlyHeatmap.style.minHeight = "1000px";
+      } else if (hourlyChart instanceof HTMLElement) {
+        const filler = document.createElement("div");
+        filler.className = "hourly-heatmap";
+        filler.style.minHeight = "1000px";
+        hourlyChart.replaceChildren(filler);
+      }
+
+      const measure = element => {
+        if (!(element instanceof HTMLElement)) return null;
+        const styles = window.getComputedStyle(element);
+        return {
+          clientHeight: element.clientHeight,
+          scrollHeight: element.scrollHeight,
+          overflow: styles.overflow,
+          overflowY: styles.overflowY,
+        };
+      };
+
+      return {
+        viewportWidth: window.innerWidth,
+        participants: measure(participantsContainer),
+        searchResults: measure(searchResultsList),
+        hourlyChart: measure(hourlyChart),
+      };
+    });
+
+    expect(metrics.participants).toBeTruthy();
+    expect(metrics.participants.clientHeight).toBeGreaterThan(0);
+    expect(metrics.participants.scrollHeight).toBeGreaterThan(metrics.participants.clientHeight);
+    expect(
+      ["auto", "scroll"].includes(metrics.participants.overflowY)
+      || ["auto", "scroll"].includes(metrics.participants.overflow)
+      || metrics.viewportWidth <= 390,
+    ).toBe(true);
+
+    expect(metrics.searchResults).toBeTruthy();
+    expect(metrics.searchResults.clientHeight).toBeGreaterThan(0);
+    expect(metrics.searchResults.scrollHeight).toBeGreaterThan(metrics.searchResults.clientHeight);
+    expect(
+      ["auto", "scroll"].includes(metrics.searchResults.overflowY)
+      || ["auto", "scroll"].includes(metrics.searchResults.overflow),
+    ).toBe(true);
+
+    expect(metrics.hourlyChart).toBeTruthy();
+    expect(metrics.hourlyChart.clientHeight).toBeGreaterThan(0);
+    expect(metrics.hourlyChart.scrollHeight).toBeGreaterThan(metrics.hourlyChart.clientHeight);
+    expect(
+      ["auto", "scroll"].includes(metrics.hourlyChart.overflowY)
+      || ["auto", "scroll"].includes(metrics.hourlyChart.overflow),
+    ).toBe(true);
+  });
+
   test("matches search panel baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
@@ -1039,6 +1399,98 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       maxDiffPixelRatio: testInfo.project.name === "desktop-1440" ? 0.02 : 0.01,
       timeout: 15000,
     });
+  });
+
+  test("proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
+
+    const exportResults = await page.evaluate(async () => {
+      const { setDatasetEntries, setDatasetAnalytics, setCurrentRange } = await import("/js/state.js");
+      const { computeAnalytics } = await import("/js/analytics.js");
+
+      const entries = [
+        { type: "message", sender: "Alice", message: "Great launch progress today", timestamp: "2026-03-01T09:15:00.000Z" },
+        { type: "message", sender: "Priya", message: "Need a careful recap before launch", timestamp: "2026-03-02T18:30:00.000Z" },
+        { type: "message", sender: "Marco", message: "Shared the launch deck link", timestamp: "2026-03-08T11:45:00.000Z", link: "https://example.com/deck" },
+        { type: "message", sender: "Alice", message: "Poll says we launch Tuesday", timestamp: "2026-03-09T20:10:00.000Z", poll: { name: "Launch day" } },
+        { type: "message", sender: "Priya", message: "Media recap uploaded for the team", timestamp: "2026-03-10T07:05:00.000Z", has_media: true },
+      ];
+
+      const analytics = computeAnalytics(entries);
+      analytics.message_types = {
+        ...(analytics.message_types || {}),
+        summary: [
+          { label: "Text", count: 3, share: 0.6 },
+          { label: "Links", count: 1, share: 0.2 },
+          { label: "Media", count: 1, share: 0.2 },
+        ],
+      };
+      setDatasetEntries(entries);
+      setDatasetAnalytics(analytics);
+      setCurrentRange("all");
+
+      const recordedDownloads = [];
+      const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+      const originalRevokeObjectURL = URL.revokeObjectURL.bind(URL);
+      const originalAnchorClick = HTMLAnchorElement.prototype.click;
+
+      URL.createObjectURL = blob => {
+        recordedDownloads.push({ kind: "blob", size: blob?.size ?? 0, type: blob?.type ?? "" });
+        return originalCreateObjectURL(blob);
+      };
+      URL.revokeObjectURL = url => originalRevokeObjectURL(url);
+      HTMLAnchorElement.prototype.click = function clickPatched() {
+        recordedDownloads.push({ kind: "download", filename: this.download || "", href: this.href || "" });
+        return originalAnchorClick.call(this);
+      };
+
+      const buttonIds = [
+        "download-daily",
+        "download-weekly",
+        "download-weekday",
+        "download-timeofday",
+        "download-message-types",
+        "download-sentiment",
+      ];
+
+      const beforeStatus = document.getElementById("data-status")?.textContent || "";
+      const results = [];
+
+      try {
+        buttonIds.forEach(id => {
+          const button = document.getElementById(id);
+          if (button instanceof HTMLButtonElement) {
+            button.disabled = false;
+            button.removeAttribute("disabled");
+          }
+        });
+
+        for (const id of buttonIds) {
+          const beforeCount = recordedDownloads.length;
+          document.getElementById(id)?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+          await new Promise(resolve => setTimeout(resolve, 0));
+          results.push({
+            id,
+            downloadEvents: recordedDownloads.slice(beforeCount),
+            status: document.getElementById("data-status")?.textContent || "",
+          });
+        }
+      } finally {
+        URL.createObjectURL = originalCreateObjectURL;
+        URL.revokeObjectURL = originalRevokeObjectURL;
+        HTMLAnchorElement.prototype.click = originalAnchorClick;
+      }
+
+      return { beforeStatus, results };
+    });
+
+    for (const result of exportResults.results) {
+      expect(result.downloadEvents.length, `${result.id} should trigger a download event`).toBeGreaterThan(0);
+      expect(result.downloadEvents.some(event => event.kind === "download"), `${result.id} should click a download link`).toBe(true);
+      expect(result.status).not.toContain("No ");
+      expect(result.status).not.toContain("Load ");
+    }
   });
 
   test("matches saved views section baseline", async ({ page }, testInfo) => {

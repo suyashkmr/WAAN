@@ -34,7 +34,8 @@ describe("main boot sequence", () => {
           <label for="search-participant">Participant</label>
           <div id="search-participant-anchor" data-native-select-seed="search-participant"></div>
         </div>
-        <div class="search-actions"></div>
+        <button id="reset-search" type="button">Clear filters</button>
+        <button id="run-search" type="submit">Search</button>
       </form>
       <input id="saved-view-name" />
       <button id="save-view" type="button"></button>

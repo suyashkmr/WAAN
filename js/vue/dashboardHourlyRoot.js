@@ -174,7 +174,7 @@ export function createHourlyRoot(h, state) {
         if (!model || model.mode === "empty") {
           return h("p", { class: "search-results-empty" }, model?.message || UI_COPY.analytics.noGenericData);
         }
-        return [
+        return h("div", { class: "hourly-heatmap" }, [
           h("div", { class: "heatmap-grid" }, [
             h("div", { class: "heatmap-cell header corner" }),
             ...model.weekdayHeaders.map(label => h("div", { class: "heatmap-cell header weekday" }, label)),
@@ -211,7 +211,7 @@ export function createHourlyRoot(h, state) {
             ]),
             h("span", {}, "More"),
           ]),
-        ];
+        ]);
       };
     },
   };

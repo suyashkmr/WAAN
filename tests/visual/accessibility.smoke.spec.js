@@ -7,6 +7,24 @@ function commandControlSelector(id) {
   return `#${id}`;
 }
 
+async function openUtilityCluster(page) {
+  await page.evaluate(() => {
+    const cluster = document.getElementById("workspace-utility-cluster");
+    if (cluster instanceof HTMLDetailsElement) cluster.open = true;
+  });
+}
+
+async function waitForShellUtilityBinding(page, ...ids) {
+  await page.waitForFunction(boundIds => {
+    const runtime = window.__WAAN_VUE_RUNTIME__;
+    const shellBridgeReady =
+      typeof runtime?.bridges?.shell?.dispatchShellAction === "function"
+      && typeof runtime?.bridges?.shell?.setShellActionHandlers === "function";
+    if (!shellBridgeReady) return false;
+    return boundIds.every(id => document.getElementById(id)?.dataset?.shellActionBound === "true");
+  }, ids);
+}
+
 test.describe("WAAN Accessibility Smoke", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -34,33 +52,35 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("applies reduced-motion and high-contrast states", async ({ page }) => {
-    await page.evaluate(() => {
-      const cluster = document.getElementById("workspace-utility-cluster");
-      if (cluster instanceof HTMLDetailsElement) cluster.open = true;
-    });
-    await page.waitForFunction(() =>
-      document.getElementById("reduce-motion-toggle")?.dataset?.shellActionBound === "true"
-      && document.getElementById("high-contrast-toggle")?.dataset?.shellActionBound === "true"
-    );
+    await openUtilityCluster(page);
+    await waitForShellUtilityBinding(page, "reduce-motion-toggle", "high-contrast-toggle");
     const reduceMotionToggle = page.locator("#reduce-motion-toggle:visible").first();
     const highContrastToggle = page.locator("#high-contrast-toggle:visible").first();
 
     await expect(reduceMotionToggle).toBeVisible();
     await expect(highContrastToggle).toBeVisible();
+    await expect(reduceMotionToggle).toBeEnabled();
+    await expect(highContrastToggle).toBeEnabled();
     await expect(reduceMotionToggle).toHaveAttribute("title", /.+/);
     await expect(highContrastToggle).toHaveAttribute("title", /.+/);
+    await expect(reduceMotionToggle).toHaveAttribute("aria-pressed", "mixed");
+    await expect(highContrastToggle).toHaveAttribute("aria-pressed", "false");
 
-    await page.evaluate(() => {
-      document.getElementById("reduce-motion-toggle")?.click();
-    });
-    await page.waitForFunction(() => document.body?.dataset.reduceMotion === "true");
-    await page.waitForFunction(() => document.documentElement?.dataset.uiMotion === "reduced");
+    await reduceMotionToggle.click();
+    await expect(reduceMotionToggle).toHaveAttribute("aria-pressed", "true");
+    await expect(reduceMotionToggle).toHaveText(/Motion: Reduced/);
+    await page.waitForFunction(() =>
+      document.body?.dataset.reduceMotion === "true"
+      && document.documentElement?.dataset.uiMotion === "reduced"
+    );
 
-    await page.evaluate(() => {
-      document.getElementById("high-contrast-toggle")?.click();
-    });
-    await page.waitForFunction(() => document.body?.dataset.contrast === "high");
-    await page.waitForFunction(() => document.documentElement?.dataset.uiContrast === "high");
+    await highContrastToggle.click();
+    await expect(highContrastToggle).toHaveAttribute("aria-pressed", "true");
+    await expect(highContrastToggle).toHaveText(/Contrast: Boosted/);
+    await page.waitForFunction(() =>
+      document.body?.dataset.contrast === "high"
+      && document.documentElement?.dataset.uiContrast === "high"
+    );
   });
 
   test("keeps migrated command controls keyboard focusable", async ({ page }) => {
@@ -80,22 +100,16 @@ test.describe("WAAN Accessibility Smoke", () => {
       }, selector);
       const focusTarget = page.locator(selector).first();
       await expect(focusTarget).toBeVisible();
-      await page.evaluate(targetSelector => {
-        document.querySelector(targetSelector)?.scrollIntoView({
-          block: "center",
-          inline: "nearest",
-        });
-      }, selector);
-      await page.focus(selector);
+      await focusTarget.scrollIntoViewIfNeeded();
+      await focusTarget.focus();
       await expect
         .poll(async () =>
-          page.evaluate(targetSelector => {
-            const element = document.querySelector(targetSelector);
+          focusTarget.evaluate(element => {
             return Boolean(
               element
                 && (element === document.activeElement || element.contains(document.activeElement)),
             );
-          }, selector),
+          }),
         )
         .toBe(true);
     }
@@ -122,13 +136,8 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("keeps support and diagnostics actions keyboard reachable", async ({ page }) => {
-    await page.evaluate(() => {
-      const cluster = document.getElementById("workspace-utility-cluster");
-      if (cluster instanceof HTMLDetailsElement) cluster.open = true;
-    });
-    await page.waitForFunction(() =>
-      document.getElementById("log-drawer-toggle")?.dataset?.shellActionBound === "true"
-    );
+    await openUtilityCluster(page);
+    await waitForShellUtilityBinding(page, "log-drawer-toggle");
     const logDrawerToggle = page.locator("#log-drawer-toggle:visible").first();
     await expect(logDrawerToggle).toBeVisible();
     await expect(logDrawerToggle).toHaveAttribute("title", /.+/);

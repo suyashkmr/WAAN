@@ -99,9 +99,66 @@ export function createRelayStatusApplyController({
   const canRenderStatusSurface = typeof relayStatusRenderer?.renderStatusSurface === "function";
 
   function resolveShellBridge() {
-    return /** @type {{ updateRelayRecoveryActions?: (payload: any) => void, updateRelayControlButtons?: (payload: any) => void } | null} */ (
+    return /** @type {{ updateRelayRecoveryActions?: (payload: any) => void, updateRelayControlButtons?: (payload: any) => void, syncPageControls?: (payload: any) => boolean } | null} */ (
       resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope })
     );
+  }
+
+  /**
+   * @param {{
+   *   chatDisabled?: boolean,
+   *   rangeDisabled?: boolean,
+   *   customDisabled?: boolean,
+   *   customVisible?: boolean,
+   *   rangeValue?: string,
+   *   customStart?: string,
+   *   customEnd?: string,
+   * }} payload
+   */
+  function syncWorkspaceReadinessControls(payload = {}) {
+    const shellBridge = resolveShellBridge();
+    shellBridge?.syncPageControls?.(payload);
+    const documentRef = globalScope?.document ?? null;
+    const chatSelector = documentRef?.getElementById?.("chat-selector");
+    const rangeSelect = documentRef?.getElementById?.("global-range");
+    const customControls = documentRef?.getElementById?.("custom-range-controls");
+    const customStartInput = documentRef?.getElementById?.("custom-start");
+    const customEndInput = documentRef?.getElementById?.("custom-end");
+    const customApplyButton = documentRef?.getElementById?.("apply-custom-range");
+
+    if (chatSelector && Object.prototype.hasOwnProperty.call(payload, "chatDisabled")) {
+      chatSelector.disabled = Boolean(payload.chatDisabled);
+    }
+    if (rangeSelect) {
+      if (Object.prototype.hasOwnProperty.call(payload, "rangeDisabled")) {
+        rangeSelect.disabled = Boolean(payload.rangeDisabled);
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "rangeValue")) {
+        rangeSelect.value = String(payload.rangeValue ?? "all");
+      }
+    }
+    if (customControls && Object.prototype.hasOwnProperty.call(payload, "customVisible")) {
+      customControls.classList.toggle("hidden", !payload.customVisible);
+    }
+    if (customStartInput) {
+      if (Object.prototype.hasOwnProperty.call(payload, "customDisabled")) {
+        customStartInput.disabled = Boolean(payload.customDisabled);
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "customStart")) {
+        customStartInput.value = String(payload.customStart ?? "");
+      }
+    }
+    if (customEndInput) {
+      if (Object.prototype.hasOwnProperty.call(payload, "customDisabled")) {
+        customEndInput.disabled = Boolean(payload.customDisabled);
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "customEnd")) {
+        customEndInput.value = String(payload.customEnd ?? "");
+      }
+    }
+    if (customApplyButton && Object.prototype.hasOwnProperty.call(payload, "customDisabled")) {
+      customApplyButton.disabled = Boolean(payload.customDisabled);
+    }
   }
 
   /**
@@ -227,17 +284,26 @@ export function createRelayStatusApplyController({
       updateSyncProgressFromStatus(null);
       const offlineHelpText = UI_COPY.relay.offlineNextStep;
       renderRelayStatusSurface({ statusText: UI_COPY.relay.offlineStatus, accountText: "", helpText: offlineHelpText, qrSrc: null });
-      applyRelayControlButtons({ stopDisabled: true, reloadAllDisabled: true });
+      applyRelayControlButtons({ stopDisabled: true, logoutDisabled: true, reloadAllDisabled: true });
       if (isStateTransition) {
         setRemoteChatList([]);
         relayUiState.lastStatusKind = "offline";
         refreshChatSelector();
         setDashboardLoadingState(true);
+        setDataAvailabilityState(false);
+        syncWorkspaceReadinessControls({
+          chatDisabled: true,
+          rangeDisabled: true,
+          customDisabled: true,
+          customVisible: false,
+          rangeValue: "all",
+          customStart: "",
+          customEnd: "",
+        });
         setDatasetEmptyMessage(
           UI_COPY.dataset.offlineHeading,
           UI_COPY.dataset.offlineMessage,
         );
-        setDataAvailabilityState(false);
       }
       relayUiState.lastAppliedStateKind = stateKind;
       updateRecoveryActions(status);
@@ -289,6 +355,10 @@ export function createRelayStatusApplyController({
     updateFirstRunSetup({ status, hasData: Boolean(getDataAvailable?.()) });
 
     if (running) {
+      syncWorkspaceReadinessControls({
+        chatDisabled: !getRemoteChatList().length,
+        rangeDisabled: false,
+      });
       const remoteChatList = getRemoteChatList();
       const needsRefresh =
         (chatCount > 0 && !remoteChatList.length) ||
@@ -307,6 +377,15 @@ export function createRelayStatusApplyController({
         setRemoteChatList([]);
         refreshChatSelector();
         setDashboardLoadingState(true);
+        syncWorkspaceReadinessControls({
+          chatDisabled: true,
+          rangeDisabled: true,
+          customDisabled: true,
+          customVisible: false,
+          rangeValue: "all",
+          customStart: "",
+          customEnd: "",
+        });
       }
       if (waiting && relayUiState.lastStatusKind !== "waiting") {
         updateStatus(UI_COPY.relay.waitingPhoneHero, "info");

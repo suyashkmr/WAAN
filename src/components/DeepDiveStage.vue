@@ -67,7 +67,7 @@
                 </div>
                 <div class="hidden text-sm text-[var(--text-muted)]" id="search-insights" aria-live="polite"></div>
               </div>
-              <div class="flex flex-col gap-4" id="search-results-list"></div>
+              <div class="search-results-list flex flex-col gap-4" id="search-results-list"></div>
             </div>
           </section>
 

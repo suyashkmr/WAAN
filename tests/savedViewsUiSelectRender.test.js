@@ -4,14 +4,25 @@ import { Fragment, h, render } from "vue";
 import { createSavedViewsUiController } from "../js/savedViewsUi.js";
 import { readPrimeSelectBridgeValue } from "../js/vue/primeSelectBridge.js";
 
+function renderPrimeSelectLabel(vnode) {
+  const selectNode = vnode?.children?.[0];
+  const options = Array.isArray(selectNode?.props?.options) ? selectNode.props.options : [];
+  const modelValue = selectNode?.props?.modelValue ?? "";
+  const selected = options.find(option => String(option?.value ?? "") === String(modelValue ?? ""));
+  return String(selected?.label ?? "");
+}
+
 function buildController({
   views = [],
   compareSelection = { primary: null, secondary: null },
   vueRuntime = null,
 } = {}) {
   const listSelect = document.createElement("select");
+  listSelect.id = "saved-view-list";
   const compareSelectA = document.createElement("select");
+  compareSelectA.id = "compare-view-a";
   const compareSelectB = document.createElement("select");
+  compareSelectB.id = "compare-view-b";
   const gallery = document.createElement("div");
   const compareSummaryEl = document.createElement("div");
 
@@ -96,7 +107,7 @@ describe("saved views select rendering", () => {
           },
           mount(container) {
             const vnode = root.render();
-            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}">${renderPrimeSelectLabel(vnode)}</div>`;
           },
         };
       },
@@ -114,6 +125,37 @@ describe("saved views select rendering", () => {
     expect(compareSelectB.value).toBe("v2");
     expect(readPrimeSelectBridgeValue(compareSelectA)).toBe("v1");
     expect(readPrimeSelectBridgeValue(compareSelectB)).toBe("v2");
+  });
+
+  it("renders visible placeholder labels through the bridged PrimeVue mounts", () => {
+    globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
+    const vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select">${renderPrimeSelectLabel(vnode)}</div>`;
+          },
+        };
+      },
+    };
+    const { controller, listSelect, compareSelectA, compareSelectB } = buildController({
+      views: [],
+      compareSelection: { primary: null, secondary: null },
+      vueRuntime,
+    });
+    document.body.append(listSelect, compareSelectA, compareSelectB);
+
+    controller.refreshUI();
+
+    expect(document.getElementById("saved-view-list--mount")?.textContent).toContain("Choose a saved view…");
+    expect(document.getElementById("compare-view-a--mount")?.textContent).toContain("Select view A…");
+    expect(document.getElementById("compare-view-b--mount")?.textContent).toContain("Select view B…");
   });
 
   it("keeps native saved-view select rendering when PrimeVue bridge is unavailable", () => {

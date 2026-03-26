@@ -1,6 +1,3 @@
-import { renderActionButton } from "./primevueRenderPrimitives.js";
-import { configurePrimeVueApp } from "./primevueApp.js";
-
 /**
  * @param {{
  *   button: HTMLElement | null | undefined,
@@ -88,42 +85,18 @@ export function mountSearchSavedSelectSeedPrimitives({ globalScope = globalThis 
  * }} params
  */
 export function mountSearchActionsPrimitive({ globalScope = globalThis, dispatchPanelAction }) {
-  const VueRuntime = globalScope?.Vue;
   const form = globalScope?.document?.getElementById?.("advanced-search-form") ?? null;
-  const actionsEl = globalScope?.document?.querySelector?.("#advanced-search-form .search-actions");
+  const resetButton = globalScope?.document?.getElementById?.("reset-search") ?? null;
   bindPanelActionFormSubmit({
     form,
     actionKey: "search:run-search",
     dispatchPanelAction,
   });
-  if (!VueRuntime || !actionsEl) return;
-  if (actionsEl.dataset.vuePrimitiveMounted === "true") return;
-  const { createApp, h } = VueRuntime;
-  if (typeof createApp !== "function" || typeof h !== "function") return;
-  const SearchActionsRoot = {
-    name: "SearchActionsPrimitive",
-    render() {
-      return [
-        renderActionButton(h, {
-          type: "submit",
-          className: "ghost-button",
-          id: "run-search",
-          text: "Search",
-        }, globalScope),
-        renderActionButton(h, {
-          type: "button",
-          className: "ghost-button",
-          id: "reset-search",
-          text: "Clear filters",
-          onClick: () => dispatchPanelAction("search:clear-search-filters"),
-        }, globalScope),
-      ];
-    },
-  };
-
-  configurePrimeVueApp(createApp(SearchActionsRoot), globalScope).mount(actionsEl);
-  actionsEl.dataset.vuePrimitiveMounted = "true";
-  actionsEl.dataset.vueManaged = "true";
+  bindPanelActionButton({
+    button: resetButton,
+    actionKey: "search:clear-search-filters",
+    dispatchPanelAction,
+  });
 }
 
 /**

@@ -346,6 +346,26 @@ Closeout status as of 2026-03-26:
   - `npm run check:appshell-contracts`
 - residual-risk boundary: Phase 48 closes the stale-contract and documentation cleanup work, but final reclose still depends on the remaining Phase 49 validation and visual-baseline reconciliation rather than documentation cleanup alone
 
+### Phase 49 Closure Note
+
+Closeout status as of 2026-03-26:
+
+- the reopened validation phase is now closed against the current branch state rather than the stale failure list it inherited: non-browser CI, accessibility smoke, and the full visual matrix all pass on the shipped contract
+- the remaining visual harness drift was isolated to late runtime settlement overriding the workspace scenario helpers on tablet; `settleScenario()` now waits for the relevant workspace/relay signature to stabilize before the final reapply, which removed the flaky `section-workspace-tablet-768` capture path
+- the Phase 47 setup-hero, first-run, and relay-surface repairs are now reflected consistently across runtime, docs, and current browser coverage instead of only in point-in-time snapshot refreshes
+- validation recorded for closeout:
+  - `npm run ci:verify`
+  - `npm run test:accessibility-smoke`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npx vitest --run tests/relayLaunchConfig.test.js`
+- live-browser verification was satisfied by the passing desktop/laptop/tablet/mobile Playwright sweeps plus repeated single-test reruns of the tablet workspace-controls baseline after the settle-path fix
+- closure audit result:
+  - runtime, markup, tests, scripts, and docs now agree on the restored setup/hero/relay contracts
+  - no deleted setup/hero surfaces remain active runtime targets
+  - no active evidence remains that workspace utility controls are double-bound through direct listeners and shell-action dispatch
+  - the reopened regressions were resolved with recorded validation instead of being silently folded into earlier phase summaries
+
 - compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
 - remove oversized empty-state framing and any layout that reserves space for absent content
 - move secondary setup guidance behind contextual disclosure instead of keeping it permanently visible

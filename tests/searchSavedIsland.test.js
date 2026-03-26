@@ -74,12 +74,13 @@ describe("search saved island bridge mounting", () => {
     expect(bridge?.renderSearchResults?.({ results: [{ sender: "u", timestamp: "", message: "m" }], total: 1 })).toBe(true);
   });
 
-  it("mounts bridge in render-only Vue runtime even when search actions container exists", () => {
+  it("mounts bridge in render-only Vue runtime with shipped search form markup", () => {
     document.body.insertAdjacentHTML(
       "beforeend",
       `
         <form id="advanced-search-form">
-          <div class="search-actions"></div>
+          <button id="reset-search" type="button">Clear filters</button>
+          <button id="run-search" type="submit">Search</button>
         </form>
       `,
     );

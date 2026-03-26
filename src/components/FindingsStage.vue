@@ -119,7 +119,7 @@
              </p>
 
              <!-- Table -->
-             <div class="overflow-x-auto border border-[var(--border)] rounded-lg">
+             <div class="table-container scrollable overflow-x-auto overflow-y-scroll max-h-[clamp(240px,42vh,360px)] border border-[var(--border)] rounded-lg">
                 <table id="top-senders" class="w-full text-left border-collapse text-sm">
                   <thead class="bg-[var(--surface-sunken)] border-b border-[var(--border)] text-[var(--text-muted)]">
                     <tr>
@@ -214,7 +214,7 @@
              
              <!-- Chart Area -->
              <div class="flex flex-col gap-4">
-                <div id="hourly-chart" class="w-full h-80 bg-[var(--surface-sunken)] rounded-xl border border-[var(--border)] overflow-hidden"></div>
+                <div id="hourly-chart" class="hourly-heatmap w-full h-80 bg-[var(--surface-sunken)] rounded-xl border border-[var(--border)]"></div>
                 <div class="hourly-anomalies text-sm text-[var(--text)]" id="hourly-anomalies"></div>
              </div>
           </div>

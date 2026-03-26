@@ -1120,6 +1120,65 @@ describe("relayControls", () => {
     expect(controlsSpy).toHaveBeenCalled();
   });
 
+  it("disables logout and page controls in the offline relay state", async () => {
+    const controlsSpy = vi.fn();
+    const syncPageControlsSpy = vi.fn();
+    installShellVueBridge({
+      updateRelayControlButtons: controlsSpy,
+      syncPageControls: syncPageControlsSpy,
+    });
+    const { controller } = createController({
+      fetchJson: vi.fn(async () => {
+        throw new Error("offline");
+      }),
+      getDataAvailable: vi.fn(() => false),
+    });
+
+    await controller.refreshRelayStatus({ silent: false });
+
+    expect(controlsSpy).toHaveBeenCalledWith(expect.objectContaining({
+      stopDisabled: true,
+      logoutDisabled: true,
+      reloadAllDisabled: true,
+    }));
+    expect(syncPageControlsSpy).toHaveBeenCalledWith(expect.objectContaining({
+      chatDisabled: true,
+      rangeDisabled: true,
+      customDisabled: true,
+      customVisible: false,
+      rangeValue: "all",
+    }));
+  });
+
+  it("re-enables the time-range control once the relay is running", async () => {
+    const syncPageControlsSpy = vi.fn();
+    installShellVueBridge({
+      syncPageControls: syncPageControlsSpy,
+    });
+    const { controller } = createController({
+      fetchJson: vi.fn(async url => {
+        if (url.endsWith("/relay/status")) {
+          return {
+            status: "running",
+            account: { pushName: "Alice" },
+            chatCount: 3,
+            syncingChats: false,
+          };
+        }
+        if (url.endsWith("/api/chats")) return { chats: [{ id: "chat-1", name: "General" }] };
+        return {};
+      }),
+      getRemoteChatList: vi.fn(() => [{ id: "chat-1", name: "General" }]),
+    });
+
+    await controller.refreshRelayStatus({ silent: true });
+
+    expect(syncPageControlsSpy).toHaveBeenCalledWith(expect.objectContaining({
+      chatDisabled: false,
+      rangeDisabled: false,
+    }));
+  });
+
   it("keeps last known relay status during transient polling failures and shows retry timing", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);

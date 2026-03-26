@@ -36,10 +36,7 @@ export function createReportAndSearchExporters({
 
   async function handleDownloadMarkdownReport() {
     const analytics = getDatasetAnalytics();
-    if (!analytics) {
-      updateStatus("Load the chat summary before exporting a report.", "warning");
-      return;
-    }
+    if (!analytics) return;
     const theme = getExportThemeConfig();
     try {
       const { content } = await measurePerfAsync(
@@ -60,10 +57,7 @@ export function createReportAndSearchExporters({
 
   async function handleDownloadSlidesReport() {
     const analytics = getDatasetAnalytics();
-    if (!analytics) {
-      updateStatus("Load the chat summary before exporting a report.", "warning");
-      return;
-    }
+    if (!analytics) return;
     const theme = getExportThemeConfig();
     try {
       const { content } = await measurePerfAsync(

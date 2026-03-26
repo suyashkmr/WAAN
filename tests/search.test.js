@@ -20,8 +20,10 @@ function buildElements() {
   const startInput = document.createElement("input");
   const endInput = document.createElement("input");
   const resetButton = document.createElement("button");
-  const searchActionsEl = document.createElement("div");
-  searchActionsEl.className = "search-actions";
+  resetButton.id = "reset-search";
+  const runButton = document.createElement("button");
+  runButton.id = "run-search";
+  runButton.type = "submit";
   const resultsSummaryEl = document.createElement("div");
   const resultsListEl = document.createElement("div");
   const insightsEl = document.createElement("div");
@@ -30,7 +32,7 @@ function buildElements() {
   const progressBarEl = document.createElement("div");
   const progressLabelEl = document.createElement("div");
 
-  form.append(keywordInput, participantSelect, startInput, endInput, searchActionsEl, resetButton);
+  form.append(keywordInput, participantSelect, startInput, endInput, resetButton, runButton);
 
   return {
     form,
@@ -38,8 +40,8 @@ function buildElements() {
     participantSelect,
     startInput,
     endInput,
-    searchActionsEl,
     resetButton,
+    runButton,
     resultsSummaryEl,
     resultsListEl,
     insightsEl,
@@ -258,7 +260,7 @@ describe("search controller", () => {
     ]);
 
     const elements = buildElements();
-    elements.searchActionsEl.dataset.vuePrimitiveMounted = "true";
+    elements.form.dataset.vueSubmitManaged = "true";
     /** @type {Record<string, Function>} */
     let panelActionHandlers = {};
     installSearchSavedBridge(elements, {
@@ -288,7 +290,6 @@ describe("search controller", () => {
   it("skips native form submit listener when bridge-owned search form submit is mounted", () => {
     const elements = buildElements();
     elements.form.dataset.vueSubmitManaged = "true";
-    elements.searchActionsEl.dataset.vuePrimitiveMounted = "true";
     const bridge = installSearchSavedBridge(elements);
     const submitSpy = vi.spyOn(elements.form, "addEventListener");
 

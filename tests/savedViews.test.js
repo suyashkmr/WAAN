@@ -193,7 +193,34 @@ function installSavedViewsBridge(elements) {
       elements.gallery.dataset.galleryActionsBound = "true";
       return true;
     }),
-    renderSavedViewsComparison: vi.fn(() => true),
+    renderSavedViewsComparison: vi.fn(payload => {
+      const columns = Array.isArray(payload?.columns) ? payload.columns : [];
+      const message = typeof payload?.message === "string" ? payload.message : "";
+      elements.compareSummaryEl.innerHTML = "";
+      if (payload?.empty || !columns.length) {
+        elements.compareSummaryEl.textContent = message;
+        return true;
+      }
+      const grid = document.createElement("div");
+      grid.className = "compare-summary-grid";
+      columns.forEach(column => {
+        const article = document.createElement("article");
+        article.className = "compare-column";
+        const heading = document.createElement("h3");
+        heading.textContent = column?.heading || "";
+        article.appendChild(heading);
+        const metrics = Array.isArray(column?.metrics) ? column.metrics : [];
+        metrics.forEach(metric => {
+          const row = document.createElement("div");
+          row.className = "compare-metric";
+          row.textContent = `${metric?.label || ""} ${metric?.value || ""}`.trim();
+          article.appendChild(row);
+        });
+        grid.appendChild(article);
+      });
+      elements.compareSummaryEl.appendChild(grid);
+      return true;
+    }),
   });
 }
 
@@ -915,6 +942,89 @@ describe("savedViews controller", () => {
     elements.compareButton.click();
 
     expect(dependencies.setCompareSelection).toHaveBeenLastCalledWith("view-1", "view-2");
+  });
+
+  it("keeps loaded bridge-rendered saved-view apply, compare, and delete interactions coherent", async () => {
+    const elements = buildElements();
+    installSavedViewsBridge(elements);
+    installTestUiGlobals({
+      primeVue: { Select: { name: "PrimeSelectStub" } },
+    });
+    document.body.append(
+      elements.nameInput,
+      elements.saveButton,
+      elements.listSelect,
+      elements.applyButton,
+      elements.deleteButton,
+      elements.gallery,
+      elements.compareSelectA,
+      elements.compareSelectB,
+      elements.compareButton,
+      elements.compareSummaryEl,
+    );
+    const dependencies = buildDependencies();
+    dependencies.vueRuntime = {
+      h,
+      reactive: value => value,
+      createApp(root) {
+        return {
+          use() {
+            return this;
+          },
+          mount(container) {
+            const vnode = root.render();
+            container.innerHTML = `<div class="p-select" data-runtime="${String(vnode?.props?.["data-ui-runtime"] || "")}"></div>`;
+          },
+        };
+      },
+    };
+
+    const controller = createSavedViewsController({ elements, dependencies });
+    controller.init();
+    controller.setDataAvailability(true);
+
+    elements.nameInput.value = "Launch";
+    elements.saveButton.click();
+    elements.nameInput.value = "Recap";
+    elements.saveButton.click();
+
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "compare-view-a",
+      value: "view-1",
+    });
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "compare-view-b",
+      value: "view-2",
+    });
+    elements.compareButton.click();
+
+    expect(elements.compareSummaryEl.textContent).toContain("Launch");
+    expect(elements.compareSummaryEl.textContent).toContain("Recap");
+    expect(dependencies.updateStatus).toHaveBeenCalledWith("Comparison updated.", "info");
+
+    const secondCard = elements.gallery.querySelector('[data-view-id="view-2"]');
+    expect(secondCard).toBeTruthy();
+    secondCard?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(dependencies.updateStatus).toHaveBeenCalledWith('Applied saved view "Recap".', "success");
+    expect(elements.gallery.querySelector(".saved-view-card.is-active")?.getAttribute("data-view-id")).toBe("view-2");
+    expect(readPrimeSelectBridgeValue(elements.listSelect)).toBe("view-2");
+
+    elements.listSelect.value = "";
+    syncPrimeSelectBridgeById({
+      ownerDocument: document,
+      bridgeId: "saved-view-list",
+      value: "view-2",
+    });
+    elements.deleteButton.click();
+
+    expect(elements.gallery.querySelector('[data-view-id="view-2"]')).toBeNull();
+    expect(elements.listSelect.querySelector('option[value="view-2"]')).toBeNull();
+    expect(elements.compareSummaryEl.textContent).toContain("Save one more view.");
+    expect(dependencies.updateStatus).toHaveBeenCalledWith("Saved view removed.", "success");
   });
 
   it("falls back to sync snapshot hydration when analytics worker fails", async () => {

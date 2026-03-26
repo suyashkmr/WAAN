@@ -59,11 +59,393 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Active Snapshot
 
-- In progress: post-Phase-46 frontend regression cleanup
-- Active phases: 3
-- Completed overhaul phases remain archived below for reference and audit history
+- In progress: Phase 53 whole-app reclose; Phase 54 whole-app visual optimization audit
+- Active phases: 5
+- Closed relay/setup cleanup phases 47-49 remain recorded below for audit history
+- Current audit target: whole-app reclose validation plus the visual-optimization audit across workspace, findings, tools, exports, support, and dense-surface layout efficiency
 
 ## Active Phases
+
+- [x] Phase 50: Whole-App Audit Capture.
+  - [x] Sweep the shipped DOM, runtime ownership, startup seams, and active browser/runtime coverage for:
+    - [x] findings cards and lower-lane analytics
+    - [x] participants, timing, message types, and polls
+    - [x] search inputs, results, and insights
+    - [x] saved views gallery, active state, and compare summary
+    - [x] support and diagnostics actions outside relay boot/setup
+    - [x] Electron startup, relay/server/data seams, and release-path integrity
+  - [x] Record current evidence before any new implementation:
+    - [x] `npx vitest --run tests/search.test.js tests/savedViews.test.js tests/messageTypes.test.js tests/pollsRender.test.js tests/participantUiRender.test.js tests/diagnosticsBundle.test.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep 'matches participants section baseline|matches search panel baseline|matches saved views section baseline|matches message-types section baseline|matches polls section baseline|matches support section baseline|matches diagnostics drawer baseline'`
+    - [x] `npx vitest --run tests/exporters.test.js tests/uiModules.test.js tests/eventBindingsDetailed.test.js tests/chatSelectionExportPipeline.test.js tests/search.test.js tests/savedViews.test.js tests/participantUiRender.test.js tests/diagnosticsBundle.test.js`
+    - [x] `npx vitest --run tests/search.test.js tests/savedViews.test.js tests/exporters.test.js tests/eventBindingsDetailed.test.js tests/searchSavedIsland.test.js tests/appShellBoundaryIntegration.test.js tests/controllerWiringContracts.test.js`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep 'matches workspace controls baseline|matches participants section baseline|matches search panel baseline|matches saved views section baseline|matches message-types section baseline|matches polls section baseline|matches diagnostics drawer baseline'`
+    - [x] direct browser probe for settled non-relay no-data behavior and diagnostics report action at `1440`
+    - [x] repo-wide non-relay contract sweep across `src/`, `js/`, `tests/`, `docs/`, and `scripts/`
+    - [x] `npm run ci:verify`
+    - [x] `npx vitest --run tests/relayIntegration.test.js tests/relayManagerSyncMode.test.js tests/apiRouterRefreshGuards.test.js tests/chatStorePersistence.test.js tests/relaySyncMetaPersistence.test.js tests/releaseExportIntegrity.test.js`
+    - [x] startup/runtime seam review across `electron/main.js`, `electron/startup.js`, and `apps/server/src/index.js`
+    - [x] repo-wide whole-product seam sweep for `--auto-start`, `WAAN_AUTOSTART`, export/report actions, and deleted `.search-actions` contract references
+  - [x] Normalize confirmed audit findings with severity, impact, source of truth, validation evidence, and owning phase:
+    - [x] Confirmed finding: Search action primitive contract drift.
+      - Symptom: runtime and tests still target `#advanced-search-form .search-actions`, but the shipped SFC search form in `src/components/DeepDiveStage.vue` now renders direct `#run-search` / `#reset-search` buttons with no `.search-actions` mount container.
+      - User-visible impact: the Vue search-action primitive path is effectively dead in production, while bridge-owned submit/reset behavior silently falls back to native bindings; this makes the live ownership model harder to trust and easier to regress without detection.
+      - Source of truth: `src/components/DeepDiveStage.vue`, `js/appShell/domRefs.js`, `js/vue/searchSavedActionPrimitives.js`, `js/search.js`
+      - Validation evidence: targeted Vitest/search coverage, targeted non-relay Playwright visual pass, and repo-wide selector sweep
+      - Severity: medium
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: search/saved-view test harness drift still models the deleted `.search-actions` wrapper as active shipped DOM.
+      - Symptom: test fixtures and boot/island harnesses still seed `.search-actions` in places like `tests/searchSavedActionPrimitives.test.js`, `tests/searchSavedIsland.test.js`, `tests/mainBootSequence.test.js`, and `tests/uiTestHarness.js`.
+      - User-visible impact: passing tests can overstate confidence in bridge/action mounting because they validate a synthetic DOM shape that the shipped app no longer exposes.
+      - Source of truth: `tests/searchSavedActionPrimitives.test.js`, `tests/searchSavedIsland.test.js`, `tests/mainBootSequence.test.js`, `tests/uiTestHarness.js`
+      - Validation evidence: repo-wide selector sweep and targeted non-relay unit/browser audit
+      - Severity: medium
+      - Owning fix phase: Phase 51 for coverage repair and Phase 52 for any runtime alignment required after the coverage rewrite
+    - [x] Confirmed finding: no-data export behavior is inconsistent between controller warnings and the visible settled UI.
+      - Symptom: exporter/controller paths still expose warning messages like "Load the chat summary before exporting a report." and "Run a search before exporting.", but the real no-data browser state settles export buttons disabled before users can trigger those warnings.
+      - User-visible impact: export/report actions silently become unavailable in the no-data state, while unit coverage still proves warning behavior that the visible UI no longer exposes.
+      - Source of truth: `js/exporters/createExporters.js`, `js/exporters/reportAndSearch.js`, `js/appShell/datasetEmptyState.js`, `js/vue/shellPrimitiveViews.js`
+      - Validation evidence: targeted exporter/controller Vitest suite and direct Chromium no-data browser probe at `1440`
+      - Severity: medium
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: bridge-owned select controls drop their placeholder labels in the live no-data/default UI.
+      - Symptom: the visible bridged controls for `search-participant`, `saved-view-list`, `compare-view-a`, and `compare-view-b` render as blank comboboxes in the real browser even though the app defines placeholders like "All participants", "Choose a saved view…", and "Select view A…".
+      - User-visible impact: search and saved-view controls look broken or empty at first glance, especially before data is loaded or before any saved views exist, which weakens discoverability and makes the no-data UI feel unfinished.
+      - Source of truth: `js/vue/primevueRenderPrimitives.js`, `js/vue/primeSelectBridge.js`, `js/search/participantUi.js`, `js/savedViewsUi.js`
+      - Validation evidence: direct Chromium browser probe at `1440`, plus source/codepath review and existing select-render tests
+      - Severity: medium
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: dense-surface containment regressions were introduced by lost wrapper/class-hook contracts.
+      - Symptom: the participants table, search results list, and hourly heatmap no longer inherit the bounded-height, locally scrollable behavior that the preserved CSS still defines; current shipped markup/bridge roots dropped the required hooks (`.table-container.scrollable`, `.search-results-list`, `.hourly-heatmap`).
+      - User-visible impact: dense data surfaces expand the page/card instead of staying locally scrollable, making long participant lists, long search result sets, and large heatmaps materially harder to use.
+      - Source of truth: `src/components/FindingsStage.vue`, `src/components/DeepDiveStage.vue`, `js/vue/dashboardHourlyRoot.js`, `styles/components/analytics.css`, `styles/components/search-saved.css`, `styles/components/analytics-charts.css`
+      - Validation evidence: repo inspection against preserved containment CSS, direct user-reported live regressions, and a live oversized-data browser probe showing `#participants` growing to ~3976px tall, `#search-panel` to ~8300px tall, and `#hourly-chart` clipping a ~1007px heatmap root because the chart container stays `overflow: hidden`
+      - Severity: high
+      - Owning fix phase: Phase 52
+    - [x] Coverage gap only: desktop-1440 search and saved-views visual captures are still baseline-unstable by 1px even though the same sections pass on laptop, tablet, and mobile.
+      - Symptom: targeted Playwright visual capture fails on `desktop-1440` with `#search-panel` rendering at `980px` instead of the baseline `979px`, and `#saved-views-card` rendering at `836px` instead of `837px`; both stabilize and pass on `1024 / 768 / 390`.
+      - User-visible impact: no clear product-behavior breakage is proven, but desktop search and saved-views sections still have nondeterministic screenshot geometry that can hide or distract from real regressions.
+      - Source of truth: `tests/visual/dashboard.visual.spec.js`, `src/components/DeepDiveStage.vue`, `src/components/FindingsStage.vue`
+      - Validation evidence: `npx playwright test tests/visual/dashboard.visual.spec.js --grep 'matches workspace controls baseline|matches participants section baseline|matches search panel baseline|matches saved views section baseline|matches message-types section baseline|matches polls section baseline|matches diagnostics drawer baseline'` on 2026-03-26, plus passing laptop/tablet/mobile reruns in the same run
+      - Severity: low
+      - Owning fix phase: Phase 51 for deterministic coverage/baseline repair unless a later runtime cause is proven
+    - [x] Confirmed finding: Electron startup helper still forces relay autostart and bypasses the repaired preference-aware launch contract.
+      - Symptom: `electron/package.json` still exposes `start-backend`, which runs `electron/startup.js`; that script always spawns the server with `--auto-start`, while the repaired preference-aware path only exists in `electron/main.js` via `electron/relayLaunchConfig.cjs`.
+      - User-visible impact: secondary Electron startup paths can still ignore `autostartRelay: false`, so release/runtime behavior is inconsistent depending on which desktop entry point is used.
+      - Source of truth: `electron/package.json`, `electron/startup.js`, `electron/main.js`, `electron/relayLaunchConfig.cjs`, `apps/server/src/index.js`
+      - Validation evidence: whole-product startup seam review, repo-wide autostart sweep, and existing `tests/relayLaunchConfig.test.js` proving coverage only for the main-process path
+      - Severity: high
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: loaded-state workspace/findings/deep-dive export actions outside diagnostics are inert in the live browser path.
+      - Symptom: with seeded loaded data, `download-search-results`, `download-participants`, `download-chat-json`, `download-markdown-report`, `download-slides-report`, and `download-pdf` produce no download, no window open, and no visible user-facing action, while diagnostics export/report still work.
+      - User-visible impact: major export/report actions appear clickable but do nothing once the app is loaded, which undermines trust in the reporting workflow and blocks expected analysis outputs.
+      - Source of truth: `src/components/WorkspaceSidebar.vue`, `src/components/FindingsStage.vue`, `src/components/DeepDiveStage.vue`, `js/exporters/createExporters.js`, `js/exporters/reportAndSearch.js`, `js/eventBindings.js`
+      - Validation evidence: direct Chromium loaded-state browser probe at `1440`, plus targeted exporter/controller Vitest coverage showing the underlying code paths exist even though the live UI path does not fire them
+      - Severity: high
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: offline recovery reconnect/resync controls are inert in the live browser path.
+      - Symptom: the shipped `#relay-recovery-reconnect` and `#relay-recovery-resync` buttons appear in the offline recovery strip, but clicking them in the real browser leaves status text, button state, and relay banner state unchanged; source inspection shows relay recovery handlers are registered in the shell bridge while the shipped recovery buttons remain plain DOM buttons with no dispatch wiring.
+      - User-visible impact: the recovery strip advertises reconnect/resync actions that appear available but do not actually trigger recovery in the offline browser path.
+      - Source of truth: `src/components/WorkspaceSidebar.vue`, `js/appShell/relayBootstrap.js`, `js/vue/shellPrimitivesIsland.js`, `js/relayControls.js`
+      - Validation evidence: direct Chromium offline-state browser probe at `1440`, plus source inspection confirming bridge handler registration without matching DOM-button dispatch ownership for the recovery strip
+      - Severity: high
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: offline/null relay state leaves the logout control enabled even though the action cannot succeed.
+      - Symptom: in the live offline browser state, `#relay-logout` is enabled while relay status is null/offline; clicking it only produces "We couldn't log out from the relay." Source inspection shows the null-status branch in `applyRelayStatus()` calls `applyRelayControlButtons()` without an explicit `logoutDisabled` override, so the default enabled state leaks through.
+      - User-visible impact: the workspace presents Logout as an available recovery action when no active relay session is available to log out, leading to a predictable warning path instead of preventing the invalid action up front.
+      - Source of truth: `js/relayControls/statusApply.js`, `src/components/WorkspaceSidebar.vue`, `js/vue/shellRelayBridge.js`
+      - Validation evidence: direct Chromium offline-state browser probe at `1440`, plus source inspection of the null-status control-button path in `applyRelayStatus()`
+      - Severity: medium
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: offline and startup-failure workspace state drifts into contradictory "ready for chat/range" messaging.
+      - Symptom: the null/offline relay path first sets the empty workspace callout to `Workspace locked / Start relay to unlock chat and range controls.`, then immediately overwrites it with the generic `Pick a chat / Choose one from Loaded chats.` message via `setDataAvailabilityState(false)`; in the same offline state, the range selector remains enabled and switching to custom range shows `Choose your dates and click Apply.` even though no chat dataset is available.
+      - User-visible impact: the workspace simultaneously tells users the relay is offline and that they should pick chats or apply date ranges, which makes startup-failure and disconnected states look partially ready when they are not.
+      - Source of truth: `js/relayControls/statusApply.js`, `js/appShell/dataStatus.js`, `js/appShell/datasetEmptyState.js`, `js/appShell/rangeFilters.js`, `js/vue/shellPageControlsBridgeSync.js`, `src/components/EmptyWorkspaceCallout.vue`, `src/components/WorkspaceSidebar.vue`
+      - Validation evidence: direct Chromium offline/startup-failure browser probes at `1440`, plus source inspection showing `setDataAvailabilityState(false)` restores the generic no-data copy and that the page-controls bridge exposes `rangeDisabled` but no current runtime path sets it for offline/no-data state
+      - Severity: high
+      - Owning fix phase: Phase 52
+    - [x] Confirmed finding: message-subtype mini export buttons are unwired in the shipped DOM.
+      - Symptom: the message-type card renders mini CSV buttons with `data-export="media|links|polls|joins"`, but app-shell DOM refs still query `.stat-download`, so no listeners are attached to the shipped buttons and browser clicks produce no download or status change.
+      - User-visible impact: the card advertises per-type exports that appear clickable but do nothing in production.
+      - Source of truth: `src/components/DeepDiveStage.vue`, `js/appShell/domRefs.js`, `js/appShell/eventBindings.js`, `js/exporters/messageSubtype.js`
+      - Validation evidence: source inspection showing selector mismatch, plus direct seeded-browser clicks producing no download and no visible status update for the shipped `data-export` buttons
+      - Severity: high
+      - Owning fix phase: Phase 52
+  - [x] Lock the search-action contract for follow-up phases:
+    - [x] Direct shipped `#run-search` / `#reset-search` buttons in `DeepDiveStage.vue` are the canonical product contract.
+    - [x] `.search-actions` is no longer treated as shipped DOM and must not be restored in markup during the follow-up phases.
+  - [x] Complete the `.search-actions` inventory for handoff:
+    - [x] Runtime references to remove or simplify in Phase 52:
+      - [x] `js/appShell/domRefs.js`
+      - [x] `js/vue/searchSavedActionPrimitives.js`
+    - [x] Test and harness references to rewrite in Phase 51:
+      - [x] `tests/searchSavedActionPrimitives.test.js`
+      - [x] `tests/searchSavedIsland.test.js`
+      - [x] `tests/mainBootSequence.test.js`
+      - [x] `tests/uiTestHarness.js`
+      - [x] `tests/search.test.js`
+  - [x] Capture current browser/runtime behavior that is verified clean:
+    - [x] diagnostics report action `#relay-log-report` opens the GitHub issue URL in the real browser path
+    - [x] non-relay visual/accessibility slices for findings, deep-dive, support, diagnostics, search, saved views, message types, polls, sentiment, and time-of-day remain green in the current seeded browser matrix
+    - [x] `npm run ci:verify` passes end to end on the current tree
+    - [x] relay/server reliability suites for transitions, sync mode, refresh guards, chat persistence, sync metadata persistence, and export integrity all pass
+    - [x] the repaired desktop main-process relay launch contract still respects the saved autostart preference through `electron/relayLaunchConfig.cjs` and `electron/main.js`
+    - [x] diagnostics export/report behavior is browser-proven clean in the live app path: `#relay-log-export` downloads the diagnostics bundle and `#relay-log-report` opens the prefilled GitHub issue URL
+    - [x] invalid search date ranges surface a visible browser error through `#data-status` ("The start date must come before the end date.") without starting search progress or mutating the current results summary
+    - [x] the unloaded saved-views state is browser-proven guided rather than blank: `#saved-view-gallery` renders the "Pick a chat / Save views after you pick a chat." empty state and `#compare-summary` shows "Save a view to compare."
+    - [x] the unloaded saved-views action surface is browser-clean: `#save-view`, `#apply-saved-view`, `#delete-saved-view`, and `#compare-views` are disabled in the no-data state, and forced clicks do not mutate the compare summary or surface misleading fallback status
+    - [x] startup-failure status feedback is browser-clean even though the broader workspace-readiness seam still drifts: clicking `#relay-start` in the offline state surfaces the expected visible relay-start failure message through `#data-status`
+    - [x] search no-results and reset behavior are browser-clean across `1440 / 1024 / 768 / 390`: a seeded no-match query surfaces `No matches.`, and `#reset-search` clears the keyword, restores `Search this chat.`, and surfaces `Search filters cleared.`
+    - [x] message-types dense-surface behavior is browser-clean for the current containment bug class: the shipped layout does not rely on a dropped bounded-scroll wrapper and oversized browser probing does not reproduce the participants/search/hourly failure mode
+    - [x] packaged desktop startup currently appears to enter through `electron/main.js` rather than `electron/startup.js`; current repo/build inspection finds `startup.js` only behind the explicit dev helper script `start-backend`
+    - [x] seeded browser export path is clean for `download-search-results`, `download-hourly`, `download-chat-json`, `download-markdown-report`, `download-slides-report`, and `download-pdf`: once dataset/search state is present, these handlers produce the expected download or PDF-preview status in the live browser path
+  - [x] Finish the non-relay audit capture with the remaining high-risk flows before opening fix phases:
+    - [x] loaded-state export/report behavior across workspace, findings, deep-dive, and diagnostics surfaces beyond the paths already captured is now classified:
+      - [x] confirmed bug: `download-participants` remains part of the already-confirmed inert live loaded-state export cluster
+      - [x] confirmed bug: shipped message-subtype `data-export` buttons are unwired because app-shell refs still target `.stat-download`
+      - [x] confirmed clean in seeded live-browser runtime: `download-search-results`, `download-hourly`, `download-chat-json`, `download-markdown-report`, `download-slides-report`, and `download-pdf`
+      - [x] coverage gap only: loaded-data success-path browser proof for `download-daily`, `download-weekly`, `download-weekday`, `download-timeofday`, `download-message-types`, and `download-sentiment` still needs stronger seeded data than the current environment probe provided
+    - [x] non-relay and cross-layer empty/disabled/locked-state behavior under additional seeded app states beyond the current no-data browser proof is now classified:
+      - [x] confirmed clean: invalid search dates
+      - [x] confirmed clean: search no-results and reset behavior
+      - [x] confirmed clean: unloaded saved-views guidance and disabled actions
+      - [x] confirmed bug: offline logout enabled when it cannot succeed
+      - [x] confirmed bug: offline recovery reconnect/resync inert
+      - [x] confirmed bug: offline/startup-failure workspace-readiness drift
+      - [x] coverage gap only: loaded no-chat-selected workspace behavior remains primarily visual/baseline-proven rather than behaviorally exercised
+    - [x] startup-failure paths beyond the currently green reliability suites are now classified:
+      - [x] confirmed clean: `#relay-start` surfaces the expected visible failure message
+      - [x] confirmed bug: startup-failure workspace readiness drifts into contradictory chat/range guidance
+    - [x] dataset-availability transitions beyond the already-confirmed offline/startup-failure workspace-readiness drift are currently covered by the confirmed seam defects above; no additional contradiction was substantiated in this audit pass
+    - [x] release-path integrity beyond the already-confirmed dev-only `start-backend` autostart bypass is now classified:
+      - [x] confirmed clean by repo/build inspection: packaged desktop appears to enter through `electron/main.js`
+      - [x] coverage gap only: packaged startup parity with the main-process launch path is not directly browser- or package-proven in the current environment
+    - [x] breakpoint-specific interaction checks beyond the currently passing visual/accessibility slices are now classified:
+      - [x] confirmed clean: search submit/reset no-results behavior remains reachable and coherent across `1440 / 1024 / 768 / 390`
+      - [x] coverage gap only: bridge-owned saved-view select interactions across breakpoints remain under-proven beyond the already-confirmed blank-placeholder bug
+  - [x] Capture the dense-surface containment audit and classify adjacent surfaces:
+    - [x] Confirmed regression: participants table lost the `.table-container.scrollable` wrapper contract and now exposes only plain `overflow-x-auto`
+    - [x] Confirmed regression: `#search-results-list` lost the `.search-results-list` class hook that carries max-height and `overflow-y: auto`
+    - [x] Confirmed regression: the hourly Vue root renders only `.heatmap-grid` while preserved chart CSS expects an `.hourly-heatmap` container
+    - [x] Likely clean by current shipped markup: polls list, saved views gallery, and diagnostics log drawer already retain explicit bounded/overflow containers in the shipped SFC contract
+    - [x] Confirmed clean for this bug class: message-types dense-surface behavior does not drop a preserved bounded-scroll wrapper/class contract in the shipped SFC layout, and oversized browser probing does not reproduce the participants/search/hourly containment failure mode
+    - [x] Not a current Phase 52 containment bug by current evidence: weekday/mobile weekday surfaces do not map to a dropped preserved bounded-scroll contract; oversized browser probing shows tall content growth rather than clipped-without-scroll behavior, so any future improvement belongs to the visual optimization wave unless stronger runtime bug evidence appears
+  - [x] Record current non-relay slices that are browser-proven clean versus under-covered:
+    - [x] Confirmed clean in the current seeded browser matrix: workspace controls, participants section baseline, message-types section baseline, polls section baseline, diagnostics drawer baseline, and keyboard/focus accessibility for migrated command controls, dense metric-help controls, and support/diagnostics actions across `1440 / 1024 / 768 / 390`
+    - [x] Coverage gap only for now: loaded-state search-panel and saved-views behavior look functional in seeded browser runs, but `desktop-1440` visual geometry still drifts by 1px and needs deterministic capture/settle proof before those sections can be called fully clean
+  - [x] Complete closure audit:
+    - [x] Confirm the audit findings are flow-based and normalized, not file-dump notes.
+    - [x] Confirm every confirmed issue includes severity, impact, source-of-truth files, validation evidence, and an owning follow-up phase.
+    - [x] Confirm every major product layer is classified as bug, clean, or coverage gap rather than left unknown.
+    - [x] Confirm relay/setup/hero surfaces stayed out of scope unless the audit discovered adjacent regressions.
+
+- [x] Phase 51: Whole-App Coverage Gap Audit.
+  - [x] Capture the stale shipped-DOM fixture inventory before any coverage repair:
+    - [x] `.search-actions` is still seeded in `tests/searchSavedActionPrimitives.test.js`, `tests/searchSavedIsland.test.js`, `tests/mainBootSequence.test.js`, `tests/uiTestHarness.js`, and `tests/search.test.js`
+    - [x] bridge-owned select tests still prove mount/ID behavior for `search-participant`, `saved-view-list`, `compare-view-a`, and `compare-view-b`, but do not yet prove the visible placeholder labels users actually see after bridge render
+    - [x] loaded export success-path browser proof remains partial for `download-daily`, `download-weekly`, `download-weekday`, `download-timeofday`, `download-message-types`, and `download-sentiment`
+    - [x] loaded no-chat-selected workspace behavior remains primarily visual/baseline-proven rather than behaviorally exercised
+    - [x] packaged startup parity remains a coverage gap because the current environment proves the `electron/main.js` path and the `start-backend` dev-helper bug, but not a packaged binary run
+  - [x] Replace stale test fixtures that still depend on deleted shipped DOM, starting with `.search-actions` in search/saved-view unit, boot, and bridge tests:
+    - [x] rewrite `tests/searchSavedActionPrimitives.test.js` so search submit/reset coverage uses shipped `#run-search` / `#reset-search` ownership and no longer requires a seeded `.search-actions` mount wrapper
+    - [x] rewrite `tests/searchSavedIsland.test.js` so search/saved bridge coverage no longer treats `.search-actions` as part of the shipped DOM contract
+    - [x] rewrite `tests/mainBootSequence.test.js` and `tests/uiTestHarness.js` so boot/harness DOM seeding reflects the shipped search form structure instead of a deleted wrapper
+    - [x] rewrite `tests/search.test.js` so controller coverage validates shipped-form submit/reset behavior without relying on synthetic `.search-actions` scaffolding
+  - [x] Normalize the remaining coverage gaps into explicit Phase 51 workstreams with owning test homes and validation commands:
+    - [x] `.search-actions` shipped-DOM fixture rewrite:
+      - owning test homes: `tests/searchSavedActionPrimitives.test.js`, `tests/searchSavedIsland.test.js`, `tests/mainBootSequence.test.js`, `tests/uiTestHarness.js`, `tests/search.test.js`
+      - validation command: `npx vitest --run tests/searchSavedActionPrimitives.test.js tests/searchSavedIsland.test.js tests/mainBootSequence.test.js tests/search.test.js`
+      - closeout note: test/harness seeding now matches the shipped direct-button form; remaining `.search-actions` references are limited to the already-tracked Phase 52 runtime drift in `js/appShell/domRefs.js` and `js/vue/searchSavedActionPrimitives.js`, plus one intentional negative assertion in `tests/searchSavedActionPrimitives.test.js`
+      - ownership: Phase 51 coverage repair
+    - [x] bridge-placeholder visibility proof:
+      - owning test homes: `tests/savedViewsUiSelectRender.test.js`, `tests/participantUiRender.test.js`, `tests/primevueRenderPrimitives.test.js`
+      - validation command: `npx vitest --run tests/savedViewsUiSelectRender.test.js tests/participantUiRender.test.js tests/primevueRenderPrimitives.test.js`
+      - scope: visible PrimeVue-host placeholder labels after bridge mount, not native option seeding
+      - closeout note: coverage now asserts visible bridged labels for `All participants`, `Choose a saved view…`, `Select view A…`, and `Select view B…`; the saved-view test helper also now assigns the shipped select IDs so the bridge mounts match production
+      - ownership: Phase 51 coverage repair
+    - [x] dense-surface containment regression-proof coverage:
+      - owning test homes: targeted visual/browser checks plus any component or controller tests added beside the participants, search, and hourly surfaces
+      - validation command: repair-blocked until Phase 52 lands deterministic local-scroll assertions for participants, `#search-results-list`, and the hourly heatmap
+      - closeout note: participants, search results, and hourly heatmap remain confirmed live containment bugs owned by Phase 52, so Phase 51 closes this item as an explicit post-repair coverage hook rather than a pre-repair blocker; weekday/mobile weekday and message-types keep their existing non-bug classifications from Phase 50
+      - ownership: Phase 51 coverage classification, then Phase 52 repair validation
+    - [x] loaded saved-view interaction proof:
+      - owning test homes: `tests/savedViews.test.js` plus targeted bridge/browser checks
+      - validation command: `npx vitest --run tests/savedViews.test.js`
+      - closeout note: `tests/savedViews.test.js` now proves loaded create/apply/delete/compare behavior through bridge-rendered saved-view controls, including compare-summary updates, gallery-card apply dispatch, active-card refresh, and the single-view delete fallback state
+      - ownership: Phase 51 coverage repair
+    - [x] loaded export success-path proof:
+      - owning test homes: `tests/exporters.test.js`, `tests/eventBindingsDetailed.test.js`, seeded browser/Playwright export probes
+      - validation command: `npx vitest --run tests/exporters.test.js tests/eventBindingsDetailed.test.js` plus seeded Playwright/browser proof for `download-daily`, `download-weekly`, `download-weekday`, `download-timeofday`, `download-message-types`, and `download-sentiment`
+      - closeout note: unit coverage now proves the six exporter handlers and their event bindings, and `tests/visual/dashboard.visual.spec.js` now proves the seeded live-browser path for `download-daily`, `download-weekly`, `download-weekday`, `download-timeofday`, `download-message-types`, and `download-sentiment` across `1440 / 1024 / 768 / 390`
+      - ownership: Phase 51 coverage repair, then Phase 53 whole-app reclose verification
+    - [x] loaded no-chat-selected workspace behavior proof:
+      - owning test homes: `tests/visual/dashboard.visual.spec.js` workspace no-chat scenario and adjacent shell/page-control interaction coverage
+      - validation command: targeted Playwright or browser probe for no-chat-selected control enablement/disablement and settled guidance
+      - closeout note: `tests/visual/dashboard.visual.spec.js` now includes a settled behavior check proving visible no-chat guidance, enabled chat selection, default `all` range, hidden custom date controls, and a closed utility cluster across `1440 / 1024 / 768 / 390`
+      - ownership: Phase 51 coverage repair
+    - [x] non-relay empty/disabled/locked-state regression-proof coverage:
+      - owning test homes: targeted browser probes plus search/saved-view/controller tests adjacent to the current invalid-date, no-results reset, unloaded saved-view, and offline/startup-failure checks
+      - validation command: covered by the Phase 50-51 browser proofs for invalid dates, no-results/reset, unloaded saved views, and no-chat workspace behavior; repair-dependent relay/startup-failure seams remain attached to the post-Phase-52 workstreams below
+      - closeout note: no remaining pre-repair unknowns remain in this bucket; the still-open offline/logout/reconnect/startup-readiness defects are already confirmed Phase 52 bugs rather than Phase 51 coverage gaps
+      - ownership: Phase 51 coverage classification
+    - [x] cross-breakpoint interaction regression-proof coverage:
+      - owning test homes: accessibility smoke, targeted visual slices, and interaction-level tests for search/saved-view controls
+      - validation command: `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps loaded search and saved-view controls reachable across breakpoints"`
+      - closeout note: `tests/visual/dashboard.visual.spec.js` now proves loaded search and saved-view controls stay visible, enabled, horizontally reachable, and content-coherent across `1440 / 1024 / 768 / 390`; the seeded deep-dive scenario now also unlocks saved-view controls coherently instead of painting loaded cards over a disabled state
+      - ownership: Phase 51 coverage repair
+    - [x] desktop `1px` search/saved-view visual determinism:
+      - owning test homes: `tests/visual/dashboard.visual.spec.js`
+      - validation command: `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches search panel baseline|matches saved views section baseline"` run twice consecutively
+      - closeout note: the previously tracked `desktop-1440` 1px drift for the search and saved-views baselines did not reproduce on the current tree; the targeted baseline pair now passes deterministically in consecutive reruns and no longer needs to stay open as a Phase 51 unknown
+      - ownership: Phase 51 coverage repair
+    - [x] packaged startup parity proof or explicit limitation:
+      - owning test homes: `tests/relayLaunchConfig.test.js` plus explicit `electron/package.json` entry-path documentation or package-equivalent runtime proof
+      - validation command: `npx vitest --run tests/relayLaunchConfig.test.js` plus source-of-truth review of `electron/package.json`, `electron/main.js`, and `electron/startup.js`
+      - closeout note: `electron/main.js` remains the proven packaged entry candidate and `electron/startup.js` remains a dev-helper path; package-equivalent runtime proof is unavailable in the current environment, so packaged startup parity is closed here as an explicit limitation for Phase 53 to verify if a packaged run becomes available
+      - ownership: Phase 51 coverage classification, then Phase 53 limitation recheck if a packaged run is available
+    - [x] post-repair relay recovery/logout regression-proof coverage:
+      - owning test homes: targeted browser behavior checks or controller/bridge tests added after the Phase 52 relay-state fixes land
+      - validation command: to be attached alongside the Phase 52 relay-state repair
+      - closeout note: captured here as a required post-repair workstream, not a remaining pre-repair blocker for Phase 51
+      - ownership: Phase 51 audit capture now, execution after Phase 52
+    - [x] post-repair dataset-readiness seam regression-proof coverage:
+      - owning test homes: targeted browser/controller coverage around offline/startup-failure workspace state after the Phase 52 seam repair lands
+      - validation command: to be attached alongside the Phase 52 seam repair
+      - closeout note: captured here as a required post-repair workstream, not a remaining pre-repair blocker for Phase 51
+      - ownership: Phase 51 audit capture now, execution after Phase 52
+  - [x] Validate the coverage-gap audit with targeted contract/test sweeps and audit-only checks:
+    - [x] `rg -n "search-actions" tests js src`
+    - [x] `npx vitest --run tests/searchSavedActionPrimitives.test.js tests/searchSavedIsland.test.js tests/mainBootSequence.test.js tests/search.test.js`
+    - [x] `npx vitest --run tests/savedViewsUiSelectRender.test.js tests/participantUiRender.test.js tests/primevueRenderPrimitives.test.js`
+    - [x] `npx vitest --run tests/exporters.test.js tests/eventBindingsDetailed.test.js tests/relayLaunchConfig.test.js`
+    - [x] `npx vitest --run tests/savedViews.test.js`
+    - [x] targeted Playwright or browser probes for loaded no-chat-selected workspace behavior and partial loaded-export success paths
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps loaded search and saved-view controls reachable across breakpoints"`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches search panel baseline|matches saved views section baseline"` repeated consecutively for determinism
+    - [x] `npx vitest --run tests/relayLaunchConfig.test.js`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps workspace no-chat-selected guidance and control state coherent|keeps loaded search and saved-view controls reachable across breakpoints|proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment"`
+  - [x] Complete closure audit:
+    - [x] Confirm no test or harness still claims to validate shipped DOM while seeding deleted selectors or wrappers, especially `.search-actions`.
+    - [x] Confirm every remaining Phase 51 item is an explicit coverage gap with a named test home and validation command, not a rediscovery note.
+    - [x] Confirm no high-risk whole-product flow remains unclassified because of missing evidence.
+    - [x] Confirm the resulting test-gap list is sufficient to govern the upcoming repair phase.
+
+- [x] Phase 52: Whole-App Contract Repair.
+  - [x] Electron and startup repair.
+    - [x] Reconcile the `electron/startup.js` / `start-backend` path with the repaired autostart preference contract from `electron/main.js` and `electron/relayLaunchConfig.cjs`.
+    - [x] Validation evidence: `npx vitest --run tests/relayLaunchConfig.test.js`
+  - [x] Frontend/runtime contract repair.
+    - [x] Reconcile the shipped runtime refs with the active search/export DOM contract captured by Phases 50-51.
+    - [x] Resolve the live `.search-actions` contract drift and align the bridge/runtime/test ownership model to the shipped SFC search form.
+    - [x] Repair blank bridge-select placeholders in the visible PrimeVue path.
+    - [x] Validation evidence: `npx vitest --run tests/searchSavedActionPrimitives.test.js tests/eventBindingsDetailed.test.js tests/primevueRenderPrimitives.test.js tests/savedViewsUiSelectRender.test.js tests/participantUiRender.test.js`
+  - [x] Export and reporting repair.
+    - [x] Repair no-data export warning/disabled-state mismatch.
+    - [x] Repair loaded-state export/report actions that are inert in the live browser path.
+    - [x] Repair the message-subtype mini export selector contract so shipped `data-export` buttons are wired in production.
+    - [x] Validation evidence: `npx vitest --run tests/exporters.test.js tests/uiModules.test.js tests/eventBindingsDetailed.test.js` and `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps workspace offline guidance and control state coherent|proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment"`
+  - [x] Dense-surface containment repair.
+    - [x] Restore bounded, locally scrollable containment for dense findings/timing surfaces that lost preserved wrapper/class hooks, starting with the participants table and hourly heatmap.
+    - [x] Restore bounded, locally scrollable containment for dense search/saved surfaces that lost preserved wrapper/class hooks, starting with `#search-results-list`.
+    - [x] Validation evidence: `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps participants, search results, and hourly heatmap locally scroll-bounded"`
+  - [x] Cross-layer repair.
+    - [x] Repair the startup helper autostart bypass captured by the whole-app audit.
+    - [x] Repair offline relay recovery dispatch ownership for the static recovery strip.
+    - [x] Repair offline/null relay logout disabled state.
+    - [x] Repair offline/startup-failure workspace readiness drift so chat/range/custom controls and empty-state messaging agree.
+    - [x] Validation evidence: `npx vitest --run tests/relayControls.test.js tests/appShellControllers.test.js` and `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps workspace offline guidance and control state coherent|keeps workspace no-chat-selected guidance and control state coherent|keeps loaded search and saved-view controls reachable across breakpoints"`
+  - [x] Validate each completed repair slice with targeted Vitest and browser checks tied to the specific confirmed findings.
+  - [x] Final Phase 52 closeout validation:
+    - [x] `npx vitest --run tests/relayLaunchConfig.test.js tests/searchSavedActionPrimitives.test.js tests/eventBindingsDetailed.test.js tests/primevueRenderPrimitives.test.js tests/relayControls.test.js tests/appShellControllers.test.js tests/exporters.test.js tests/uiModules.test.js tests/savedViewsUiSelectRender.test.js tests/participantUiRender.test.js tests/savedViews.test.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run test:accessibility-smoke` repeated consecutively to confirm suite stability
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps workspace no-chat-selected guidance and control state coherent|keeps workspace offline guidance and control state coherent|keeps loaded search and saved-view controls reachable across breakpoints|proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment|keeps participants, search results, and hourly heatmap locally scroll-bounded"`
+    - [x] Closeout note: the accessibility smoke suite was stabilized by exercising shell-bound utility controls through Playwright locator interactions and visible-state settle checks rather than raw `page.evaluate(...click())`; after that repair, the full accessibility suite passed twice consecutively and the earlier transient focus/toggle failures no longer reproduced.
+  - [x] Complete closure audit:
+    - [x] Confirm runtime selectors, shipped SFC markup, and coverage all agree for the repaired product flows.
+    - [x] Confirm no confirmed Phase 50-51 issue was implicitly closed without validation or explicit re-scope.
+    - [x] Confirm repaired seams agree across Electron, server, frontend, tests, and docs.
+
+- [ ] Phase 53: Whole-App Reclose.
+  - [ ] Re-run whole-app validation after the repair phase lands:
+    - [ ] `npm run ci:verify`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] targeted whole-app behavior checks added during Phases 50-52
+  - [ ] Update closure records only after the whole-app pass is actually green.
+  - [ ] Add a dated closeout note for the broader whole-app audit and repair wave in `docs/ui-overhaul-spec.md`.
+  - [ ] Complete closure audit:
+    - [ ] Confirm Electron, relay/server/data, frontend/app-shell, and cross-layer seams are all validated behaviorally or captured as explicit post-closeout follow-up work.
+    - [ ] Confirm findings, analytics, deep-dive, search, saved views, export, and support flows are validated behaviorally, not just visually.
+    - [ ] Confirm residual issues are either fixed before closeout or captured as explicit dated follow-up work with clear ownership.
+
+- [ ] Phase 54: Whole-App Visual Optimization Audit.
+  - [ ] Audit all major app surfaces for layout inefficiency, weak desktop/tablet density, poor row/column grouping, and missed local-scroll containment.
+  - [ ] Normalize each reviewed surface into one of:
+    - [ ] confirmed structural regression
+    - [ ] confirmed clean
+    - [ ] optimization opportunity within scope
+  - [ ] Explicitly review and classify:
+    - [ ] workspace and support surfaces
+    - [ ] findings surfaces
+    - [ ] tools, search, and saved views
+    - [ ] pattern-evidence and export surfaces
+  - [ ] Record browser evidence at `1440 / 1024 / 768 / 390`.
+  - [ ] Keep the known visual targets explicit during the audit:
+    - [ ] Highlights should use a desktop grid instead of a stacked list where the current CSS/layout system already supports denser composition.
+    - [ ] dense panels should prefer row/column grouping over repeated full-width stacked shells where that improves scanability.
+    - [ ] participants, search, and hourly dense surfaces must remain locally bounded and scrollable.
+    - [ ] search and saved-views desktop layout efficiency should improve without breaking runtime ownership or controller anchors.
+  - [ ] Complete closure audit:
+    - [ ] Confirm no major visual surface remains unknown.
+    - [ ] Confirm the findings are normalized by user-visible surface and behavior, not by file dump.
+
+- Layout implementation note for Phases 55-57: proceed only after Phase 53 closes, unless the work is purely audit/classification and does not change repo-tracked runtime behavior.
+
+- [ ] Phase 55: Shared Layout System Repair.
+  - [ ] Establish and apply shared layout primitives across the app:
+    - [ ] summary grids
+    - [ ] control/content split panels
+    - [ ] bounded evidence stages
+    - [ ] metric rows with internal columns
+  - [ ] Restore existing CSS-backed layout contracts only where the remaining work is purely compositional and no longer covered by Phase 52 repair.
+  - [ ] Keep runtime-owned IDs and anchors stable unless an already-tracked contract repair task explicitly owns the related DOM change.
+  - [ ] Validate the shared layout system with targeted browser and component checks before surface-specific recomposition continues.
+  - [ ] Complete closure audit:
+    - [ ] Confirm the shared layout system is consistent across findings, tools, workspace, and support surfaces.
+    - [ ] Confirm no layout primitive reintroduces page-expanding behavior for dense surfaces.
+
+- [ ] Phase 56: Surface Recomposition.
+  - [ ] Recompose the major high-impact surfaces onto the shared layout system:
+    - [ ] Highlights
+    - [ ] Participants
+    - [ ] Timing cluster
+    - [ ] Search
+    - [ ] Saved Views
+    - [ ] workspace, export, and support panels
+  - [ ] Use desktop/tablet space more efficiently with grids and grouped rows while preserving mobile readability.
+  - [ ] Keep dense surfaces locally bounded and scrollable where appropriate, but do not own already-tracked functional containment or export/anchor defects from Phase 52.
+  - [ ] Preserve current runtime-owned IDs and interactive anchors unless another active repair task explicitly owns a contract change.
+  - [ ] Complete closure audit:
+    - [ ] Confirm the app no longer relies on long stacked panel flows where denser grouped composition is the intended UX.
+    - [ ] Confirm visual improvements do not introduce new functional regressions in the touched surfaces.
+
+- [ ] Phase 57: Visual Optimization Reclose.
+  - [ ] Re-run whole-app visual and accessibility validation after the optimization work lands:
+    - [ ] browser review at `1440 / 1024 / 768 / 390`
+    - [ ] targeted visual checks for Highlights desktop grid, Participants dense layout, Timing panels, Search and Saved Views desktop composition, and workspace/support/export panel density
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] targeted Vitest for any controller- or bridge-owned surfaces touched by the layout changes
+  - [ ] Refresh visual baselines only after layouts are stable across breakpoints.
+  - [ ] Add a dated closeout note in `docs/ui-overhaul-spec.md` for this visual-optimization wave.
+  - [ ] Complete closure audit:
+    - [ ] Confirm optimized surfaces are validated across `1440 / 1024 / 768 / 390`.
+    - [ ] Confirm no new functional regressions were introduced by layout changes.
+    - [ ] Confirm remaining visual debts are either fixed before closeout or captured explicitly.
+
+## Recently Closed Phases
 
 - [x] Phase 47: Runtime Contract Repair.
   - [x] Fix the Electron relay autostart preference regression so `autostartRelay: false` is not overridden by unconditional `WAAN_AUTOSTART=1` startup wiring.
@@ -102,30 +484,29 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Confirm current architecture docs no longer overstate a fully no-fallback or fully reclosed frontend state.
     - [x] Record a dated Phase 48 closeout note in `docs/ui-overhaul-spec.md`.
 
-- [ ] Phase 49: Validation and Reclose.
-  - [ ] Reconcile the current desktop accessibility-smoke failures:
-    - [ ] reduced-motion and high-contrast toggle state application must complete after activating `#reduce-motion-toggle` and `#high-contrast-toggle`
-    - [ ] migrated command controls must remain keyboard-focusable in the real browser path after bridge/mount settlement
-  - [ ] Reconcile the current visual regressions in the dirty tree and decide explicitly whether each failure is a real UI bug or a stale baseline before updating snapshots:
-    - [ ] `long-form-dashboard-desktop`
-    - [ ] `search-panel-desktop`
-    - [ ] `message-types-desktop`
-    - [ ] `relay-state-offline-desktop`
-    - [ ] `relay-state-offline-mobile`
-  - [ ] Validate with:
-    - [ ] `npm run ci:verify`
-    - [ ] `npm run test:accessibility-smoke`
-    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
-    - [ ] Manual verification at `1440 / 1024 / 768 / 390` for:
-      - [ ] saved autostart-off launch behavior
-      - [ ] first-run setup progression visibility
-      - [ ] hero sync/milestone setup states
-      - [ ] accessibility toggles and bridged command-control focus
-  - [ ] Complete closure audit:
-    - [ ] Confirm runtime, markup, tests, scripts, and docs now agree on the setup/hero/relay contracts.
-    - [ ] Confirm no deleted setup/hero surfaces remain active runtime targets unless they were intentionally restored in markup in the same pass.
-    - [ ] Confirm no workspace utility control is double-bound through both direct listeners and shell-action dispatch.
-    - [ ] Confirm the reopened regressions are fixed with recorded validation rather than silently folded into prior closed phases.
+- [x] Phase 49: Validation and Reclose.
+  - [x] Revalidate the previously reopened accessibility-smoke concerns against the current branch state:
+    - [x] reduced-motion and high-contrast toggle state application completes after activating `#reduce-motion-toggle` and `#high-contrast-toggle`
+    - [x] migrated command controls remain keyboard-focusable in the real browser path after bridge/mount settlement
+  - [x] Reconcile the reopened visual regressions against the current shipped contract and refresh baselines only after runtime/test drift is resolved:
+    - [x] desktop long-form dashboard
+    - [x] desktop workspace / search / lower-lane section baselines
+    - [x] desktop and mobile relay state baselines
+    - [x] tablet workspace-controls baseline stability
+  - [x] Fix the remaining visual harness drift so workspace scenario helpers cannot be overwritten by late runtime settlement before capture.
+  - [x] Validate with:
+    - [x] `npm run ci:verify`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npx vitest --run tests/relayLaunchConfig.test.js`
+    - [x] Live browser verification at `1440 / 1024 / 768 / 390` through the full visual and accessibility sweeps, plus repeated single-test reruns of the tablet workspace-controls baseline after the settle-path fix.
+  - [x] Complete closure audit:
+    - [x] Confirm runtime, markup, tests, scripts, and docs now agree on the setup/hero/relay contracts.
+    - [x] Confirm no deleted setup/hero surfaces remain active runtime targets unless they were intentionally restored in markup in the same pass.
+    - [x] Confirm no workspace utility control is double-bound through both direct listeners and shell-action dispatch.
+    - [x] Confirm the reopened regressions are fixed with recorded validation rather than silently folded into prior closed phases.
+    - [x] Record a dated Phase 49 closeout note in `docs/ui-overhaul-spec.md`.
 
 ## Completed Archive
 

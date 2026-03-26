@@ -92,10 +92,7 @@ export function createPdfPreviewController({
 
   async function handleDownloadPdfReport() {
     const analytics = getDatasetAnalytics();
-    if (!analytics) {
-      updateStatus("Load the chat summary before exporting a report.", "warning");
-      return;
-    }
+    if (!analytics) return;
     const theme = getExportThemeConfig();
     try {
       const { content } = await generatePdfDocumentHtmlAsync(analytics, theme);

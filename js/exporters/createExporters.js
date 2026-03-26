@@ -66,7 +66,6 @@ export function createExporters({
     const analytics = getDatasetAnalytics();
     const participantView = getParticipantView();
     if (!analytics || !analytics.top_senders.length) {
-      updateStatus("No participant data to export right now.", "warning");
       return;
     }
     if (!participantView.length) {
@@ -124,10 +123,7 @@ export function createExporters({
         entry.count,
       ]);
     });
-    if (!rows || !rows.length) {
-      updateStatus("No hourly activity to export right now.", "warning");
-      return;
-    }
+    if (!rows || !rows.length) return;
     downloadCSV(buildFilename("hourly"), ["Hour", "Messages"], rows);
   }
 
@@ -137,10 +133,7 @@ export function createExporters({
       if (!analytics || !analytics.daily_counts?.length) return undefined;
       return analytics.daily_counts.map(entry => [entry.date, entry.count]);
     });
-    if (!rows || !rows.length) {
-      updateStatus("No daily activity to export right now.", "warning");
-      return;
-    }
+    if (!rows || !rows.length) return;
     downloadCSV(buildFilename("daily"), ["Date", "Messages"], rows);
   }
 
@@ -154,10 +147,7 @@ export function createExporters({
         entry.cumulative,
       ]);
     });
-    if (!rows || !rows.length) {
-      updateStatus("No weekly trends to export right now.", "warning");
-      return;
-    }
+    if (!rows || !rows.length) return;
     downloadCSV(buildFilename("weekly"), ["Week", "Messages", "Cumulative"], rows);
   }
 
@@ -172,10 +162,7 @@ export function createExporters({
         entry.deviation ? formatFloat(entry.deviation, 2) : "",
       ]);
     });
-    if (!rows || !rows.length) {
-      updateStatus("No weekday data to export right now.", "warning");
-      return;
-    }
+    if (!rows || !rows.length) return;
     downloadCSV(
       buildFilename("weekday"),
       ["Weekday", "Messages", "Share (%)", "Std Dev"],
@@ -185,15 +172,9 @@ export function createExporters({
 
   function exportTimeOfDay() {
     const analytics = getDatasetAnalytics();
-    if (!analytics) {
-      updateStatus("No time-of-day data to export right now.", "warning");
-      return;
-    }
+    if (!analytics) return;
     const data = computeTimeOfDayDataset(analytics);
-    if (!data || !data.points.length || !data.total) {
-      updateStatus("No time-of-day data to export right now.", "warning");
-      return;
-    }
+    if (!data || !data.points.length || !data.total) return;
     const headers = ["Hour", "Messages", "Share (%)", "Weekday Messages", "Weekend Messages"];
     const rows = data.points.map(point => [
       formatHourLabel(point.hour),
@@ -219,20 +200,14 @@ export function createExporters({
         formatFloat((entry.share || 0) * 100, 2),
       ]);
     });
-    if (!rows || !rows.length) {
-      updateStatus("No message type data to export right now.", "warning");
-      return;
-    }
+    if (!rows || !rows.length) return;
     const headers = ["Group", "Type", "Messages", "Share (%)"];
     downloadCSV(buildFilename("message-types"), headers, rows);
   }
 
   function exportMessageSubtype(type) {
     const analytics = getDatasetAnalytics();
-    if (!analytics) {
-      updateStatus("Load a chat summary before exporting.", "warning");
-      return;
-    }
+    if (!analytics) return;
     const typeConfig = buildMessageSubtypeConfig({
       type,
       analytics,
@@ -257,10 +232,7 @@ export function createExporters({
 
   function exportChatJson() {
     const entries = getDatasetEntries();
-    if (!entries.length) {
-      updateStatus("Load a chat summary before downloading the JSON.", "warning");
-      return;
-    }
+    if (!entries.length) return;
     const rangeValue = normalizeRangeValue(getCurrentRange());
     const subset = filterEntriesByRange(entries, rangeValue);
     const payload = subset.length ? subset : entries;
@@ -287,10 +259,7 @@ export function createExporters({
   function exportSentiment() {
     const analytics = getDatasetAnalytics();
     const sentiment = analytics?.sentiment;
-    if (!sentiment) {
-      updateStatus("No sentiment data to export right now.", "warning");
-      return;
-    }
+    if (!sentiment) return;
     const rows = (sentiment.daily || [])
       .filter(entry => (entry.count || 0) > 0)
       .map(entry => [
@@ -301,10 +270,7 @@ export function createExporters({
         entry.negative ?? 0,
         formatFloat(entry.average ?? 0, 3),
       ]);
-    if (!rows.length) {
-      updateStatus("No sentiment data to export right now.", "warning");
-      return;
-    }
+    if (!rows.length) return;
     downloadCSV(
       buildFilename("sentiment"),
       ["Date", "Messages", "Positive", "Neutral", "Negative", "Average Score"],

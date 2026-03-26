@@ -168,6 +168,8 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
       label: String(option?.label ?? option?.value ?? ""),
     }))
     : [];
+  const placeholderOption = normalizedOptions.find(option => option.value === "");
+  const placeholder = placeholderOption?.label || "";
 
   const PrimeSelect = resolvePrimeVueComponent("Select", globalScope) ??
     resolvePrimeVueComponent("Dropdown", globalScope);
@@ -203,6 +205,7 @@ export function renderSelectInput(h, options, globalScope = globalThis) {
         options: normalizedOptions,
         optionLabel: "label",
         optionValue: "value",
+        placeholder,
         disabled: Boolean(disabled),
         appendTo: resolveOverlayTarget(globalScope),
         panelClass: "waan-prime-control-overlay waan-prime-select-overlay",

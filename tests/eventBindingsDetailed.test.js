@@ -75,10 +75,8 @@ describe("event bindings detailed", () => {
     const presetB = document.createElement("button");
 
     const statA = document.createElement("button");
-    statA.className = "stat-download";
     statA.dataset.export = "links";
     const statB = document.createElement("button");
-    statB.className = "stat-download";
     statB.dataset.export = "media";
     const downloadParticipantsButton = mkBtn();
     const downloadHourlyButton = mkBtn();
@@ -131,6 +129,9 @@ describe("event bindings detailed", () => {
     downloadChatJsonButton.click();
     downloadSentimentButton.click();
     downloadSearchButton.click();
+    downloadMarkdownButton.click();
+    downloadSlidesButton.click();
+    downloadPdfButton.click();
     shellHarness.getShellActionHandlers()["export.markdown"]?.();
     shellHarness.getShellActionHandlers()["export.slides"]?.();
     shellHarness.getShellActionHandlers()["export.pdf"]?.();
@@ -145,10 +146,10 @@ describe("event bindings detailed", () => {
     expect(handlers.exportMessageTypes).toHaveBeenCalledTimes(1);
     expect(handlers.exportChatJson).toHaveBeenCalledTimes(1);
     expect(handlers.exportSentiment).toHaveBeenCalledTimes(1);
-    expect(handlers.handleDownloadMarkdownReport).toHaveBeenCalledTimes(1);
-    expect(handlers.handleDownloadSlidesReport).toHaveBeenCalledTimes(1);
+    expect(handlers.handleDownloadMarkdownReport).toHaveBeenCalledTimes(2);
+    expect(handlers.handleDownloadSlidesReport).toHaveBeenCalledTimes(2);
     expect(handlers.exportSearchResults).toHaveBeenCalledTimes(1);
-    expect(handlers.handleDownloadPdfReport).toHaveBeenCalledTimes(1);
+    expect(handlers.handleDownloadPdfReport).toHaveBeenCalledTimes(2);
     expect(handlers.exportMessageSubtype).toHaveBeenCalledWith("links");
     expect(handlers.exportMessageSubtype).toHaveBeenCalledWith("media");
     expect(handlers.handleParticipantsTopChange).not.toHaveBeenCalled();

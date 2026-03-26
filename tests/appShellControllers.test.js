@@ -166,6 +166,9 @@ describe("appShell controllers", () => {
     const relayClearStorageButton = document.createElement("button");
     headerActionsContainer.append(relayReloadAllButton, relayClearStorageButton);
     document.body.append(liveActionsContainer, headerActionsContainer);
+    const relayRecoveryReconnectButton = document.createElement("button");
+    const relayRecoveryResyncButton = document.createElement("button");
+    const relayRecoveryExportButton = document.createElement("button");
     const logDrawerToggleButton = document.createElement("button");
     const logDrawerCloseButton = document.createElement("button");
     const logDrawerExportButton = document.createElement("button");
@@ -178,6 +181,9 @@ describe("appShell controllers", () => {
       stopRelaySession: vi.fn(),
       logoutRelaySession: vi.fn(),
       handleReloadAllChats: vi.fn(),
+      handleRecoveryReconnect: vi.fn(),
+      handleRecoveryResync: vi.fn(),
+      handleRecoveryExportDiagnostics: vi.fn(),
       openLogDrawer: vi.fn(),
       closeLogDrawer: vi.fn(),
       handleExportDiagnostics: vi.fn(),
@@ -218,6 +224,9 @@ describe("appShell controllers", () => {
         relayLogoutButton,
         relayReloadAllButton,
         relayClearStorageButton,
+        relayRecoveryReconnectButton,
+        relayRecoveryResyncButton,
+        relayRecoveryExportButton,
         logDrawerToggleButton,
         logDrawerCloseButton,
         logDrawerExportButton,
@@ -234,6 +243,9 @@ describe("appShell controllers", () => {
     relayActionHandlers["relay.logout"]?.();
     relayActionHandlers["relay.reloadAll"]?.();
     relayActionHandlers["relay.logDrawerOpen"]?.();
+    relayRecoveryReconnectButton.click();
+    relayRecoveryResyncButton.click();
+    relayRecoveryExportButton.click();
     logDrawerCloseButton.click();
     logDrawerExportButton.click();
     logDrawerReportButton.click();
@@ -245,6 +257,9 @@ describe("appShell controllers", () => {
     expect(handlers.stopRelaySession).toHaveBeenCalledTimes(1);
     expect(handlers.logoutRelaySession).toHaveBeenCalledTimes(1);
     expect(handlers.handleReloadAllChats).toHaveBeenCalledTimes(1);
+    expect(handlers.handleRecoveryReconnect).toHaveBeenCalledTimes(1);
+    expect(handlers.handleRecoveryResync).toHaveBeenCalledTimes(1);
+    expect(handlers.handleRecoveryExportDiagnostics).toHaveBeenCalledTimes(1);
     expect(handlers.openLogDrawer).toHaveBeenCalledTimes(1);
     expect(handlers.closeLogDrawer).toHaveBeenCalledTimes(1);
     expect(handlers.handleExportDiagnostics).toHaveBeenCalledTimes(1);

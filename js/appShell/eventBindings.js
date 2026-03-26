@@ -37,6 +37,9 @@ export function createEventBindingsController({
     downloadSentimentButton,
     statDownloadButtons,
     downloadSearchButton,
+    downloadMarkdownButton,
+    downloadSlidesButton,
+    downloadPdfButton,
   } = elements;
 
   const {
@@ -226,6 +229,15 @@ export function createEventBindingsController({
     }
     if (downloadSentimentButton) {
       downloadSentimentButton.addEventListener("click", exportSentiment);
+    }
+    if (downloadMarkdownButton) {
+      downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
+    }
+    if (downloadSlidesButton) {
+      downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
+    }
+    if (downloadPdfButton) {
+      downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
     }
 
     if (statDownloadButtons?.length) {

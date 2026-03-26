@@ -244,6 +244,7 @@ describe("primevue render primitives", () => {
     expect(vnode.children[0].props.inputId).toBe("search-participant");
     expect(vnode.children[0].props.optionLabel).toBe("label");
     expect(vnode.children[0].props.optionValue).toBe("value");
+    expect(vnode.children[0].props.placeholder).toBe("All participants");
     expect(vnode.children[0].props.appendTo).toBe(globalScope.document.body);
     expect(vnode.children[0].props.panelClass).toContain("waan-prime-select-overlay");
     expect(vnode.children[0].props["data-ui-runtime"]).toBe("primevue");

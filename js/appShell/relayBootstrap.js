@@ -181,9 +181,18 @@ export function createRelayBootstrapController({
     logDrawerClearButton?.addEventListener("click", handleLogClear);
     void firstRunOpenRelayButton;
     void firstRunPrimaryActionButton;
-    void relayRecoveryReconnectButton;
-    void relayRecoveryResyncButton;
-    void relayRecoveryExportButton;
+    relayRecoveryReconnectButton?.addEventListener("click", event => {
+      event.preventDefault();
+      handleRecoveryReconnect();
+    });
+    relayRecoveryResyncButton?.addEventListener("click", event => {
+      event.preventDefault();
+      handleRecoveryResync();
+    });
+    relayRecoveryExportButton?.addEventListener("click", event => {
+      event.preventDefault();
+      handleRecoveryExportDiagnostics();
+    });
 
     documentRef?.addEventListener("click", handleLogDrawerDocumentClick);
     documentRef?.addEventListener("keydown", handleLogDrawerKeydown);
