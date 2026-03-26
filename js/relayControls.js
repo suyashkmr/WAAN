@@ -26,7 +26,6 @@ import {
   describeRelayStatus,
   formatRelayAccount,
   updateRelayBanner,
-  updateRelayOnboarding,
 } from "./relayControls/statusView.js";
 
 export function createRelayController({ elements, helpers, electronAPI = null, platform = null, globalScope = globalThis }) {
@@ -48,7 +47,6 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
     relayRecoveryReconnectButton,
     relayRecoveryResyncButton,
     relayRecoveryExportButton,
-    relayOnboardingSteps,
     logDrawerToggleButton,
     logDrawerEl,
     logDrawerList,
@@ -101,7 +99,6 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
         elements: {
           relayBannerMessage,
           relayBannerMeta,
-          relayOnboardingStepDetails: elements.relayOnboardingStepDetails ?? null,
         },
         vueRuntime,
       })
@@ -260,7 +257,6 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       relayRecoveryReconnectButton,
       relayRecoveryResyncButton,
       relayRecoveryExportButton,
-      relayOnboardingSteps,
       relayStopButton,
       relayLogoutButton,
       relayReloadAllButton,
@@ -280,7 +276,6 @@ export function createRelayController({ elements, helpers, electronAPI = null, p
       electronAPI: relayPlatform.electronAPI,
       updateHeroRelayStatus,
       updateRelayBanner,
-      updateRelayOnboarding,
       relayStatusViewRenderer,
       applyRelayPrimaryAction,
       updateFirstRunSetup,

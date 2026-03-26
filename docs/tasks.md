@@ -84,14 +84,23 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Confirm the current accessibility toggle issue was resolved by validation rather than by stale diagnosis.
     - [x] Record a dated Phase 47 closeout note in `docs/ui-overhaul-spec.md`.
 
-- [ ] Phase 48: Contract and Documentation Cleanup.
-  - [ ] Remove remaining stale setup-state assumptions from active runtime and test helpers, including `.relay-step`, `.relay-step-detail`, and `#hero-milestones` paths that no longer match the shipped SFC layout.
-  - [ ] Remove or retire dead runtime ownership of legacy relay onboarding surfaces now that `relayOnboardingSteps` is intentionally empty in the shipped SFC contract.
-  - [ ] Reconcile stale onboarding/runtime test fixtures so contract tests no longer validate deleted relay onboarding or hero milestone surfaces as if they were still part of the shipped DOM.
-  - [ ] Refresh stale capture/docs references that still target deleted UI such as `#hero-panel`, `relay-status-message`, and `relay-status-meta`, including `docs/ui-phase1-baseline-capture.md` and the phase-capture scripts.
-  - [ ] Reconcile docs/runtime architecture claims around fallback removal so current docs and release notes do not overstate a no-fallback runtime while active app-shell/dashboard/status fallback branches still exist in production code.
-  - [ ] Update stale DOM-contract tests so fixtures/assertions no longer treat deleted setup surfaces as part of the active shipped contract, including `tests/domRefs.test.js` and the visual helper setup in `tests/visual/dashboard.visual.spec.js`.
-  - [ ] Update `docs/ui-overhaul-spec.md` so the recorded frontend closeout status matches actual repo health after this reopened cleanup pass.
+- [x] Phase 48: Contract and Documentation Cleanup.
+  - [x] Remove remaining stale setup-state assumptions from active runtime and test helpers, including `.relay-step` and `.relay-step-detail` paths that no longer match the shipped SFC layout.
+  - [x] Remove or retire dead runtime ownership of legacy relay onboarding surfaces now that `relayOnboardingSteps` is intentionally empty in the shipped SFC contract.
+  - [x] Reconcile stale onboarding/runtime test fixtures so contract tests no longer validate deleted relay onboarding surfaces as if they were still part of the shipped DOM.
+  - [x] Refresh stale capture/docs references that still target deleted UI such as `#hero-panel`, `relay-status-message`, and `relay-status-meta`, including `docs/ui-phase1-baseline-capture.md` and the phase-capture scripts.
+  - [x] Reconcile docs/runtime architecture claims around fallback removal so current docs and release notes do not overstate a no-fallback runtime while active app-shell/dashboard/status fallback branches still exist in production code.
+  - [x] Update stale DOM-contract tests so fixtures/assertions no longer treat deleted setup surfaces as part of the active shipped contract, including `tests/domRefs.test.js` and the visual helper setup in `tests/visual/dashboard.visual.spec.js`.
+  - [x] Update `docs/ui-overhaul-spec.md` so the recorded frontend closeout status matches actual repo health after this reopened cleanup pass.
+  - [x] Validate the cleanup with:
+    - [x] `rg -n "relayOnboardingSteps|relayOnboardingStepDetails|updateRelayOnboarding|renderOnboardingDetail|relay-step-detail|\\.relay-step|#hero-panel|relay-status-message|relay-status-meta" js tests docs scripts src -g '!dist'`
+    - [x] `npx vitest --run tests/relayControls.test.js tests/releaseRelayTransitions.test.js tests/relayStatusApply.test.js tests/compositionAssemblyContracts.test.js tests/domRefs.test.js`
+    - [x] `npm run check:appshell-contracts`
+  - [x] Complete closure audit:
+    - [x] Confirm deleted relay onboarding selectors and ownership are removed from active runtime paths.
+    - [x] Confirm visual helpers, capture scripts, and current docs no longer treat deleted setup surfaces as active UI.
+    - [x] Confirm current architecture docs no longer overstate a fully no-fallback or fully reclosed frontend state.
+    - [x] Record a dated Phase 48 closeout note in `docs/ui-overhaul-spec.md`.
 
 - [ ] Phase 49: Validation and Reclose.
   - [ ] Reconcile the current desktop accessibility-smoke failures:

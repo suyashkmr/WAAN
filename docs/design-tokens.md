@@ -7,7 +7,7 @@ Phase 12 note: the base token layer is now fed by a generated Prime-token bridge
 ## Phase 10 Architecture Note
 
 - Tokenized styling is consumed by Vue-owned UI surfaces (search/saved/dashboard/status) as the default runtime path.
-- Legacy DOM fallback branches are no longer the active rendering contract for migrated surfaces.
+- Legacy DOM fallback branches are no longer the default rendering contract for migrated surfaces, but scoped compatibility and non-render fallback paths still exist in the shipped runtime where later cleanup phases have not removed them yet.
 - Tailwind remains a token bridge and layout utility layer; component behavior contracts are owned by Vue/PrimeVue runtime modules.
 
 ## Color & Surface Tokens

@@ -289,7 +289,7 @@ Closeout status as of 2026-03-26:
   - `npx playwright test tests/visual/dashboard.visual.spec.js --update-snapshots`
   - `npx playwright test tests/visual/dashboard.visual.spec.js`
 - manual breakpoint verification was completed at `1440 / 1024 / 768 / 390` through the live browser sweeps used to close the visual and accessibility matrix
-- residual-risk boundary at phase closeout: no unresolved frontend UI/runtime/accessibility items remained carried from Phases 44-45
+- residual-risk boundary at phase closeout: the phase closed its intended shell/runtime reconciliation scope, but later audits still reopened follow-up runtime-contract and documentation drift that now remain explicitly owned by Phases 47-49
 
 ### Final Frontend Stabilization Note
 
@@ -304,7 +304,7 @@ Closeout status as of 2026-03-26:
   - `npm run ci:verify`
   - `npm run test:accessibility-smoke`
   - `npx playwright test tests/visual/dashboard.visual.spec.js`
-- final repo status: frontend UI/runtime/accessibility closure is now consistent with the recorded completion state in `docs/tasks.md`
+- final repo status at that checkpoint was later superseded by the reopened regression-cleanup work now tracked in `docs/tasks.md`; this note is historical, not the current closure claim
 
 ### Phase 47 Closure Note
 
@@ -331,6 +331,20 @@ Closeout status as of 2026-03-26:
   - `npm run build`
   - `npm run test:accessibility-smoke`
 - residual-risk boundary: Phase 47 closes the current runtime contract mismatches, but it does not yet remove stale legacy setup-state assumptions from active helpers/tests, reconcile archival capture/docs references, or refresh the remaining post-reopen architecture/docs consistency issues; those remain explicitly owned by Phases 48-49
+
+### Phase 48 Closure Note
+
+Closeout status as of 2026-03-26:
+
+- active runtime ownership of the deleted relay onboarding step system has been removed from the shipped app-shell/relay path; `relayOnboardingSteps`, `relayOnboardingStepDetails`, and the stale `.relay-step` / `.relay-step-detail` update path are no longer part of the active runtime contract
+- stale relay onboarding fixtures and visual-helper setup that still depended on the deleted relay onboarding DOM have been removed or updated to the current shipped SFC contract
+- archival capture/docs references that still pointed at deleted UI (`#hero-panel`, `relay-status-message`, `relay-status-meta`) now target the current setup and relay banner surfaces instead
+- current architecture/docs wording has been corrected so it no longer overstates either a fully no-fallback runtime or a fully reclosed frontend state while the reopened cleanup phases remain active
+- validation recorded for closeout:
+  - `rg -n "relayOnboardingSteps|relayOnboardingStepDetails|updateRelayOnboarding|renderOnboardingDetail|relay-step-detail|\\.relay-step|#hero-panel|relay-status-message|relay-status-meta" js tests docs scripts src -g '!dist'`
+  - `npx vitest --run tests/relayControls.test.js tests/releaseRelayTransitions.test.js tests/relayStatusApply.test.js tests/compositionAssemblyContracts.test.js tests/domRefs.test.js`
+  - `npm run check:appshell-contracts`
+- residual-risk boundary: Phase 48 closes the stale-contract and documentation cleanup work, but final reclose still depends on the remaining Phase 49 validation and visual-baseline reconciliation rather than documentation cleanup alone
 
 - compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
 - remove oversized empty-state framing and any layout that reserves space for absent content

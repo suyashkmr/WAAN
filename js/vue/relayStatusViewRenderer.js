@@ -12,7 +12,6 @@ export function createRelayStatusViewRenderer({
   const {
     relayBannerMessage,
     relayBannerMeta,
-    relayOnboardingStepDetails = null,
   } = elements;
 
   function getVueRuntime() {
@@ -42,16 +41,6 @@ export function createRelayStatusViewRenderer({
     renderBanner({ message = "", meta = "" } = {}) {
       renderText(relayBannerMessage, message);
       renderText(relayBannerMeta, meta);
-    },
-
-    /**
-     * @param {string} stepId
-     * @param {string} text
-     * @param {HTMLElement | null | undefined} fallbackEl
-     */
-    renderOnboardingDetail(stepId, text, fallbackEl = null) {
-      const explicitEl = relayOnboardingStepDetails?.[stepId] ?? null;
-      renderText(explicitEl || fallbackEl, text);
     },
   };
 }

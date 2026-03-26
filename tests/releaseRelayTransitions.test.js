@@ -16,7 +16,6 @@ function buildRelayElements() {
   const relayBannerEl = document.createElement("div");
   const relayBannerMessage = document.createElement("div");
   const relayBannerMeta = document.createElement("div");
-  const relayOnboardingSteps = [];
   const logDrawerToggleButton = document.createElement("button");
   const logDrawerEl = document.createElement("div");
   const logDrawerList = document.createElement("div");
@@ -54,7 +53,6 @@ function buildRelayElements() {
     relayBannerEl,
     relayBannerMessage,
     relayBannerMeta,
-    relayOnboardingSteps,
     logDrawerToggleButton,
     logDrawerEl,
     logDrawerList,

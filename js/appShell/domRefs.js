@@ -44,12 +44,6 @@ export function createAppDomRefs({
     relayRecoveryReconnectButton: domCache.getById("relay-recovery-reconnect"),
     relayRecoveryResyncButton: domCache.getById("relay-recovery-resync"),
     relayRecoveryExportButton: domCache.getById("relay-recovery-export"),
-    relayOnboardingSteps: [],
-    relayOnboardingStepDetails: {
-      start: null,
-      qr: null,
-      sync: null,
-    },
     summaryEl: domCache.getById("summary"),
     participantsBody: documentRef?.querySelector("#top-senders tbody") ?? null,
     participantsNote: domCache.getById("participants-note"),

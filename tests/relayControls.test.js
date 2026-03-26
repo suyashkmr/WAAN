@@ -34,7 +34,6 @@ function buildRelayElements() {
     relayRecoveryResyncButton,
     relayRecoveryExportButton,
   );
-  const relayOnboardingSteps = document.querySelectorAll(".no-steps");
   const logDrawerToggleButton = document.createElement("button");
   const logDrawerEl = document.createElement("div");
   const logDrawerList = document.createElement("div");
@@ -78,7 +77,6 @@ function buildRelayElements() {
     relayRecoveryReconnectButton,
     relayRecoveryResyncButton,
     relayRecoveryExportButton,
-    relayOnboardingSteps,
     logDrawerToggleButton,
     logDrawerEl,
     logDrawerList,

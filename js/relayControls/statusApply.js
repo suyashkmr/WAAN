@@ -61,8 +61,6 @@ export function createRelayStatusApplyController({
     relayRecoveryReconnectButton,
     relayRecoveryResyncButton,
     relayRecoveryExportButton,
-    relayOnboardingSteps,
-    relayOnboardingStepDetails,
     relayStopButton,
     relayLogoutButton,
     relayReloadAllButton,
@@ -81,7 +79,6 @@ export function createRelayStatusApplyController({
     electronAPI,
     updateHeroRelayStatus,
     updateRelayBanner,
-    updateRelayOnboarding,
     relayStatusViewRenderer = null,
     applyRelayPrimaryAction,
     updateFirstRunSetup,
@@ -225,7 +222,6 @@ export function createRelayStatusApplyController({
       hasCompletedRemoteChatFetch,
       relayStatusViewRenderer,
     });
-    updateRelayOnboarding({ status, relayOnboardingSteps, relayOnboardingStepDetails, hasCompletedRemoteChatFetch, relayStatusViewRenderer });
     if (!status) {
       updateFirstRunSetup({ status: null, hasData: Boolean(getDataAvailable?.()) });
       updateSyncProgressFromStatus(null);

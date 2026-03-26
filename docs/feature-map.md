@@ -29,7 +29,7 @@
 ## Removed During Vue Cutover
 
 - `js/appShell/vueFrontendAdapterLayer.js` (and `tests/vueFrontendAdapterLayer.test.js`) removed in Phase 8.
-- Legacy dashboard activity fallback renderers removed from active runtime paths.
+- Legacy dashboard activity fallback renderers were removed from the primary runtime render path, but the broader runtime still retains scoped compatibility and non-render fallback branches that later cleanup phases continue to audit.
 
 ## Quality Gates
 

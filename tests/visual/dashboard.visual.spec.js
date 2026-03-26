@@ -17,6 +17,34 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         element.classList.toggle("hidden", isHidden);
       };
 
+      const applyHeroState = ({
+        badgeText,
+        copyText,
+        metaText,
+        syncState = "idle",
+        syncVisible = false,
+        milestones = {},
+        readyCelebrating = false,
+      }) => {
+        if (heroBadge) {
+          heroBadge.textContent = badgeText;
+          heroBadge.classList.toggle("hero-status-badge-ready", readyCelebrating);
+        }
+        if (heroCopy) heroCopy.textContent = copyText;
+        if (heroMeta) heroMeta.textContent = metaText;
+        if (heroSyncDot) {
+          heroSyncDot.dataset.state = syncState;
+          heroSyncDot.hidden = !syncVisible;
+          heroSyncDot.classList.toggle("hidden", !syncVisible);
+        }
+        milestoneSteps.forEach(step => {
+          const stepId = step.dataset.step;
+          if (!stepId) return;
+          step.dataset.state = milestones[stepId] || "pending";
+          step.classList.toggle("is-ready-celebration", readyCelebrating && stepId === "ready");
+        });
+      };
+
       const heroBadge = document.getElementById("hero-status-badge");
       const heroCopy = document.getElementById("hero-status-copy");
       const heroMeta = document.getElementById("hero-status-meta-copy");
@@ -26,22 +54,25 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const relayBannerMeta = document.getElementById("relay-account-name");
       const relayQrContainer = document.getElementById("relay-qr-container");
       const relaySyncProgress = document.getElementById("relay-sync-progress");
-      const milestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
+      const milestoneSteps = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
 
-      if (heroBadge) heroBadge.classList.remove("hero-status-badge-ready");
-      milestones.forEach(step => {
-        step.classList.remove("is-ready-celebration");
+      applyHeroState({
+        badgeText: "Offline",
+        copyText: "Relay is offline",
+        metaText: "Connect to start analysis",
+        syncState: "idle",
+        syncVisible: false,
+        milestones: { connect: "active", sync: "pending", ready: "pending" },
       });
 
       if (state === "waiting_qr") {
-        if (heroBadge) heroBadge.textContent = "Link your phone";
-        if (heroCopy) heroCopy.textContent = "Scan the QR code.";
-        if (heroMeta) heroMeta.textContent = "Waiting for phone link.";
-        if (heroSyncDot) heroSyncDot.dataset.state = "idle";
-        milestones.forEach(step => {
-          if (step.dataset.step === "connect") step.dataset.state = "active";
-          if (step.dataset.step === "sync") step.dataset.state = "pending";
-          if (step.dataset.step === "ready") step.dataset.state = "pending";
+        applyHeroState({
+          badgeText: "Link your phone",
+          copyText: "Scan the QR code.",
+          metaText: "Waiting for phone link.",
+          syncState: "idle",
+          syncVisible: false,
+          milestones: { connect: "active", sync: "pending", ready: "pending" },
         });
         setHiddenState(relayQrContainer, false);
         setHiddenState(relaySyncProgress, true);
@@ -52,14 +83,13 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       }
 
       if (state === "running_syncing") {
-        if (heroBadge) heroBadge.textContent = "Connected • Alice";
-        if (heroCopy) heroCopy.textContent = "24 chats loaded. Refreshing.";
-        if (heroMeta) heroMeta.textContent = "Refreshing · 24 chats loaded";
-        if (heroSyncDot) heroSyncDot.dataset.state = "syncing";
-        milestones.forEach(step => {
-          if (step.dataset.step === "connect") step.dataset.state = "complete";
-          if (step.dataset.step === "sync") step.dataset.state = "active";
-          if (step.dataset.step === "ready") step.dataset.state = "pending";
+        applyHeroState({
+          badgeText: "Connected • Alice",
+          copyText: "24 chats loaded. Refreshing.",
+          metaText: "Refreshing · 24 chats loaded",
+          syncState: "syncing",
+          syncVisible: true,
+          milestones: { connect: "complete", sync: "active", ready: "pending" },
         });
         setHiddenState(relayQrContainer, true);
         setHiddenState(relaySyncProgress, false);
@@ -70,17 +100,14 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       }
 
       if (state === "running_ready") {
-        if (heroBadge) {
-          heroBadge.textContent = "Connected • Alice";
-          heroBadge.classList.add("hero-status-badge-ready");
-        }
-        if (heroCopy) heroCopy.textContent = "24 chats ready.";
-        if (heroMeta) heroMeta.textContent = "Updated 09:41 PM";
-        if (heroSyncDot) heroSyncDot.dataset.state = "ready";
-        milestones.forEach(step => {
-          if (step.dataset.step === "connect") step.dataset.state = "complete";
-          if (step.dataset.step === "sync") step.dataset.state = "complete";
-          if (step.dataset.step === "ready") step.dataset.state = "complete";
+        applyHeroState({
+          badgeText: "Connected • Alice",
+          copyText: "24 chats ready.",
+          metaText: "Updated 09:41 PM",
+          syncState: "ready",
+          syncVisible: true,
+          milestones: { connect: "complete", sync: "complete", ready: "complete" },
+          readyCelebrating: true,
         });
         setHiddenState(relayQrContainer, true);
         setHiddenState(relaySyncProgress, true);
@@ -108,7 +135,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           '<p class="message-type-share-summary">Text: 58.4% · Media: 21.7% · Links: 13.2% · Polls: 6.7%.</p>';
       }
 
-      const messageTypeNote = document.getElementById("message-type-note");
+      const messageTypeNote = document.getElementById("message-types-note");
       if (messageTypeNote) {
         messageTypeNote.textContent =
           "Text still drives the conversation, while media and links cluster around recap and planning moments.";
@@ -320,23 +347,46 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   async function applyWorkspaceScenario(page) {
     await page.evaluate(() => {
+      const setHiddenState = (element, isHidden) => {
+        if (!element) return;
+        element.hidden = isHidden;
+        element.classList.toggle("hidden", isHidden);
+      };
+
       const relayBanner = document.getElementById("relay-status-banner");
       const relayBannerMessage = document.getElementById("relay-connection-status");
       const relayBannerMeta = document.getElementById("relay-account-name");
+      const heroBadge = document.getElementById("hero-status-badge");
+      const heroCopy = document.getElementById("hero-status-copy");
+      const heroMeta = document.getElementById("hero-status-meta-copy");
+      const heroSyncDot = document.getElementById("hero-sync-dot");
+      const milestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
+      const relayQrContainer = document.getElementById("relay-qr-container");
+      const relaySyncProgress = document.getElementById("relay-sync-progress");
+
       if (relayBanner) relayBanner.dataset.status = "running";
       if (relayBannerMessage) relayBannerMessage.textContent = "Connected: Suyash Kumar (916360465282).";
       if (relayBannerMeta) {
         relayBannerMeta.textContent = "Suyash Kumar (916360465282) · Synced 2 min ago · 784 chats · Last sync 779ms · Primary sync";
       }
 
-      const steps = Array.from(document.querySelectorAll(".relay-step"));
-      steps.forEach((step, index) => {
+      if (heroBadge) {
+        heroBadge.textContent = "Connected • Suyash Kumar";
+        heroBadge.classList.add("hero-status-badge-ready");
+      }
+      if (heroCopy) heroCopy.textContent = "784 chats ready.";
+      if (heroMeta) heroMeta.textContent = "Updated 2 min ago";
+      if (heroSyncDot) {
+        heroSyncDot.dataset.state = "ready";
+        heroSyncDot.hidden = false;
+        heroSyncDot.classList.remove("hidden");
+      }
+      milestones.forEach(step => {
         step.dataset.state = "complete";
-        const detail = step.querySelector(".relay-step-detail");
-        if (detail && index === 0) detail.textContent = "Relay running.";
-        if (detail && index === 1) detail.textContent = "Phone linked.";
-        if (detail && index === 2) detail.textContent = "Chats loaded.";
+        step.classList.toggle("is-ready-celebration", step.dataset.step === "ready");
       });
+      setHiddenState(relayQrContainer, true);
+      setHiddenState(relaySyncProgress, true);
 
       const connection = document.getElementById("relay-connection-status");
       if (connection) connection.textContent = "Connected: Suyash Kumar (916360465282).";
@@ -402,12 +452,47 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   async function applyWorkspaceEmptyScenario(page) {
     await page.evaluate(() => {
+      const setHiddenState = (element, isHidden) => {
+        if (!element) return;
+        element.hidden = isHidden;
+        element.classList.toggle("hidden", isHidden);
+      };
+
       const relayBanner = document.getElementById("relay-status-banner");
       const relayBannerMessage = document.getElementById("relay-connection-status");
       const relayBannerMeta = document.getElementById("relay-account-name");
+      const heroBadge = document.getElementById("hero-status-badge");
+      const heroCopy = document.getElementById("hero-status-copy");
+      const heroMeta = document.getElementById("hero-status-meta-copy");
+      const heroSyncDot = document.getElementById("hero-sync-dot");
+      const milestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
+      const relayQrContainer = document.getElementById("relay-qr-container");
+      const relaySyncProgress = document.getElementById("relay-sync-progress");
+
       if (relayBanner) relayBanner.dataset.status = "running";
       if (relayBannerMessage) relayBannerMessage.textContent = "Connected.";
       if (relayBannerMeta) relayBannerMeta.textContent = "Synced a moment ago · 24 chats";
+      if (heroBadge) {
+        heroBadge.textContent = "Connected • Alice";
+        heroBadge.classList.remove("hero-status-badge-ready");
+      }
+      if (heroCopy) heroCopy.textContent = "24 chats loaded. Pick a chat to unlock findings.";
+      if (heroMeta) heroMeta.textContent = "Connected · Waiting for chat selection";
+      if (heroSyncDot) {
+        heroSyncDot.dataset.state = "ready";
+        heroSyncDot.hidden = false;
+        heroSyncDot.classList.remove("hidden");
+      }
+      milestones.forEach(step => {
+        if (step.dataset.step === "connect") step.dataset.state = "complete";
+        if (step.dataset.step === "sync") step.dataset.state = "complete";
+        if (step.dataset.step === "ready") {
+          step.dataset.state = "pending";
+          step.classList.remove("is-ready-celebration");
+        }
+      });
+      setHiddenState(relayQrContainer, true);
+      setHiddenState(relaySyncProgress, true);
 
       const chatSelector = document.getElementById("chat-selector");
       if (chatSelector instanceof HTMLSelectElement) {
@@ -446,12 +531,47 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   async function applyWorkspaceOfflineScenario(page) {
     await page.evaluate(() => {
+      const setHiddenState = (element, isHidden) => {
+        if (!element) return;
+        element.hidden = isHidden;
+        element.classList.toggle("hidden", isHidden);
+      };
+
       const relayBanner = document.getElementById("relay-status-banner");
       const relayBannerMessage = document.getElementById("relay-connection-status");
       const relayBannerMeta = document.getElementById("relay-account-name");
+      const heroBadge = document.getElementById("hero-status-badge");
+      const heroCopy = document.getElementById("hero-status-copy");
+      const heroMeta = document.getElementById("hero-status-meta-copy");
+      const heroSyncDot = document.getElementById("hero-sync-dot");
+      const milestones = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
+      const relayQrContainer = document.getElementById("relay-qr-container");
+      const relaySyncProgress = document.getElementById("relay-sync-progress");
+
       if (relayBanner) relayBanner.dataset.status = "offline";
       if (relayBannerMessage) relayBannerMessage.textContent = "Relay offline.";
       if (relayBannerMeta) relayBannerMeta.textContent = "Start relay to unlock workspace.";
+      if (heroBadge) {
+        heroBadge.textContent = "Offline";
+        heroBadge.classList.remove("hero-status-badge-ready");
+      }
+      if (heroCopy) heroCopy.textContent = "Relay is offline";
+      if (heroMeta) heroMeta.textContent = "Connect to start analysis";
+      if (heroSyncDot) {
+        heroSyncDot.dataset.state = "idle";
+        heroSyncDot.hidden = true;
+        heroSyncDot.classList.add("hidden");
+      }
+      milestones.forEach(step => {
+        if (step.dataset.step === "connect") step.dataset.state = "active";
+        if (step.dataset.step === "sync") step.dataset.state = "pending";
+        if (step.dataset.step === "ready") {
+          step.dataset.state = "pending";
+          step.classList.remove("is-ready-celebration");
+        }
+      });
+      setHiddenState(relayQrContainer, true);
+      setHiddenState(relaySyncProgress, true);
 
       const chatSelector = document.getElementById("chat-selector");
       if (chatSelector instanceof HTMLSelectElement) {

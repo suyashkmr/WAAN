@@ -77,7 +77,6 @@ describe("compositionAssembly contracts", () => {
         relayBannerEl: document.createElement("div"),
         relayBannerMessage: document.createElement("div"),
         relayBannerMeta: document.createElement("div"),
-        relayOnboardingSteps: [],
         logDrawerToggleButton: document.createElement("button"),
         logDrawerEl: document.createElement("div"),
         logDrawerList: document.createElement("div"),

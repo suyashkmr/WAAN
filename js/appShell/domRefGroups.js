@@ -41,8 +41,6 @@ export function createAppDomRefGroups(refs) {
       relayRecoveryReconnectButton: refs.relayRecoveryReconnectButton,
       relayRecoveryResyncButton: refs.relayRecoveryResyncButton,
       relayRecoveryExportButton: refs.relayRecoveryExportButton,
-      relayOnboardingSteps: refs.relayOnboardingSteps,
-      relayOnboardingStepDetails: refs.relayOnboardingStepDetails,
       relayStatusEl: refs.relayStatusEl,
       relayAccountEl: refs.relayAccountEl,
       relayStartButton: refs.relayStartButton,

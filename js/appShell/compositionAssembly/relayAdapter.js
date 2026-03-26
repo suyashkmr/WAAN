@@ -28,7 +28,6 @@ export function createRelayCompositionAdapter({ dom, state, wiring, withGlobalBu
       relayRecoveryReconnectButton: dom.relayRecoveryReconnectButton,
       relayRecoveryResyncButton: dom.relayRecoveryResyncButton,
       relayRecoveryExportButton: dom.relayRecoveryExportButton,
-      relayOnboardingSteps: dom.relayOnboardingSteps,
       logDrawerToggleButton: dom.logDrawerToggleButton,
       logDrawerEl: dom.logDrawerEl,
       logDrawerList: dom.logDrawerList,

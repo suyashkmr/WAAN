@@ -15,7 +15,7 @@ const CAPTURE_PLAN = [
 ];
 
 const SURFACES = [
-  { key: "hero", selector: "#hero-panel" },
+  { key: "hero", selector: "#dataset-empty-callout" },
   { key: "section-nav", selector: ".section-nav" },
   { key: "summary", selector: "#summary" },
   { key: "relay-status", selector: "#relay-status-banner" },
@@ -70,8 +70,8 @@ async function preparePage(page, scheme) {
     }
 
     const relayBanner = document.getElementById("relay-status-banner");
-    const relayMessage = document.getElementById("relay-status-message");
-    const relayMeta = document.getElementById("relay-status-meta");
+    const relayMessage = document.getElementById("relay-connection-status");
+    const relayMeta = document.getElementById("relay-account-name");
     if (relayBanner) relayBanner.classList.remove("hidden");
     if (relayMessage && !relayMessage.textContent?.trim()) relayMessage.textContent = "Relay offline.";
     if (relayMeta && !relayMeta.textContent?.trim()) {

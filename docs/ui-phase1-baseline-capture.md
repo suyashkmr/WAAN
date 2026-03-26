@@ -4,7 +4,7 @@ Use this sheet before Tailwind/shadcn migration work starts. Capture current beh
 
 ## Surfaces In Scope
 
-- `#hero-panel`
+- `#dataset-empty-callout`
 - `.section-nav`
 - `#summary` cards
 - `#relay-status-banner` + primary relay controls
