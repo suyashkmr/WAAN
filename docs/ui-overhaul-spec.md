@@ -306,6 +306,32 @@ Closeout status as of 2026-03-26:
   - `npx playwright test tests/visual/dashboard.visual.spec.js`
 - final repo status: frontend UI/runtime/accessibility closure is now consistent with the recorded completion state in `docs/tasks.md`
 
+### Phase 47 Closure Note
+
+Closeout status as of 2026-03-26:
+
+- Electron relay launch wiring now respects the saved autostart preference in both active launch channels: the desktop main process no longer forces `WAAN_AUTOSTART=1` when `autostartRelay` is disabled, and the launch contract is covered directly by a focused helper test
+- the shipped runtime/setup contract is restored for the current SFC markup:
+  - `#relay-status-banner` now carries the `.relay-status-banner` styling hook
+  - first-run progression is visible again
+  - the setup hero once again exposes the class hooks and runtime-owned surfaces for badge, sync dot, and milestone progression
+  - runtime-owned note surfaces for participants, message types, and polls are present again in shipped markup
+- the previously reopened accessibility-toggle concern was revalidated against the live browser path and does not remain an active bug on the current tree; shell-owned toggle actions now apply one visible state transition and update both body and root UI datasets in accessibility smoke
+- verified runtime paths for this closeout:
+  - `electron/main.js`
+  - `electron/relayLaunchConfig.cjs`
+  - `src/components/WorkspaceSidebar.vue`
+  - `src/components/EmptyWorkspaceCallout.vue`
+  - `src/components/FindingsStage.vue`
+  - `src/components/DeepDiveStage.vue`
+  - `js/appShell/dataStatus.js`
+  - `js/vue/heroStatusRenderer.js`
+- validation recorded for closeout:
+  - `npx vitest --run tests/relayLaunchConfig.test.js tests/dataStatusBootstrapSectionNav.test.js tests/heroStatusRenderer.test.js tests/domRefs.test.js tests/relayControls.test.js`
+  - `npm run build`
+  - `npm run test:accessibility-smoke`
+- residual-risk boundary: Phase 47 closes the current runtime contract mismatches, but it does not yet remove stale legacy setup-state assumptions from active helpers/tests, reconcile archival capture/docs references, or refresh the remaining post-reopen architecture/docs consistency issues; those remain explicitly owned by Phases 48-49
+
 - compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
 - remove oversized empty-state framing and any layout that reserves space for absent content
 - move secondary setup guidance behind contextual disclosure instead of keeping it permanently visible

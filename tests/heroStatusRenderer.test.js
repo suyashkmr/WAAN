@@ -40,6 +40,8 @@ describe("heroStatusRenderer", () => {
     expect(heroStatusCopy.textContent).toBe("Insights are ready.");
     expect(heroStatusMetaCopy.textContent).toBe("Last updated 10:42");
     expect(heroSyncDot.dataset.state).toBe("ready");
+    expect(heroSyncDot.hidden).toBe(false);
+    expect(heroSyncDot.classList.contains("hidden")).toBe(false);
     expect(readyStep.dataset.state).toBe("complete");
     expect(readyStep.classList.contains("is-ready-celebration")).toBe(true);
   });
@@ -71,6 +73,30 @@ describe("heroStatusRenderer", () => {
     expect(heroStatusBadge.textContent).toBe("Connected • Alice");
     expect(heroStatusCopy.textContent).toBe("42 chats indexed. Insights are ready.");
     expect(heroStatusMetaCopy.textContent).toBe("Last updated 12:18");
+    expect(heroSyncDot.hidden).toBe(false);
+  });
+
+  it("hides the sync dot for idle hero sync state", () => {
+    const heroStatusMetaCopy = document.createElement("span");
+    const heroSyncDot = document.createElement("span");
+
+    const renderer = createHeroStatusRenderer({
+      elements: {
+        heroStatusBadge: document.createElement("span"),
+        heroStatusCopy: document.createElement("span"),
+        heroStatusMetaCopy,
+        heroSyncDot,
+        heroMilestoneSteps: [],
+      },
+      vueRuntime: { h, render },
+    });
+
+    renderer.renderSyncMeta({ state: "idle", message: "Awaiting relay" });
+
+    expect(heroSyncDot.dataset.state).toBe("idle");
+    expect(heroSyncDot.hidden).toBe(true);
+    expect(heroSyncDot.classList.contains("hidden")).toBe(true);
+    expect(heroStatusMetaCopy.textContent).toBe("Awaiting relay");
   });
 
   it("requires a Vue runtime with h/render", () => {

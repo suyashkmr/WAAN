@@ -7,6 +7,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 const fs = require("fs");
 const express = require("express");
+const { buildRelayLaunchConfig } = require("./relayLaunchConfig.cjs");
 
 const DEFAULT_CLIENT_PORT = Number(
   process.env.WAAN_CLIENT_PORT || process.env.PORT || 4173
@@ -111,20 +112,13 @@ function runRestoreScript() {
 }
 
 function startRelayProcess({ autostart = true } = {}) {
-  const entry = path.join(getServerRoot(), "src", "index.js");
-  const args = [];
-  if (autostart) {
-    args.push("--auto-start");
-  }
-  relayProcess = spawnNode(entry, args, {
-    cwd: getServerRoot(),
-    env: {
-      WAAN_API_PORT: String(DEFAULT_API_PORT),
-      WAAN_RELAY_PORT: String(DEFAULT_RELAY_PORT),
-      WAAN_RELAY_HEADLESS: "false",
-      WAAN_AUTOSTART: "1",
-    },
+  const { entry, args, cwd, env } = buildRelayLaunchConfig({
+    autostart,
+    getServerRoot,
+    apiPort: DEFAULT_API_PORT,
+    relayPort: DEFAULT_RELAY_PORT,
   });
+  relayProcess = spawnNode(entry, args, { cwd, env });
 }
 
 function startStaticServer() {

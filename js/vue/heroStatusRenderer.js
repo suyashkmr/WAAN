@@ -62,7 +62,12 @@ export function createHeroStatusRenderer({
      * @param {{ state?: string, message?: string }} [params]
      */
     renderSyncMeta({ state = "idle", message = UI_COPY.relay.offlineMeta } = {}) {
-      if (heroSyncDot) heroSyncDot.dataset.state = state;
+      if (heroSyncDot) {
+        const isVisible = state === "syncing" || state === "ready";
+        heroSyncDot.dataset.state = state;
+        heroSyncDot.hidden = !isVisible;
+        heroSyncDot.classList.toggle("hidden", !isVisible);
+      }
       renderText(heroStatusMetaCopy, message);
     },
 

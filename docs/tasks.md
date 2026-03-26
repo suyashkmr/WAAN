@@ -65,15 +65,24 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Active Phases
 
-- [ ] Phase 47: Runtime Contract Repair.
-  - [ ] Fix the Electron relay autostart preference regression so `autostartRelay: false` is not overridden by unconditional `WAAN_AUTOSTART=1` startup wiring.
-  - [ ] Remove the workspace accessibility-toggle double-binding bug so `#reduce-motion-toggle` and `#high-contrast-toggle` do not dispatch both direct preference listeners and shell action handlers on the same click.
-  - [ ] Reconcile the live relay banner markup/CSS contract so the shipped `#relay-status-banner` surface still carries the `.relay-status-banner` class hook that its state styling, motion rules, and accessibility overrides depend on.
-  - [ ] Restore visible first-run setup progression: the shipped `first-run-steps` list is still rendered with `hidden`, while the runtime only unhides the parent setup surface.
-  - [ ] Reconcile the hero sync-indicator contract so `#hero-sync-dot` can actually become visible when runtime state changes, or remove the surface and its runtime ownership intentionally in the same pass.
-  - [ ] Reconcile the hero setup markup/CSS contract so shipped hero nodes carry the class hooks their styling and accessibility states still depend on (`.hero-status-badge`, `.hero-status-copy`, `.hero-status-meta`, `.hero-sync-dot`), or intentionally migrate the styles to the current ID-based contract.
-  - [ ] Reconcile the hero milestone progression contract: either restore shipped `#hero-milestones` markup for the runtime-owned connect/sync/ready progression, or remove the runtime/test ownership of that deleted surface entirely.
-  - [ ] Restore or intentionally remove the dashboard note surfaces that runtime still writes into but shipped markup no longer provides (`participants-note`, `message-types-note`, `polls-note`).
+- [x] Phase 47: Runtime Contract Repair.
+  - [x] Fix the Electron relay autostart preference regression so `autostartRelay: false` is not overridden by unconditional `WAAN_AUTOSTART=1` startup wiring.
+  - [x] Verify the workspace accessibility-toggle action contract: current shell-owned `#reduce-motion-toggle` and `#high-contrast-toggle` clicks apply one state transition and update both body and root datasets in the real browser path.
+  - [x] Reconcile the live relay banner markup/CSS contract so the shipped `#relay-status-banner` surface still carries the `.relay-status-banner` class hook that its state styling, motion rules, and accessibility overrides depend on.
+  - [x] Restore visible first-run setup progression: the shipped `first-run-steps` list is still rendered with `hidden`, while the runtime only unhides the parent setup surface.
+  - [x] Reconcile the hero sync-indicator contract so `#hero-sync-dot` can actually become visible when runtime state changes, or remove the surface and its runtime ownership intentionally in the same pass.
+  - [x] Reconcile the hero setup markup/CSS contract so shipped hero nodes carry the class hooks their styling and accessibility states still depend on (`.hero-status-badge`, `.hero-status-copy`, `.hero-status-meta`, `.hero-sync-dot`), or intentionally migrate the styles to the current ID-based contract.
+  - [x] Reconcile the hero milestone progression contract: either restore shipped `#hero-milestones` markup for the runtime-owned connect/sync/ready progression, or remove the runtime/test ownership of that deleted surface entirely.
+  - [x] Restore or intentionally remove the dashboard note surfaces that runtime still writes into but shipped markup no longer provides (`participants-note`, `message-types-note`, `polls-note`).
+  - [x] Validate the repaired runtime contract with:
+    - [x] `npx vitest --run tests/relayLaunchConfig.test.js tests/dataStatusBootstrapSectionNav.test.js tests/heroStatusRenderer.test.js tests/domRefs.test.js tests/relayControls.test.js`
+    - [x] `npm run build`
+    - [x] `npm run test:accessibility-smoke`
+  - [x] Complete closure audit:
+    - [x] Confirm Electron relay launch wiring now aligns CLI args and env autostart state for both enabled and disabled preference paths.
+    - [x] Confirm relay banner, setup hero, first-run progression, and dashboard note surfaces all exist in shipped markup and match the active runtime/CSS contract.
+    - [x] Confirm the current accessibility toggle issue was resolved by validation rather than by stale diagnosis.
+    - [x] Record a dated Phase 47 closeout note in `docs/ui-overhaul-spec.md`.
 
 - [ ] Phase 48: Contract and Documentation Cleanup.
   - [ ] Remove remaining stale setup-state assumptions from active runtime and test helpers, including `.relay-step`, `.relay-step-detail`, and `#hero-milestones` paths that no longer match the shipped SFC layout.

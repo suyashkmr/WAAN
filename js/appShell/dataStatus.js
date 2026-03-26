@@ -115,7 +115,10 @@ export function createDataStatusController({ elements, deps }) {
       heroStatusRenderer.renderSyncMeta({ state, message });
     } else {
       if (heroSyncDot) {
+        const isVisible = state === "syncing" || state === "ready";
         heroSyncDot.dataset.state = state;
+        heroSyncDot.hidden = !isVisible;
+        heroSyncDot.classList.toggle("hidden", !isVisible);
       }
       if (heroStatusMetaCopy) {
         heroStatusMetaCopy.textContent = message;

@@ -114,6 +114,9 @@
                   </div>
                </div>
              </div>
+             <p id="participants-note" class="text-xs text-[var(--text-muted)]">
+               See who speaks the most, and filter to spotlight the quietest members or recent activity.
+             </p>
 
              <!-- Table -->
              <div class="overflow-x-auto border border-[var(--border)] rounded-lg">

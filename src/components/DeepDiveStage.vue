@@ -353,6 +353,7 @@
             </div>
             <div class="p-5 flex flex-col gap-6" id="message-types-content">
               <div id="message-type-summary" class="text-sm text-[var(--text)]"></div>
+              <p id="message-types-note" class="text-xs text-[var(--text-muted)]"></p>
               <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg text-center">
                 
                 <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
@@ -434,6 +435,7 @@
                 <ol class="flex flex-col gap-2 m-0 p-0 list-none" id="polls-list"></ol>
               </div>
             </div>
+            <p id="polls-note" class="px-5 pb-5 text-xs text-[var(--text-muted)]"></p>
           </section>
 
         </div>

@@ -7,10 +7,13 @@ describe("app shell dom refs", () => {
     sandbox.body.innerHTML = `
       <main id="root"></main>
       <div id="data-status"></div>
+      <div id="participants-note"></div>
       <table id="top-senders"><tbody></tbody></table>
       <button data-participants-preset="top"></button>
+      <div id="message-types-note"></div>
       <div id="hero-milestones"><div class="hero-milestone"></div></div>
       <div data-setup-step="1"></div>
+      <div id="polls-note"></div>
       <div class="section-nav-inner"></div>
       <input name="theme-option" value="system" />
     `;
@@ -27,9 +30,12 @@ describe("app shell dom refs", () => {
     expect(refs.storageRef).toBe(storageRef);
     expect(refs.vueRuntime).toBe(vueRuntime);
     expect(refs.participantsBody?.tagName).toBe("TBODY");
+    expect(refs.participantsNote?.id).toBe("participants-note");
     expect(refs.participantPresetButtons.length).toBe(1);
+    expect(refs.messageTypeNoteEl?.id).toBe("message-types-note");
     expect(refs.heroMilestoneSteps.length).toBe(1);
     expect(refs.firstRunSetupSteps.length).toBe(1);
+    expect(refs.pollsNote?.id).toBe("polls-note");
     expect(refs.sectionNavInner?.className).toBe("section-nav-inner");
     expect(refs.dashboardRoot?.id).toBe("root");
     expect(refs.themeToggleInputs.length).toBe(1);

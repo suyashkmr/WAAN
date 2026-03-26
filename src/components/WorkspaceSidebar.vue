@@ -8,7 +8,7 @@
       <section class="flex flex-col gap-3 p-4 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border)]" id="relay-status-panel" aria-live="polite" data-nav-target="relay-status">
         <!-- The ID below is targeted by Vue for mounting the status message/indicator. 
              We keep it on a child div so it doesn't wipe out the QR and actions below it. -->
-        <div class="flex items-center gap-3" id="relay-status-banner">
+        <div class="relay-status-banner flex items-center gap-3" id="relay-status-banner">
           <div class="relay-banner-indicator w-2.5 h-2.5" id="relay-status-dot" aria-hidden="true"></div>
           <div class="flex flex-col">
             <span class="text-sm font-semibold text-[var(--text)] m-0 leading-tight" id="relay-connection-status">Relay offline.</span>
