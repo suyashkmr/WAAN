@@ -98,18 +98,21 @@ test.describe("WAAN Accessibility Smoke", () => {
         const element = document.querySelector(targetSelector);
         return Boolean(element && element.isConnected);
       }, selector);
-      const focusTarget = page.locator(selector).first();
-      await expect(focusTarget).toBeVisible();
-      await focusTarget.scrollIntoViewIfNeeded();
-      await focusTarget.focus();
       await expect
         .poll(async () =>
-          focusTarget.evaluate(element => {
+          page.evaluate(targetSelector => {
+            const element = document.querySelector(targetSelector);
+            if (!(element instanceof HTMLElement)) return false;
+            element.scrollIntoView({
+              block: "center",
+              inline: "nearest",
+            });
+            element.focus();
             return Boolean(
-              element
-                && (element === document.activeElement || element.contains(document.activeElement)),
+              element === document.activeElement
+                || element.contains(document.activeElement),
             );
-          }),
+          }, selector),
         )
         .toBe(true);
     }

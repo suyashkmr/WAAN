@@ -425,6 +425,19 @@ Proceeding relay-surface closeout note as of 2026-03-26:
   - connected, waiting, and syncing states update the visible sidebar-owned relay surface rather than detached nodes
 - residual-risk boundary: this closeout does not cover onboarding retargeting, bootstrap timing hard-failures, mobile overlay/pointer interception, or broader visual/accessibility drift; those remain explicitly deferred to Proceeding Phases 45-46
 
+Whole-app audit and repair reclose note as of 2026-03-26:
+
+- the broader whole-app audit/repair wave is now reclosed against the current branch state rather than the earlier stale blocker list: Electron launch config, relay/offline readiness seams, search and saved-view runtime ownership, export/report wiring, accessibility smoke stability, and dense-surface containment were all revalidated on the shipped tree
+- release gating is green again after extracting the oversized helper logic out of `js/relayControls/statusApply.js` and `js/vue/primevueRenderPrimitives.js`, which removes the temporary `check:module-size` blocker without reopening the repaired runtime contracts
+- whole-app visual reclose is also green on the current desktop/laptop/tablet/mobile matrix after refreshing the intentional dashboard baselines to match the Phase 52 containment repairs
+- validation recorded for closeout:
+  - `npm run ci:verify`
+  - `npm run test:accessibility-smoke`
+  - `npm run test:accessibility-smoke` repeated consecutively
+  - `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps workspace no-chat-selected guidance and control state coherent|keeps workspace offline guidance and control state coherent|keeps loaded search and saved-view controls reachable across breakpoints|proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment|keeps participants, search results, and hourly heatmap locally scroll-bounded"`
+- residual-risk boundary: packaged startup parity still remains an explicit current-environment limitation because a package-equivalent runtime run is not available in this workspace; the visual-optimization phases that follow are separate compositional work, not reopened contract repair
+
 ### Phase 44: Guided Findings as Editorial Sequence
 
 Phase 44 turns the findings lane into a stronger editorial progression:

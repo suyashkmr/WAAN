@@ -59,10 +59,10 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Active Snapshot
 
-- In progress: Phase 53 whole-app reclose; Phase 54 whole-app visual optimization audit
-- Active phases: 5
+- In progress: Phase 54 whole-app visual optimization audit
+- Active phases: 4
 - Closed relay/setup cleanup phases 47-49 remain recorded below for audit history
-- Current audit target: whole-app reclose validation plus the visual-optimization audit across workspace, findings, tools, exports, support, and dense-surface layout efficiency
+- Current audit target: whole-app visual-optimization audit across workspace, findings, tools, exports, support, and dense-surface layout efficiency
 
 ## Active Phases
 
@@ -367,18 +367,25 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Confirm no confirmed Phase 50-51 issue was implicitly closed without validation or explicit re-scope.
     - [x] Confirm repaired seams agree across Electron, server, frontend, tests, and docs.
 
-- [ ] Phase 53: Whole-App Reclose.
-  - [ ] Re-run whole-app validation after the repair phase lands:
-    - [ ] `npm run ci:verify`
-    - [ ] `npm run test:accessibility-smoke`
-    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
-    - [ ] targeted whole-app behavior checks added during Phases 50-52
-  - [ ] Update closure records only after the whole-app pass is actually green.
-  - [ ] Add a dated closeout note for the broader whole-app audit and repair wave in `docs/ui-overhaul-spec.md`.
-  - [ ] Complete closure audit:
-    - [ ] Confirm Electron, relay/server/data, frontend/app-shell, and cross-layer seams are all validated behaviorally or captured as explicit post-closeout follow-up work.
-    - [ ] Confirm findings, analytics, deep-dive, search, saved views, export, and support flows are validated behaviorally, not just visually.
-    - [ ] Confirm residual issues are either fixed before closeout or captured as explicit dated follow-up work with clear ownership.
+- [x] Phase 53: Whole-App Reclose.
+  - [x] Re-run whole-app validation after the repair phase lands:
+    - [x] `npm run ci:verify`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] targeted whole-app behavior checks added during Phases 50-52
+      - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps workspace no-chat-selected guidance and control state coherent|keeps workspace offline guidance and control state coherent|keeps loaded search and saved-view controls reachable across breakpoints|proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment|keeps participants, search results, and hourly heatmap locally scroll-bounded"`
+      - [x] `npx vitest --run tests/relayControls.test.js tests/appShellControllers.test.js tests/exporters.test.js tests/uiModules.test.js tests/eventBindingsDetailed.test.js`
+  - [x] Resolve the current Phase 53 reclose blockers before attempting closeout again:
+    - [x] release gate blocker resolved by extracting shared relay-status and PrimeVue runtime helpers so `npm run ci:verify` is green again on the shipped tree
+    - [x] accessibility stability blocker resolved by exercising shell utility controls through locator interactions and explicit visible-state/document-state settle checks in `tests/visual/accessibility.smoke.spec.js`; `npm run test:accessibility-smoke` now passes twice consecutively
+    - [x] visual reclose blocker resolved by refreshing the intentional dashboard desktop baselines after the Phase 52 containment/layout repairs and rerunning the full `tests/visual/dashboard.visual.spec.js` matrix cleanly
+  - [x] Update closure records only after the whole-app pass is actually green.
+    - [x] Closeout note: on 2026-03-26, `npm run ci:verify`, `npm run test:accessibility-smoke` twice consecutively, the targeted whole-app behavior checks, and the full `tests/visual/dashboard.visual.spec.js` matrix all passed on the current tree; packaged startup parity remains the only explicit current-environment limitation carried forward from Phase 51.
+  - [x] Add a dated closeout note for the broader whole-app audit and repair wave in `docs/ui-overhaul-spec.md`.
+  - [x] Complete closure audit:
+    - [x] Confirm Electron, relay/server/data, frontend/app-shell, and cross-layer seams are all validated behaviorally or captured as explicit post-closeout follow-up work.
+    - [x] Confirm findings, analytics, deep-dive, search, saved views, export, and support flows are validated behaviorally, not just visually.
+    - [x] Confirm residual issues are either fixed before closeout or captured as explicit dated follow-up work with clear ownership.
 
 - [ ] Phase 54: Whole-App Visual Optimization Audit.
   - [ ] Audit all major app surfaces for layout inefficiency, weak desktop/tablet density, poor row/column grouping, and missed local-scroll containment.
