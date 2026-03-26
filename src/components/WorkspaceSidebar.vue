@@ -1,11 +1,11 @@
 <template>
-  <div class="flex flex-col gap-6 w-full max-w-sm lg:sticky lg:top-6 h-fit shrink-0" data-nav-target="actions">
+  <div class="relay-workspace-shell flex flex-col gap-6 w-full max-w-sm lg:sticky lg:top-6 h-fit shrink-0" data-nav-target="actions">
     
     <!-- Core Controls Container -->
-    <div class="flex flex-col gap-6 p-5 bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card backdrop-blur-md">
+    <div class="relay-workspace-main flex flex-col gap-6 p-5 bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card backdrop-blur-md">
       
       <!-- Relay Status Banner -->
-      <section class="flex flex-col gap-3 p-4 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border)]" id="relay-status-panel" aria-live="polite" data-nav-target="relay-status">
+      <section class="relay-workspace-primary flex flex-col gap-3 p-4 rounded-lg bg-[var(--surface-sunken)] border border-[var(--border)]" id="relay-status-panel" aria-live="polite" data-nav-target="relay-status">
         <!-- The ID below is targeted by Vue for mounting the status message/indicator. 
              We keep it on a child div so it doesn't wipe out the QR and actions below it. -->
         <div class="relay-status-banner flex items-center gap-3" id="relay-status-banner">
@@ -51,7 +51,7 @@
       </section>
 
       <!-- Primary Page Controls -->
-      <div class="flex flex-col gap-4">
+      <div class="relay-workspace-primary flex flex-col gap-4">
         <!-- Loaded Chats Dropdown -->
         <label class="flex flex-col gap-1.5" for="chat-selector">
           <span class="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Loaded chats</span>
@@ -96,7 +96,7 @@
       </div>
 
       <!-- Action Toolbar Export Buttons -->
-      <section class="actions-toolbar grid grid-cols-1 gap-2 pt-4 border-t border-[var(--border)]" id="actions-toolbar" aria-label="Dataset actions">
+      <section class="relay-workspace-primary actions-toolbar grid grid-cols-1 gap-2 pt-4 border-t border-[var(--border)]" id="actions-toolbar" aria-label="Dataset actions">
         <button type="button" class="w-full h-10 flex items-center justify-between px-3 text-sm font-medium rounded-lg bg-transparent border border-transparent hover:bg-[var(--surface-hover)] hover:border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group" id="download-pdf">
           <span>Export PDF</span>
           <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -113,7 +113,7 @@
     </div>
 
     <!-- Workspace Utility Cluster (Settings) -->
-    <details class="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden group" id="workspace-utility-cluster">
+    <details class="relay-workspace-support bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden group" id="workspace-utility-cluster">
       <summary class="flex flex-col gap-0.5 p-4 cursor-pointer hover:bg-[var(--surface-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] marker:hidden">
         <div class="flex items-center justify-between">
           <span class="font-semibold text-[var(--text)] text-sm">Workspace tools</span>

@@ -21,10 +21,10 @@
       </section>
 
       <!-- Highlights Block -->
-      <section class="flex flex-col gap-4" aria-labelledby="guided-findings-signal-title">
+      <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--signal" aria-labelledby="guided-findings-signal-title">
         <h3 id="guided-findings-signal-title" class="text-lg font-semibold text-[var(--text)] m-0 px-2 border-l-2 border-[var(--accent)]">Highlights</h3>
 
-        <section class="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell" data-accent="highlights">
+        <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell" data-accent="highlights">
           <!-- Card Header -->
           <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             <div class="flex items-center gap-3">
@@ -49,16 +49,16 @@
           </div>
           <!-- Card Content -->
           <div class="p-5 flex flex-col gap-4" id="insight-highlights-content">
-            <div class="flex flex-col gap-3" id="highlight-list"></div>
+            <div class="highlight-grid flex flex-col gap-3" id="highlight-list"></div>
           </div>
         </section>
       </section>
 
       <!-- Participants Block -->
-      <section class="flex flex-col gap-4" aria-labelledby="guided-findings-drivers-title">
+      <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--drivers" aria-labelledby="guided-findings-drivers-title">
         <h3 id="guided-findings-drivers-title" class="font-display text-lg font-semibold text-[var(--text)] m-0 px-2 border-l-2 border-[#14b8a6]">Participants</h3> <!-- teal accent -->
 
-        <section class="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell" data-accent="participants">
+        <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell" data-accent="participants">
           <!-- Card Header -->
           <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             <div class="flex items-center gap-3">
@@ -77,9 +77,9 @@
             </div>
           </div>
           <!-- Card Content -->
-          <div class="p-5 flex flex-col gap-6" id="participants-content">
+          <div class="p-5 flex flex-col gap-6 participants-story-grid" id="participants-content">
             <!-- Controls Grid -->
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
+             <div class="story-summary-tier participants-shell-controls grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
                <div class="participants-controls flex flex-wrap gap-4">
                  <label class="flex flex-col gap-1.5" for="participants-top-count">
                     <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Show Top</span>
@@ -114,12 +114,14 @@
                   </div>
                </div>
              </div>
-             <p id="participants-note" class="text-xs text-[var(--text-muted)]">
-               See who speaks the most, and filter to spotlight the quietest members or recent activity.
-             </p>
+             <div class="supporting-story-tier rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+               <p id="participants-note" class="m-0 text-xs text-[var(--text-muted)]">
+                 See who speaks the most, and filter to spotlight the quietest members or recent activity.
+               </p>
+             </div>
 
              <!-- Table -->
-             <div class="table-container scrollable overflow-x-auto overflow-y-scroll max-h-[clamp(240px,42vh,360px)] border border-[var(--border)] rounded-lg">
+             <div class="table-container scrollable analysis-evidence-frame evidence-panel-tier overflow-x-auto overflow-y-scroll max-h-[clamp(240px,42vh,360px)] border border-[var(--border)] rounded-lg">
                 <table id="top-senders" class="w-full text-left border-collapse text-sm">
                   <thead class="bg-[var(--surface-sunken)] border-b border-[var(--border)] text-[var(--text-muted)]">
                     <tr>
@@ -152,10 +154,10 @@
       </section>
 
       <!-- Timing Block -->
-      <section class="flex flex-col gap-4" aria-labelledby="guided-findings-timing-title">
+      <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--timing" aria-labelledby="guided-findings-timing-title">
         <h3 id="guided-findings-timing-title" class="text-lg font-semibold text-[var(--text)] m-0 px-2 border-l-2 border-[#8b5cf6]">Timing</h3> <!-- purple accent -->
 
-        <section class="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
+        <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
           <!-- Card Header -->
           <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             <div class="flex items-center gap-3">
@@ -174,11 +176,11 @@
             </div>
           </div>
           <!-- Card Content -->
-          <div class="p-5 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8" id="hourly-activity-content">
+          <div class="p-5 pattern-story-grid grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8" id="hourly-activity-content">
              <!-- Sidebar Controls -->
-             <div class="flex flex-col gap-6">
+             <div class="pattern-controls-shell supporting-story-tier flex flex-col gap-6 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
                 <!-- Data Point -->
-                <div class="flex flex-col bg-[var(--surface-sunken)] p-4 border border-[var(--border)] rounded-lg">
+                <div class="analysis-summary-strip story-summary-tier flex flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                   <span class="text-xs font-semibold uppercase text-[#f59e0b] tracking-wider">Top Hour</span>
                   <span class="text-3xl font-display text-[var(--text)] mt-1" id="hourly-top-hour">—</span>
                 </div>
@@ -213,7 +215,7 @@
              </div>
              
              <!-- Chart Area -->
-             <div class="flex flex-col gap-4">
+             <div class="analysis-evidence-frame evidence-panel-tier flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
                 <div id="hourly-chart" class="hourly-heatmap w-full h-80 bg-[var(--surface-sunken)] rounded-xl border border-[var(--border)]"></div>
                 <div class="hourly-anomalies text-sm text-[var(--text)]" id="hourly-anomalies"></div>
              </div>
