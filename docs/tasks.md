@@ -63,9 +63,9 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Active Snapshot
 
-- In progress: none
-- Open implementation phases: 0
-- Open repair buckets: 4, all derived from the completed Phase 71 lower-half audit
+- In progress: Phase 72
+- Open implementation phases: 1
+- Open repair buckets: 4 total; bucket 1 is now actively owned by Phase 72 and buckets 2-4 remain queued from the completed Phase 71 lower-half audit
 - Historical unchecked boxes below are not active backlog unless they are explicitly carried into the latest audit/source-of-truth phase.
 - Closed relay/setup cleanup phases 47-49 remain recorded below for audit history
 - Phase 58-62 remain historical; Phase 63 is the accepted audit/source-of-truth phase that drove the final reset and reclose
@@ -76,20 +76,137 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 - [ ] Lower-half repair bucket 1: pattern and calendar composition
   - Source of truth: Phase 71
+  - Active implementation owner: Phase 72
   - Target surfaces: Week by Week, Day by Day, Busiest Days of the Week, Time of Day, Mood & Sentiment
   - Intended outcome: one evidence-first lower-half grammar with compact row-first controls, readable calendar density, and no oversized empty-state slabs
 - [ ] Lower-half repair bucket 2: structured evidence symmetry
   - Source of truth: Phase 71
+  - Planned implementation owner: Phase 73
   - Target surfaces: Message Mix, Polls
   - Intended outcome: balanced desktop summary/evidence composition instead of sparse asymmetric shells
 - [ ] Lower-half repair bucket 3: tools/search/saved consistency
   - Source of truth: Phase 71
+  - Planned implementation owner: Phase 74
   - Target surfaces: Search, Saved Views, Support
   - Intended outcome: late-stage tools/support match the same density and card-balance rules as neighboring analytics surfaces
 - [ ] Lower-half repair bucket 4: shared breakpoint override cleanup
   - Source of truth: Phase 71
+  - Planned implementation owner: Phase 75
   - Target surfaces: all lower-half sections touched above
   - Intended outcome: desktop no longer reads like lightly unstacked mobile fallback, while tablet/mobile retain clean wrapping
+
+## Active Implementation Phase
+
+- [ ] Phase 72: Lower-Half Pattern and Calendar Repair.
+  - [ ] Scope and ownership
+    - [ ] Implement the first repair phase directly from Phase 71 bucket 1.
+    - [ ] Keep this phase limited to:
+      - [ ] Week by Week
+      - [ ] Day by Day
+      - [ ] Busiest Days of the Week
+      - [ ] Time of Day
+      - [ ] Mood & Sentiment
+    - [ ] Preserve current section order, analytics mount IDs, controller ownership, and `data-nav-target` anchors.
+  - [ ] Composition goals
+    - [ ] Make lower-half pattern sections follow one evidence-first grammar on desktop:
+      - [ ] header/action row
+      - [ ] optional collapsed `How to read`
+      - [ ] compact row-first controls
+      - [ ] dominant evidence frame
+    - [ ] Remove oversized empty-state or low-data evidence slabs that waste desktop width or height.
+    - [ ] Reduce multi-card control fragmentation in Day by Day and Busiest Days of the Week.
+    - [ ] Keep Time of Day aligned to the same compact grammar even if it remains lower priority than Day by Day and Weekday.
+    - [ ] Keep Mood & Sentiment as one coherent summary-plus-evidence section instead of a sparse split surface.
+  - [ ] Calendar-density goals
+    - [ ] Keep calendar and timing surfaces readable at desktop-1440, laptop-1024, tablet-768, and mobile-390.
+    - [ ] Preserve explicit months-per-row and non-overflowing weekday labels.
+    - [ ] Avoid shallow evidence frames that reserve height without carrying information.
+  - [ ] Validation
+    - [ ] `npm run build`
+    - [ ] targeted `npx playwright test tests/visual/dashboard.visual.spec.js` coverage for:
+      - [ ] weekly / week-by-week surfaces
+      - [ ] daily / day-by-day surfaces
+      - [ ] weekday / busiest-days surfaces
+      - [ ] time-of-day
+      - [ ] sentiment
+    - [ ] expand or refresh lower-half visual coverage where dedicated baselines are currently missing for:
+      - [ ] Week by Week
+      - [ ] Day by Day
+      - [ ] Busiest Days of the Week
+    - [ ] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npm run ci:verify`
+  - [ ] Closure audit
+    - [ ] Record the Phase 72 closeout note in `docs/ui-overhaul-spec.md`.
+    - [ ] Leave follow-up work for buckets 2-4 open unless those areas are explicitly repaired and validated in the same phase.
+
+- [ ] Phase 73: Lower-Half Structured Evidence Symmetry.
+  - [ ] Scope and ownership
+    - [ ] Implement Phase 71 bucket 2 after Phase 72 stabilizes.
+    - [ ] Keep this phase limited to:
+      - [ ] Message Mix
+      - [ ] Polls
+    - [ ] Preserve section order, export triggers, chart roots, controller ownership, and `data-nav-target` anchors.
+  - [ ] Composition goals
+    - [ ] Remove sparse desktop asymmetry between summary rails and the main evidence surfaces.
+    - [ ] Make summary metrics align with the dominant evidence instead of floating in oversized shells.
+    - [ ] Keep tablet/mobile wrapping clean without introducing one-off desktop-only markup.
+  - [ ] Validation
+    - [ ] `npm run build`
+    - [ ] targeted `npx playwright test tests/visual/dashboard.visual.spec.js` coverage for:
+      - [ ] message-types
+      - [ ] polls
+    - [ ] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npm run ci:verify`
+  - [ ] Closure audit
+    - [ ] Record the Phase 73 closeout note in `docs/ui-overhaul-spec.md`.
+    - [ ] Leave follow-up work for buckets 3-4 open unless those areas are explicitly repaired and validated in the same phase.
+
+- [ ] Phase 74: Lower-Half Tools and Support Consistency.
+  - [ ] Scope and ownership
+    - [ ] Implement Phase 71 bucket 3 after Phase 73 stabilizes.
+    - [ ] Keep this phase limited to:
+      - [ ] Search
+      - [ ] Saved Views
+      - [ ] Support
+    - [ ] Preserve current IA placement, bridge IDs, controller ownership, and support/diagnostics action IDs.
+  - [ ] Composition goals
+    - [ ] Bring Search, Saved Views, and Support to the same density and card-balance rules as the neighboring analytics surfaces.
+    - [ ] Remove sparse desktop command/evidence splits where content density is low.
+    - [ ] Keep loaded-state reachability and bounded scrolling intact.
+  - [ ] Validation
+    - [ ] `npm run build`
+    - [ ] targeted `npx playwright test tests/visual/dashboard.visual.spec.js` coverage for:
+      - [ ] search
+      - [ ] saved views
+      - [ ] support
+      - [ ] loaded-state reachability slices
+    - [ ] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npm run ci:verify`
+  - [ ] Closure audit
+    - [ ] Record the Phase 74 closeout note in `docs/ui-overhaul-spec.md`.
+    - [ ] Leave shared breakpoint cleanup open for Phase 75 unless it is explicitly repaired and validated in the same phase.
+
+- [ ] Phase 75: Lower-Half Breakpoint Cleanup and Reclose.
+  - [ ] Scope and ownership
+    - [ ] Implement Phase 71 bucket 4 after Phases 72-74 land.
+    - [ ] Cover all lower-half sections touched by the earlier repair phases.
+  - [ ] Breakpoint cleanup goals
+    - [ ] Remove remaining desktop layouts that still read like lightly unstacked mobile fallback.
+    - [ ] Keep tablet/mobile wrapping clean without reopening section-level composition drift already fixed in Phases 72-74.
+    - [ ] Reconcile any remaining lower-half baseline coverage gaps introduced or exposed by the section repairs.
+  - [ ] Validation
+    - [ ] `npm run build`
+    - [ ] full lower-half `npx playwright test tests/visual/dashboard.visual.spec.js` rerun across desktop-1440, laptop-1024, tablet-768, and mobile-390
+    - [ ] refresh any intentional lower-half baselines only after live review is accepted
+    - [ ] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [ ] `npm run test:accessibility-smoke`
+    - [ ] `npm run ci:verify`
+  - [ ] Closure audit
+    - [ ] Record the Phase 75 closeout note in `docs/ui-overhaul-spec.md`.
+    - [ ] Reconcile the remaining lower-half repair buckets back into a closed state if validation is fully green.
 
 ## Latest Completed Audit
 
