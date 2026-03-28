@@ -16,8 +16,9 @@ function resolveSummaryBridge() {
 
 export function renderSummaryCards({ analytics, label, summaryEl }) {
   if (!summaryEl || !analytics) return;
-  const startTimestamp = analytics.first_timestamp || analytics.date_range.start;
-  const endTimestamp = analytics.last_timestamp || analytics.date_range.end;
+  const startTimestamp = analytics.first_timestamp || analytics.date_range?.start;
+  const endTimestamp = analytics.last_timestamp || analytics.date_range?.end;
+  const weekCount = analytics.weekly_summary?.weekCount;
   const dateRangeValue = startTimestamp && endTimestamp
     ? formatDateRangeWithTime(startTimestamp, endTimestamp)
     : startTimestamp || endTimestamp
@@ -44,8 +45,8 @@ export function renderSummaryCards({ analytics, label, summaryEl }) {
       title: "Date Range",
       value: dateRangeValue,
       hint:
-        analytics.date_range.start && analytics.date_range.end
-          ? `${formatNumber(analytics.weekly_summary.weekCount)} weeks of activity`
+        analytics.date_range?.start && analytics.date_range?.end && typeof weekCount === "number"
+          ? `${formatNumber(weekCount)} weeks of activity`
           : "",
     },
   ];
