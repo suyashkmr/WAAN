@@ -1,5 +1,12 @@
 # UI Overhaul Spec: Community Catalyst Direction
 
+Historical status note:
+- This file is a preserved program/spec record for the overhaul waves and their closure notes.
+- It is not the primary current source of truth for active backlog or release workflow.
+- For current work status, use [tasks.md](/Users/suyash/Antigravity/WAAN/docs/tasks.md).
+- For current runtime/module truth, use [feature-map.md](/Users/suyash/Antigravity/WAAN/docs/feature-map.md).
+- For current verification and push workflow, use [release-discipline.md](/Users/suyash/Antigravity/WAAN/docs/release-discipline.md) and [release-smoke-checklist.md](/Users/suyash/Antigravity/WAAN/docs/release-smoke-checklist.md).
+
 ## Goal
 
 Reframe WAAN from a utility dashboard into a conversation command center that feels social, alive, and action-oriented.

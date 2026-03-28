@@ -1,5 +1,9 @@
 ## Feature Map
 
+Authority note:
+- This file is the current high-level runtime/module map.
+- If it conflicts with historical phase or release docs, prefer this file plus the current code.
+
 | Module | Purpose / Key Responsibilities | Current Usage & Notes |
 | --- | --- | --- |
 | `js/appShell.js` | Composition root for the dashboard app. Wires state, controllers, and boot sequence. | Active. Mostly orchestration now; behavior moved into `js/appShell/*` modules. |
@@ -14,6 +18,7 @@
 | `js/appShell/datasetLifecycle.js` | Dataset apply pipeline: normalize, fingerprint/cache reset, analytics compute, persist/select, render handoff. | Active; covered by controller + integration tests. |
 | `js/appShell/datasetEmptyState.js` | Dataset-empty callout visibility/message state plus workspace split-lane visibility contract. | Active. Important Phase 43 workspace-state module. |
 | `js/appShell/dataStatus.js` | Dashboard loading/data-availability state + relay hero status messaging. | Active; covered by controller tests. |
+| `js/appShell/testRuntime.js` | Test-only seeded dataset runtime used by browser/unit harnesses to inject entries + analytics into the live shell. | Active in Playwright/webdriver flows only. Normalizes lightweight fixtures, preserves safe analytics overrides, and must keep the seeded payload compatible with production dashboard/search/export consumers. |
 | `js/appShell/keyboardShortcuts.js` | Global shortcut handling (`Cmd/Ctrl+R`, `Cmd/Ctrl+L`, `Cmd/Ctrl+M`, `Esc`). | Active. |
 | `js/appShell/sharedRuntime.js` | Shared runtime helpers (`fetchJson`, global busy wrapper, relay account formatting). | Active. |
 | `js/appShell/dashboardRender.js` + `js/appShell/dashboardRender/*` | Dashboard rendering orchestration split into `activityPanels`, `highlightsStats`, and `participantsPanel`. | Active. Large render domain now segmented. |
@@ -46,4 +51,5 @@
 - App boot smoke test: `tests/appShellBoot.test.js`
 - Barrel export regression test: `tests/barrels.test.js`
 - Cross-controller integration test: `tests/appShellIntegration.test.js`
+- Seeded runtime regression coverage: `tests/testRuntime.test.js`
 - Search/saved Vue bridge coverage: `tests/searchSavedIsland.test.js`, `tests/savedViewsVueBridgeIntegration.test.js`

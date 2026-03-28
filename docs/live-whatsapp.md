@@ -1,5 +1,10 @@
 # WAAN Live Chat Integration
 
+Authority note:
+- This file is current operator-facing guidance for running WAAN against the live WhatsApp relay.
+- For packaged release validation, also use `docs/release-smoke-checklist.md`.
+- For incident recovery, use `docs/relay-troubleshooting.md`.
+
 WAAN reads chats from WhatsApp Web using
 [`whatsapp-web.js`](https://github.com/pedroslopez/whatsapp-web.js). Chat data
 is mirrored through the relay and rendered directly in WAAN's active dataset.
@@ -9,6 +14,12 @@ is mirrored through the relay and rendered directly in WAAN's active dataset.
 ```bash
 npm install --workspaces          # once
 npm start --workspace apps/server
+```
+
+For the local helper path that brings up both the backend and dashboard together, use:
+
+```bash
+npm run start-backend
 ```
 
 By default the server binds to:
@@ -22,25 +33,25 @@ The first run downloads a headless Chromium build for WhatsApp Web and stores th
 
 ## 2. Link WAAN
 
-1. Open WAAN (either the browser dashboard or `WAAN.app`).
-2. Use the **Connect WAAN Relay** card:
-   - Click **Connect**. The relay generates a QR code.
-   - On your phone open WhatsApp → *Linked devices* → *Link a device* and scan the QR.
-3. Once connected, WAAN shows your account name and lists mirrored chats in the
-   chat selector (grouped under *WAAN account*).
+1. Open WAAN in the app shell (`npm run dev`, `npm run start-backend`, or packaged `WAAN.app`).
+2. In the workspace setup/status strip:
+   - start or reconnect the relay if it is offline
+   - wait for the QR state if login is required
+   - scan the QR from WhatsApp on your phone (`Linked devices` → `Link a device`)
+3. Once connected, WAAN shows the running relay/account state and exposes mirrored chats through the workspace chat selector.
 
 ## 3. Load a chat
 
 Select any chat from the *WAAN account* group. WAAN fetches recent
 messages (default limit: `5000`) and renders analytics for that conversation.
 
-- Click **Reload All Chats** (or **Resync chats**) after new conversations arrive.
-- Use **Log Out & Unlink** to log out.
-- Use **Clear Cached Chats** to remove mirrored chats from local relay storage.
+- Use the relay/workspace controls to resync chats after new conversations arrive.
+- Use the relay recovery/logout actions from the workspace/support surfaces when you need to reconnect or unlink.
+- Use diagnostics export when troubleshooting startup, auth, or sync problems.
 
 ### Troubleshooting
 
-- **Relay offline**: Ensure `apps/server` is running. The UI polls `http://127.0.0.1:4546/relay/status`.
+- **Relay offline**: Ensure the backend is running on the configured bind host/ports. The UI polls the relay status endpoint and will surface reconnect/recovery actions when the relay is unavailable.
 - **No QR shown**: Delete the session folder (`~/Library/Application Support/WAAN/relay-session`) and restart the relay to force a new login.
 - **Chats missing messages**: Increase the fetch window via `WAAN_CHAT_FETCH_LIMIT` on the server or `remoteMessageLimit` in `window.WAAN_CONFIG`.
 - **Advanced relay incident handling**: see `docs/relay-troubleshooting.md`.
@@ -48,10 +59,11 @@ messages (default limit: `5000`) and renders analytics for that conversation.
 
 > The relay stores parsed chats under `~/Library/Application Support/WAAN/storage/chats`. Remove this directory if you want a clean slate.
 
-## Migration Notes (2026-02-24)
+## Current Constraints
 
 - The legacy in-memory local chat library and `Your chats` selector group were removed.
-- Chat selection is now remote-only via the relay-backed *WAAN account* list.
+- Remote relay-backed chat selection is the current live-chat path.
+- Local/imported datasets are still supported for offline analysis, but they are separate from the live relay-backed chat list.
 
 ## Configuring the UI endpoints
 

@@ -12,12 +12,14 @@ Use this workflow whenever preparing a normal development push.
 2. Validate the touched surfaces first.
    - Run focused tests for the affected flow before broader verification.
    - If a change spans view/island code, controller wiring, state sync, and tests, keep it as one atomic validated batch unless intermediate commits are independently green.
+   - If a batch touches dashboard rendering, export flows, visual harness hooks, or `js/appShell/testRuntime.js`, also run `npx playwright test tests/visual/dashboard.visual.spec.js` before push.
 3. Run the full repo gate before push.
    - Run `npm run ci:verify`.
 4. Re-check the worktree before push.
    - Run `git status --short` again and make sure no related files were left behind unintentionally.
 5. Push and confirm the pushed SHA.
    - Push the branch.
+   - Compare `git rev-parse HEAD origin/<branch>` (or equivalent) to confirm the remote ref actually advanced to the local commit.
    - Check GitHub Actions for the pushed SHA before treating the batch as fully done.
 
 ## UI And Token Change Addendum

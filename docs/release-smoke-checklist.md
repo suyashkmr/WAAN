@@ -2,6 +2,10 @@
 
 Use this quick runbook before shipping a packaged WAAN build.
 
+Current-status note:
+- The workflow and gate lists in this file are current.
+- The `Latest Sign-off` section at the bottom is historical sample evidence only until a release owner refreshes it for a new candidate.
+
 ## Scope
 
 - Target artifact: `WAAN.app`

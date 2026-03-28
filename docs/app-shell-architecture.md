@@ -1,5 +1,9 @@
 # App Shell Architecture
 
+Authority note:
+- This file is current architecture guidance for the app-shell/runtime composition.
+- If it conflicts with historical phase docs or release notes, prefer this file plus the current code.
+
 `js/appShell.js` is the top-level composition root for the dashboard UI. It does not own product behavior directly; it wires DOM refs, controller construction, runtime composition, and bootstrap config together, then hands execution to the app-shell runtime.
 
 ## Current Composition Shape
@@ -112,6 +116,17 @@ That behavior is implemented across:
 - `js/appShell/datasetEmptyState.js`
 - `js/vue/shellPrimitiveViews.js`
 - `js/vue/shellPrimitivesIsland.js`
+
+## Test Runtime Contract
+
+`js/appShell/testRuntime.js` is a test-only runtime surface used by Playwright/webdriver flows.
+
+Current contract:
+
+- It should install only in test contexts.
+- It may accept lightweight seeded entries and partial analytics overrides.
+- It must normalize seeded payloads so the live dashboard, search, saved views, and export flows can consume them without crashing.
+- It must preserve production-facing semantics where possible instead of inventing a separate dashboard contract just for tests.
 
 ## Data Policy
 

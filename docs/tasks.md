@@ -1,5 +1,9 @@
 # Active Todo
 
+Authoritative status note:
+- This file is the current source of truth for active backlog and completed audit state.
+- Historical phases remain below for traceability, but they are not current backlog unless explicitly carried into the `Active Snapshot` or `Current Open Backlog`.
+
 This file currently contains both active backlog and completed historical roadmap context.
 Active open items are the unchecked engineering tasks only. Standing workflow rules are documented below without checkboxes so they do not read like unfinished product work.
 
