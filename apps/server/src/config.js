@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs-extra");
 
 const pkg = require("../package.json");
+const { computeServerBuildFingerprint } = require("./buildFingerprint");
 
 function toNumber(value, fallback) {
   const parsed = Number(value);
@@ -53,6 +54,7 @@ function loadConfig(overrides = {}) {
 
   return {
     version: pkg.version,
+    buildFingerprint: computeServerBuildFingerprint({ serverRoot: path.join(__dirname, "..") }),
     dataDir,
     storageDir: path.join(dataDir, "storage"),
     logDir,

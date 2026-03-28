@@ -639,3 +639,165 @@ Vue 3 + PrimeVue-backed islands provide behavior primitives; app provides visual
 - Search and saved-view flows: apply/reset/selection parity.
 - Export checks: PDF preview in both themes.
 - Automation: full `npm run ci:verify` passes.
+
+## 2026-03-26 Visual Optimization Wave Closeout
+
+- Phase 56 recomposition is closed.
+- Phase 57 whole-wave reclose is closed.
+- Revalidated the completed visual wave across:
+  - `npm run test:accessibility-smoke`
+  - `npx vitest --run tests/pipelineRangeDashboard.test.js tests/controllerWiringContracts.test.js tests/eventBindingsDetailed.test.js tests/participantUiRender.test.js tests/savedViewsUiSelectRender.test.js`
+  - targeted dashboard Playwright slices for workspace/support/relay continuity, recomposed findings/tools surfaces, reachability, dense-surface boundedness, and the loaded export success-path proof
+  - full `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run ci:verify`
+- Final intentional desktop baseline refreshes in this closeout:
+  - long-form dashboard
+  - support section
+- Closeout result:
+  - optimized surfaces are validated across `1440 / 1024 / 768 / 390`
+  - no new functional regressions remain from the visual wave
+  - no further active phases remain in `docs/tasks.md`
+
+## 2026-03-26 Post-Reclose Story Flow Repair Closeout
+
+- Phase 58 post-reclose story-flow repair is closed.
+- The follow-up stayed intentionally narrow: it did not reopen the earlier whole-app audit or contract-repair phases.
+- Final product decisions locked in by this closeout:
+  - desktop workspace collapses to the left operational rail once a chat is selected; no empty secondary workspace pane remains
+  - section guides remain available, but are collapsed by default as `How to read` disclosures
+  - Search and Saved Views now sit after Poll Highlights and immediately before Support
+- Repaired layout/story-flow surfaces in this closeout:
+  - workspace shell and no-chat-selected pane behavior
+  - Participants full-row composition
+  - Hourly Rhythm top-row controls plus full-width heatmap stage
+  - vertical sequencing for Day by Day, Busiest Weekdays, and Time of Day
+  - Mood & Sentiment full-row composition
+  - Message Mix full-row structured evidence composition
+- Validation recorded for closeout:
+  - `npm run build`
+  - targeted dashboard Playwright order/layout/baseline refreshes for highlights, workspace, participants, timing, search, saved views, sentiment, message mix, support, and the long-form dashboard
+  - full `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run test:accessibility-smoke`
+  - `npm run ci:verify`
+- Closeout result:
+  - the touched desktop story-flow regressions are repaired without breaking runtime-owned IDs or bridge contracts
+  - guides no longer dominate the default layout footprint
+  - the dashboard story order is coherent from workspace through findings and deep-dive analysis into tools/support
+
+## 2026-03-26 Story Flow and Control Density Repair Closeout
+
+- Phase 59 story-flow and control-density repair is closed.
+- The follow-up stayed intentionally narrow: it corrected density, guide placement, and calendar readability regressions introduced after the Phase 58 story-flow pass without reopening the earlier audit, contract-repair, or whole-wave reclose phases.
+- Final product decisions locked in by this closeout:
+  - the standalone Workspace State card is removed from the main reading lane
+  - empty/setup guidance remains live as a slimmer full-width inline strip beneath the workspace header
+  - guides stay available, but in the touched sections they sit above the related evidence as collapsed `How to read` disclosures
+- Repaired layout surfaces in this closeout:
+  - workspace header plus inline empty/setup status strip
+  - Highlights guide-above-cards composition
+  - Participants unified filter/quick-filter toolbar
+  - Hourly Rhythm horizontal day/hour/range controls
+  - Day by Day and Mood & Sentiment calendar header readability
+  - Busiest Weekdays and Time of Day denser filter rows
+  - Mood & Sentiment summary-row composition
+- Validation recorded for closeout:
+  - `npm run build`
+  - targeted dashboard Playwright baseline refreshes for workspace, highlights, participants, timing, relay/workspace state variants, and the long-form dashboard
+  - full `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run test:accessibility-smoke`
+  - `npm run ci:verify`
+- Closeout result:
+  - the workspace no longer reserves a standalone state card in the content lane
+  - the touched sections use denser control rows without sacrificing bounded dense-surface behavior
+  - calendar headers remain readable in the affected daily/sentiment views
+  - runtime-owned IDs, bridge contracts, and section ordering remain intact
+
+## 2026-03-26 Screenshot-Driven Layout Cleanup Closeout
+
+- Phase 60 screenshot-driven layout cleanup is closed.
+- This follow-up stayed intentionally narrow: it treated the user screenshots as the source of truth for the rebuilt desktop layout without reopening the earlier audit, contract-repair, or whole-wave reclose phases.
+- Final layout corrections locked in by this closeout:
+  - the workspace empty/setup surface remains a true inline strip instead of relapsing into a centered hero card
+  - the relay/workspace rail now uses the full available row width instead of collapsing into a narrow left column
+  - Highlights uses a symmetric desktop grid, Participants uses one unified controls card, and the touched timing controls use one responsive desktop row before wrapping
+  - Day by Day and Mood & Sentiment calendars now reduce month density enough to keep weekday headers readable
+  - Mood & Sentiment summary tiles remain in one desktop row
+- Validation recorded for closeout:
+  - `npm run build`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace controls baseline|matches highlights section baseline|matches participants section baseline|matches long-form dashboard baseline|matches time-of-day section baseline|matches sentiment section baseline|keeps workspace state guidance visible after relay connects before a chat is selected"`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --project=laptop-1024 --project=tablet-768 --grep "matches workspace controls baseline|matches workspace offline stage baseline|matches workspace waiting QR stage baseline|matches workspace syncing stage baseline|matches workspace no-chat-selected stage baseline|matches support section baseline|matches relay offline state baseline|matches relay waiting QR state baseline|matches relay running syncing state baseline|matches relay running ready state baseline" --update-snapshots`
+  - `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run test:accessibility-smoke`
+  - `npm run ci:verify`
+- Closeout result:
+  - the screenshot-confirmed desktop layout regressions are repaired and reclosed across workspace, highlights, participants, timing controls, calendar readability, and sentiment summary density
+  - refreshed workspace/support/relay baselines now match the rebuilt live desktop contract across `1440 / 1024 / 768 / 390`
+  - no new functional regressions were introduced by the Phase 60 cleanup
+
+## 2026-03-27 Layout Direction Reset and Shell Rebuild Closeout
+
+- Phase 61 layout direction reset and shell rebuild is closed.
+- This phase explicitly superseded the earlier Phase 58-60 closeout direction because the live app still did not match the claimed desktop layout after those phases were marked complete.
+- Final product/layout decisions locked in by this closeout:
+  - the workspace empty/setup path stays as a real inline strip rather than relapsing into a centered hero card
+  - the workspace rail is full-width within its lane and no empty secondary pane remains in the desktop shell
+  - rebuilt sections use one authoritative evidence-first pattern: summary strip, controls strip, evidence frame, and optional collapsed `How to read` disclosure
+  - Search / Saved Views remain late-stage operational tools near the end of the story before Support
+  - calendar density is explicit and responsive, with reduced months-per-row on desktop before weekday headers are allowed to overflow
+- Rebuilt surface groups in this closeout:
+  - workspace shell and inline setup/status strip
+  - Highlights symmetric grid and disclosure-above-grid flow
+  - Participants unified controls card plus bounded full-width table
+  - Hourly Rhythm, Busiest Days of the Week, and Time of Day responsive control rows
+  - Day by Day and Mood & Sentiment calendar density/readability
+  - Mood & Sentiment summary-row composition
+- Validation recorded for closeout:
+  - `npm run build`
+  - targeted `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace controls baseline|matches highlights section baseline|matches participants section baseline|matches time-of-day section baseline|matches sentiment section baseline"`
+  - targeted snapshot refreshes for rebuilt section baselines, workspace-stage variants, relay-state variants, and the stitched long-form desktop dashboard
+  - full `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run test:accessibility-smoke`
+  - `npm run ci:verify`
+- Closeout result:
+  - the live desktop app now matches the screenshot-driven acceptance bar that reopened the work
+  - no section retains the earlier obvious empty side lanes or stacked desktop-only control layouts
+  - the rebuilt shell and section composition stay green across `1440 / 1024 / 768 / 390`
+
+## 2026-03-27 Desktop Visual Truth and Reclose Closeout
+
+- Phase 66 whole-app visual reclose is closed.
+- This closeout finalized the Phase 64-65 reset instead of reopening shell direction again:
+  - the workspace setup strip and workspace rail remain the accepted shell grammar
+  - rebuilt findings, timing, sentiment, and late-stage operational sections now use refreshed baselines that match the new desktop-first geometry
+  - the relay status panel contract is now aligned with the inline strip design, so visibility proofs no longer assume the older tall-card footprint
+- Validation recorded for closeout:
+  - `npm run build`
+  - targeted baseline refresh for rebuilt workspace, relay-state, search, saved views, message mix, polls, support, and workspace controls surfaces
+  - full `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - `npm run test:accessibility-smoke`
+  - `npm run ci:verify`
+- Closeout result:
+  - desktop, laptop, tablet, and mobile visual baselines now all match the rebuilt layout system
+  - the whole-app dashboard suite passed `132` checks after the final relay/workspace proof hardening
+  - the current tracker state can honestly return to zero active overhaul phases
+
+## 2026-03-27 Workspace and Relay Variant Reclose Closeout
+
+- Phase 69 workspace and relay variant reclose is closed.
+- This follow-up stayed intentionally narrow and did not reopen the broader shell or section-composition direction:
+  - workspace offline, waiting-QR, syncing, and no-chat-selected states were reclosed against the rebuilt compact inline-strip plus compact-rail desktop shell
+  - relay offline, waiting-QR, running-syncing, and running-ready strip proofs were reclosed against the rebuilt inline-strip width contract
+  - Highlights, Message Mix, and Support were confirmed to be polish-only drift and were reclosed by refreshing the intentional desktop baselines
+- Validation recorded for closeout:
+  - `npm run build`
+  - targeted desktop snapshot refresh:
+    - `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace offline stage baseline|matches workspace waiting QR stage baseline|matches workspace syncing stage baseline|matches workspace no-chat-selected stage baseline|matches relay offline state baseline|matches relay waiting QR state baseline|matches relay running syncing state baseline|matches relay running ready state baseline|matches highlights section baseline|matches message-types section baseline|matches support section baseline" --update-snapshots`
+  - targeted desktop proof rerun on the same slice without snapshot updates
+  - full desktop baseline rerun:
+    - `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches .* baseline"`
+  - `npm run test:accessibility-smoke`
+  - `npm run ci:verify`
+- Closeout result:
+  - the remaining workspace-state variants now match the rebuilt shell instead of preserving older taller desktop baselines
+  - relay strip state snapshots now align with the rebuilt inline-strip width and spacing contract
+  - the final low-drift desktop surfaces are clean, and the tracker can honestly return to zero active overhaul phases again

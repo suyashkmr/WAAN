@@ -48,8 +48,23 @@
             </button>
           </div>
           <!-- Card Content -->
-          <div class="p-5 flex flex-col gap-4" id="insight-highlights-content">
-            <div class="highlight-grid flex flex-col gap-3" id="highlight-list"></div>
+          <div class="p-5 flex flex-col gap-6" id="insight-highlights-content">
+            <details class="story-guide supporting-story-tier highlight-story-intro" id="highlights-guide">
+              <summary class="story-guide-summary">How to read</summary>
+              <div class="story-guide-body">
+                <div class="highlight-story-kicker">Signal guide</div>
+                <h3 class="highlight-story-title">What changed most in this conversation</h3>
+                <p class="analytics-story-copy">
+                  Highlights condense the biggest movement in volume, participation, and momentum into a compact scan lane so the strongest shifts are visible before you dive into the deeper evidence below.
+                </p>
+                <ul class="highlight-story-points" aria-label="Highlights focus areas">
+                  <li>Volume surges and drop-offs near the current dataset edge</li>
+                  <li>Participation shifts that explain who is driving the conversation</li>
+                  <li>Momentum cues that connect directly to the timing and pattern sections</li>
+                </ul>
+              </div>
+            </details>
+            <div class="highlight-grid" id="highlight-list"></div>
           </div>
         </section>
       </section>
@@ -77,78 +92,105 @@
             </div>
           </div>
           <!-- Card Content -->
-          <div class="p-5 flex flex-col gap-6 participants-story-grid" id="participants-content">
-            <!-- Controls Grid -->
-             <div class="story-summary-tier participants-shell-controls grid grid-cols-1 md:grid-cols-2 gap-6 bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
-               <div class="participants-controls flex flex-wrap gap-4">
-                 <label class="flex flex-col gap-1.5" for="participants-top-count">
-                    <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Show Top</span>
-                    <select id="participants-top-count" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
-                      <option value="5">5</option>
-                      <option value="10">10</option>
-                      <option value="25" selected>25</option>
-                      <option value="50">50</option>
-                      <option value="0">All</option>
-                    </select>
-                 </label>
-                 <label class="flex flex-col gap-1.5" for="participants-sort">
-                     <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Sort</span>
-                     <select id="participants-sort" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
-                       <option value="most" selected>Most active</option>
-                       <option value="quiet">Quietest</option>
-                     </select>
-                 </label>
-                 <label class="flex flex-col gap-1.5" for="participants-timeframe">
-                     <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Timeframe</span>
-                     <select id="participants-timeframe" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
-                       <option value="all">All time</option>
-                       <option value="week">Last 7 days</option>
-                     </select>
-                 </label>
-               </div>
-               <div class="participants-quick-filters flex flex-col gap-2 items-start md:items-end justify-center">
-                  <span class="text-xs font-medium text-[var(--text-muted)]">Quick filters:</span>
-                  <div class="flex gap-2">
-                    <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="top-week" aria-pressed="false">Top 5 this week</button>
-                    <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="quiet" aria-pressed="false">Quietest 5</button>
-                  </div>
-               </div>
-             </div>
-             <div class="supporting-story-tier rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
-               <p id="participants-note" class="m-0 text-xs text-[var(--text-muted)]">
-                 See who speaks the most, and filter to spotlight the quietest members or recent activity.
-               </p>
-             </div>
-
-             <!-- Table -->
-             <div class="table-container scrollable analysis-evidence-frame evidence-panel-tier overflow-x-auto overflow-y-scroll max-h-[clamp(240px,42vh,360px)] border border-[var(--border)] rounded-lg">
-                <table id="top-senders" class="w-full text-left border-collapse text-sm">
-                  <thead class="bg-[var(--surface-sunken)] border-b border-[var(--border)] text-[var(--text-muted)]">
-                    <tr>
-                      <th class="p-3 font-medium">Rank</th>
-                      <th class="p-3 font-medium">Participant</th>
-                      <th class="p-3 font-medium">Messages</th>
-                      <th class="p-3 font-medium">
-                        <div class="flex items-center gap-2">
-                          <span>Share</span>
-                          <button type="button" class="info-note-button" aria-describedby="participants-share-note" title="Explain how share is calculated.">?</button>
-                        </div>
-                      </th>
-                      <th class="p-3 font-medium">
-                        <div class="flex items-center gap-2">
-                          <span>Avg Words</span>
-                          <button type="button" class="info-note-button" aria-describedby="participants-avg-words-note" title="Explain how average words are calculated.">?</button>
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-[var(--border)] text-[var(--text)]"></tbody>
-                </table>
-                <div class="sr-only">
-                  <p id="participants-share-note">Share shows each participant's portion of the total message volume in the current filter state.</p>
-                  <p id="participants-avg-words-note">Average words shows the average words per message for the participant in the current filter state.</p>
+          <div class="p-5 flex flex-col gap-6 participants-story-flow" id="participants-content">
+              <details class="story-guide supporting-story-tier participants-story-intro rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+                <summary class="story-guide-summary">How to read</summary>
+                <div class="story-guide-body">
+                  <div class="participants-story-kicker">Participation guide</div>
+                  <h3 class="participants-story-title">Read the loudest voices before scanning the table</h3>
+                  <p id="participants-note" class="m-0 text-xs text-[var(--text-muted)]">
+                    See who speaks the most, and filter to spotlight the quietest members or recent activity.
+                  </p>
+                  <ul class="participants-story-points" aria-label="Participants reading guide">
+                    <li>Use timeframe and quick filters to compress the ranking into the most relevant slice.</li>
+                    <li>Share highlights relative volume, while average words exposes longer-form contributors.</li>
+                    <li>The table stays locally bounded so dense chats stay reviewable without pushing the page.</li>
+                  </ul>
                 </div>
-             </div>
+              </details>
+              <div class="story-summary-tier participants-shell-controls participants-toolbar grid grid-cols-1 gap-4 bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
+                <div class="participants-toolbar-row">
+                  <div class="participants-controls participants-filter-row flex flex-wrap gap-4">
+                    <label class="flex flex-col gap-1.5" for="participants-top-count">
+                        <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Show Top</span>
+                        <select id="participants-top-count" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                          <option value="5">5</option>
+                          <option value="10">10</option>
+                          <option value="25" selected>25</option>
+                          <option value="50">50</option>
+                          <option value="0">All</option>
+                        </select>
+                    </label>
+                    <label class="flex flex-col gap-1.5" for="participants-sort">
+                        <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Sort</span>
+                        <select id="participants-sort" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                          <option value="most" selected>Most active</option>
+                          <option value="quiet">Quietest</option>
+                        </select>
+                    </label>
+                    <label class="flex flex-col gap-1.5" for="participants-timeframe">
+                        <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Timeframe</span>
+                        <select id="participants-timeframe" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
+                          <option value="all">All time</option>
+                          <option value="week">Last 7 days</option>
+                        </select>
+                    </label>
+                  </div>
+                </div>
+                <div class="participants-quick-filters flex flex-wrap gap-2 items-center justify-start">
+                    <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Quick filters</span>
+                    <div class="flex flex-wrap gap-2">
+                      <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="top-week" aria-pressed="false">Top 5 this week</button>
+                      <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="quiet" aria-pressed="false">Quietest 5</button>
+                    </div>
+                </div>
+              </div>
+
+            <div class="participants-evidence-lane full-width-evidence-lane">
+              <div class="story-summary-tier participants-summary-strip rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+                <div class="summary-block">
+                  <span class="text-xs font-medium uppercase text-[#14b8a6] tracking-wider">Primary use</span>
+                  <span class="text-sm font-semibold text-[var(--text)]">Rank active speakers fast</span>
+                </div>
+                <div class="summary-block">
+                  <span class="text-xs font-medium uppercase text-[#14b8a6] tracking-wider">Filter lens</span>
+                  <span class="text-sm font-semibold text-[var(--text)]">Recent spikes or quiet contributors</span>
+                </div>
+                <div class="summary-block">
+                  <span class="text-xs font-medium uppercase text-[#14b8a6] tracking-wider">Best next step</span>
+                  <span class="text-sm font-semibold text-[var(--text)]">Jump to timing and search after ranking shifts</span>
+                </div>
+              </div>
+
+              <div id="participants-table-wrap" class="table-container scrollable analysis-evidence-frame evidence-panel-tier overflow-x-auto overflow-y-scroll max-h-[clamp(240px,42vh,360px)] border border-[var(--border)] rounded-lg">
+                  <table id="top-senders" class="w-full text-left border-collapse text-sm">
+                    <thead class="bg-[var(--surface-sunken)] border-b border-[var(--border)] text-[var(--text-muted)]">
+                      <tr>
+                        <th class="p-3 font-medium">Rank</th>
+                        <th class="p-3 font-medium">Participant</th>
+                        <th class="p-3 font-medium">Messages</th>
+                        <th class="p-3 font-medium">
+                          <div class="flex items-center gap-2">
+                            <span>Share</span>
+                            <button type="button" class="info-note-button" aria-describedby="participants-share-note" title="Explain how share is calculated.">?</button>
+                          </div>
+                        </th>
+                        <th class="p-3 font-medium">
+                          <div class="flex items-center gap-2">
+                            <span>Avg Words</span>
+                            <button type="button" class="info-note-button" aria-describedby="participants-avg-words-note" title="Explain how average words are calculated.">?</button>
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[var(--border)] text-[var(--text)]"></tbody>
+                  </table>
+                  <div class="sr-only">
+                    <p id="participants-share-note">Share shows each participant's portion of the total message volume in the current filter state.</p>
+                    <p id="participants-avg-words-note">Average words shows the average words per message for the participant in the current filter state.</p>
+                  </div>
+              </div>
+            </div>
           </div>
         </section>
       </section>
@@ -176,34 +218,44 @@
             </div>
           </div>
           <!-- Card Content -->
-          <div class="p-5 pattern-story-grid grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8" id="hourly-activity-content">
-             <!-- Sidebar Controls -->
-             <div class="pattern-controls-shell supporting-story-tier flex flex-col gap-6 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
-                <!-- Data Point -->
-                <div class="analysis-summary-strip story-summary-tier flex flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-                  <span class="text-xs font-semibold uppercase text-[#f59e0b] tracking-wider">Top Hour</span>
-                  <span class="text-3xl font-display text-[var(--text)] mt-1" id="hourly-top-hour">—</span>
-                </div>
-                <!-- Filters -->
-                <div class="hourly-controls flex flex-col gap-4">
-                  <div class="flex flex-col gap-2">
+          <div class="p-5 flex flex-col gap-6 hourly-story-flow" id="hourly-activity-content">
+             <div class="analysis-summary-strip story-summary-tier hourly-summary-strip flex flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+               <span class="text-xs font-semibold uppercase text-[#f59e0b] tracking-wider">Top Hour</span>
+               <span class="text-3xl font-display text-[var(--text)] mt-1" id="hourly-top-hour">—</span>
+             </div>
+             <details class="story-guide supporting-story-tier hourly-story-intro rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+                  <summary class="story-guide-summary">How to read</summary>
+                  <div class="story-guide-body">
+                    <div class="hourly-story-kicker">Timing guide</div>
+                    <h3 class="hourly-story-title">Separate workday rhythm from off-hour spikes</h3>
+                    <p class="analytics-story-copy">
+                      Use the filters to isolate the cadence you care about, then read the heatmap as a dense stage rather than another stacked card.
+                    </p>
+                  </div>
+             </details>
+             <div class="pattern-controls-shell hourly-toolbar rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+                <div class="hourly-controls hourly-filter-row">
+                  <div class="toggle-group hourly-filter-group">
                     <span class="text-xs font-medium text-[var(--text-muted)]">Days</span>
-                    <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-weekdays" checked class="accent-[#f59e0b] h-4 w-4"> Weekdays</label>
-                    <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-weekends" checked class="accent-[#f59e0b] h-4 w-4"> Weekends</label>
+                    <div class="hourly-toggle-row">
+                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-weekdays" checked class="accent-[#f59e0b] h-4 w-4"> Weekdays</label>
+                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-weekends" checked class="accent-[#f59e0b] h-4 w-4"> Weekends</label>
+                    </div>
                   </div>
-                  <div class="flex flex-col gap-2">
+                  <div class="toggle-group hourly-filter-group">
                     <span class="text-xs font-medium text-[var(--text-muted)]">Hours</span>
-                    <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-working" checked class="accent-[#f59e0b] h-4 w-4"> Working (09-17)</label>
-                    <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-offhours" checked class="accent-[#f59e0b] h-4 w-4"> Off Hours</label>
+                    <div class="hourly-toggle-row">
+                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-working" checked class="accent-[#f59e0b] h-4 w-4"> Working (09-17)</label>
+                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-offhours" checked class="accent-[#f59e0b] h-4 w-4"> Off Hours</label>
+                    </div>
                   </div>
-                  <!-- Brush inputs -->
-                  <div class="flex flex-col gap-2 mt-2 pt-4 border-t border-[var(--border)] hidden lg:flex">
+                  <div class="brush-group hourly-range-group">
                      <label for="hourly-brush-start" class="text-xs font-medium text-[var(--text-muted)]">Hour Range</label>
-                     <div class="flex flex-col gap-1">
+                     <div class="brush-inputs">
                         <input type="range" id="hourly-brush-start" min="0" max="23" value="0" class="w-full accent-[#f59e0b]">
                         <input type="range" id="hourly-brush-end" min="0" max="23" value="23" class="w-full accent-[#f59e0b]">
                      </div>
-                     <div class="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
+                     <div class="brush-labels">
                         <span id="hourly-brush-start-label">00:00</span>
                         <span>–</span>
                         <span id="hourly-brush-end-label">23:00</span>
@@ -213,11 +265,14 @@
                 <div class="text-xs text-[var(--text-muted)] italic" id="hourly-filter-note"></div>
                 <div class="text-xs text-[var(--text-muted)] bg-[var(--surface-sunken)] p-2 rounded hidden" id="hourly-brush-summary">Select hour range to view details.</div>
              </div>
-             
-             <!-- Chart Area -->
-             <div class="analysis-evidence-frame evidence-panel-tier flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
-                <div id="hourly-chart" class="hourly-heatmap w-full h-80 bg-[var(--surface-sunken)] rounded-xl border border-[var(--border)]"></div>
-                <div class="hourly-anomalies text-sm text-[var(--text)]" id="hourly-anomalies"></div>
+
+             <div class="hourly-evidence-lane full-width-evidence-lane">
+                <div class="analysis-evidence-frame evidence-panel-tier flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+                  <div id="hourly-chart" class="hourly-heatmap w-full h-80 bg-[var(--surface-sunken)] rounded-xl border border-[var(--border)]"></div>
+                </div>
+                <div class="supporting-story-tier hourly-anomalies-panel rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+                  <div class="hourly-anomalies text-sm text-[var(--text)]" id="hourly-anomalies"></div>
+                </div>
              </div>
           </div>
         </section>

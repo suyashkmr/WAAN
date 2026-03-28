@@ -253,7 +253,6 @@ export function createDataStatusController({ elements, deps }) {
         renderHeroCopy(UI_COPY.relay.runningReadyHero(formatNumber(chatCount)));
         applyHeroMilestones({ connect: "complete", sync: "complete", ready: "complete" });
         updateHeroSyncMeta({ state: "ready", message: UI_COPY.relay.runningReadyMeta(formatStatusTimeFn()) });
-        setDataAvailabilityState(true);
         if (!readyCelebrated) {
           triggerReadyCelebration();
           if (typeof notifyRelayReady === "function") {
@@ -281,7 +280,6 @@ export function createDataStatusController({ elements, deps }) {
             ? UI_COPY.relay.runningRefreshingMeta(formatNumber(chatCount))
             : UI_COPY.relay.runningLoadingMeta,
         });
-        if (chatCount > 0) setDataAvailabilityState(true);
         clearReadyCelebration({ rearm: chatCount === 0 });
       }
       return;

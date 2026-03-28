@@ -59,10 +59,535 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Active Snapshot
 
-- In progress: Phase 56 surface recomposition
-- Active phases: 2
+- In progress: none
+- Open implementation phases: 0
+- Open repair buckets: 4, all derived from the completed Phase 71 lower-half audit
+- Historical unchecked boxes below are not active backlog unless they are explicitly carried into the latest audit/source-of-truth phase.
 - Closed relay/setup cleanup phases 47-49 remain recorded below for audit history
-- Current audit target: surface recomposition for the whole-app visual optimization wave, using the completed Phase 55 shared layout primitives to improve composition across the highest-impact surfaces without reopening Phase 52 runtime repairs
+- Phase 58-62 remain historical; Phase 63 is the accepted audit/source-of-truth phase that drove the final reset and reclose
+- Current baseline state: top-half/workspace shell, relay states, and the prior desktop truth pass remain reclosed
+- Current open work lives only in the lower-half repair buckets below; no other historical phase in this file should be read as active backlog
+
+## Current Open Backlog
+
+- [ ] Lower-half repair bucket 1: pattern and calendar composition
+  - Source of truth: Phase 71
+  - Target surfaces: Week by Week, Day by Day, Busiest Days of the Week, Time of Day, Mood & Sentiment
+  - Intended outcome: one evidence-first lower-half grammar with compact row-first controls, readable calendar density, and no oversized empty-state slabs
+- [ ] Lower-half repair bucket 2: structured evidence symmetry
+  - Source of truth: Phase 71
+  - Target surfaces: Message Mix, Polls
+  - Intended outcome: balanced desktop summary/evidence composition instead of sparse asymmetric shells
+- [ ] Lower-half repair bucket 3: tools/search/saved consistency
+  - Source of truth: Phase 71
+  - Target surfaces: Search, Saved Views, Support
+  - Intended outcome: late-stage tools/support match the same density and card-balance rules as neighboring analytics surfaces
+- [ ] Lower-half repair bucket 4: shared breakpoint override cleanup
+  - Source of truth: Phase 71
+  - Target surfaces: all lower-half sections touched above
+  - Intended outcome: desktop no longer reads like lightly unstacked mobile fallback, while tablet/mobile retain clean wrapping
+
+## Latest Completed Audit
+
+- [x] Phase 71: Lower-Half Visual Truth Sweep.
+  - [x] Tracker update only
+    - [x] Reopen active work as an audit-only lower-half phase.
+    - [x] Keep Phase 70 and earlier phases historical.
+    - [x] Record explicitly that Phase 71 captures truth and repair scoping only; no implementation is included in this phase.
+    - [x] This phase supersedes earlier lower-half-looking historical unchecked items in Phases 54, 56, and 67; those older checklists are audit history, not active backlog.
+  - [x] Lower-half surface classification
+    - [x] Week by Week
+      - [x] Classification: needs repair now on desktop-1440 and laptop-1024; inconsistent but low priority on tablet-768 and mobile-390
+      - [x] Visible symptom: low-data and empty states leave an oversized right-hand evidence frame beside a much smaller summary block, so the section reads sparse and unbalanced on larger screens
+      - [x] Root-cause class: section composition / card structure; evidence-frame sizing / scroll ownership
+      - [x] User-facing impact: the first lower-half section feels visually unfinished and wastes horizontal desktop space, undermining confidence before the user reaches the denser pattern sections
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`
+      - [x] Severity: medium
+    - [x] Day by Day
+      - [x] Classification: needs repair now across desktop-1440, laptop-1024, tablet-768, and mobile-390
+      - [x] Visible symptom: the calendar surface reserves a very tall evidence frame even when the current state is sparse or empty, producing a large blank slab that dominates the section
+      - [x] Root-cause class: evidence-frame sizing / scroll ownership; calendar density / typography overflow
+      - [x] User-facing impact: users hit a very large low-information block that makes the analytics story feel padded instead of intentional
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles/components/analytics-charts.css`
+      - [x] Severity: high
+    - [x] Busiest Days of the Week
+      - [x] Classification: needs repair now on desktop-1440, laptop-1024, and tablet-768; inconsistent but low priority on mobile-390
+      - [x] Visible symptom: the filter area is still broken into multiple sibling slabs and the evidence panel below stays tall and empty in low-data states, so controls outweigh the chart
+      - [x] Root-cause class: control density / wrapping; section composition / card structure; evidence-frame sizing / scroll ownership
+      - [x] User-facing impact: the section reads like three configuration cards stacked over a placeholder instead of one coherent weekday evidence panel
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles/components/analytics-charts.css`
+      - [x] Severity: high
+    - [x] Time of Day
+      - [x] Classification: inconsistent but low priority on desktop-1440 and laptop-1024; clean on tablet-768 and mobile-390
+      - [x] Visible symptom: direct baselines are green across all four breakpoints, but live desktop truth still shows a slightly oversized empty-state evidence slab relative to the compact controls strip
+      - [x] Root-cause class: evidence-frame sizing / scroll ownership
+      - [x] User-facing impact: lower than Day by Day or Weekday because the controls are already coherent, but desktop still spends more height than the amount of evidence warrants
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics-charts.css`
+      - [x] Severity: low
+    - [x] Mood & Sentiment
+      - [x] Classification: needs repair now on desktop-1440 and laptop-1024; inconsistent but low priority on tablet-768 and mobile-390
+      - [x] Visible symptom: the section keeps the right overall grammar, but low-data states leave a sparse summary row and a very open evidence panel where the daily view and member lists do not feel visually weighted together
+      - [x] Root-cause class: section composition / card structure; evidence-frame sizing / scroll ownership; visual symmetry / grid balance
+      - [x] User-facing impact: the section looks under-filled and less trustworthy than the earlier high-density findings cards
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`
+      - [x] Severity: medium
+    - [x] Message Mix
+      - [x] Classification: needs repair now on desktop-1440 and laptop-1024; inconsistent but low priority on tablet-768 and mobile-390
+      - [x] Visible symptom: baseline coverage is green, but live desktop truth shows the metric grid floating in too much whitespace and the lower summary strip feeling detached from the main evidence
+      - [x] Root-cause class: visual symmetry / grid balance; section composition / card structure
+      - [x] User-facing impact: the card reads more like a placeholder dashboard tile than a finished evidence section
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`
+      - [x] Severity: medium
+    - [x] Polls
+      - [x] Classification: needs repair now on desktop-1440 and laptop-1024; inconsistent but low priority on tablet-768 and mobile-390
+      - [x] Visible symptom: the compact stat rail on the left sits beside a much larger sparse evidence pane on the right, creating obvious asymmetry in low-data states
+      - [x] Root-cause class: section composition / card structure; visual symmetry / grid balance
+      - [x] User-facing impact: the section wastes desktop width and feels visually lighter than the sections around it
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`
+      - [x] Severity: medium
+    - [x] Search
+      - [x] Classification: inconsistent but low priority on desktop-1440 and laptop-1024; clean on tablet-768 and mobile-390
+      - [x] Visible symptom: direct baselines are green, but live desktop truth still shows a sparse split between the filter form and results panel when result density is low
+      - [x] Root-cause class: section composition / card structure; visual symmetry / grid balance
+      - [x] User-facing impact: less severe than the pattern sections because controls remain reachable and bounded, but the card still reads slightly under-filled on wide screens
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/search-saved.css`
+      - [x] Severity: low
+    - [x] Saved Views
+      - [x] Classification: inconsistent but low priority on desktop-1440 and laptop-1024; clean on tablet-768 and mobile-390
+      - [x] Visible symptom: direct baselines are green, but live desktop truth still shows a sparse command/evidence split when few saved views exist, especially around compare state affordances
+      - [x] Root-cause class: section composition / card structure; visual symmetry / grid balance
+      - [x] User-facing impact: the feature remains usable, but wide desktop space is not consistently turned into clear structure
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles/components/search-saved.css`
+      - [x] Severity: low
+    - [x] Support
+      - [x] Classification: clean on desktop-1440, laptop-1024, tablet-768, and mobile-390
+      - [x] Visible symptom: none beyond ordinary content-length variance; section chrome, spacing, and text rhythm are consistent with the late-stage tools block
+      - [x] Root-cause class: none
+      - [x] User-facing impact: none currently observed
+      - [x] Likely owning area: `src/components/DeepDiveStage.vue`, `styles.components.css`
+      - [x] Severity: low
+  - [x] Validation and evidence capture
+    - [x] `npm run build`
+    - [x] Direct lower-half baseline sweep across all 4 breakpoints for:
+      - [x] Search
+      - [x] Saved Views
+      - [x] Time of Day
+      - [x] Mood & Sentiment
+      - [x] Message Mix
+      - [x] Polls
+      - [x] Support
+    - [x] Record the current coverage gap explicitly:
+      - [x] Week by Week has no dedicated lower-half section baseline
+      - [x] Day by Day has no dedicated lower-half section baseline
+      - [x] Busiest Days of the Week has no dedicated lower-half section baseline
+    - [x] Use live preview captures for the uncovered sections and low-data/empty-state desktop truth instead of treating green snapshots as proof that the UI is visually finished
+  - [x] Prioritized repair queue
+    - [x] Bucket 1: pattern and calendar composition
+      - [x] Target surfaces: Week by Week, Day by Day, Busiest Days of the Week, Time of Day, Mood & Sentiment
+      - [x] Intended UX outcome: lower-half pattern sections adopt one evidence-first grammar with compact row-first controls, readable calendar density, and empty states that do not waste vertical or horizontal space
+      - [x] Likely owning files/subsystems: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles/components/analytics-charts.css`
+      - [x] Validation for later closure: targeted visual coverage for weekly, daily, weekday, time-of-day, and sentiment across desktop-1440, laptop-1024, tablet-768, and mobile-390
+    - [x] Bucket 2: structured evidence symmetry
+      - [x] Target surfaces: Message Mix, Polls
+      - [x] Intended UX outcome: lower structured-evidence cards feel balanced on wide screens, with summary metrics aligned to the main evidence rather than floating inside oversized shells
+      - [x] Likely owning files/subsystems: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`
+      - [x] Validation for later closure: targeted desktop/laptop baselines plus a breakpoint spot-check for tablet/mobile wrapping
+    - [x] Bucket 3: tools/search/saved consistency
+      - [x] Target surfaces: Search, Saved Views, Support
+      - [x] Intended UX outcome: late-stage tools retain current IA but use the same density and card-balance rules as the neighboring analytics sections, without sparse desktop splits
+      - [x] Likely owning files/subsystems: `src/components/DeepDiveStage.vue`, `styles/components/search-saved.css`, `styles.components.css`
+      - [x] Validation for later closure: targeted search/saved/support slices across all four breakpoints and loaded-state reachability proof
+    - [x] Bucket 4: shared breakpoint override cleanup
+      - [x] Target surfaces: all lower-half sections touched above
+      - [x] Intended UX outcome: desktop no longer reads like a lightly unstacked mobile fallback, while tablet/mobile keep clean wrapping without bespoke one-off fixes
+      - [x] Likely owning files/subsystems: `styles/components/analytics.css`, `styles/components/analytics-charts.css`, `styles/components/search-saved.css`
+      - [x] Validation for later closure: full lower-half rerun across desktop-1440, laptop-1024, tablet-768, and mobile-390 after section-level repairs land
+  - [x] Acceptance
+    - [x] Every lower-half surface from Week by Week through Support is classified.
+    - [x] Every inconsistency is assigned a root-cause class and severity.
+    - [x] The tracker contains a prioritized lower-half repair queue, not just raw observations.
+
+- [x] Phase 70: Live Desktop Layout Truth Pass.
+  - [x] Reopen implementation because snapshot green did not guarantee a visually coherent live desktop UI.
+  - [x] Workspace shell
+    - [x] Flatten the relay area toward a true horizontal strip instead of a tall stacked card.
+    - [x] Reduce nested mini-card treatment inside the workspace rail.
+    - [x] Finish the inline setup strip so it reads as a compact strip instead of a broad content card.
+    - [x] Finish the workspace rail so controls, exports, and tools read as one coherent desktop board.
+  - [x] Findings-stage cleanup
+    - [x] Keep Participants as one unified controls surface.
+    - [x] Keep Highlights on a symmetric desktop grid.
+    - [x] Keep Hourly Rhythm as a compact row-first controls strip above the heatmap without oversized wrappers.
+  - [x] Deep-dive cleanup
+    - [x] Keep row-first desktop control grammar in Busiest Days of the Week and Time of Day.
+    - [x] Keep Mood & Sentiment on a summary-row plus evidence layout.
+    - [x] Recompose Message Mix and neighboring evidence surfaces until they match the same desktop card/chrome/spacing grammar.
+    - [x] Keep daily and sentiment calendars evidence-first without shallow framing.
+  - [x] Late-stage tools and support
+    - [x] Remove remaining inconsistent sibling-card splits in Search / Saved Views / Support.
+  - [x] Validation
+    - [x] `npm run build`
+    - [x] targeted desktop visual check for workspace, highlights, participants, time of day, sentiment, message types, support, and long-form dashboard
+    - [x] refresh only the intentional baselines after the live desktop layout is accepted
+    - [x] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+
+- [x] Phase 69: Workspace and Relay Variant Reclose.
+  - [x] Reopen implementation on top of Phase 68 because the remaining real work was concentrated in workspace-state variants, relay-strip state variants, and three polish-only desktop drifts.
+  - [x] Workspace variant reclose
+    - [x] Reclose the desktop workspace variant baselines for:
+      - [x] offline
+      - [x] waiting QR
+      - [x] syncing
+      - [x] no-chat-selected
+    - [x] Confirm all four variants now follow the rebuilt compact inline-strip plus compact-rail desktop grammar instead of relapsing into the older taller card-like shell.
+  - [x] Relay strip state reclose
+    - [x] Reclose the desktop relay strip state baselines for:
+      - [x] offline
+      - [x] waiting QR
+      - [x] running syncing
+      - [x] running ready
+    - [x] Confirm all four relay states now align with the rebuilt inline-strip width and spacing contract.
+  - [x] Final polish drifts
+    - [x] Highlights
+    - [x] Message Mix
+    - [x] Support
+    - [x] Clear the remaining desktop 1px drift by refreshing the intentional baselines after confirming the live geometry was already correct.
+  - [x] Validation
+    - [x] `npm run build`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace offline stage baseline|matches workspace waiting QR stage baseline|matches workspace syncing stage baseline|matches workspace no-chat-selected stage baseline|matches relay offline state baseline|matches relay waiting QR state baseline|matches relay running syncing state baseline|matches relay running ready state baseline|matches highlights section baseline|matches message-types section baseline|matches support section baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace offline stage baseline|matches workspace waiting QR stage baseline|matches workspace syncing stage baseline|matches workspace no-chat-selected stage baseline|matches relay offline state baseline|matches relay waiting QR state baseline|matches relay running syncing state baseline|matches relay running ready state baseline|matches highlights section baseline|matches message-types section baseline|matches support section baseline"`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches .* baseline"`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+  - [x] Closure audit
+    - [x] Confirm the default workspace controls slice remained the design target and all four workspace variants now match that compact shell grammar.
+    - [x] Confirm the relay strip proof set now measures the rebuilt inline-strip contract instead of forcing the older narrower width.
+    - [x] Confirm Highlights, Message Mix, and Support were polish-only drifts and did not require another structural redesign wave.
+
+- [x] Phase 68: Remaining Visual Truth Sweep.
+  - [x] Reopen the tracker honestly because the latest desktop sweep still found unresolved variant and state inconsistencies after the last workspace/participants pass.
+  - [x] Record the currently stable desktop surfaces from the latest non-mutating sweep:
+    - [x] dashboard baseline
+    - [x] long-form dashboard baseline
+    - [x] interactive states baseline
+    - [x] participants
+    - [x] workspace controls
+    - [x] search
+    - [x] saved views
+    - [x] time of day
+    - [x] sentiment
+    - [x] polls
+    - [x] diagnostics drawer
+  - [x] Remaining findings inventory
+    - [x] High: workspace state variants are still out of sync with the rebuilt shell.
+      - [x] Failing surfaces: workspace offline, waiting QR, syncing, no-chat-selected
+      - [x] Symptom: the rebuilt workspace shell is more compact than the old variant baselines, so the state-specific compositions no longer match the current desktop truth
+      - [x] Root-cause class: shell geometry / width allocation and workspace-state variant composition
+      - [x] Owning area: workspace shell and setup-state rendering
+      - [x] Current evidence:
+        - [x] `workspace-stage-offline-desktop-1440`: expected `1376x575`, received `1376x470`
+        - [x] `workspace-stage-waiting-qr-desktop-1440`: expected `1376x589`, received `1376x486`
+        - [x] `workspace-stage-syncing-desktop-1440`: expected `1376x418`, received `1376x325`
+        - [x] `workspace-stage-no-chat-desktop-1440`: expected `1376x589`, received `1376x486`
+      - [x] Interpretation: these are not isolated per-state regressions; the rebuilt inline-strip and compact-rail contract has shortened every workspace variant, so the variant snapshot set now needs a dedicated reclose against the new shell geometry.
+    - [x] Medium: relay strip state baselines need a dedicated truth pass.
+      - [x] Failing surfaces: relay offline, waiting QR, running syncing, running ready
+      - [x] Symptom: the strip is now wider than the recorded baselines, indicating the inline-strip contract changed but the state-specific snapshot set did not follow
+      - [x] Root-cause class: shell geometry / width allocation
+      - [x] Owning area: relay strip styling and relay-state proof alignment
+      - [x] Current evidence:
+        - [x] `relay-state-offline-desktop-1440`: expected `1080x52`, received `1086x52`
+        - [x] `relay-state-waiting-qr-desktop-1440`: expected `1080x317`, received `1086x317`
+        - [x] `relay-state-running-syncing-desktop-1440`: expected `1080x123`, received `1086x123`
+        - [x] `relay-state-running-ready-desktop-1440`: expected `1080x52`, received `1086x52`
+      - [x] Interpretation: the relay strip is consistently `6px` wider across all tested states, so this is one shared strip-width/baseline-alignment issue rather than four separate visual bugs.
+    - [x] Low-to-medium: Highlights is down to trivial visual drift.
+      - [x] Symptom: 1px height mismatch on the desktop section baseline
+      - [x] Root-cause class: visual symmetry / grid balance
+      - [x] Owning area: highlights section chrome and spacing
+      - [x] Current evidence: `section-highlights-desktop-1440` expected `1376x287`, received `1376x286`
+      - [x] Interpretation: the Playwright snapshot still shows the intended disclosure-above-content structure, so this currently reads as a baseline-refresh candidate rather than a new composition bug.
+    - [x] Low-to-medium: Message Mix is down to trivial visual drift.
+      - [x] Symptom: 1px height mismatch on the desktop section baseline
+      - [x] Root-cause class: visual symmetry / grid balance
+      - [x] Owning area: message-types section chrome and spacing
+      - [x] Current evidence: `section-message-types-desktop-1440` expected `1376x610`, received `1376x611`
+      - [x] Interpretation: current evidence points to section chrome and final spacing drift only; no new structural regression is visible from the error snapshot.
+    - [x] Low-to-medium: Support is down to trivial visual drift.
+      - [x] Symptom: 1px height mismatch on the desktop section baseline
+      - [x] Root-cause class: shared card chrome / spacing
+      - [x] Owning area: support card shell spacing
+      - [x] Current evidence: `section-support-desktop-1440` expected `1376x611`, received `1376x612`
+      - [x] Interpretation: current evidence points to support card shell spacing drift only; no new hierarchy or composition bug is visible from the error snapshot.
+  - [x] Repair queue conversion
+    - [x] Bucket 1: workspace-state variant reclose
+      - [x] Target surfaces: workspace offline, waiting QR, syncing, no-chat-selected
+      - [x] Intended outcome: all workspace state variants follow the new inline-strip plus compact-rail desktop grammar
+      - [x] Validation: targeted workspace variant Playwright slice
+    - [x] Bucket 2: relay strip state reclose
+      - [x] Target surfaces: relay offline, waiting QR, running syncing, running ready
+      - [x] Intended outcome: the relay strip state proofs align with the new inline-strip width and spacing contract
+      - [x] Validation: targeted relay-state Playwright slice
+    - [x] Bucket 3: final polish drifts
+      - [x] Target surfaces: Highlights, Message Mix, Support
+      - [x] Intended outcome: remove remaining 1px and spacing drift so the whole desktop baseline set is clean
+      - [x] Validation: targeted section baselines, then a full desktop baseline rerun
+      - [x] Current expectation: these should be handled as baseline-refresh or tiny spacing cleanup work only, not another structural redesign pass, unless a later live screenshot contradicts the current Playwright evidence.
+  - [x] Validation evidence
+    - [x] `npm run build`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches .* baseline"`
+    - [x] Drill into the current remaining failures using Playwright error-context snapshots for:
+      - [x] workspace offline
+      - [x] workspace waiting QR
+      - [x] workspace syncing
+      - [x] workspace no-chat-selected
+      - [x] highlights
+      - [x] message types
+      - [x] support
+      - [x] relay offline strip state
+  - [x] Acceptance
+    - [x] Every remaining failing surface is classified.
+    - [x] Each remaining issue is assigned to a concrete repair bucket.
+    - [x] The tracker reflects the real current state instead of saying the UI is broadly finished.
+
+- [x] Phase 67: Whole-App Structural Polish Pass.
+  - [x] Reopen the tracker honestly because the rebuilt UI still needed a final coherence pass before the visual work could be considered finished.
+  - [x] Workspace and shell polish
+    - [x] Keep the inline setup strip and current story order, but continue regrouping the workspace rail into one coherent operational board.
+    - [x] Merge the workspace rail controls into explicit grouped subsections instead of leaving them as arbitrarily split mini-surfaces inside the rail.
+    - [x] Merge the workspace utility side into clearer output/tool subpanels so exports and tools stop reading like unrelated floating boxes.
+    - [x] Remove the remaining empty horizontal dead space and nested mini-card geometry from the default desktop workspace rail.
+  - [x] Section composition polish
+    - [x] Participants
+    - [x] Search
+    - [x] Saved Views: merge the save/manage/compare command stack into one desktop command board with internal subsections instead of three sibling mini-cards.
+    - [x] Highlights. Later reclosed or normalized in Phases 68-70; no longer active from Phase 67.
+    - [x] Hourly Rhythm. Later re-scoped into the lower-half audit truth captured in Phase 71.
+    - [x] Day by Day. Later re-scoped into the lower-half audit truth captured in Phase 71.
+    - [x] Busiest Days of the Week. Later re-scoped into the lower-half audit truth captured in Phase 71.
+    - [x] Time of Day. Later reclosed and then carried into Phase 71 only as lower-priority lower-half audit truth.
+    - [x] Mood & Sentiment. Later re-scoped into the lower-half audit truth captured in Phase 71.
+    - [x] Message Mix. Later reclosed or normalized in Phases 68-70; any remaining lower-half truth now lives in Phase 71 only.
+    - [x] Support. Later reclosed or normalized in Phases 68-70; no longer active from Phase 67.
+  - [x] Shared visual consistency cleanup
+    - [x] Normalize card chrome, internal spacing, and desktop grid balance for the touched workspace/search/saved surfaces.
+    - [x] Remove the remaining breakpoint overrides that were causing the default workspace rail to read like stacked mobile fallback.
+    - [x] Keep calendar density explicit and readable without reintroducing weekday overflow. Later re-scoped into the lower-half audit truth captured in Phase 71.
+  - [x] Validation
+    - [x] `npm run build`
+    - [x] targeted `npx playwright test tests/visual/dashboard.visual.spec.js` slices for touched sections
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+  - [x] Closure audit
+    - [x] Confirm the workspace rail feels coherent and compact on desktop for the default controls slice.
+    - [x] Confirm Participants, Search, Saved Views, and the long-form dashboard no longer retain the specific mismatched sibling-card geometry that triggered this pass.
+    - [x] Refresh the intentional desktop baselines only after the polished live layout for those touched surfaces is accepted.
+
+- [x] Phase 63: Whole-App UI Consistency Sweep.
+  - [x] Reopen the tracker honestly because the live UI across desktop, tablet, and mobile still does not match the earlier closeout claims.
+  - [x] Capture fresh non-mutating audit evidence for the current tree:
+    - [x] `npm run build`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] direct live screenshot review supplied by the user for desktop truth
+    - [x] repo inspection across `src/App.vue`, `src/components/WorkspaceSidebar.vue`, `src/components/FindingsStage.vue`, `src/components/DeepDiveStage.vue`, `styles.components.css`, `styles/components/analytics.css`, `styles/components/analytics-charts.css`, and `styles/components/relay.css`
+    - [x] capture that the current desktop visual slice attempt is invalid evidence because `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace controls baseline|matches highlights section baseline|matches participants section baseline|matches time-of-day section baseline|matches sentiment section baseline"` failed to start due to `Port 4173 is already in use`
+  - [x] Classify every major shipped surface by breakpoint:
+    - [x] Workspace: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Overview / summary: `clean` on desktop, tablet, and mobile
+    - [x] Highlights: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Participants: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Hourly Rhythm: `needs repair now` on desktop and tablet; `needs repair now` on mobile where the evidence frame and controls still read as stacked narrow cards
+    - [x] Day by Day: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Busiest Days of the Week: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Time of Day: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Mood & Sentiment: `needs repair now` on desktop and tablet; `inconsistent but low priority` on mobile
+    - [x] Message Mix: `inconsistent but low priority` on desktop and tablet; `clean` on mobile
+    - [x] Polls: `clean` on desktop, tablet, and mobile
+    - [x] Search: `inconsistent but low priority` on desktop and tablet; `clean` on mobile
+    - [x] Saved Views: `inconsistent but low priority` on desktop and tablet; `clean` on mobile
+    - [x] Support / diagnostics / recovery help: `clean` on desktop, tablet, and mobile
+  - [x] Normalize the remaining inconsistency inventory with root-cause class, impact, and ownership:
+    - [x] High: workspace shell geometry is still contradictory across breakpoints.
+      - Symptom: desktop workspace setup/status still reads as a broad card or narrow left-stacked rail instead of a compact inline strip plus minimal operational rail; tablet inherits the same geometry drift with reduced width.
+      - Root-cause class: shell geometry / width allocation plus section composition / card structure
+      - User-visible impact: the opening stage wastes the most screen real estate in the app and immediately makes the product feel mobile-stacked on desktop.
+      - Owning implementation area: `src/App.vue`, `src/components/EmptyWorkspaceCallout.vue`, `src/components/WorkspaceSidebar.vue`, `styles.components.css`, `styles/components/relay.css`
+    - [x] High: findings-stage control surfaces still split or stack in desktop-wasteful ways.
+      - Symptom: Highlights, Participants, and Hourly Rhythm still show mismatched control-card geometry, guide placement drift, or empty side-lane waste depending on breakpoint.
+      - Root-cause class: section composition / card structure and control density / wrapping
+      - User-visible impact: core findings sections do not read as one coherent editorial surface and look inconsistent even before deeper analytics begin.
+      - Owning implementation area: `src/components/FindingsStage.vue`, `styles/components/analytics.css`, `styles.components.css`
+    - [x] High: timing and pattern sections still fall back to stacked-control behavior instead of row-first desktop layouts.
+      - Symptom: Hourly Rhythm, Busiest Days of the Week, and Time of Day controls still collapse into multi-row or side-tower arrangements that are clearly avoidable on desktop and tablet.
+      - Root-cause class: control density / wrapping plus breakpoint-specific override conflict
+      - User-visible impact: timing sections look mechanically assembled rather than intentionally laid out, and the evidence stage loses visual priority.
+      - Owning implementation area: `src/components/FindingsStage.vue`, `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles/components/analytics-charts.css`
+    - [x] High: calendar density and evidence sizing are still inconsistent across Day by Day and Mood & Sentiment.
+      - Symptom: month grids, weekday headers, and evidence frames still oscillate between overflow, cramped density, and shallow card height depending on breakpoint and section.
+      - Root-cause class: calendar density / typography overflow plus evidence-frame sizing / scroll ownership
+      - User-visible impact: the densest analytic views become the hardest to read on the breakpoints where they should feel most powerful.
+      - Owning implementation area: `src/components/DeepDiveStage.vue`, `styles/components/analytics-charts.css`, `styles.components.css`
+    - [x] Medium: sentiment and message-type summary surfaces still lack consistent desktop symmetry.
+      - Symptom: summary rows, sentiment tiles, and adjacent evidence panels still drift between full-width and narrow stacked compositions instead of following one stable desktop grammar.
+      - Root-cause class: visual symmetry / grid balance
+      - User-visible impact: mid-page analytic sections feel visually unrelated even when the underlying data is correct.
+      - Owning implementation area: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles.components.css`
+    - [x] Medium: late-stage operational tools still use mixed chrome and alignment rules.
+      - Symptom: Search, Saved Views, workspace tools, exports, and late support-style actions do not yet share one consistent density, card hierarchy, or spacing grammar across desktop/tablet.
+      - Root-cause class: tools/search/saved/support consistency plus breakpoint-specific override conflict
+      - User-visible impact: the app looks like several redesign waves stitched together instead of one product.
+      - Owning implementation area: `src/components/WorkspaceSidebar.vue`, `src/components/DeepDiveStage.vue`, `styles/components/search-saved.css`, `styles/components/relay.css`, `styles.components.css`
+    - [x] Medium: shared-shell overrides remain a repeat offender across multiple sections.
+      - Symptom: `app-shell` and shared component rules continue to override section-local intent, causing the same width, padding, and layout regressions to reappear in different surfaces.
+      - Root-cause class: breakpoint-specific override conflict
+      - User-visible impact: individual fixes do not reliably stick, and regressions reappear under adjacent layout changes.
+      - Owning implementation area: `styles.components.css`, plus whichever section stylesheet each override is fighting
+  - [x] Convert the findings into a prioritized repair queue:
+    - [x] Priority 1: shell and workspace geometry
+      - Target surfaces: workspace strip, relay status, workspace rail, exports/tools grouping
+      - Intended UX outcome: compact inline setup state, minimal rail, no empty side lanes, one coherent workspace composition on desktop/tablet with clean mobile fallback
+      - Likely owning files: `src/App.vue`, `src/components/EmptyWorkspaceCallout.vue`, `src/components/WorkspaceSidebar.vue`, `styles.components.css`, `styles/components/relay.css`
+      - Validation needed: workspace desktop/tablet/mobile visual slices, accessibility smoke, one manual screenshot comparison against the current user complaints
+    - [x] Priority 2: findings-stage composition
+      - Target surfaces: Highlights, Participants, Hourly Rhythm
+      - Intended UX outcome: one stable pattern of disclosure + compact controls strip + dominant evidence frame, with no mismatched sibling cards
+      - Likely owning files: `src/components/FindingsStage.vue`, `styles/components/analytics.css`, `styles.components.css`
+      - Validation needed: targeted visual slices for highlights, participants, and hourly activity across all breakpoints
+    - [x] Priority 3: timing/pattern control density
+      - Target surfaces: Hourly Rhythm, Busiest Days of the Week, Time of Day
+      - Intended UX outcome: row-first desktop/tablet control layouts that wrap only when necessary and never displace the evidence stage
+      - Likely owning files: `src/components/FindingsStage.vue`, `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles/components/analytics-charts.css`
+      - Validation needed: targeted timing/pattern visual slices plus real overflow checks
+    - [x] Priority 4: calendar density and overflow
+      - Target surfaces: Day by Day, Mood & Sentiment calendars
+      - Intended UX outcome: explicit month-per-row contract, no weekday overflow, readable evidence-first sizing across all breakpoints
+      - Likely owning files: `src/components/DeepDiveStage.vue`, `styles/components/analytics-charts.css`, `styles.components.css`
+      - Validation needed: calendar-specific visual slices at desktop/tablet/mobile
+    - [x] Priority 5: sentiment/message mix symmetry
+      - Target surfaces: Mood & Sentiment, Message Mix
+      - Intended UX outcome: balanced summary/evidence grammar that matches the rest of the story column
+      - Likely owning files: `src/components/DeepDiveStage.vue`, `styles/components/analytics.css`, `styles.components.css`
+      - Validation needed: targeted section baselines and a long-form dashboard rerun
+    - [x] Priority 6: tools/search/saved/support consistency
+      - Target surfaces: Search, Saved Views, workspace tools/exports, support-adjacent operational chrome
+      - Intended UX outcome: one late-stage operational design language with aligned spacing, headers, and card density
+      - Likely owning files: `src/components/WorkspaceSidebar.vue`, `src/components/DeepDiveStage.vue`, `styles/components/search-saved.css`, `styles/components/relay.css`, `styles.components.css`
+      - Validation needed: targeted search/saved/support slices and reachability checks
+    - [x] Priority 7: breakpoint override cleanup
+      - Target surfaces: all sections affected by shared-shell overrides
+      - Intended UX outcome: one authoritative layout rule per surface, with mobile/tablet overrides only where they are genuinely needed
+      - Likely owning files: `styles.components.css` plus touched section stylesheets
+      - Validation needed: full dashboard visual rerun after higher-priority repairs land
+  - [x] Follow-on implementation phase
+    - [x] Open the next repair phase only after this audit inventory is accepted as the new source of truth for the remaining UI work.
+    - [x] Follow-on implementation was later carried by Phases 64-71, so this Phase 63 handoff is historical rather than open.
+
+- [x] Phase 64: Shell and System Reset.
+  - [x] Replace the mixed shell/card behavior with one authoritative desktop-first system:
+    - [x] one compact workspace rail
+    - [x] one wide main story column
+    - [x] one consistent card, header, controls, and evidence spacing model
+    - [x] guides as collapsed optional disclosures only
+  - [x] Neutralize late shared-shell overrides in `styles.components.css` that still fight section-local intent.
+  - [x] Reset Workspace specifically:
+    - [x] true inline setup strip under the workspace heading
+    - [x] compact operational rail below it
+    - [x] relay, chat/range, exports, and tools grouped coherently
+    - [x] no oversized hero-card behavior
+    - [x] no orphan mini-cards with empty desktop space beside them
+  - [x] Preserve all runtime-owned IDs, Vue mount points, and bridge hooks.
+  - [x] Validation
+    - [x] `npm run build`
+    - [x] targeted workspace visual slices
+    - [x] `npm run test:accessibility-smoke`
+  - [x] Closure audit
+    - [x] confirm the workspace strip is a strip, not a card
+    - [x] confirm the workspace rail is compact, coherent, and width-efficient on desktop
+
+- [x] Phase 65: Section Composition Reset.
+  - [x] Recompose the findings and deep-dive sections into one evidence-first desktop grammar:
+    - [x] Highlights: disclosure above a symmetric card grid
+    - [x] Participants: one unified controls surface, then a full-width bounded table
+    - [x] Hourly Rhythm: compact controls strip above a dominant heatmap stage
+    - [x] Day by Day, Busiest Days of the Week, and Time of Day: compact row-first controls with dominant evidence frames
+    - [x] Mood & Sentiment: one summary row, disclosure above evidence, full-width evidence composition
+    - [x] Message Mix: symmetric evidence layout that matches the rest of the app
+    - [x] Search and Saved Views retain their current IA position but adopt the same visual grammar
+  - [x] Reassert the calendar contract:
+    - [x] explicit month density by breakpoint
+    - [x] weekday headers never overflow
+    - [x] evidence height follows readability, not shallow card defaults
+  - [x] Validation
+    - [x] targeted `npx playwright test tests/visual/dashboard.visual.spec.js` slices for rebuilt sections
+  - [x] Closure audit
+    - [x] confirm rebuilt sections read as deliberate, symmetric, and evidence-first on desktop
+    - [x] confirm controls are row-first and wrap only when genuinely necessary
+
+- [x] Phase 66: Whole-App Visual Reclose.
+  - [x] Reclose the entire app only after Phase 64 and Phase 65 are stable.
+  - [x] Refresh visual baselines only for intentional final renderings.
+  - [x] Audit major surfaces across desktop, tablet, and mobile against the Phase 63 findings inventory.
+  - [x] Update `docs/ui-overhaul-spec.md` only after final whole-app truth is verified.
+  - [x] Validation
+    - [x] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+    - [x] manual breakpoint review at desktop, tablet, and mobile against the Phase 63 audit categories
+  - [x] Closure audit
+    - [x] confirm no major surface still reads like an older conflicting design wave
+
+- [x] Current implementation evidence for Phases 64-66
+  - [x] Workspace shell files were reset in `src/components/WorkspaceSidebar.vue`, `src/components/EmptyWorkspaceCallout.vue`, `styles.components.css`, and `styles/components/relay.css`
+  - [x] Findings and deep-dive section composition rules were reset in `styles/components/analytics.css` and `styles/components/analytics-charts.css`
+  - [x] `npm run build`
+  - [x] `npm run test:accessibility-smoke`
+  - [x] targeted desktop visual reclose passed after intentional baseline refresh for rebuilt workspace, findings, relay, and late-stage section surfaces
+  - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+  - [x] final result: rebuilt geometry is reclosed across `1440 / 1024 / 768 / 390`
+
+- Phase 62 remains historical context only.
+  - It captured a desktop-first rebuild attempt, but the live whole-app breakpoint audit in Phase 63 supersedes its closeout claim.
+  - Do not treat Phase 62 as the source of truth for current UI consistency; use the Phase 63 findings inventory and repair queue instead.
+
+- [x] Phase 61: Layout Direction Reset and Shell Rebuild.
+  - [x] Reopen the tracker honestly because the live app did not match the claimed Phase 60 closeout.
+  - [x] Rebuild the top-level shell from a simpler desktop-first baseline:
+    - [x] one stable operational workspace rail
+    - [x] one separate story lane
+    - [x] no leftover hero-card treatment or empty secondary pane
+  - [x] Re-establish one authoritative section pattern per rebuilt section:
+    - [x] summary strip
+    - [x] controls strip
+    - [x] evidence frame
+    - [x] optional collapsed `How to read` disclosure
+  - [x] Rebuild the current problem sections around evidence-first desktop layouts:
+    - [x] Highlights
+    - [x] Participants
+    - [x] Hourly Rhythm
+    - [x] Day by Day
+    - [x] Busiest Days of the Week
+    - [x] Time of Day
+    - [x] Mood & Sentiment
+    - [x] late-stage Search / Saved Views placement retained
+  - [x] Reset calendar density from the component/layout layer:
+    - [x] wide desktop: 3 months per row
+    - [x] mid desktop/tablet: 2 months per row
+    - [x] no weekday-label overflow
+  - [x] Validation
+    - [x] `npm run build`
+    - [x] targeted `npx playwright test tests/visual/dashboard.visual.spec.js` slices for rebuilt sections
+    - [x] full `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+  - [x] Closure audit
+    - [x] confirm the live desktop layout matches the screenshot-driven acceptance criteria
+    - [x] confirm no obvious empty side lanes or stacked desktop-only controls remain
+    - [x] add a dated audit note to `docs/ui-overhaul-spec.md` only after the rebuilt live layout is genuinely reclosed
+  - [x] Closeout note: the earlier Phase 58-60 direction was superseded by a structural shell reset. The repaired live app now uses a real inline workspace strip, a full-width workspace rail, evidence-first desktop section composition, responsive control rows, and reduced calendar month density without breaking the existing runtime-owned IDs, mounts, or bridge contracts.
 
 ## Active Phases
 
@@ -388,7 +913,7 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Confirm residual issues are either fixed before closeout or captured as explicit dated follow-up work with clear ownership.
 
 - [x] Phase 54: Whole-App Visual Optimization Audit.
-  - [ ] Audit all major app surfaces for layout inefficiency, weak desktop/tablet density, poor row/column grouping, and missed local-scroll containment.
+  - [x] Audit all major app surfaces for layout inefficiency, weak desktop/tablet density, poor row/column grouping, and missed local-scroll containment. Historical audit context later superseded by the more current audit truth in Phases 63 and 71.
     - [x] First audit pass completed for the currently shipped workspace, findings, search, saved-views, and support shells.
       - [x] Findings classification:
         - [x] Highlights is a confirmed optimization opportunity within scope: shipped markup still mounts `#highlight-list` as a plain flex column while `styles/components/analytics.css` already carries a desktop-ready `.highlight-grid` contract and DataView content hooks.
@@ -463,51 +988,180 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] Confirm no layout primitive reintroduces page-expanding behavior for dense surfaces.
     - [x] Closeout note: shared summary-grid, split-panel, and evidence-tier hooks now span findings, tools, workspace, and support surfaces. Targeted browser validation stayed green for dense-surface boundedness, loaded search/saved-view reachability, workspace/support baselines, and diagnostics utility behavior after the layout-wrapper changes.
 
-- [ ] Phase 56: Surface Recomposition.
-  - [ ] Recompose the major high-impact surfaces onto the shared layout system:
-    - [ ] Highlights
-    - [x] Participants regression reclose: preserve the restored local-scroll containment while keeping the recomposed section visually intentional across desktop and mobile.
-      - [x] Live-path root cause: the participants table still expanded in the real app because the leaf scroll node had overflow rules, but the evidence frame and story-grid parents still allowed growth instead of constraining the scroll stage.
-    - [ ] Timing cluster
-      - [x] Hourly regression reclose: restore local scroll on the live hourly chart container instead of relying on the nested Vue heatmap root alone.
-      - [x] Live-path root cause: the real `#hourly-chart` frame owned the visible height, but overflow remained on the nested `.hourly-heatmap`, so the live chart could still clip or expand incorrectly depending on the rendered payload.
-    - [ ] Search
-      - [x] Search-results regression reclose: keep the live results list locally scrollable without forcing an always-expanded search panel on desktop.
-      - [x] Live-path root cause: the current proof was styling the results leaf, but the surrounding search flex/grid containers still needed `min-height: 0` and a real overflow owner to keep the live list bounded.
-    - [x] Saved Views regression reclose: preserve the restored local-scroll gallery behavior without reopening the deleted `.search-actions` or export-anchor contracts.
-      - [x] Live-path root cause: the gallery still expanded in the real app because the results lane and gallery stage did not both participate in the bounded-height contract; leaf-only overflow rules were not enough.
-    - [x] workspace, export, and support panels:
-      - [x] Investigate the reported post-connect workspace-state disappearance in running relay paths without assuming the whole panel should hide.
-      - [x] Result: `#relay-status-panel` remains the canonical workspace-state surface and stays visible through `offline -> waiting_qr -> running_syncing -> running_ready`; the current repair need was a live-path visibility/footprint correction, not a runtime hide/show contract change.
-      - [x] Live-path root cause: the panel remained mounted, but connected states collapsed into too little visible footprint to read as a persistent workspace-state surface, especially after the recent layout wave.
-  - [ ] Use desktop/tablet space more efficiently with grids and grouped rows while preserving mobile readability.
+- [x] Phase 56: Surface Recomposition.
+  - [x] Reclose the live-path stretch and workspace-state regression cluster before continuing broader recomposition.
+    - [x] Reproduced regression: the main `Workspace state` callout could still disappear or collapse after relay connection before chat selection because one live availability path still inferred readiness from analytics/render state instead of an active chat selection.
+    - [x] Reproduced regression: participants, searched messages, hourly rhythm, and saved-view gallery surfaces could remain locally scrollable yet still pin left and fail to fill their row after the containment reclose because the shared layout layer restored overflow without reasserting full-lane stretch.
+    - [x] Root-cause correction: dashboard availability now remains false until an active chat is selected, even when analytics is cached or relay reaches `running_ready`.
+    - [x] Root-cause correction: repaired dense-surface overflow owners now explicitly stretch to their grid lane with `width: 100%`, `max-width: none`, `justify-self: stretch`, and `align-self: stretch` in the shared app-shell layout layer.
+    - [x] Validation evidence:
+      - [x] `npx vitest --run tests/pipelineRangeDashboard.test.js tests/controllerWiringContracts.test.js tests/appShellIntegration.test.js tests/appShellControllers.test.js tests/appShellBoundaryIntegration.test.js`
+      - [x] `npm run build`
+      - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "keeps workspace state guidance visible after relay connects before a chat is selected|keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded|keeps loaded search and saved-view controls reachable across breakpoints"`
+    - [x] Adjacent gate reclosed after the live-path bridge/accessibility smoke repair: `npm run test:accessibility-smoke` now passes on the current tree and no longer blocks resumed Phase 56 recomposition work.
+  - [x] Recompose the remaining high-impact optimization-opportunity surfaces onto the shared layout system. Historical Phase 56 recomposition scope later completed or re-scoped by Phases 57-71.
+    - [x] Highlights desktop composition
+      - [x] `#insight-highlights-content` now uses a two-lane `highlight-story-grid` so the dynamic highlight cards sit beside a compact editorial guide instead of rendering as another permanently stacked block.
+    - [x] Timing cluster composition beyond the already-reclosed hourly scroll/stretch path
+      - [x] `#hourly-activity-content` now uses an explicit command-lane and evidence-lane split so the top-hour summary, reading guidance, filters, heatmap stage, and anomaly callouts no longer collapse into one stacked utility column.
+    - [x] Search composition beyond the already-reclosed results-list scroll/stretch path
+      - [x] `#search-panel-content` now uses a `search-panel-layout` split so command controls and the live results/status lane share desktop space instead of forcing the results stage below the form.
+    - [x] Saved Views desktop/tablet composition beyond the already-reclosed gallery scroll/stretch path
+      - [x] `#saved-views-content` now relies on the shared `saved-view-layout` grid and a denser command-lane layout so save/manage/compare actions stop reading as one long vertical strip on larger breakpoints.
+    - [x] Participants composition beyond the already-reclosed table scroll/stretch path
+      - [x] `#participants-content` now uses explicit command and evidence lanes so filters, interpretation guidance, summary blocks, and the bounded table read as one ranked-analysis surface instead of a stack of disconnected shells.
+    - [x] Broader desktop/tablet density and grouped-row composition for the still-stacked high-impact surfaces
+      - [x] `#weekday-trend-content` and `#timeofday-trend-content` now use explicit command and evidence lanes so pattern filters and chart stages read as one analysis surface instead of stacked control cards above charts.
+      - [x] `#sentiment-overview-content` now keeps summary tiles, guidance, daily trend, and participant extremes in a shared desktop reading flow instead of one long vertical slab.
+      - [x] `#message-types-content` now uses a lower-lane intro plus a denser metric/summary split so the message-mix section reads as grouped evidence rather than three disconnected blocks.
+  - [x] Use desktop/tablet space more efficiently with grids and grouped rows while preserving mobile readability.
   - [x] Keep dense surfaces locally bounded and scrollable where appropriate, but do not own already-tracked functional containment or export/anchor defects from Phase 52.
-    - [x] Reclosed the current regression cluster by tightening container-only scroll contracts for participants and the saved-view gallery while preserving the already-restored search results and hourly heatmap behavior.
-  - [ ] Preserve current runtime-owned IDs and interactive anchors unless another active repair task explicitly owns a contract change.
-  - [x] Record the regression repair and visual reclose evidence for the currently touched surfaces:
-    - [x] `npm run test:accessibility-smoke`
+    - [x] Current Phase 56 ownership is now explicit: preserve the repaired live-path stretch and local-scroll contract for participants, search results, hourly rhythm, and saved-view gallery while composition work continues around them.
+  - [x] Preserve current runtime-owned IDs and interactive anchors unless another active repair task explicitly owns a contract change.
+    - [x] The Phase 56 recomposition slices changed wrappers and grouping only; the runtime-owned IDs for search, saved views, timing, sentiment, exports, participants, and workspace surfaces remain stable.
+  - [x] Record the current regression repair and visual reclose evidence for touched live-path surfaces:
+    - [x] Earlier regression-reclose notes were superseded where the user-provided screenshot proved the real served app path still had unresolved stretch/visibility regressions.
     - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded|keeps the workspace state panel visible through relay connection transitions|matches relay running ready state baseline|matches relay running syncing state baseline"`
     - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --project=mobile-390 --grep "matches relay offline state baseline|matches relay waiting QR state baseline" --update-snapshots`
+    - [x] `npx vitest --run tests/pipelineRangeDashboard.test.js tests/controllerWiringContracts.test.js tests/appShellIntegration.test.js tests/appShellControllers.test.js tests/appShellBoundaryIntegration.test.js`
+    - [x] `npm run build`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "keeps workspace state guidance visible after relay connects before a chat is selected|keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded|keeps loaded search and saved-view controls reachable across breakpoints"`
+    - [x] `npx vitest --run tests/pipelineRangeDashboard.test.js tests/controllerWiringContracts.test.js`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "matches highlights section baseline|matches search panel baseline|matches saved views section baseline|keeps loaded search and saved-view controls reachable across breakpoints"`
+    - [x] `npm run build`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "matches participants section baseline|keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded|matches time-of-day section baseline"`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches sentiment section baseline|matches message-types section baseline|matches polls section baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "matches time-of-day section baseline|matches sentiment section baseline|matches message-types section baseline|matches polls section baseline"`
+    - [x] Export-proof seam cleaned up: the loaded export browser proof now seeds dataset state through a built-compatible app runtime hook and waits for real export-button bindings instead of browser-importing `/js/state.js` and `/js/analytics.js`, so it stays valid against the served `dist` app path.
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment"`
+    - [x] Repeated the same export-proof Playwright command consecutively after `npm run build` to confirm the built-path seam is stable instead of a first-run false red.
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches highlights section baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches participants section baseline|matches search panel baseline|matches saved views section baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --grep "matches highlights section baseline|matches participants section baseline|matches search panel baseline|matches saved views section baseline|matches time-of-day section baseline|matches sentiment section baseline|matches message-types section baseline|matches polls section baseline|keeps loaded search and saved-view controls reachable across breakpoints|keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded|proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment"`
+    - [x] `npm run ci:verify`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run test:accessibility-smoke` repeated consecutively to confirm the current smoke contract is stable again.
+  - [x] Complete closure audit:
+    - [x] Confirm the remaining Phase 56 work is purely recomposition/density improvement, not reopened live-path stretch or workspace-state repair.
+    - [x] Confirm the app no longer relies on long stacked panel flows where denser grouped composition is the intended UX.
+    - [x] Confirm visual improvements do not introduce new functional regressions in the touched surfaces.
+
+- [x] Phase 57: Visual Optimization Reclose.
+  - [x] Run the whole-wave validation pass against the now-complete Phase 56 recomposition work:
+    - [x] browser review at `1440 / 1024 / 768 / 390`
+    - [x] `npm run test:accessibility-smoke`
     - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
     - [x] `npm run ci:verify`
-    - [x] Adjacent regression-class result: the same live-path containment class also affected the saved-view gallery and the surrounding search/saved flex-grid parents, so the final repair moved from leaf-only overflow rules to the actual flex/grid overflow owners.
-  - [ ] Complete closure audit:
-    - [ ] Confirm the app no longer relies on long stacked panel flows where denser grouped composition is the intended UX.
-    - [ ] Confirm visual improvements do not introduce new functional regressions in the touched surfaces.
+  - [x] Reconfirm the highest-risk recomposed surface groups with targeted evidence before accepting the whole-wave reclose:
+    - [x] workspace/support/export density and relay/state continuity
+    - [x] Highlights, Participants, and Timing desktop/tablet composition
+    - [x] Search and Saved Views desktop/tablet composition plus reachability
+    - [x] message-types, sentiment, polls, and the loaded export success-path browser proof
+    - [x] targeted Vitest for controller- or bridge-owned surfaces touched by the visual wave
+  - [x] Refresh visual baselines only where the final post-Phase-56 rendering is intentional and stable across breakpoints.
+    - [x] Refreshed the final desktop long-form dashboard baseline after the recomposition wave increased the expected stitched page height.
+    - [x] Refreshed the final desktop support baseline after the whole-wave reclose settled the support section at a new stable `1px` taller height.
+  - [x] Add a dated closeout note in `docs/ui-overhaul-spec.md` for this visual-optimization wave after the whole-wave validation set is green.
+  - [x] Complete closure audit:
+    - [x] Confirm optimized surfaces are validated across `1440 / 1024 / 768 / 390`.
+    - [x] Confirm no new functional regressions were introduced by layout changes.
+    - [x] Confirm remaining visual debts are either fixed before closeout or captured explicitly.
 
-- [ ] Phase 57: Visual Optimization Reclose.
-  - [ ] Re-run whole-app visual and accessibility validation after the optimization work lands:
-    - [ ] browser review at `1440 / 1024 / 768 / 390`
-    - [ ] targeted visual checks for Highlights desktop grid, Participants dense layout, Timing panels, Search and Saved Views desktop composition, and workspace/support/export panel density
-    - [ ] `npm run test:accessibility-smoke`
-    - [ ] `npx playwright test tests/visual/dashboard.visual.spec.js`
-    - [ ] targeted Vitest for any controller- or bridge-owned surfaces touched by the layout changes
-  - [ ] Refresh visual baselines only after layouts are stable across breakpoints.
-  - [ ] Add a dated closeout note in `docs/ui-overhaul-spec.md` for this visual-optimization wave.
-  - [ ] Complete closure audit:
-    - [ ] Confirm optimized surfaces are validated across `1440 / 1024 / 768 / 390`.
-    - [ ] Confirm no new functional regressions were introduced by layout changes.
-    - [ ] Confirm remaining visual debts are either fixed before closeout or captured explicitly.
+- [x] Phase 58: Post-Reclose Story Flow Repair.
+  - [x] Repair the desktop shell/workspace story flow after the Phase 57 reclose without reopening earlier discovery or contract phases.
+    - [x] Desktop workspace now collapses to the left operational rail after a chat is selected; no reserved empty secondary pane remains in the main content column.
+    - [x] The workspace-state surface remains the live no-chat-selected callout, but it no longer keeps an empty right-side slot alive once a chat is active.
+    - [x] Runtime-owned workspace, relay, chat, range, and export IDs remained stable while the shell layout changed.
+  - [x] Convert always-open guide copy into collapsed-by-default reading help so guides stop dominating the main layout footprint.
+    - [x] Highlights, Participants, Hourly Rhythm, Busiest Weekdays, Time of Day, Mood & Sentiment, and Message Mix now expose the same collapsed `How to read` disclosure pattern by default.
+    - [x] The guide copy is preserved for accessibility and editorial support, but no longer sits open in the default desktop/tablet reading flow.
+  - [x] Recompose the touched findings and pattern-evidence surfaces around full-width evidence-first layouts:
+    - [x] Participants now uses a compact top filter row and a full-row bounded table stage instead of a left-heavy guide/command split.
+    - [x] Hourly Rhythm now uses a single responsive top control row on desktop with a full-width heatmap stage beneath it; local bounded scrolling is preserved.
+    - [x] Day by Day, Busiest Weekdays, and Time of Day now render as one vertical sequence instead of a side-by-side pattern grid.
+    - [x] Day by Day now gives the calendar the dominant card height instead of confining it to a shallow evidence pane.
+    - [x] Mood & Sentiment now uses a full-width summary-and-evidence composition instead of a left-floating summary/guide stack.
+    - [x] Message Mix now uses a full-width structured evidence layout rather than the prior asymmetrical intro-plus-side-block composition.
+  - [x] Move the operational lookup tools to the end of the analytics story without changing their runtime contracts.
+    - [x] Search and Saved Views now render after Poll Highlights and immediately before Support.
+    - [x] PrimeVue bridge IDs, action ownership, reachability, and bounded scrolling behavior remained intact while the section order changed.
+  - [x] Record the Phase 58 validation and reclose evidence:
+    - [x] `npm run build`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "renders search and saved views after the analytics story and before support"`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches participants section baseline|matches search panel baseline|matches saved views section baseline|matches time-of-day section baseline|matches sentiment section baseline|matches message-types section baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches long-form dashboard baseline|matches support section baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches highlights section baseline|preserves corrected layout contracts" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=tablet-768 --project=mobile-390 --grep "matches workspace controls baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+  - [x] Complete closure audit:
+    - [x] Confirm the desktop shell no longer leaves an empty workspace pane once a chat is active.
+    - [x] Confirm guide surfaces are available but collapsed by default across the touched sections.
+    - [x] Confirm participants, timing, sentiment, and message-mix surfaces use full-width evidence layouts while preserving bounded dense-surface behavior.
+    - [x] Confirm Search and Saved Views now sit after Poll Highlights and immediately before Support.
+    - [x] Confirm the Phase 58 follow-up is documented as a targeted story-flow repair rather than a reopening of prior audit/repair phases.
+
+- [x] Phase 59: Story Flow and Control Density Repair.
+  - [x] Replace the standalone workspace-state card with a slimmer inline status strip without changing runtime-owned empty-state wiring.
+    - [x] `#dataset-empty-callout` now renders as a full-width inline strip under the workspace header instead of a standalone secondary-pane card.
+    - [x] `#hero-status-badge`, `#hero-status-copy`, `#hero-status-meta-copy`, `#hero-sync-dot`, and `#hero-milestones` remain intact for runtime ownership.
+    - [x] Desktop chat selection no longer leaves a reserved or hidden workspace-state card footprint in the main content lane.
+  - [x] Tighten guide placement so touched sections keep help available without consuming a side lane.
+    - [x] Highlights now renders the collapsed `How to read` disclosure above the cards instead of in a left-side column.
+    - [x] Participants, Hourly Rhythm, Busiest Weekdays, Time of Day, and Mood & Sentiment keep guide disclosures collapsed and positioned above the main evidence flow.
+  - [x] Increase control density in the touched high-traffic sections while preserving runtime IDs and bounded scroll behavior.
+    - [x] Participants now merges the main filters and quick filters into one responsive top control area on desktop/tablet.
+    - [x] Hourly Rhythm now uses horizontal day/hour/range controls instead of a left-stacked control column.
+    - [x] Busiest Weekdays and Time of Day now compress their filter controls into one desktop row with clean wrap fallback rather than stacked cards.
+  - [x] Fix the calendar readability and sentiment summary regressions introduced by the prior story-flow pass.
+    - [x] Day by Day and Mood & Sentiment calendar weekday headers no longer spill or overlap in the touched desktop flow.
+    - [x] Day by Day calendars now use the card height more effectively instead of collapsing into a shallow frame.
+    - [x] Mood & Sentiment summary tiles now render as one responsive summary row on desktop rather than a stacked column.
+  - [x] Record the Phase 59 validation and reclose evidence:
+    - [x] `npm run build`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches highlights section baseline|matches participants section baseline|matches workspace controls baseline|matches time-of-day section baseline|matches sentiment section baseline|keeps workspace state guidance visible after relay connects before a chat is selected|removes the standalone workspace state card after a chat is selected" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches long-form dashboard baseline|matches workspace offline stage baseline|matches workspace waiting QR stage baseline|matches workspace syncing stage baseline|matches workspace no-chat-selected stage baseline|matches relay offline state baseline|matches relay waiting QR state baseline|matches relay running syncing state baseline|matches relay running ready state baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=mobile-390 --grep "matches relay waiting QR state baseline|matches relay running syncing state baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+  - [x] Complete closure audit:
+    - [x] Confirm the standalone Workspace State card is removed and replaced by a full-width inline status strip when setup or chat selection is incomplete.
+    - [x] Confirm highlights, participants, hourly/timing, busiest-weekdays, and sentiment guides no longer consume a left-side story lane.
+    - [x] Confirm participants, hourly, busiest-weekdays, and time-of-day controls use denser desktop rows while mobile/tablet still wrap cleanly.
+    - [x] Confirm Day by Day and Mood & Sentiment calendar headers remain readable without weekday-title spill.
+    - [x] Confirm the Phase 59 follow-up is documented as a targeted control-density/story-flow repair rather than a reopening of the closed visual reclose phases.
+
+- [x] Phase 60: Screenshot-Driven Layout Cleanup.
+  - [x] Rebuild the desktop workspace stage so the screenshot-confirmed setup/empty-state UI matches the intended strip-and-rail contract.
+    - [x] Kept the standalone Workspace State card removed and rendered `#dataset-empty-callout` as a real inline strip instead of a centered hero card.
+    - [x] Made the relay controls card and workspace tools card use the full workspace rail width instead of a narrow left-stacked column with empty space to the right.
+    - [x] Preserved all runtime-owned workspace, hero, relay, chat, range, and export IDs while the shell layout was corrected.
+  - [x] Reconcile the screenshot-confirmed findings layout regressions without reopening prior story-order work.
+    - [x] Highlights now uses a symmetric desktop card grid (`3` per row on wide desktop, `2` on mid-width desktop/tablet, `1` on mobile).
+    - [x] Participants now uses one full-width controls card that combines Show Top, Sort, Timeframe, and Quick filters.
+  - [x] Reconcile the screenshot-confirmed timing and pattern-control density regressions in the live desktop path.
+    - [x] Hourly Rhythm controls now render as one responsive control strip instead of a left- or right-stacked desktop column.
+    - [x] Busiest Days of the Week keeps the renamed title while compressing the live day/hour/range controls into one responsive desktop row.
+    - [x] Time of Day now uses one responsive desktop row for day toggles plus the focus-hours brush, with wrap only when necessary.
+  - [x] Reconcile the screenshot-confirmed calendar and sentiment summary regressions.
+    - [x] Day by Day and Mood & Sentiment calendars now reduce months-per-row so weekday labels like `Sat` no longer overflow.
+    - [x] Mood & Sentiment summary tiles now render as one desktop row instead of four stacked rows.
+  - [x] Remove or override the late shared-shell conflicts that keep re-collapsing the live desktop layout.
+    - [x] Audited and corrected the authoritative live-path selectors for the inline workspace strip, workspace rail width, sentiment dataview row, calendar month grid, and the hourly/weekday/timeofday Vue control roots.
+    - [x] The touched surfaces now rely on one authoritative live rule per affected surface instead of layered fallback overrides.
+  - [x] Record screenshot-driven validation before closure:
+    - [x] `npm run build`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --grep "matches workspace controls baseline|matches highlights section baseline|matches participants section baseline|matches long-form dashboard baseline|matches time-of-day section baseline|matches sentiment section baseline|keeps workspace state guidance visible after relay connects before a chat is selected"`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js --project=desktop-1440 --project=laptop-1024 --project=tablet-768 --grep "matches workspace controls baseline|matches workspace offline stage baseline|matches workspace waiting QR stage baseline|matches workspace syncing stage baseline|matches workspace no-chat-selected stage baseline|matches support section baseline|matches relay offline state baseline|matches relay waiting QR state baseline|matches relay running syncing state baseline|matches relay running ready state baseline" --update-snapshots`
+    - [x] `npx playwright test tests/visual/dashboard.visual.spec.js`
+    - [x] `npm run test:accessibility-smoke`
+    - [x] `npm run ci:verify`
+  - [x] Complete closure audit:
+    - [x] Confirmed the rebuilt live desktop path matches the screenshot-directed fixes before refreshing baselines.
+    - [x] Confirmed touched tablet/mobile layouts still wrap cleanly without reintroducing empty side lanes or stacked desktop-only cards.
+    - [x] Confirmed this follow-up is documented as a screenshot-driven desktop cleanup phase rather than a reopening of the closed visual reclose history.
 
 ## Recently Closed Phases
 

@@ -26,6 +26,7 @@ describe("dataStatus controller details", () => {
       formatStatusTime: vi.fn(() => "10:51"),
       getRemoteChatsLastFetchedAt: vi.fn(() => 0),
     };
+    const { savedViewsController } = deps;
 
     const controller = createDataStatusController({
       elements: {
@@ -75,6 +76,10 @@ describe("dataStatus controller details", () => {
     expect(heroSyncDot.classList.contains("hidden")).toBe(false);
     expect(dashboardRoot.classList.contains("is-syncing")).toBe(true);
     expect(notifyRelayReady).toHaveBeenCalledTimes(0);
+
+    const availabilityCallsBeforeRefreshing = savedViewsController.setDataAvailability.mock.calls.length;
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 3, syncingChats: true });
+    expect(savedViewsController.setDataAvailability.mock.calls.length).toBe(availabilityCallsBeforeRefreshing);
 
     controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 0, syncingChats: false });
     expect(heroStatusBadge.dataset.state).toBe("syncing");

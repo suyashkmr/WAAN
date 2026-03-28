@@ -121,6 +121,16 @@ export function createEventBindingsController({
     }
   }
 
+  /**
+   * @param {HTMLElement | null | undefined} button
+   * @param {(event?: any) => any} handler
+   */
+  function bindExportButton(button, handler) {
+    if (!button) return;
+    button.addEventListener("click", handler);
+    button.dataset.eventBindingsBound = "true";
+  }
+
   function initEventHandlers() {
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     const supportsShellActionDispatch =
@@ -203,53 +213,30 @@ export function createEventBindingsController({
       }
     }
 
-    if (downloadParticipantsButton) {
-      downloadParticipantsButton.addEventListener("click", exportParticipants);
-    }
-    if (downloadHourlyButton) {
-      downloadHourlyButton.addEventListener("click", exportHourly);
-    }
-    if (downloadDailyButton) {
-      downloadDailyButton.addEventListener("click", exportDaily);
-    }
-    if (downloadWeeklyButton) {
-      downloadWeeklyButton.addEventListener("click", exportWeekly);
-    }
-    if (downloadWeekdayButton) {
-      downloadWeekdayButton.addEventListener("click", exportWeekday);
-    }
-    if (downloadTimeOfDayButton) {
-      downloadTimeOfDayButton.addEventListener("click", exportTimeOfDay);
-    }
-    if (downloadMessageTypesButton) {
-      downloadMessageTypesButton.addEventListener("click", exportMessageTypes);
-    }
-    if (downloadChatJsonButton) {
-      downloadChatJsonButton.addEventListener("click", exportChatJson);
-    }
-    if (downloadSentimentButton) {
-      downloadSentimentButton.addEventListener("click", exportSentiment);
-    }
-    if (downloadMarkdownButton) {
-      downloadMarkdownButton.addEventListener("click", handleDownloadMarkdownReport);
-    }
-    if (downloadSlidesButton) {
-      downloadSlidesButton.addEventListener("click", handleDownloadSlidesReport);
-    }
-    if (downloadPdfButton) {
-      downloadPdfButton.addEventListener("click", handleDownloadPdfReport);
-    }
+    bindExportButton(downloadParticipantsButton, exportParticipants);
+    bindExportButton(downloadHourlyButton, exportHourly);
+    bindExportButton(downloadDailyButton, exportDaily);
+    bindExportButton(downloadWeeklyButton, exportWeekly);
+    bindExportButton(downloadWeekdayButton, exportWeekday);
+    bindExportButton(downloadTimeOfDayButton, exportTimeOfDay);
+    bindExportButton(downloadMessageTypesButton, exportMessageTypes);
+    bindExportButton(downloadChatJsonButton, exportChatJson);
+    bindExportButton(downloadSentimentButton, exportSentiment);
+    bindExportButton(downloadMarkdownButton, handleDownloadMarkdownReport);
+    bindExportButton(downloadSlidesButton, handleDownloadSlidesReport);
+    bindExportButton(downloadPdfButton, handleDownloadPdfReport);
 
     if (statDownloadButtons?.length) {
       statDownloadButtons.forEach(
         /** @param {Element} button */ function bindStatDownload(button) {
         button.addEventListener("click", () => handleStatDownloadClick(button));
+        if (button instanceof HTMLElement) {
+          button.dataset.eventBindingsBound = "true";
+        }
       });
     }
 
-    if (downloadSearchButton) {
-      downloadSearchButton.addEventListener("click", exportSearchResults);
-    }
+    bindExportButton(downloadSearchButton, exportSearchResults);
 
     mountDashboardPanelsIsland({ globalScope });
     const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope });

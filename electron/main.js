@@ -6,16 +6,31 @@ const { app, BrowserWindow, dialog, shell, ipcMain, Menu, Notification } = requi
 const path = require("path");
 const { spawn } = require("child_process");
 const fs = require("fs");
-const express = require("express");
+const {
+  getServerBuildFingerprint,
+  autostartReusedRelayIfNeeded,
+  assertReusableExistingClient,
+  assertReusableExistingBackend,
+  formatHostForUrl,
+  resolveReachableClientHost,
+} = require("./mainStartupHelpers.cjs");
 const { buildRelayLaunchConfig } = require("./relayLaunchConfig.cjs");
+const { detectExistingBackend, detectExistingClient } = require("./backendHealth.cjs");
+const { createStaticDashboardServer } = require("./staticDashboardServer.cjs");
 
 const DEFAULT_CLIENT_PORT = Number(
   process.env.WAAN_CLIENT_PORT || process.env.PORT || 4173
 );
 const DEFAULT_CLIENT_HOST =
   process.env.WAAN_CLIENT_HOST || process.env.HOST || "127.0.0.1";
+const DEFAULT_CLIENT_PROBE_HOST = resolveReachableClientHost(DEFAULT_CLIENT_HOST);
+const DEFAULT_BACKEND_HOST = process.env.WAAN_BIND_HOST || "127.0.0.1";
+const DEFAULT_BACKEND_PROBE_HOST = resolveReachableClientHost(DEFAULT_BACKEND_HOST);
 const DEFAULT_API_PORT = Number(process.env.WAAN_API_PORT || 3334);
 const DEFAULT_RELAY_PORT = Number(process.env.WAAN_RELAY_PORT || 4546);
+const DEFAULT_CLIENT_URL = process.env.WAAN_CLIENT_URL || `http://${formatHostForUrl(DEFAULT_CLIENT_PROBE_HOST)}:${DEFAULT_CLIENT_PORT}`;
+const DEFAULT_API_BASE = `http://${formatHostForUrl(DEFAULT_BACKEND_PROBE_HOST)}:${DEFAULT_API_PORT}/api`;
+const DEFAULT_RELAY_BASE = `http://${formatHostForUrl(DEFAULT_BACKEND_PROBE_HOST)}:${DEFAULT_RELAY_PORT}`;
 const RELAY_PORTAL_URL = "https://relay.chatscope.app";
 
 let relayProcess = null;
@@ -122,45 +137,126 @@ function startRelayProcess({ autostart = true } = {}) {
 }
 
 function startStaticServer() {
-  const webRoot = getWebRoot();
-  const appServer = express();
-
-  appServer.use(
-    express.static(webRoot, {
-      extensions: ["html"],
-      etag: false,
-      setHeaders: res => {
-        res.setHeader("Cache-Control", "no-store");
-      },
-    })
-  );
-
-  appServer.use((_req, res) => {
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    res.sendFile(path.join(webRoot, "index.html"));
+  return createStaticDashboardServer({
+    webRoot: getWebRoot(),
+    host: DEFAULT_CLIENT_HOST,
+    port: DEFAULT_CLIENT_PORT,
+  }).then(server => {
+    staticServer = server;
   });
+}
 
-  return new Promise((resolve, reject) => {
-    staticServer = appServer
-      .listen(DEFAULT_CLIENT_PORT, DEFAULT_CLIENT_HOST, () => {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[WAAN] Static dashboard available at http://${DEFAULT_CLIENT_HOST}:${DEFAULT_CLIENT_PORT}`
-        );
-        resolve();
-      })
-      .on("error", error => {
-        reject(error);
-      });
-  });
+function getExpectedDashboardModuleEntries() {
+  try {
+    const indexPath = path.join(getWebRoot(), "index.html");
+    const html = fs.readFileSync(indexPath, "utf8");
+    return Array.from(
+      html.matchAll(/<script[^>]+type=["']module["'][^>]+src=["']([^"']+)["']/gi),
+      match => match[1],
+    ).filter(src => src.startsWith("/assets/"));
+  } catch {
+    return [];
+  }
+}
+
+function getExpectedDashboardDocument() {
+  try {
+    return fs.readFileSync(path.join(getWebRoot(), "index.html"), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+function getExpectedUnpackagedDashboardEntries() {
+  try {
+    const indexPath = path.join(__dirname, "..", "index.html");
+    const html = fs.readFileSync(indexPath, "utf8");
+    const moduleEntries = Array.from(
+      html.matchAll(/<script[^>]+type=["']module["'][^>]+src=["']([^"']+)["']/gi),
+      match => match[1],
+    );
+    if (moduleEntries.includes("/src/main.js") && !moduleEntries.includes("/@vite/client")) {
+      return ["/@vite/client", ...moduleEntries];
+    }
+    return moduleEntries;
+  } catch {
+    return ["/@vite/client", "/src/main.js"];
+  }
+}
+
+function getExpectedUnpackagedDashboardDocument() {
+  try {
+    return fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+function getExpectedUnpackagedDashboardEntrySets() {
+  const entrySets = [];
+  const distEntries = getExpectedDashboardModuleEntries();
+  if (distEntries.length) {
+    entrySets.push(distEntries);
+  }
+  const devEntries = getExpectedUnpackagedDashboardEntries();
+  if (devEntries.length) {
+    entrySets.push(devEntries);
+  }
+  return entrySets;
 }
 
 async function startBackend() {
   await runRestoreScript();
-  await startStaticServer();
-  startRelayProcess({ autostart: cachedRelayAutostart });
+  const serverRoot = getServerRoot();
+  const expectedServerBuildFingerprint = getServerBuildFingerprint({ serverRoot });
+  let expectedServerVersion = null;
+  try {
+    expectedServerVersion = require(path.join(serverRoot, "package.json")).version || null;
+  } catch {
+    expectedServerVersion = null;
+  }
+  const existingClient = await detectExistingClient({
+    clientUrl: DEFAULT_CLIENT_URL,
+    allowSourceEntry: !app.isPackaged,
+    expectedModuleEntries: app.isPackaged ? getExpectedDashboardModuleEntries() : null,
+    expectedModuleEntrySets: app.isPackaged ? null : getExpectedUnpackagedDashboardEntrySets(),
+    expectedBuiltDocument: getExpectedDashboardDocument(),
+    expectedSourceDocument: app.isPackaged ? null : getExpectedUnpackagedDashboardDocument(),
+    requireAllExpectedModuleEntries: !app.isPackaged,
+  });
+  if (existingClient.ok) {
+    // eslint-disable-next-line no-console
+    console.log(`[WAAN] Reusing existing local dashboard at ${DEFAULT_CLIENT_URL}.`);
+  } else {
+    assertReusableExistingClient({ existingClient, clientUrl: DEFAULT_CLIENT_URL });
+    await startStaticServer();
+  }
+  const existingBackend = await detectExistingBackend({
+    apiBase: DEFAULT_API_BASE,
+    relayBase: DEFAULT_RELAY_BASE,
+    expectedVersion: expectedServerVersion,
+    expectedBuildFingerprint: expectedServerBuildFingerprint,
+  });
+  if (existingBackend.ok) {
+    cachedRelayStatus = existingBackend.relayStatus;
+    // eslint-disable-next-line no-console
+    console.log("[WAAN] Reusing existing local backend on 127.0.0.1.");
+    cachedRelayStatus = await autostartReusedRelayIfNeeded({
+      relayBase: DEFAULT_RELAY_BASE,
+      relayStatus: existingBackend.relayStatus,
+      autostart: cachedRelayAutostart,
+      onWarn: error => {
+        console.error("[WAAN] Reused backend relay auto-start failed:", error);
+      },
+    });
+  } else {
+    assertReusableExistingBackend({
+      existingBackend,
+      apiBase: DEFAULT_API_BASE,
+      relayBase: DEFAULT_RELAY_BASE,
+    });
+    startRelayProcess({ autostart: cachedRelayAutostart });
+  }
   buildAppMenu();
 }
 
@@ -178,9 +274,7 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
-  const clientUrl =
-    process.env.WAAN_CLIENT_URL || `http://${DEFAULT_CLIENT_HOST}:${DEFAULT_CLIENT_PORT}`;
-  mainWindow.loadURL(clientUrl);
+  mainWindow.loadURL(DEFAULT_CLIENT_URL);
   mainWindow.webContents.on("context-menu", (_event, params) => {
     const template = [];
     const hasSelection = Boolean(params.selectionText && params.selectionText.trim());

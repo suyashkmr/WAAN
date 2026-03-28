@@ -151,6 +151,66 @@ describe("appShell controllers", () => {
     expect(rangeSelect.value).toBe("custom");
   });
 
+  it("datasetLifecycle sets the active chat before the first dashboard render when selectionValue is provided", async () => {
+    const rangeSelect = document.createElement("select");
+    const optionAll = document.createElement("option");
+    optionAll.value = "all";
+    rangeSelect.append(optionAll);
+    rangeSelect.value = "all";
+
+    const analytics = {
+      total_messages: 2,
+      date_range: { start: "2025-01-01", end: "2025-01-02" },
+    };
+
+    const callOrder = [];
+    const deps = {
+      setDatasetEntries: vi.fn(),
+      setDatasetFingerprint: vi.fn(),
+      setDatasetParticipantDirectory: vi.fn(),
+      clearAnalyticsCache: vi.fn(),
+      setDatasetLabel: vi.fn(),
+      setCurrentRange: vi.fn(),
+      setCustomRange: vi.fn(),
+      resetHourlyFilters: vi.fn(),
+      resetWeekdayFilters: vi.fn(),
+      computeDatasetFingerprint: vi.fn(() => "fp-3"),
+      setCachedAnalytics: vi.fn(),
+      setDatasetAnalytics: vi.fn(),
+      setActiveChatId: vi.fn(() => {
+        callOrder.push("setActiveChatId");
+      }),
+      computeAnalyticsWithWorker: vi.fn(async () => analytics),
+      renderDashboard: vi.fn(() => {
+        callOrder.push("renderDashboard");
+      }),
+      updateCustomRangeBounds: vi.fn(),
+      refreshChatSelector: vi.fn(async () => {}),
+      updateStatus: vi.fn(),
+      setDashboardLoadingState: vi.fn(),
+      formatNumber: value => String(value),
+      nextAnalyticsRequestToken: vi.fn(() => 1),
+      isAnalyticsRequestCurrent: vi.fn(() => true),
+      resetSavedViewsForNewDataset: vi.fn(),
+      resetSearchState: vi.fn(),
+      populateSearchParticipants: vi.fn(),
+      syncPageControls: vi.fn(() => true),
+    };
+
+    const { applyEntriesToApp } = createDatasetLifecycleController({
+      elements: { rangeSelect },
+      deps,
+    });
+
+    await applyEntriesToApp(
+      [{ sender: "Ana", sender_id: "ana", message: "hello", timestamp: "2025-01-01T00:00:00Z" }],
+      "Demo",
+      { entriesNormalized: true, analyticsOverride: analytics, selectionValue: "remote:demo-1" },
+    );
+
+    expect(callOrder).toEqual(["setActiveChatId", "renderDashboard"]);
+  });
+
   it("relayBootstrap wires controls and starts polling", async () => {
     const liveActionsContainer = document.createElement("div");
     liveActionsContainer.className = "live-actions";

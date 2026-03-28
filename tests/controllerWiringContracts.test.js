@@ -260,6 +260,7 @@ describe("controllerWiring contracts", () => {
     );
     const dashboardRuntimeConfig = h.createDashboardRuntime.mock.calls[0]?.[0];
     expect(dashboardRuntimeConfig?.deps?.subscribeAppShellUiState).toBe(state.subscribeAppShellUiState);
+    expect(dashboardRuntimeConfig?.deps?.getActiveChatId).toBe(state.getActiveChatId);
     expect(dashboardRuntimeConfig?.elements).toEqual(
       expect.objectContaining({
         filterWeekdays: dom.filterWeekdays,

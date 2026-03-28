@@ -341,32 +341,130 @@
 
 .relay-workspace-shell {
     display: grid;
-    gap: 0.42rem;
+    gap: 0.9rem;
 }
 
 .relay-workspace-main {
     display: grid;
-    gap: 0.42rem;
+    gap: 1rem;
     align-items: start;
 }
 
-.relay-workspace-primary,
+.relay-workspace-strip,
+.relay-workspace-section,
 .relay-workspace-support {
     display: grid;
-    gap: 0.36rem;
+    gap: 0.55rem;
     align-content: start;
+}
+
+.workspace-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.workspace-card-kicker {
+    margin: 0 0 0.2rem;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted) 78%, var(--text));
+}
+
+.workspace-card-title {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: var(--text);
+}
+
+.workspace-control-stack {
+    display: grid;
+    gap: 0.82rem;
+}
+
+.workspace-control-group {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.workspace-control-label {
+    font-size: 0.68rem;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted) 82%, var(--text));
+}
+
+.workspace-subpanel {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.95rem 1rem;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--surface-utility-border) 80%, transparent);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--surface-supporting-bg) 94%, transparent);
+    box-shadow: none;
+}
+
+.workspace-subpanel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.workspace-subpanel-kicker {
+    font-size: 0.68rem;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--muted) 82%, var(--text));
+}
+
+.workspace-utility-subsection {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.workspace-utility-subsection + .workspace-utility-subsection {
+    padding-top: 0.85rem;
+    border-top: 1px solid color-mix(in srgb, var(--panel-header-divider) 58%, transparent);
 }
 
 #relay-status-panel {
     width: 100%;
     min-width: 0;
-    min-block-size: 6.75rem;
+    min-block-size: 0;
+    padding: 0 0 0.95rem;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--surface-utility-border) 72%, transparent);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.relay-workspace-grid {
+    display: grid;
+    gap: 1rem 1.1rem;
+}
+
+.relay-workspace-section {
+    padding: 0.15rem 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .relay-workspace-support {
-    padding: 0.18rem 0 0;
+    padding: 0;
     border: 0;
-    border-top: 1px solid color-mix(in srgb, var(--surface-utility-border) 58%, transparent);
     border-radius: 0;
     background: transparent;
 }
@@ -375,8 +473,8 @@
     margin: 0;
     max-width: none;
     width: 100%;
-    min-height: 3.5rem;
-    padding: 0.62rem 0.76rem;
+    min-height: 0;
+    padding: 0.1rem 0;
 }
 
 #relay-sidebar-live-actions {
@@ -456,6 +554,12 @@
     color: color-mix(in srgb, var(--danger, #ef4444) 68%, var(--text));
 }
 
+.relay-workspace-side-stack {
+    display: grid;
+    gap: 0.95rem;
+    align-content: start;
+}
+
 .relay-qr {
     margin: 0;
 }
@@ -465,8 +569,100 @@
 }
 
 @media (min-width: 1080px) {
-    .relay-workspace-main {
-        grid-template-columns: minmax(0, 1fr);
+    .relay-workspace-grid {
+        grid-template-columns: minmax(360px, 1.2fr) minmax(300px, 0.8fr);
+        align-items: start;
+    }
+
+    .actions-toolbar {
+        grid-template-columns: 1fr;
+    }
+}
+
+.relay-workspace-board .relay-workspace-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+}
+
+.relay-workspace-board .relay-workspace-section--controls {
+    min-width: 0;
+}
+
+.relay-workspace-board .relay-workspace-section--utility {
+    min-width: 0;
+}
+
+.relay-workspace-board .relay-workspace-strip {
+    align-content: start;
+}
+
+.relay-workspace-board .workspace-export-grid {
+    align-content: start;
+}
+
+.relay-workspace-board .workspace-subpanel--controls {
+    min-height: 100%;
+    padding-right: 0.9rem;
+    padding-left: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.relay-workspace-board .workspace-subpanel--utility-board {
+    min-height: 100%;
+    padding-left: 0.9rem;
+    padding-right: 0;
+    border: 0;
+    border-left: 1px solid color-mix(in srgb, var(--panel-header-divider) 52%, transparent);
+    border-radius: 0;
+    background: transparent;
+}
+
+.relay-workspace-board .workspace-utility-subsection--tools {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.relay-workspace-board .workspace-utility-subsection--tools > summary {
+    padding: 0;
+}
+
+.relay-workspace-board .workspace-utility-subsection--tools > div {
+    padding: 0;
+    margin-top: 0.75rem;
+}
+
+@media (min-width: 1180px) {
+    .relay-workspace-board .relay-workspace-side-stack {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .relay-workspace-board .workspace-utility-subsection + .workspace-utility-subsection {
+        padding-top: 0;
+        padding-left: 1rem;
+        border-top: 0;
+        border-left: 1px solid color-mix(in srgb, var(--panel-header-divider) 58%, transparent);
+    }
+}
+
+@media (max-width: 1180px) {
+    .relay-workspace-board .relay-workspace-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .relay-workspace-board .workspace-subpanel--controls {
+        padding-right: 0;
+    }
+
+    .relay-workspace-board .workspace-subpanel--utility-board {
+        padding-left: 0;
+        padding-top: 0.9rem;
+        border-left: 0;
+        border-top: 1px solid color-mix(in srgb, var(--panel-header-divider) 52%, transparent);
     }
 }
 

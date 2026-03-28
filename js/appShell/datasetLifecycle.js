@@ -104,14 +104,14 @@ export function createDatasetLifecycleController({ elements, deps }) {
       if (!isAnalyticsRequestCurrent(requestToken)) return null;
     }
 
-    setCachedAnalytics("all", analytics);
-    setDatasetAnalytics(analytics);
-    renderDashboard(analytics);
-    updateCustomRangeBounds();
     const selectionValue = options.selectionValue ?? null;
     if (selectionValue) {
       setActiveChatId(selectionValue);
     }
+    setCachedAnalytics("all", analytics);
+    setDatasetAnalytics(analytics);
+    renderDashboard(analytics);
+    updateCustomRangeBounds();
     await refreshChatSelector();
 
     const statusMessage =

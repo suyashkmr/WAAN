@@ -28,7 +28,7 @@ function createHttpServers({ config, store, relayManager, logger }) {
 
   const apiApp = express();
   commonMiddleware.forEach(mw => apiApp.use(mw));
-  apiApp.use("/api", buildApiRouter({ store, relayManager, logger }));
+  apiApp.use("/api", buildApiRouter({ store, relayManager, logger, config }));
 
   const relayApp = express();
   commonMiddleware.forEach(mw => relayApp.use(mw));

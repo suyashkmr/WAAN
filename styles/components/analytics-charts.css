@@ -1,14 +1,21 @@
-.hourly-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.hourly-controls,
+.weekday-controls,
+.timeofday-controls {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    align-content: flex-start;
     gap: 1rem;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.hourly-controls {
     margin-bottom: 0.75rem;
 }
 
 .weekday-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
     margin-bottom: 1rem;
 }
 
@@ -61,10 +68,22 @@
 }
 
 .timeofday-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
     margin-top: 0.75rem;
+}
+
+.hourly-controls > .toggle-group,
+.weekday-controls > .toggle-group {
+    flex: 1 1 260px;
+}
+
+.hourly-controls > .brush-group,
+.weekday-controls > .brush-group,
+.timeofday-controls > .brush-group {
+    flex: 1.5 1 420px;
+}
+
+.timeofday-controls > .toggle-group {
+    flex: 1 1 280px;
 }
 
 .timeofday-chart {
@@ -444,6 +463,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    min-width: 0;
+    align-self: stretch;
 }
 
 .toggle-label {
@@ -513,7 +534,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
-    min-width: 240px;
+    min-width: 280px;
     position: relative;
     box-shadow: var(--shadow-soft);
 }
@@ -526,9 +547,9 @@
 
 .calendar-weekdays {
     display: grid;
-    grid-template-columns: repeat(7, minmax(2.2rem, 1fr));
+    grid-template-columns: repeat(7, minmax(2.35rem, 1fr));
     gap: 0.25rem;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -541,14 +562,16 @@
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: clip;
-    padding: 0.15rem 0;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    min-height: 1.4em;
+    padding: 0.15rem 0.05rem;
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-auto-rows: minmax(48px, 1fr);
+    grid-auto-rows: minmax(56px, 1fr);
     gap: 0.25rem;
 }
 
@@ -691,6 +714,24 @@
     background: color-mix(in srgb, var(--card-bg) 90%, transparent);
 }
 
+#hourly-chart.hourly-heatmap {
+    display: block;
+    min-height: clamp(320px, 52vh, 420px);
+    max-height: clamp(320px, 52vh, 420px);
+    height: clamp(320px, 52vh, 420px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#hourly-chart > .hourly-heatmap {
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    padding-right: 0;
+}
+
 .heatmap-grid {
     display: grid;
     grid-template-columns: 72px repeat(7, minmax(56px, 1fr));
@@ -819,18 +860,6 @@
 }
 
 @media (max-width: 720px) {
-    .hourly-controls {
-        grid-template-columns: 1fr;
-    }
-
-    .weekday-controls {
-        grid-template-columns: 1fr;
-    }
-
-    .timeofday-controls {
-        grid-template-columns: 1fr;
-    }
-
     .timeofday-sparkline svg {
         height: 150px;
     }
@@ -841,6 +870,18 @@
 
     .timeofday-callouts {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 1280px) {
+    .calendar-chart {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 900px) and (max-width: 1279px) {
+    .calendar-chart {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -858,11 +899,27 @@
     .hourly-heatmap {
         max-height: 360px;
     }
+
+    #hourly-chart.hourly-heatmap {
+        min-height: clamp(280px, 48vh, 360px);
+        max-height: clamp(280px, 48vh, 360px);
+        height: clamp(280px, 48vh, 360px);
+    }
 }
 
 @media (max-width: 640px) {
+    .hourly-controls,
+    .weekday-controls,
+    .timeofday-controls {
+        flex-direction: column;
+    }
+
+    .hourly-controls .toggle-group,
+    .hourly-controls .brush-group,
     .weekday-controls .toggle-group,
-    .weekday-controls .brush-group {
+    .weekday-controls .brush-group,
+    .timeofday-controls .toggle-group,
+    .timeofday-controls .brush-group {
         width: 100%;
     }
 
@@ -883,7 +940,110 @@
         min-width: 0;
     }
 
-    .hourly-heatmap {
+    .hourly-heatmap:not(#hourly-chart) {
         max-height: none;
+    }
+
+    #hourly-chart.hourly-heatmap {
+        min-height: clamp(260px, 46vh, 340px);
+        max-height: clamp(260px, 46vh, 340px);
+        height: clamp(260px, 46vh, 340px);
+    }
+}
+
+/* Phase 65 chart and calendar reset */
+#hourly-activity .hourly-controls,
+#weekday-trend .weekday-controls,
+#timeofday-trend .timeofday-controls {
+    width: 100%;
+    justify-content: flex-start;
+    align-items: end;
+    gap: 0.8rem;
+}
+
+#weekday-trend .weekday-controls .weekday-filter-row,
+#timeofday-trend .timeofday-controls .timeofday-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#weekday-trend .weekday-controls > .weekday-filter-row,
+#timeofday-trend .timeofday-controls > .timeofday-filter-row {
+    flex: 1 1 320px;
+}
+
+#timeofday-trend .timeofday-controls > .brush-group {
+    flex: 1.3 1 420px;
+}
+
+#timeofday-trend #timeofday-chart {
+    display: grid;
+    gap: 1rem;
+    min-height: 360px;
+    align-content: start;
+}
+
+#timeofday-trend #timeofday-sparkline {
+    min-height: 180px;
+}
+
+#timeofday-trend #timeofday-callouts {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#daily-chart .calendar-chart,
+#sentiment-daily-chart .calendar-chart,
+.sentiment-calendar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    max-height: none;
+}
+
+#daily-chart .calendar-month,
+#sentiment-daily-chart .calendar-month,
+.sentiment-calendar-month {
+    min-width: 0;
+}
+
+#daily-chart .calendar-weekdays,
+#sentiment-daily-chart .calendar-weekdays,
+.sentiment-calendar-weekdays {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    font-size: 0.66rem;
+}
+
+#daily-chart .calendar-weekdays span,
+#sentiment-daily-chart .calendar-weekdays span,
+.sentiment-calendar-weekdays span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+}
+
+@media (max-width: 1279px) {
+    #daily-chart .calendar-chart,
+    #sentiment-daily-chart .calendar-chart,
+    .sentiment-calendar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #timeofday-trend #timeofday-callouts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    #daily-chart .calendar-chart,
+    #sentiment-daily-chart .calendar-chart,
+    .sentiment-calendar {
+        grid-template-columns: 1fr;
+    }
+
+    #timeofday-trend #timeofday-callouts {
+        grid-template-columns: 1fr;
     }
 }

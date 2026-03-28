@@ -76,6 +76,7 @@ class RelayManager extends EventEmitter {
       lastError: this.state.lastError,
       lastQr: this.state.lastQr,
       version: this.config.version,
+      buildFingerprint: this.config.buildFingerprint ?? null,
       account: this.state.account,
       chatsSyncedAt: this.state.chatsSyncedAt,
       chatCount: this.state.chatCount,

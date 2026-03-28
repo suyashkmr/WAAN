@@ -1,17 +1,12 @@
 import { test, expect } from "@playwright/test";
 
-function commandControlSelector(id) {
-  if (id === "search-participant") {
-    return '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant[role="combobox"], select#search-participant:not(.hidden)';
-  }
-  return `#${id}`;
-}
-
 async function openUtilityCluster(page) {
-  await page.evaluate(() => {
-    const cluster = document.getElementById("workspace-utility-cluster");
-    if (cluster instanceof HTMLDetailsElement) cluster.open = true;
-  });
+  const cluster = page.locator("#workspace-utility-cluster");
+  const summary = cluster.locator("summary").first();
+  await expect(cluster).toBeVisible();
+  await expect(summary).toBeVisible();
+  await summary.click();
+  await expect(cluster).toHaveJSProperty("open", true);
 }
 
 async function waitForShellUtilityBinding(page, ...ids) {
@@ -23,6 +18,25 @@ async function waitForShellUtilityBinding(page, ...ids) {
     if (!shellBridgeReady) return false;
     return boundIds.every(id => document.getElementById(id)?.dataset?.shellActionBound === "true");
   }, ids);
+}
+
+function commandControlLocator(page, id) {
+  if (id === "search-participant") {
+    return page.locator('[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant--primevue[role="combobox"]:visible, select#search-participant:visible').first();
+  }
+  return page.locator(`#${id}:visible`).first();
+}
+
+async function expectLocatorFocused(locator) {
+  await locator.scrollIntoViewIfNeeded();
+  await locator.focus();
+  await expect
+    .poll(async () =>
+      locator.evaluate(element =>
+        element === document.activeElement
+          || element.contains(document.activeElement),
+      ))
+    .toBe(true);
 }
 
 test.describe("WAAN Accessibility Smoke", () => {
@@ -40,7 +54,7 @@ test.describe("WAAN Accessibility Smoke", () => {
         && Boolean(document.getElementById("search-keyword"))
         && Boolean(
           document.querySelector(
-            '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant[role="combobox"], select#search-participant:not(.hidden)',
+            '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant--primevue[role="combobox"], select#search-participant:not(.hidden)',
           ),
         )
         && Boolean(document.getElementById("search-start"))
@@ -93,28 +107,9 @@ test.describe("WAAN Accessibility Smoke", () => {
     ];
 
     for (const controlId of focusSelectors) {
-      const selector = commandControlSelector(controlId);
-      await page.waitForFunction(targetSelector => {
-        const element = document.querySelector(targetSelector);
-        return Boolean(element && element.isConnected);
-      }, selector);
-      await expect
-        .poll(async () =>
-          page.evaluate(targetSelector => {
-            const element = document.querySelector(targetSelector);
-            if (!(element instanceof HTMLElement)) return false;
-            element.scrollIntoView({
-              block: "center",
-              inline: "nearest",
-            });
-            element.focus();
-            return Boolean(
-              element === document.activeElement
-                || element.contains(document.activeElement),
-            );
-          }, selector),
-        )
-        .toBe(true);
+      const target = commandControlLocator(page, controlId);
+      await expect(target).toBeVisible();
+      await expectLocatorFocused(target);
     }
   });
 
@@ -128,9 +123,9 @@ test.describe("WAAN Accessibility Smoke", () => {
       const visibleTarget = page.locator(`${selector}:visible`).first();
       if (await visibleTarget.count()) {
         await expect(visibleTarget).toBeVisible();
-        await visibleTarget.focus();
+        await expectLocatorFocused(visibleTarget);
         await expect
-          .poll(async () => page.evaluate(() => document.activeElement?.getAttribute("aria-describedby") || ""))
+          .poll(async () => visibleTarget.evaluate(element => element.getAttribute("aria-describedby") || ""))
           .toBe((await visibleTarget.getAttribute("aria-describedby")) || "");
       } else {
         await expect(page.locator(selector).first()).toHaveCount(1);
@@ -144,10 +139,7 @@ test.describe("WAAN Accessibility Smoke", () => {
     const logDrawerToggle = page.locator("#log-drawer-toggle:visible").first();
     await expect(logDrawerToggle).toBeVisible();
     await expect(logDrawerToggle).toHaveAttribute("title", /.+/);
-    await logDrawerToggle.focus();
-    await expect
-      .poll(async () => logDrawerToggle.evaluate(element => element === document.activeElement))
-      .toBe(true);
+    await expectLocatorFocused(logDrawerToggle);
 
     await page.evaluate(() => {
       document.getElementById("relay-log-drawer")?.setAttribute("aria-hidden", "false");
@@ -167,10 +159,7 @@ test.describe("WAAN Accessibility Smoke", () => {
       const target = page.locator(`${selector}:visible`).first();
       await expect(target).toBeVisible();
       await expect(target).toHaveAttribute("title", /.+/);
-      await target.focus();
-      await expect
-        .poll(async () => target.evaluate(element => element === document.activeElement))
-        .toBe(true);
+      await expectLocatorFocused(target);
     }
   });
 });

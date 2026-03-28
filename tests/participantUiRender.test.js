@@ -115,6 +115,10 @@ describe("search participant UI rendering", () => {
   it("renders the visible participant placeholder label through the bridged PrimeVue mount", () => {
     const participantSelect = document.createElement("select");
     participantSelect.id = "search-participant";
+    const participantLabel = document.createElement("label");
+    participantLabel.htmlFor = "search-participant";
+    participantLabel.textContent = "Participant";
+    document.body.appendChild(participantLabel);
     document.body.appendChild(participantSelect);
     globalThis.PrimeVue = { Select: { name: "PrimeSelectStub" } };
     const vueRuntime = {
@@ -145,6 +149,7 @@ describe("search participant UI rendering", () => {
     controller.populateParticipants();
 
     expect(document.getElementById("search-participant--mount")?.textContent).toContain("All participants");
+    expect(participantLabel.htmlFor).toBe("search-participant--primevue");
   });
 
   it("keeps bridged participant state in sync after user selection", () => {

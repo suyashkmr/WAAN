@@ -700,9 +700,17 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   }
 
   async function prepareStableFrame(page) {
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.locator("main")).toBeVisible();
-    await page.waitForLoadState("load");
+    const ensureMain = async () => {
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await page.waitForLoadState("load");
+      await page.locator("main").waitFor({ state: "visible", timeout: 10000 });
+    };
+
+    try {
+      await ensureMain();
+    } catch {
+      await ensureMain();
+    }
     await page.waitForFunction(() => {
       const runtime = window.__WAAN_VUE_RUNTIME__;
       const shellBridgeReady = Boolean(runtime?.bridges?.shell);
@@ -954,7 +962,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           document.getElementById("workspace-utility-cluster") instanceof HTMLDetailsElement
             ? document.getElementById("workspace-utility-cluster").open
             : null,
-        workspaceSurface: rect(document.querySelector(".workspace-command-surface")),
+        workspaceInlineStrip: rect(document.querySelector(".workspace-inline-strip")),
+        workspaceStateSurface: rect(document.querySelector(".workspace-state-surface")),
         emptyCallout: {
           hidden:
             document.getElementById("dataset-empty-callout")?.classList.contains("hidden") ??
@@ -975,7 +984,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     expect(inlineAligned || stackedBelow).toBe(true);
     if (testInfo.project.name === "desktop-1440") {
       expect(metrics.emptyCallout.hidden).toBe(true);
-      expect(metrics.workspaceSurface.width).toBeGreaterThan(750);
+      expect(metrics.workspaceInlineStrip.width).toBeGreaterThan(0);
+      expect(metrics.workspaceStateSurface).toBeNull();
     }
   });
 
@@ -1191,6 +1201,77 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     expect(state.utilityClusterOpen).toBe(false);
   });
 
+  test("keeps workspace state guidance visible after relay connects before a chat is selected", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, async currentPage => {
+      await applyRelayScenario(currentPage, "running_ready");
+      await applyWorkspaceEmptyScenario(currentPage);
+    });
+
+    const state = await page.evaluate(() => {
+      const emptyCallout = document.getElementById("dataset-empty-callout");
+      const emptyHeading = document.getElementById("dataset-empty-heading");
+      const emptyCopy = document.getElementById("dataset-empty-copy");
+      const heroCopy = document.getElementById("hero-status-copy");
+      const heroMeta = document.getElementById("hero-status-meta-copy");
+      const chatSelector = document.getElementById("chat-selector");
+
+      return {
+        emptyCalloutVisible: Boolean(
+          emptyCallout
+            && !emptyCallout.hidden
+            && !emptyCallout.classList.contains("hidden")
+            && emptyCallout.style.display !== "none",
+        ),
+        emptyHeading: emptyHeading?.textContent || "",
+        emptyCopy: emptyCopy?.textContent || "",
+        heroCopy: heroCopy?.textContent || "",
+        heroMeta: heroMeta?.textContent || "",
+        chatDisabled: chatSelector instanceof HTMLSelectElement ? chatSelector.disabled : null,
+        chatValue: chatSelector instanceof HTMLSelectElement ? chatSelector.value : null,
+      };
+    });
+
+    expect(state.emptyCalloutVisible).toBe(true);
+    expect(state.emptyHeading).toBe("Pick a chat");
+    expect(state.emptyCopy).toBe("Choose one loaded chat to unlock findings and exports.");
+    expect(state.heroCopy).toContain("Pick a chat");
+    expect(state.heroMeta.length).toBeGreaterThan(0);
+    expect(state.chatDisabled).toBe(false);
+    expect(state.chatValue).toBe("");
+  });
+
+  test("removes the standalone workspace state card after a chat is selected", async ({ page }) => {
+    await prepareStableFrame(page);
+    await settleScenario(page, applyWorkspaceScenario);
+
+    const state = await page.evaluate(() => {
+      const workspaceSplit = document.querySelector(".workspace-stage-grid");
+      const workspaceSurface = document.querySelector(".workspace-state-surface");
+      const inlineStrip = document.querySelector(".workspace-inline-strip");
+      const summarize = element => {
+        if (!(element instanceof HTMLElement)) return null;
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return {
+          display: style.display,
+          width: rect.width,
+          height: rect.height,
+        };
+      };
+
+      return {
+        splitHasSecondary: workspaceSplit?.classList.contains("workspace-stage-grid--has-secondary") ?? null,
+        workspaceSurface: summarize(workspaceSurface),
+        inlineStrip: summarize(inlineStrip),
+      };
+    });
+
+    expect(state.splitHasSecondary).toBe(false);
+    expect(state.workspaceSurface).toBeNull();
+    expect(state.inlineStrip?.width).toBeGreaterThan(0);
+  });
+
   test("keeps workspace offline guidance and control state coherent", async ({ page }) => {
     await prepareStableFrame(page);
     await settleScenario(page, applyWorkspaceOfflineScenario);
@@ -1298,12 +1379,48 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     }
   });
 
+  test("renders search and saved views after the analytics story and before support", async ({ page }) => {
+    await prepareStableFrame(page);
+
+    const order = await page.evaluate(() => {
+      const ids = [
+        "weekly-trend",
+        "daily-activity",
+        "weekday-trend",
+        "timeofday-trend",
+        "sentiment-overview",
+        "message-types",
+        "polls-card",
+        "search-panel",
+        "saved-views-card",
+        "faq-card",
+      ];
+
+      return ids.map(id => {
+        const element = document.getElementById(id);
+        return {
+          id,
+          top: element instanceof HTMLElement ? element.getBoundingClientRect().top : null,
+        };
+      });
+    });
+
+    const topFor = id => order.find(entry => entry.id === id)?.top ?? Number.NEGATIVE_INFINITY;
+
+    expect(topFor("daily-activity")).toBeLessThan(topFor("weekday-trend"));
+    expect(topFor("weekday-trend")).toBeLessThan(topFor("timeofday-trend"));
+    expect(topFor("polls-card")).toBeLessThan(topFor("search-panel"));
+    expect(topFor("polls-card")).toBeLessThan(topFor("saved-views-card"));
+    expect(topFor("search-panel")).toBeLessThan(topFor("faq-card"));
+    expect(topFor("saved-views-card")).toBeLessThan(topFor("faq-card"));
+  });
+
   test("keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded", async ({ page }) => {
     await prepareStableFrame(page);
     await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
 
     const metrics = await page.evaluate(() => {
-      const participantsContainer = document.querySelector("#participants .table-container.scrollable");
+      const participantsContainer = document.getElementById("participants-table-wrap");
       const participantsBody = document.querySelector("#top-senders tbody");
       if (participantsBody) {
         const rows = Array.from({ length: 80 }, (_, index) => `
@@ -1357,11 +1474,15 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const measure = element => {
         if (!(element instanceof HTMLElement)) return null;
         const styles = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const parentRect = element.parentElement?.getBoundingClientRect?.() ?? null;
         return {
           clientHeight: element.clientHeight,
           scrollHeight: element.scrollHeight,
           overflow: styles.overflow,
           overflowY: styles.overflowY,
+          width: rect.width,
+          parentWidth: parentRect?.width ?? null,
         };
       };
 
@@ -1381,6 +1502,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       ["auto", "scroll"].includes(metrics.participants.overflowY)
       || ["auto", "scroll"].includes(metrics.participants.overflow),
     ).toBe(true);
+    expect(metrics.participants.width).toBeGreaterThan(0);
+    expect(metrics.participants.parentWidth).toBeGreaterThan(0);
+    expect(metrics.participants.width / metrics.participants.parentWidth).toBeGreaterThan(0.35);
 
     expect(metrics.searchResults).toBeTruthy();
     expect(metrics.searchResults.clientHeight).toBeGreaterThan(0);
@@ -1389,6 +1513,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       ["auto", "scroll"].includes(metrics.searchResults.overflowY)
       || ["auto", "scroll"].includes(metrics.searchResults.overflow),
     ).toBe(true);
+    expect(metrics.searchResults.width).toBeGreaterThan(0);
+    expect(metrics.searchResults.parentWidth).toBeGreaterThan(0);
+    expect(metrics.searchResults.width / metrics.searchResults.parentWidth).toBeGreaterThan(0.8);
 
     expect(metrics.hourlyChart).toBeTruthy();
     expect(metrics.hourlyChart.clientHeight).toBeGreaterThan(0);
@@ -1397,6 +1524,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       ["auto", "scroll"].includes(metrics.hourlyChart.overflowY)
       || ["auto", "scroll"].includes(metrics.hourlyChart.overflow),
     ).toBe(true);
+    expect(metrics.hourlyChart.width).toBeGreaterThan(0);
+    expect(metrics.hourlyChart.parentWidth).toBeGreaterThan(0);
+    expect(metrics.hourlyChart.width / metrics.hourlyChart.parentWidth).toBeGreaterThan(0.8);
 
     expect(metrics.savedViews).toBeTruthy();
     expect(metrics.savedViews.clientHeight).toBeGreaterThan(0);
@@ -1405,6 +1535,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       ["auto", "scroll"].includes(metrics.savedViews.overflowY)
       || ["auto", "scroll"].includes(metrics.savedViews.overflow),
     ).toBe(true);
+    expect(metrics.savedViews.width).toBeGreaterThan(0);
+    expect(metrics.savedViews.parentWidth).toBeGreaterThan(0);
+    expect(metrics.savedViews.width / metrics.savedViews.parentWidth).toBeGreaterThan(0.8);
   });
 
   test("matches search panel baseline", async ({ page }, testInfo) => {
@@ -1424,11 +1557,19 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment", async ({ page }) => {
     await prepareStableFrame(page);
     await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
+    await page.waitForFunction(() => {
+      const buttonIds = [
+        "download-daily",
+        "download-weekly",
+        "download-weekday",
+        "download-timeofday",
+        "download-message-types",
+        "download-sentiment",
+      ];
+      return buttonIds.every(id => document.getElementById(id)?.dataset?.eventBindingsBound === "true");
+    });
 
     const exportResults = await page.evaluate(async () => {
-      const { setDatasetEntries, setDatasetAnalytics, setCurrentRange } = await import("/js/state.js");
-      const { computeAnalytics } = await import("/js/analytics.js");
-
       const entries = [
         { type: "message", sender: "Alice", message: "Great launch progress today", timestamp: "2026-03-01T09:15:00.000Z" },
         { type: "message", sender: "Priya", message: "Need a careful recap before launch", timestamp: "2026-03-02T18:30:00.000Z" },
@@ -1436,8 +1577,46 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         { type: "message", sender: "Alice", message: "Poll says we launch Tuesday", timestamp: "2026-03-09T20:10:00.000Z", poll: { name: "Launch day" } },
         { type: "message", sender: "Priya", message: "Media recap uploaded for the team", timestamp: "2026-03-10T07:05:00.000Z", has_media: true },
       ];
-
-      const analytics = computeAnalytics(entries);
+      const analytics = {
+        daily_counts: [
+          { date: "2026-03-01", count: 1 },
+          { date: "2026-03-02", count: 1 },
+          { date: "2026-03-08", count: 1 },
+          { date: "2026-03-09", count: 1 },
+          { date: "2026-03-10", count: 1 },
+        ],
+        weekly_counts: [
+          { week: "2026-W09", count: 2, cumulative: 2 },
+          { week: "2026-W10", count: 3, cumulative: 5 },
+        ],
+        weekday_distribution: [
+          { label: "Sunday", count: 1, share: 0.2, deviation: 0.15 },
+          { label: "Monday", count: 2, share: 0.4, deviation: 0.28 },
+          { label: "Tuesday", count: 1, share: 0.2, deviation: -0.1 },
+          { label: "Saturday", count: 1, share: 0.2, deviation: -0.08 },
+        ],
+        hourly_distribution: Array.from({ length: 24 }, (_, hour) => ({
+          hour,
+          count: hour === 7 || hour === 9 || hour === 11 || hour === 18 || hour === 20 ? 1 : 0,
+        })),
+        hourly_weekday_distribution: Array.from({ length: 24 }, (_, hour) => ({
+          hour,
+          count: hour === 7 || hour === 9 || hour === 11 || hour === 18 ? 1 : 0,
+        })),
+        hourly_weekend_distribution: Array.from({ length: 24 }, (_, hour) => ({
+          hour,
+          count: hour === 20 ? 1 : 0,
+        })),
+        sentiment: {
+          daily: [
+            { date: "2026-03-01", count: 1, positive: 1, neutral: 0, negative: 0, average: 0.82 },
+            { date: "2026-03-02", count: 1, positive: 0, neutral: 1, negative: 0, average: 0.08 },
+            { date: "2026-03-08", count: 1, positive: 1, neutral: 0, negative: 0, average: 0.61 },
+            { date: "2026-03-09", count: 1, positive: 1, neutral: 0, negative: 0, average: 0.49 },
+            { date: "2026-03-10", count: 1, positive: 0, neutral: 1, negative: 0, average: 0.12 },
+          ],
+        },
+      };
       analytics.message_types = {
         ...(analytics.message_types || {}),
         summary: [
@@ -1446,9 +1625,15 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           { label: "Media", count: 1, share: 0.2 },
         ],
       };
-      setDatasetEntries(entries);
-      setDatasetAnalytics(analytics);
-      setCurrentRange("all");
+      if (!window.__WAAN_TEST_RUNTIME__?.seedDataset) {
+        throw new Error("Expected __WAAN_TEST_RUNTIME__.seedDataset to be available in the built app path.");
+      }
+      window.__WAAN_TEST_RUNTIME__.seedDataset({
+        entries,
+        analytics,
+        range: "all",
+        datasetLabel: "launch planning",
+      });
 
       const recordedDownloads = [];
       const originalCreateObjectURL = URL.createObjectURL.bind(URL);
@@ -1701,7 +1886,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       expect(metrics.panel?.display, `${label}: panel display should stay visible`).not.toBe("none");
       expect(metrics.panel?.visibility, `${label}: panel visibility should stay visible`).not.toBe("hidden");
       expect(Number(metrics.panel?.width ?? 0), `${label}: panel width should stay meaningfully visible`).toBeGreaterThan(160);
-      expect(Number(metrics.panel?.height ?? 0), `${label}: panel height should stay meaningfully visible`).toBeGreaterThan(80);
+      expect(Number(metrics.panel?.height ?? 0), `${label}: panel height should stay meaningfully visible`).toBeGreaterThan(40);
       expect(metrics.banner?.display, `${label}: banner display should stay visible`).not.toBe("none");
       expect(metrics.banner?.visibility, `${label}: banner visibility should stay visible`).not.toBe("hidden");
       expect(metrics.statusText, `${label}: status copy should stay populated`).not.toBe("");

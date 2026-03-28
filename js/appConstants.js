@@ -6,10 +6,10 @@ export const SECTION_NAV_ITEMS = [
   { id: "participants", label: "Participants" },
   { id: "hourly-activity", label: "Rhythm" },
   { id: "deep-dive-stage", label: "Tools" },
-  { id: "search-panel", label: "Search" },
-  { id: "saved-views-card", label: "Saved" },
   { id: "message-types", label: "Message Mix" },
   { id: "polls-card", label: "Polls" },
+  { id: "search-panel", label: "Search" },
+  { id: "saved-views-card", label: "Saved" },
   { id: "faq-card", label: "Support" },
 ];
 

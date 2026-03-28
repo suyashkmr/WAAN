@@ -193,6 +193,7 @@ describe("dashboard render controller", () => {
         getDatasetLabel: () => "Demo",
         getDatasetEntries: () => [],
         getDatasetAnalytics: () => null,
+        getActiveChatId: () => "remote:demo-1",
         getCustomRange: () => null,
         getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
         updateHourlyState: vi.fn(),
@@ -291,6 +292,112 @@ describe("dashboard render controller", () => {
     });
 
     expect(renderTimeOfDay).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps workspace availability false when analytics exists but no active chat is selected", () => {
+    const setDataAvailabilityState = vi.fn();
+    const controller = createDashboardRenderController({
+      elements: {
+        summaryEl: document.createElement("div"),
+        sentimentSummaryEl: document.createElement("div"),
+        sentimentTrendNote: document.createElement("div"),
+        sentimentDailyChart: document.createElement("div"),
+        sentimentPositiveList: document.createElement("div"),
+        sentimentNegativeList: document.createElement("div"),
+        messageTypeSummaryEl: document.createElement("div"),
+        messageTypeNoteEl: document.createElement("div"),
+        pollsListEl: document.createElement("div"),
+        pollsTotalEl: document.createElement("div"),
+        pollsCreatorsEl: document.createElement("div"),
+        pollsNote: document.createElement("div"),
+      },
+      deps: {
+        getDatasetLabel: () => "Demo",
+        getDatasetEntries: () => [],
+        getDatasetAnalytics: () => null,
+        getActiveChatId: () => null,
+        getCustomRange: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        participantFilters: {},
+        setParticipantView: vi.fn(),
+        setDataAvailabilityState,
+        searchPopulateParticipants: vi.fn(),
+        searchRenderResults: vi.fn(),
+        applyCustomRange: vi.fn(),
+        subscribeAppShellUiState: vi.fn(() => () => {}),
+        formatNumber: value => String(value),
+        formatFloat: value => String(value),
+        sanitizeText: text => String(text),
+      },
+    });
+
+    controller.renderDashboard({
+      highlights: [],
+      sentiment: {},
+      message_types: {},
+      polls: {},
+      weekly_counts: [],
+      weekly_summary: {},
+      total_messages: 5,
+    });
+
+    expect(setDataAvailabilityState).toHaveBeenCalledWith(false);
+  });
+
+  it("treats local imported datasets as available even without an active chat id", () => {
+    const setDataAvailabilityState = vi.fn();
+    const controller = createDashboardRenderController({
+      elements: {
+        summaryEl: document.createElement("div"),
+        sentimentSummaryEl: document.createElement("div"),
+        sentimentTrendNote: document.createElement("div"),
+        sentimentDailyChart: document.createElement("div"),
+        sentimentPositiveList: document.createElement("div"),
+        sentimentNegativeList: document.createElement("div"),
+        messageTypeSummaryEl: document.createElement("div"),
+        messageTypeNoteEl: document.createElement("div"),
+        pollsListEl: document.createElement("div"),
+        pollsTotalEl: document.createElement("div"),
+        pollsCreatorsEl: document.createElement("div"),
+        pollsNote: document.createElement("div"),
+      },
+      deps: {
+        getDatasetLabel: () => "Imported",
+        getDatasetEntries: () => [{ id: "local-1" }],
+        getDatasetAnalytics: () => null,
+        getActiveChatId: () => null,
+        getCustomRange: () => null,
+        getHourlyState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateHourlyState: vi.fn(),
+        getWeekdayState: () => ({ filters: {}, brush: { start: 0, end: 23 } }),
+        updateWeekdayState: vi.fn(),
+        participantFilters: {},
+        setParticipantView: vi.fn(),
+        setDataAvailabilityState,
+        searchPopulateParticipants: vi.fn(),
+        searchRenderResults: vi.fn(),
+        applyCustomRange: vi.fn(),
+        subscribeAppShellUiState: vi.fn(() => () => {}),
+        formatNumber: value => String(value),
+        formatFloat: value => String(value),
+        sanitizeText: text => String(text),
+      },
+    });
+
+    controller.renderDashboard({
+      highlights: [],
+      sentiment: {},
+      message_types: {},
+      polls: {},
+      weekly_counts: [],
+      weekly_summary: {},
+      total_messages: 1,
+    });
+
+    expect(setDataAvailabilityState).toHaveBeenCalledWith(true);
   });
 
   it("registers participant action handlers on the dashboard bridge", () => {

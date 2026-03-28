@@ -24,7 +24,7 @@ function resolveChatRefreshTrackMax(value) {
   return DEFAULT_CHAT_REFRESH_TRACK_MAX;
 }
 
-function buildApiRouter({ store, relayManager, logger }) {
+function buildApiRouter({ store, relayManager, logger, config }) {
   const router = express.Router();
   const staleMs = resolveChatRefreshStaleMs(process.env.WAAN_CHAT_REFRESH_STALE_MS);
   const trackMax = resolveChatRefreshTrackMax(process.env.WAAN_CHAT_REFRESH_TRACK_MAX);
@@ -50,7 +50,12 @@ function buildApiRouter({ store, relayManager, logger }) {
   }
 
   router.get("/health", (req, res) => {
-    res.json({ ok: true, timestamp: new Date().toISOString() });
+    res.json({
+      ok: true,
+      version: config?.version ?? null,
+      buildFingerprint: config?.buildFingerprint ?? null,
+      timestamp: new Date().toISOString(),
+    });
   });
 
   router.get("/chats", async (req, res) => {

@@ -166,6 +166,7 @@ export function createDashboardDataStatusThemeWiring({
       getDatasetLabel: state.getDatasetLabel,
       getDatasetEntries: state.getDatasetEntries,
       getDatasetAnalytics: state.getDatasetAnalytics,
+      getActiveChatId: state.getActiveChatId,
       getCustomRange: state.getCustomRange,
       getHourlyState: state.getHourlyState,
       updateHourlyState: state.updateHourlyState,

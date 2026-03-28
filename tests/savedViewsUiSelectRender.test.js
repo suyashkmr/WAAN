@@ -19,10 +19,16 @@ function buildController({
 } = {}) {
   const listSelect = document.createElement("select");
   listSelect.id = "saved-view-list";
+  const listLabel = document.createElement("label");
+  listLabel.htmlFor = "saved-view-list";
   const compareSelectA = document.createElement("select");
   compareSelectA.id = "compare-view-a";
+  const compareLabelA = document.createElement("label");
+  compareLabelA.htmlFor = "compare-view-a";
   const compareSelectB = document.createElement("select");
   compareSelectB.id = "compare-view-b";
+  const compareLabelB = document.createElement("label");
+  compareLabelB.htmlFor = "compare-view-b";
   const gallery = document.createElement("div");
   const compareSummaryEl = document.createElement("div");
 
@@ -54,7 +60,16 @@ function buildController({
     deps,
   });
 
-  return { controller, deps, listSelect, compareSelectA, compareSelectB };
+  return {
+    controller,
+    deps,
+    listSelect,
+    listLabel,
+    compareSelectA,
+    compareLabelA,
+    compareSelectB,
+    compareLabelB,
+  };
 }
 
 describe("saved views select rendering", () => {
@@ -144,18 +159,36 @@ describe("saved views select rendering", () => {
         };
       },
     };
-    const { controller, listSelect, compareSelectA, compareSelectB } = buildController({
+    const {
+      controller,
+      listSelect,
+      listLabel,
+      compareSelectA,
+      compareLabelA,
+      compareSelectB,
+      compareLabelB,
+    } = buildController({
       views: [],
       compareSelection: { primary: null, secondary: null },
       vueRuntime,
     });
-    document.body.append(listSelect, compareSelectA, compareSelectB);
+    document.body.append(
+      listLabel,
+      listSelect,
+      compareLabelA,
+      compareSelectA,
+      compareLabelB,
+      compareSelectB,
+    );
 
     controller.refreshUI();
 
     expect(document.getElementById("saved-view-list--mount")?.textContent).toContain("Choose a saved view…");
     expect(document.getElementById("compare-view-a--mount")?.textContent).toContain("Select view A…");
     expect(document.getElementById("compare-view-b--mount")?.textContent).toContain("Select view B…");
+    expect(listLabel.htmlFor).toBe("saved-view-list--primevue");
+    expect(compareLabelA.htmlFor).toBe("compare-view-a--primevue");
+    expect(compareLabelB.htmlFor).toBe("compare-view-b--primevue");
   });
 
   it("keeps native saved-view select rendering when PrimeVue bridge is unavailable", () => {

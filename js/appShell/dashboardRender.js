@@ -43,6 +43,7 @@ export function createDashboardRenderController({ elements, deps }) {
     getDatasetLabel,
     getDatasetEntries,
     getDatasetAnalytics,
+    getActiveChatId = () => null,
     getCustomRange,
     getHourlyState,
     updateHourlyState,
@@ -279,7 +280,9 @@ export function createDashboardRenderController({ elements, deps }) {
       totalMessages,
       highlightCount: Array.isArray(analytics?.highlights) ? analytics.highlights.length : 0,
     });
-    setDataAvailabilityState(Boolean(analytics));
+    const datasetEntries = getDatasetEntries?.();
+    const hasDatasetEntries = Array.isArray(datasetEntries) && datasetEntries.length > 0;
+    setDataAvailabilityState(Boolean(analytics) && (Boolean(getActiveChatId()) || hasDatasetEntries));
     const renderFinishedAt = globalThis.performance?.now?.() ?? Date.now();
     logPerfDuration("dashboard.total_render", renderFinishedAt - renderStartedAt, /** @type {any} */ ({ totalMessages }));
   }

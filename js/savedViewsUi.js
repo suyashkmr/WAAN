@@ -165,7 +165,10 @@ export function createSavedViewsUiController({
       options: optionModels,
       value: select.value,
       disabled: !dataAvailableGetter(),
+      preserveNativeId: true,
+      detachPreservedNative: true,
       keepDetachedNativeValueSynced: false,
+      visibleInputId: `${select.id}--primevue`,
       vueRuntime,
     });
     if (select.value && !views.some(view => view.id === select.value)) {

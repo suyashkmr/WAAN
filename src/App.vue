@@ -10,7 +10,7 @@
     <div class="section-nav-inner"></div>
   </nav>
 
-  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col gap-16">
+  <main class="app-shell-layout w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col gap-16">
     
     <!-- Workspace Stage -->
     <section class="flex flex-col gap-10 w-full opacity-0 animate-fade-in-up" data-stage="workspace" aria-labelledby="workspace-stage-title" style="animation-delay: 50ms;">
@@ -19,15 +19,14 @@
         <h2 id="workspace-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Workspace</h2>
       </div>
 
-      <section class="flex flex-col gap-6 w-full" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
-        <div class="workspace-stage-grid flex flex-col lg:flex-row gap-8 lg:items-start" id="workspace-stage-grid">
-          
-          <WorkspaceSidebar />
-
-          <div class="workspace-command-surface flex-1 w-full min-h-[400px] flex items-center justify-center bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl relative shadow-inner">
-            <EmptyWorkspaceCallout />
+      <section class="workspace-stage flex flex-col gap-4 w-full" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
+        <div class="workspace-inline-strip">
+          <EmptyWorkspaceCallout />
+        </div>
+        <div class="workspace-stage-grid workspace-stage-grid--rail workspace-stage-grid--minimal-rail" id="workspace-stage-grid">
+          <div class="workspace-rail-lane">
+            <WorkspaceSidebar />
           </div>
-
         </div>
         <div id="data-status" class="hidden px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] text-sm rounded-lg" aria-live="polite"></div>
       </section>

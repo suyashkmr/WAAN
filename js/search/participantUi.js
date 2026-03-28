@@ -58,7 +58,10 @@ export function createSearchParticipantUiController({
       options: optionModels,
       value: participantSelect.value,
       disabled: datasetEmpty,
+      preserveNativeId: true,
+      detachPreservedNative: true,
       keepDetachedNativeValueSynced: false,
+      visibleInputId: "search-participant--primevue",
       vueRuntime,
     });
     participantOptionsCacheKey = nextCacheKey;
@@ -74,7 +77,10 @@ export function createSearchParticipantUiController({
       })),
       value: participantSelect.value,
       disabled: participantSelect.disabled,
+      preserveNativeId: true,
+      detachPreservedNative: true,
       keepDetachedNativeValueSynced: false,
+      visibleInputId: "search-participant--primevue",
       vueRuntime,
     });
   }

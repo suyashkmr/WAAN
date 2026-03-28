@@ -37,6 +37,7 @@ import {
   createControllerWiringConfig,
   createCompositionAssemblyConfig,
 } from "./appShell/compositionConfig.js";
+import { installAppTestRuntime } from "./appShell/testRuntime.js";
 
 const appDomRefs = createAppDomRefs({
   documentRef: document,
@@ -119,6 +120,17 @@ const runtimeHandlers = createRuntimeHandlers({
 const runtimeDeps = createRuntimeDeps({
   controllerWiring,
   stateStore: appState,
+});
+
+installAppTestRuntime({
+  globalScope: globalThis,
+  stateStore: appState,
+  uiRuntime: {
+    renderDashboard: controllerWiring.renderDashboard,
+    updateCustomRangeBounds: controllerWiring.updateCustomRangeBounds,
+    populateSearchParticipants: () => controllerWiring.searchController?.populateParticipants?.(),
+    renderSearchResults: () => controllerWiring.searchController?.renderResults?.(),
+  },
 });
 
 bootstrapAppShellRuntime(
