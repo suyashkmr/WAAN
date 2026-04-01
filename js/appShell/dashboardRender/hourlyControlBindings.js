@@ -33,11 +33,13 @@ export function initActivityHourlyControls({
   syncBrushLabels = null,
 }) {
   if (weekdayToggle) {
-    weekdayToggle.addEventListener("change", () => {
+    weekdayToggle.addEventListener("click", () => {
+      const isChecked = weekdayToggle.getAttribute('aria-checked') === 'true';
+      weekdayToggle.setAttribute('aria-checked', String(!isChecked));
       updateHourlyState({
         filters: {
           ...getHourlyState().filters,
-          weekdays: weekdayToggle.checked,
+          weekdays: !isChecked,
         },
       });
       ensureDayFilters();
@@ -45,11 +47,13 @@ export function initActivityHourlyControls({
   }
 
   if (weekendToggle) {
-    weekendToggle.addEventListener("change", () => {
+    weekendToggle.addEventListener("click", () => {
+      const isChecked = weekendToggle.getAttribute('aria-checked') === 'true';
+      weekendToggle.setAttribute('aria-checked', String(!isChecked));
       updateHourlyState({
         filters: {
           ...getHourlyState().filters,
-          weekends: weekendToggle.checked,
+          weekends: !isChecked,
         },
       });
       ensureDayFilters();
@@ -57,11 +61,13 @@ export function initActivityHourlyControls({
   }
 
   if (workingToggle) {
-    workingToggle.addEventListener("change", () => {
+    workingToggle.addEventListener("click", () => {
+      const isChecked = workingToggle.getAttribute('aria-checked') === 'true';
+      workingToggle.setAttribute('aria-checked', String(!isChecked));
       updateHourlyState({
         filters: {
           ...getHourlyState().filters,
-          working: workingToggle.checked,
+          working: !isChecked,
         },
       });
       ensureHourFilters();
@@ -69,11 +75,13 @@ export function initActivityHourlyControls({
   }
 
   if (offToggle) {
-    offToggle.addEventListener("change", () => {
+    offToggle.addEventListener("click", () => {
+      const isChecked = offToggle.getAttribute('aria-checked') === 'true';
+      offToggle.setAttribute('aria-checked', String(!isChecked));
       updateHourlyState({
         filters: {
           ...getHourlyState().filters,
-          offhours: offToggle.checked,
+          offhours: !isChecked,
         },
       });
       ensureHourFilters();

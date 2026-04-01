@@ -287,14 +287,14 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    weekdayToggleWeekdays.checked = false;
-    weekdayToggleWeekends.checked = true;
-    weekdayToggleWorking.checked = false;
-    weekdayToggleOffhours.checked = true;
-    weekdayToggleWeekdays.dispatchEvent(new Event("change"));
-    weekdayToggleWeekends.dispatchEvent(new Event("change"));
-    weekdayToggleWorking.dispatchEvent(new Event("change"));
-    weekdayToggleOffhours.dispatchEvent(new Event("change"));
+    weekdayToggleWeekdays.setAttribute("aria-checked", "false");
+    weekdayToggleWeekends.setAttribute("aria-checked", "true");
+    weekdayToggleWorking.setAttribute("aria-checked", "false");
+    weekdayToggleOffhours.setAttribute("aria-checked", "true");
+    weekdayToggleWeekdays.dispatchEvent(new Event("click"));
+    weekdayToggleWeekends.dispatchEvent(new Event("click"));
+    weekdayToggleWorking.dispatchEvent(new Event("click"));
+    weekdayToggleOffhours.dispatchEvent(new Event("click"));
 
     weekdayHourStartInput.value = "22";
     weekdayHourEndInput.value = "6";
@@ -332,10 +332,10 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    timeOfDayWeekdayToggle.checked = false;
-    timeOfDayWeekdayToggle.dispatchEvent(new Event("change"));
-    timeOfDayWeekendToggle.checked = true;
-    timeOfDayWeekendToggle.dispatchEvent(new Event("change"));
+    timeOfDayWeekdayToggle.setAttribute("aria-checked", "false");
+    timeOfDayWeekdayToggle.dispatchEvent(new Event("click"));
+    timeOfDayWeekendToggle.setAttribute("aria-checked", "true");
+    timeOfDayWeekendToggle.dispatchEvent(new Event("click"));
 
     timeOfDayHourStartInput.value = "20";
     timeOfDayHourEndInput.value = "8";
@@ -499,10 +499,10 @@ describe("event bindings detailed", () => {
 
     initEventHandlers();
 
-    timeOfDayWeekdayToggle.checked = false;
-    timeOfDayWeekdayToggle.dispatchEvent(new Event("change"));
-    timeOfDayWeekendToggle.checked = true;
-    timeOfDayWeekendToggle.dispatchEvent(new Event("change"));
+    timeOfDayWeekdayToggle.setAttribute("aria-checked", "false");
+    timeOfDayWeekdayToggle.dispatchEvent(new Event("click"));
+    timeOfDayWeekendToggle.setAttribute("aria-checked", "true");
+    timeOfDayWeekendToggle.dispatchEvent(new Event("click"));
 
     expect(deps.updateHourlyState).not.toHaveBeenCalled();
   });

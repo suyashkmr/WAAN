@@ -34,7 +34,7 @@ export function ensureFilterPair(state, { firstKey, secondKey, firstToggle, seco
   if (filters[firstKey] || filters[secondKey]) return;
   filters[firstKey] = true;
   filters[secondKey] = true;
-  if (firstToggle) firstToggle.checked = true;
-  if (secondToggle) secondToggle.checked = true;
+  if (firstToggle) firstToggle.setAttribute('aria-checked', 'true');
+  if (secondToggle) secondToggle.setAttribute('aria-checked', 'true');
   updateState({ filters });
 }

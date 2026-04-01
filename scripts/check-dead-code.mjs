@@ -11,7 +11,7 @@ const BIN_DIR = path.join(ROOT, "node_modules", ".bin");
 const ALLOWLISTED_UNUSED = {
   root: {
     dependencies: ["@primeuix/themes", "primevue", "vue"],
-    devDependencies: ["@vitest/coverage-v8", "depcheck", "madge"],
+    devDependencies: ["@vitest/coverage-v8", "@vitest/coverage-istanbul", "depcheck", "madge"],
   },
   server: {
     dependencies: [],

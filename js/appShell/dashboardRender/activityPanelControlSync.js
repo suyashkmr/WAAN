@@ -17,10 +17,10 @@ export function syncWeekdayControls({
   const labels = buildHourLabels(brush.start, brush.end);
   const handled = renderWithDashboardPanelsBridge("syncWeekdayControls", { filters, brush, labels });
   if (handled) return;
-  if (weekdayToggleWeekdays) weekdayToggleWeekdays.checked = filters.weekdays;
-  if (weekdayToggleWeekends) weekdayToggleWeekends.checked = filters.weekends;
-  if (weekdayToggleWorking) weekdayToggleWorking.checked = filters.working;
-  if (weekdayToggleOffhours) weekdayToggleOffhours.checked = filters.offhours;
+  if (weekdayToggleWeekdays) weekdayToggleWeekdays.setAttribute('aria-checked', String(filters.weekdays));
+  if (weekdayToggleWeekends) weekdayToggleWeekends.setAttribute('aria-checked', String(filters.weekends));
+  if (weekdayToggleWorking) weekdayToggleWorking.setAttribute('aria-checked', String(filters.working));
+  if (weekdayToggleOffhours) weekdayToggleOffhours.setAttribute('aria-checked', String(filters.offhours));
   if (weekdayHourStartInput) weekdayHourStartInput.value = String(brush.start);
   if (weekdayHourEndInput) weekdayHourEndInput.value = String(brush.end);
   syncHourLabelPair(
@@ -58,10 +58,10 @@ export function syncHourlyControls({
     labels,
   });
   if (!handledHourlyControls) {
-    if (filterWeekdays) filterWeekdays.checked = state.filters.weekdays;
-    if (filterWeekends) filterWeekends.checked = state.filters.weekends;
-    if (filterWorking) filterWorking.checked = state.filters.working;
-    if (filterOffhours) filterOffhours.checked = state.filters.offhours;
+    if (filterWeekdays) filterWeekdays.setAttribute('aria-checked', String(state.filters.weekdays));
+    if (filterWeekends) filterWeekends.setAttribute('aria-checked', String(state.filters.weekends));
+    if (filterWorking) filterWorking.setAttribute('aria-checked', String(state.filters.working));
+    if (filterOffhours) filterOffhours.setAttribute('aria-checked', String(state.filters.offhours));
     if (hourlyBrushStartInput) hourlyBrushStartInput.value = String(state.brush.start);
     if (hourlyBrushEndInput) hourlyBrushEndInput.value = String(state.brush.end);
     syncHourLabelPair(
@@ -81,8 +81,8 @@ export function syncHourlyControls({
     labels,
   });
   if (handledTimeOfDayControls) return;
-  if (timeOfDayWeekdayToggle) timeOfDayWeekdayToggle.checked = state.filters.weekdays;
-  if (timeOfDayWeekendToggle) timeOfDayWeekendToggle.checked = state.filters.weekends;
+  if (timeOfDayWeekdayToggle) timeOfDayWeekdayToggle.setAttribute('aria-checked', String(state.filters.weekdays));
+  if (timeOfDayWeekendToggle) timeOfDayWeekendToggle.setAttribute('aria-checked', String(state.filters.weekends));
   if (timeOfDayHourStartInput) timeOfDayHourStartInput.value = String(state.brush.start);
   if (timeOfDayHourEndInput) timeOfDayHourEndInput.value = String(state.brush.end);
   syncHourLabelPair(

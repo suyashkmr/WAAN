@@ -11,7 +11,7 @@ export function createRelayHeaderActionsRoot(h, onAction) {
       return [
         renderActionButton(h, {
           type: "button",
-          className: "ghost-button small",
+          className: "wa-button dense",
           id: "relay-reload-all",
           text: "Reload chats",
           disabled: true,
@@ -22,7 +22,7 @@ export function createRelayHeaderActionsRoot(h, onAction) {
         }),
         renderActionButton(h, {
           type: "button",
-          className: "ghost-button small danger",
+          className: "wa-button dense wa-button--danger",
           id: "relay-clear-storage",
           text: "Clear cache",
           disabled: true,
@@ -45,58 +45,97 @@ export function createRelayLiveActionsRoot(h, onAction) {
     name: "RelayLiveActionsPrimitive",
     render() {
       return [
-        h("div", { class: "flex flex-col gap-3 w-full" }, [
-          // Primary Action
-          renderActionButton(h, {
-            type: "button",
-            className: "ghost-button",
-            id: "relay-start",
-            text: "Start relay",
-            onClick: event => onAction("relay.primaryAction", {
-              currentTarget: event?.currentTarget ?? null,
-              target: event?.target ?? null,
-            }),
-          }),
-          
-          // Secondary Sync Actions
-          h("div", { class: "live-button-group flex gap-2" }, [
-            renderActionButton(h, {
-              type: "button",
-              className: "ghost-button flex-1",
-              id: "relay-stop",
-              text: "Pause sync",
-              disabled: true,
-              onClick: () => onAction("relay.stop"),
-            }),
-            renderActionButton(h, {
-              type: "button",
-              className: "ghost-button danger flex-1",
-              id: "relay-logout",
-              text: "Logout",
-              disabled: true,
-              onClick: () => onAction("relay.logout"),
-            }),
-          ]),
-
-          // Utility Actions
+        h("div", { class: "flex flex-col gap-2 w-full" }, [
+          // Primary Relay Controls (Start/Pause/Logout)
           h("div", { class: "flex gap-2" }, [
             renderActionButton(h, {
               type: "button",
-              className: "ghost-button tiny flex-1",
-              id: "relay-reload-all",
-              text: "Reload",
-              disabled: true,
-              onClick: event => onAction("relay.reloadAll", {
+              className: "wa-button wa-button--primary flex-[2]",
+              id: "relay-start",
+              text: "Start relay",
+              onClick: event => onAction("relay.primaryAction", {
                 currentTarget: event?.currentTarget ?? null,
                 target: event?.target ?? null,
               }),
             }),
             renderActionButton(h, {
               type: "button",
-              className: "ghost-button tiny danger flex-1",
-              id: "relay-clear-storage",
-              text: "Clear cache",
+              className: "wa-button flex-1",
+              id: "relay-stop",
+              text: "Pause",
               disabled: true,
+              onClick: () => onAction("relay.stop"),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "wa-button wa-button--danger",
+              id: "relay-logout",
+              text: "Exit",
+              disabled: true,
+              onClick: () => onAction("relay.logout"),
+              icon: h("svg", { class: "w-4 h-4", style: "fill: currentColor", viewbox: "0 0 24 24" }, [
+                h("path", { d: "M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 00-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" })
+              ])
+            }),
+          ]),
+
+          // Utility & Recovery Toolbar (Reload / Resync / Reconnect / Clear)
+          h("div", { class: "flex flex-wrap gap-1.5 pt-1 mt-1 relay-utility-toolbar" }, [
+            renderActionButton(h, {
+              type: "button",
+              className: "wa-button dense flex-1",
+              id: "relay-recovery-reconnect",
+              text: "Reconnect",
+              disabled: true,
+              attrs: {
+                hidden: true,
+              },
+              onClick: event => onAction("relay.recoveryReconnect", {
+                currentTarget: event?.currentTarget ?? null,
+                target: event?.target ?? null,
+              }),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "wa-button dense flex-1",
+              id: "relay-recovery-resync",
+              text: "Resync",
+              disabled: true,
+              attrs: {
+                hidden: true,
+              },
+              onClick: event => onAction("relay.recoveryResync", {
+                currentTarget: event?.currentTarget ?? null,
+                target: event?.target ?? null,
+              }),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "wa-button dense flex-1",
+              id: "relay-reload-all",
+              text: "Reload",
+              onClick: event => onAction("relay.reloadAll"),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "wa-button dense flex-1",
+              id: "relay-recovery-export",
+              text: "Export diagnostics",
+              disabled: true,
+              attrs: {
+                hidden: true,
+              },
+              onClick: event => onAction("relay.recoveryExportDiagnostics", {
+                currentTarget: event?.currentTarget ?? null,
+                target: event?.target ?? null,
+              }),
+            }),
+            renderActionButton(h, {
+              type: "button",
+              className: "wa-button dense wa-button--danger",
+              id: "relay-clear-storage",
+              text: "Purge",
+              title: "Clear local cache",
               onClick: event => onAction("relay.clearStorage", {
                 currentTarget: event?.currentTarget ?? null,
                 target: event?.target ?? null,

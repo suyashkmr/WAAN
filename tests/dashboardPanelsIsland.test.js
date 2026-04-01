@@ -389,7 +389,7 @@ describe("dashboard panels island", () => {
 
     expect(document.getElementById("hourly-brush-start")?.value).toBe("4");
     expect(document.getElementById("weekday-hour-start")?.value).toBe("6");
-    expect(document.getElementById("timeofday-toggle-weekdays")?.checked).toBe(false);
+    expect(document.getElementById("timeofday-toggle-weekdays")?.getAttribute("aria-checked") === "true").toBe(false);
 
     const hourlyEndInput = document.getElementById("hourly-brush-end");
     if (hourlyEndInput) {
@@ -401,11 +401,11 @@ describe("dashboard panels island", () => {
       weekdayEndInput.value = "16";
       weekdayEndInput.dispatchEvent(new Event("input"));
     }
-    document.getElementById("timeofday-toggle-weekdays")?.dispatchEvent(new Event("change"));
+    document.getElementById("timeofday-toggle-weekdays")?.dispatchEvent(new Event("click"));
     await fakeWindow.Vue.nextTick();
 
     expect(hourlyBrushHandler).toHaveBeenCalledWith({ start: 4, end: 14 });
     expect(weekdayBrushHandler).toHaveBeenCalledWith({ start: 6, end: 16 });
-    expect(timeOfDayFilterHandler).toHaveBeenCalledWith({ filterKey: "weekdays", checked: false });
+    expect(timeOfDayFilterHandler).toHaveBeenCalledWith({ filterKey: "weekdays", checked: true });
   });
 });

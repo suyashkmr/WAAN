@@ -38,21 +38,13 @@
            <!-- Buttons are dynamically mounted here by RelayLiveActionsPrimitive -->
         </div>
 
-        <!-- Recovery actions (shown on error/disconnected) -->
-        <div class="flex flex-wrap gap-2 mt-2" id="relay-status-actions" hidden>
-          <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" id="relay-recovery-reconnect">Reconnect</button>
-          <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" id="relay-recovery-resync">Resync</button>
-          <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" id="relay-recovery-export">Export diagnostics</button>
-        </div>
+        <!-- Recovery actions (now consolidated in live-actions) -->
       </section>
 
       <div class="relay-workspace-grid workspace-operation-board">
         <section class="relay-workspace-section relay-workspace-section--controls workspace-subpanel workspace-subpanel--controls">
-          <div class="workspace-card-header">
-            <div>
-              <p class="workspace-card-kicker">Controls</p>
-              <h3 class="workspace-card-title">Workspace rail</h3>
-            </div>
+          <div class="workspace-card-header pb-2 border-b border-[var(--border)] mb-4">
+            <h3 class="workspace-card-title text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)]">Workspace rail</h3>
           </div>
           <div class="workspace-subpanel-header">
             <span class="workspace-subpanel-kicker">Chat scope</span>
@@ -61,7 +53,7 @@
             <label class="workspace-control-group" for="chat-selector">
               <span class="workspace-control-label">Loaded chats</span>
               <div class="relative">
-                <select id="chat-selector" disabled class="w-full appearance-none bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                <select id="chat-selector" disabled class="wa-select">
                   <option value="">No chats loaded yet</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-[var(--text-muted)]">
@@ -73,7 +65,7 @@
             <label class="workspace-control-group" for="global-range">
               <span class="workspace-control-label">Time range</span>
               <div class="relative">
-                <select id="global-range" class="w-full appearance-none bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-all hover:bg-[var(--surface-hover)] cursor-pointer">
+                <select id="global-range" class="wa-select">
                   <option value="all" selected>All time</option>
                   <option value="30">Last 30 days</option>
                   <option value="90">Last 90 days</option>
@@ -93,7 +85,7 @@
                 <input type="date" id="custom-start" class="w-full bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
                 <span class="text-[var(--text-muted)] text-sm self-center justify-self-center hidden sm:inline">to</span>
                 <input type="date" id="custom-end" class="w-full bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
-                <button type="button" class="w-full sm:w-auto px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]" id="apply-custom-range">Apply</button>
+                <button type="button" class="wa-button wa-button--primary w-full sm:w-auto" id="apply-custom-range">Apply</button>
               </div>
             </div>
           </div>
@@ -112,15 +104,15 @@
                 <span class="workspace-subpanel-kicker">Essential outputs</span>
               </div>
               <section class="actions-toolbar workspace-export-grid grid grid-cols-1 gap-2" id="actions-toolbar" aria-label="Dataset actions">
-                <button type="button" class="w-full h-10 flex items-center justify-between px-3 text-sm font-medium rounded-lg bg-transparent border border-transparent hover:bg-[var(--surface-hover)] hover:border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group" id="download-pdf">
+                <button type="button" class="wa-button wa-button--ghost justify-between w-full group" id="download-pdf">
                   <span>Export PDF</span>
                   <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 </button>
-                <button type="button" class="w-full h-10 flex items-center justify-between px-3 text-sm font-medium rounded-lg bg-transparent border border-transparent hover:bg-[var(--surface-hover)] hover:border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group" id="download-markdown-report">
+                <button type="button" class="wa-button wa-button--ghost justify-between w-full group" id="download-markdown-report">
                   <span>Export text report</span>
                   <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </button>
-                <button type="button" class="w-full h-10 flex items-center justify-between px-3 text-sm font-medium rounded-lg bg-transparent border border-transparent hover:bg-[var(--surface-hover)] hover:border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] group" id="download-slides-report">
+                <button type="button" class="wa-button wa-button--ghost justify-between w-full group" id="download-slides-report">
                   <span>Export slides</span>
                   <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
                 </button>
@@ -139,9 +131,9 @@
               <div class="p-4 pt-0 flex flex-col gap-4 border-t border-[var(--border)] mt-2">
         <!-- Shortcuts -->
         <div class="flex flex-col gap-1 mt-4">
-          <button type="button" class="text-left px-3 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] rounded-md transition-colors" id="onboarding-start" title="Open the setup reminder.">Setup tips</button>
-          <button type="button" class="text-left px-3 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] rounded-md transition-colors" id="compact-toggle" aria-pressed="false" title="Switch between compact and comfort layouts">Compact mode</button>
-          <button type="button" class="text-left px-3 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] rounded-md transition-colors" id="log-drawer-toggle" title="Use diagnostics if sync stalls or reconnect fails.">Diagnostics</button>
+          <button type="button" class="wa-button wa-button--ghost w-full !justify-start" id="onboarding-start" title="Reopen guided setup tips for relay, sync, and workspace controls.">Setup tips</button>
+          <button type="button" class="wa-button wa-button--ghost w-full !justify-start" id="compact-toggle" aria-pressed="false" title="Switch between compact and comfort layouts">Compact mode</button>
+          <button type="button" class="wa-button wa-button--ghost w-full !justify-start" id="log-drawer-toggle" title="Use diagnostics if sync stalls or reconnect fails.">Diagnostics</button>
         </div>
 
         <!-- Display Theme Toggle -->
@@ -165,8 +157,8 @@
 
         <!-- Accessibility Controls -->
         <div class="flex flex-col gap-2 pt-3 border-t border-[var(--border)]" aria-label="Accessibility options">
-          <button type="button" class="w-full text-left px-3 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] rounded-md transition-colors" id="reduce-motion-toggle" aria-pressed="mixed" title="Cycle between reduced and standard motion.">Motion: Standard</button>
-          <button type="button" class="w-full text-left px-3 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--surface-hover)] rounded-md transition-colors" id="high-contrast-toggle" aria-pressed="false" title="Toggle high-contrast color treatment.">Contrast: Standard</button>
+          <button type="button" class="wa-button wa-button--ghost w-full !justify-start" id="reduce-motion-toggle" aria-pressed="mixed" title="Cycle between reduced and standard motion.">Motion: Standard</button>
+          <button type="button" class="wa-button wa-button--ghost w-full !justify-start" id="high-contrast-toggle" aria-pressed="false" title="Toggle high-contrast color treatment.">Contrast: Standard</button>
         </div>
               </div>
             </details>

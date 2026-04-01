@@ -5977,7 +5977,7 @@ body[data-compact="true"] .table-container.scrollable {
 
 @media (min-width: 1080px) {
     .app-shell-layout .shell-split--sentiment {
-        grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+        grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
     }
 }
 

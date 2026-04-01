@@ -188,14 +188,21 @@ describe("shell primitive views", () => {
       liveTree,
       node => node?.props?.id === "relay-logout",
     );
+    const recoveryExportButton = findNode(
+      liveTree,
+      node => node?.props?.id === "relay-recovery-export",
+    );
     expect(connectButton).toBeTruthy();
     expect(stopButton).toBeTruthy();
     expect(logoutButton).toBeTruthy();
+    expect(recoveryExportButton).toBeTruthy();
     expect(stopButton.props.disabled).toBe(true);
     expect(logoutButton.props.disabled).toBe(true);
+    expect(recoveryExportButton.props.disabled).toBe(true);
     connectButton.props.onClick();
     stopButton.props.onClick();
     logoutButton.props.onClick();
+    recoveryExportButton.props.onClick();
 
     expect(onAction).toHaveBeenNthCalledWith(1, "relay.reloadAll", {
       currentTarget: null,
@@ -211,5 +218,9 @@ describe("shell primitive views", () => {
     });
     expect(onAction).toHaveBeenNthCalledWith(4, "relay.stop");
     expect(onAction).toHaveBeenNthCalledWith(5, "relay.logout");
+    expect(onAction).toHaveBeenNthCalledWith(6, "relay.recoveryExportDiagnostics", {
+      currentTarget: null,
+      target: null,
+    });
   });
 });

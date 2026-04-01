@@ -4,15 +4,18 @@ function renderCheckboxControl(h, {
   checked,
   onChange,
 }) {
-  return h("label", { class: "segmented-option" }, [
-    h("input", {
-      type: "checkbox",
-      id,
-      checked: Boolean(checked),
-      onChange,
-    }),
-    h("span", null, label),
-  ]);
+  return h("button", {
+    type: "button",
+    role: "switch",
+    "aria-checked": checked ? "true" : "false",
+    id,
+    class: "segmented-pill-button",
+    onClick: event => {
+      const isChecked = event.target.getAttribute("aria-checked") === "true";
+      event.target.setAttribute("aria-checked", String(!isChecked));
+      onChange(event);
+    }
+  }, label);
 }
 
 function renderBrushControl(h, {
@@ -32,6 +35,7 @@ function renderBrushControl(h, {
       h("input", {
         type: "range",
         id: startId,
+        class: "premium-range-slider",
         min: "0",
         max: "23",
         value: String(startValue),
@@ -40,6 +44,7 @@ function renderBrushControl(h, {
       h("input", {
         type: "range",
         id: endId,
+        class: "premium-range-slider",
         min: "0",
         max: "23",
         value: String(endValue),
@@ -68,7 +73,7 @@ export function createHourlyControlsRoot(h, controlsState, dispatchPanelAction) 
             onChange: event => {
               dispatchPanelAction("hourly:set-day-filter", {
                 filterKey: "weekdays",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -79,7 +84,7 @@ export function createHourlyControlsRoot(h, controlsState, dispatchPanelAction) 
             onChange: event => {
               dispatchPanelAction("hourly:set-day-filter", {
                 filterKey: "weekends",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -93,7 +98,7 @@ export function createHourlyControlsRoot(h, controlsState, dispatchPanelAction) 
             onChange: event => {
               dispatchPanelAction("hourly:set-hour-filter", {
                 filterKey: "working",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -104,7 +109,7 @@ export function createHourlyControlsRoot(h, controlsState, dispatchPanelAction) 
             onChange: event => {
               dispatchPanelAction("hourly:set-hour-filter", {
                 filterKey: "offhours",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -149,7 +154,7 @@ export function createWeekdayControlsRoot(h, controlsState, dispatchPanelAction)
             onChange: event => {
               dispatchPanelAction("weekday:set-day-filter", {
                 filterKey: "weekdays",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -160,7 +165,7 @@ export function createWeekdayControlsRoot(h, controlsState, dispatchPanelAction)
             onChange: event => {
               dispatchPanelAction("weekday:set-day-filter", {
                 filterKey: "weekends",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -174,7 +179,7 @@ export function createWeekdayControlsRoot(h, controlsState, dispatchPanelAction)
             onChange: event => {
               dispatchPanelAction("weekday:set-hour-filter", {
                 filterKey: "working",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -185,7 +190,7 @@ export function createWeekdayControlsRoot(h, controlsState, dispatchPanelAction)
             onChange: event => {
               dispatchPanelAction("weekday:set-hour-filter", {
                 filterKey: "offhours",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -230,7 +235,7 @@ export function createTimeOfDayControlsRoot(h, controlsState, dispatchPanelActio
             onChange: event => {
               dispatchPanelAction("timeofday:set-day-filter", {
                 filterKey: "weekdays",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),
@@ -241,7 +246,7 @@ export function createTimeOfDayControlsRoot(h, controlsState, dispatchPanelActio
             onChange: event => {
               dispatchPanelAction("timeofday:set-day-filter", {
                 filterKey: "weekends",
-                checked: Boolean(event?.target?.checked),
+                checked: event?.target?.getAttribute('aria-checked') === 'true',
               });
             },
           }),

@@ -270,7 +270,7 @@ describe("activityPanels detailed", () => {
       brush: hourlyState.brush,
       labels: { start: "04:00", end: "15:00" },
     });
-    expect(elements.filterWeekdays.checked).toBe(false);
+    expect(elements.filterWeekdays.getAttribute("aria-checked") === "true").toBe(false);
     expect(elements.hourlyBrushStartInput.value).toBe("");
   });
 
@@ -346,10 +346,10 @@ describe("activityPanels detailed", () => {
     expect(brushStart.value).toBe("3");
     expect(brushEnd.value).toBe("21");
 
-    filterWeekdays.checked = false;
-    filterWeekends.checked = false;
-    filterWeekdays.dispatchEvent(new Event("change"));
-    filterWeekends.dispatchEvent(new Event("change"));
+    filterWeekdays.setAttribute("aria-checked", "false");
+    filterWeekends.setAttribute("aria-checked", "false");
+    filterWeekdays.dispatchEvent(new Event("click"));
+    filterWeekends.dispatchEvent(new Event("click"));
     hourlyState.filters = {
       ...hourlyState.filters,
       weekdays: false,
@@ -359,10 +359,10 @@ describe("activityPanels detailed", () => {
     expect(hourlyState.filters.weekdays).toBe(true);
     expect(hourlyState.filters.weekends).toBe(true);
 
-    filterWorking.checked = false;
-    filterOffhours.checked = false;
-    filterWorking.dispatchEvent(new Event("change"));
-    filterOffhours.dispatchEvent(new Event("change"));
+    filterWorking.setAttribute("aria-checked", "false");
+    filterOffhours.setAttribute("aria-checked", "false");
+    filterWorking.dispatchEvent(new Event("click"));
+    filterOffhours.dispatchEvent(new Event("click"));
     hourlyState.filters = {
       ...hourlyState.filters,
       working: false,
@@ -536,8 +536,8 @@ describe("activityPanels detailed", () => {
     controller.renderWeekdayPanel({ weekday_distribution: [1], weekday_stats: { peak: 2 } });
     expect(weekdayState.distribution).toEqual([1]);
     expect(weekdayState.stats).toEqual({ peak: 2 });
-    expect(elements.weekdayToggleWeekdays.checked).toBe(true);
-    expect(elements.weekdayToggleWorking.checked).toBe(true);
+    expect(elements.weekdayToggleWeekdays.getAttribute("aria-checked") === "true").toBe(true);
+    expect(elements.weekdayToggleWorking.getAttribute("aria-checked") === "true").toBe(true);
     expect(bridge.renderWeekdayChart).toHaveBeenCalledTimes(1);
 
     controller.rerenderHourlyFromState();

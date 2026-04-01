@@ -95,32 +95,6 @@
     gap: calc(var(--command-surface-gap) + 0.08rem);
 }
 
-.saved-view-command-board {
-    display: grid;
-    gap: 0.9rem;
-    min-width: 0;
-    align-content: start;
-}
-
-.saved-view-subsection {
-    display: grid;
-    gap: 0.75rem;
-    min-width: 0;
-}
-
-.search-results-lane {
-    display: grid;
-    gap: 0.82rem;
-    min-width: 0;
-    min-height: 0;
-    align-content: start;
-}
-
-.search-results-lane .search-strip-row--status {
-    padding-top: 0;
-    border-top: 0;
-}
-
 .saved-view-save {
     display: flex;
     flex-direction: column;
@@ -571,20 +545,6 @@
 }
 
 @media (min-width: 900px) {
-    .saved-view-layout {
-        grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
-        align-items: start;
-    }
-
-    .saved-view-command-lane {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        align-items: start;
-    }
-
-    .saved-view-command-lane > .saved-view-compare {
-        grid-column: 1 / -1;
-    }
-
     .search-panel-layout {
         grid-template-columns: minmax(300px, 0.88fr) minmax(0, 1.12fr);
     }
@@ -602,9 +562,7 @@
     .deep-dive-tools-grid :is(.search-panel, .saved-views) {
         height: 100%;
     }
-}
 
-@media (min-width: 1180px) {
     .search-controls {
         grid-template-columns: repeat(4, minmax(180px, 1fr));
     }
@@ -971,14 +929,12 @@
 .search-results-list {
     display: block;
     position: relative;
-    min-width: 0;
     max-height: clamp(320px, 60vh, 640px);
     min-height: 260px;
     overflow-y: auto;
     padding: 0.15rem 0.25rem 0 0;
     overscroll-behavior: contain;
     border-top: 1px solid color-mix(in srgb, var(--border) 54%, transparent);
-    -webkit-overflow-scrolling: touch;
 }
 
 .search-results-list .virtual-items {
@@ -1066,8 +1022,6 @@ body[data-compact="true"] .saved-view-card {
     display: grid;
     gap: 0.9rem;
     grid-template-columns: minmax(0, 1fr);
-    min-width: 0;
-    min-height: 0;
 }
 
 .saved-view-command-lane,
@@ -1075,20 +1029,10 @@ body[data-compact="true"] .saved-view-card {
     display: grid;
     gap: 0.9rem;
     align-content: start;
-    min-width: 0;
-    min-height: 0;
 }
 
 .saved-view-results-lane {
     padding-top: 0.12rem;
-    min-height: 0;
-}
-
-.search-strip-flow,
-#search-panel-content,
-#saved-views-content {
-    min-width: 0;
-    min-height: 0;
 }
 
 .saved-view-panel {
@@ -1241,30 +1185,6 @@ body[data-compact="true"] .saved-view-card {
     gap: 0.95rem;
 }
 
-#saved-views-card .saved-view-command-board {
-    display: grid;
-    gap: 0.9rem;
-    padding: 1rem;
-    border: 1px solid color-mix(in srgb, var(--surface-utility-border) 82%, transparent);
-    border-radius: 1rem;
-    background: color-mix(in srgb, var(--surface-supporting-bg) 94%, transparent);
-    box-shadow: none;
-}
-
-#saved-views-card .saved-view-subsection + .saved-view-subsection {
-    padding-top: 0.85rem;
-    border-top: 1px solid color-mix(in srgb, var(--panel-header-divider) 58%, transparent);
-}
-
-#saved-views-card :is(.saved-view-actions, .saved-view-manage, .saved-view-compare) {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-}
-
 #saved-views-card .saved-view-actions {
     display: flex;
     flex-direction: column;
@@ -1272,23 +1192,11 @@ body[data-compact="true"] .saved-view-card {
 }
 
 @media (min-width: 780px) {
-    #saved-views-card .saved-view-command-board {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.9rem 1rem;
-        align-items: start;
-    }
-
     #saved-views-card .saved-view-actions {
-        grid-column: 1 / -1;
         display: grid;
-        grid-template-columns: minmax(260px, 1.25fr) auto;
+        grid-template-columns: minmax(260px, 1.25fr) minmax(280px, 1fr);
         column-gap: 0.9rem;
         align-items: end;
-    }
-
-    #saved-views-card .saved-view-subsection + .saved-view-subsection {
-        padding-top: 0;
-        border-top: 0;
     }
 }
 
@@ -1312,22 +1220,8 @@ body[data-compact="true"] .saved-view-card {
 }
 
 #saved-views-card .saved-view-gallery {
-    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1rem;
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: clamp(320px, 54vh, 680px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-right: 0.2rem;
-    -webkit-overflow-scrolling: touch;
-    align-content: start;
-}
-
-#saved-views-card .saved-view-compare {
-    display: grid;
-    gap: 0.72rem;
 }
 
 @media (min-width: 860px) {

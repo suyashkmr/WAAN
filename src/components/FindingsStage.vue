@@ -1,17 +1,16 @@
 <template>
-  <section class="flex flex-col gap-10 w-full" id="guided-findings-stage" data-stage="findings" aria-labelledby="guided-findings-title">
+  <section class="flex flex-col gap-6 w-full" id="guided-findings-stage" data-stage="findings" aria-labelledby="guided-findings-title">
     
     <!-- Stage Header -->
     <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
       <h2 id="guided-findings-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Findings</h2>
     </div>
 
-    <div class="flex flex-col gap-12">
+    <div class="flex flex-col gap-8">
       
-      <!-- Overview Block -->
-      <section class="flex flex-col gap-4" id="workspace-overview" data-nav-target="overview">
+      <section class="flex flex-col gap-3" id="workspace-overview" data-nav-target="overview">
         <div class="flex flex-col">
-          <p class="text-xs font-medium uppercase tracking-wider text-[var(--accent)] m-0">Overview</p>
+          <p class="premium-kicker" data-accent="true">Overview</p>
           <h2 class="text-xl font-semibold text-[var(--text)] m-0">Conversation summary</h2>
         </div>
         <div class="w-full">
@@ -22,7 +21,7 @@
 
       <!-- Highlights Block -->
       <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--signal" aria-labelledby="guided-findings-signal-title">
-        <h3 id="guided-findings-signal-title" class="text-lg font-semibold text-[var(--text)] m-0 px-2 border-l-2 border-[var(--accent)]">Highlights</h3>
+        <h3 id="guided-findings-signal-title" class="sr-only">Highlights</h3>
 
         <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell" data-accent="highlights">
           <!-- Card Header -->
@@ -52,7 +51,7 @@
             <details class="story-guide supporting-story-tier highlight-story-intro" id="highlights-guide">
               <summary class="story-guide-summary">How to read</summary>
               <div class="story-guide-body">
-                <div class="highlight-story-kicker">Signal guide</div>
+                <div class="premium-kicker mb-1">Signal guide</div>
                 <h3 class="highlight-story-title">What changed most in this conversation</h3>
                 <p class="analytics-story-copy">
                   Highlights condense the biggest movement in volume, participation, and momentum into a compact scan lane so the strongest shifts are visible before you dive into the deeper evidence below.
@@ -64,14 +63,14 @@
                 </ul>
               </div>
             </details>
-            <div class="highlight-grid" id="highlight-list"></div>
+            <div class="highlight-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="highlight-list"></div>
           </div>
         </section>
       </section>
 
       <!-- Participants Block -->
       <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--drivers" aria-labelledby="guided-findings-drivers-title">
-        <h3 id="guided-findings-drivers-title" class="font-display text-lg font-semibold text-[var(--text)] m-0 px-2 border-l-2 border-[#14b8a6]">Participants</h3> <!-- teal accent -->
+        <h3 id="guided-findings-drivers-title" class="sr-only">Participants</h3>
 
         <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell" data-accent="participants">
           <!-- Card Header -->
@@ -112,7 +111,7 @@
                 <div class="participants-toolbar-row">
                   <div class="participants-controls participants-filter-row flex flex-wrap gap-4">
                     <label class="flex flex-col gap-1.5" for="participants-top-count">
-                        <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Show Top</span>
+                        <span class="premium-kicker">Show Top</span>
                         <select id="participants-top-count" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
                           <option value="5">5</option>
                           <option value="10">10</option>
@@ -122,14 +121,14 @@
                         </select>
                     </label>
                     <label class="flex flex-col gap-1.5" for="participants-sort">
-                        <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Sort</span>
+                        <span class="premium-kicker">Sort</span>
                         <select id="participants-sort" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
                           <option value="most" selected>Most active</option>
                           <option value="quiet">Quietest</option>
                         </select>
                     </label>
                     <label class="flex flex-col gap-1.5" for="participants-timeframe">
-                        <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Timeframe</span>
+                        <span class="premium-kicker">Timeframe</span>
                         <select id="participants-timeframe" class="appearance-none bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
                           <option value="all">All time</option>
                           <option value="week">Last 7 days</option>
@@ -138,7 +137,7 @@
                   </div>
                 </div>
                 <div class="participants-quick-filters flex flex-wrap gap-2 items-center justify-start">
-                    <span class="text-xs font-medium uppercase text-[var(--text-muted)]">Quick filters</span>
+                    <span class="premium-kicker">Quick filters</span>
                     <div class="flex flex-wrap gap-2">
                       <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="top-week" aria-pressed="false">Top 5 this week</button>
                       <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="quiet" aria-pressed="false">Quietest 5</button>
@@ -147,9 +146,9 @@
               </div>
 
             <div class="participants-evidence-lane full-width-evidence-lane">
-              <div class="story-summary-tier participants-summary-strip rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
+              <div class="story-summary-tier participants-summary-strip rounded-lg border border-[var(--border)] p-4">
                 <div class="summary-block">
-                  <span class="text-xs font-medium uppercase text-[#14b8a6] tracking-wider">Primary use</span>
+                  <span class="premium-kicker" data-accent="true">Primary use</span>
                   <span class="text-sm font-semibold text-[var(--text)]">Rank active speakers fast</span>
                 </div>
                 <div class="summary-block">
@@ -197,7 +196,7 @@
 
       <!-- Timing Block -->
       <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--timing" aria-labelledby="guided-findings-timing-title">
-        <h3 id="guided-findings-timing-title" class="text-lg font-semibold text-[var(--text)] m-0 px-2 border-l-2 border-[#8b5cf6]">Timing</h3> <!-- purple accent -->
+        <h3 id="guided-findings-timing-title" class="sr-only">Timing</h3>
 
         <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
           <!-- Card Header -->
@@ -238,22 +237,22 @@
                   <div class="toggle-group hourly-filter-group">
                     <span class="text-xs font-medium text-[var(--text-muted)]">Days</span>
                     <div class="hourly-toggle-row">
-                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-weekdays" checked class="accent-[#f59e0b] h-4 w-4"> Weekdays</label>
-                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-weekends" checked class="accent-[#f59e0b] h-4 w-4"> Weekends</label>
+                      <button type="button" role="switch" aria-checked="true" id="filter-weekdays" class="segmented-pill-button">Weekdays</button>
+                      <button type="button" role="switch" aria-checked="true" id="filter-weekends" class="segmented-pill-button">Weekends</button>
                     </div>
                   </div>
                   <div class="toggle-group hourly-filter-group">
                     <span class="text-xs font-medium text-[var(--text-muted)]">Hours</span>
                     <div class="hourly-toggle-row">
-                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-working" checked class="accent-[#f59e0b] h-4 w-4"> Working (09-17)</label>
-                      <label class="hourly-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="filter-offhours" checked class="accent-[#f59e0b] h-4 w-4"> Off Hours</label>
+                      <button type="button" role="switch" aria-checked="true" id="filter-working" class="segmented-pill-button">Working (09-17)</button>
+                      <button type="button" role="switch" aria-checked="true" id="filter-offhours" class="segmented-pill-button">Off Hours</button>
                     </div>
                   </div>
                   <div class="brush-group hourly-range-group">
                      <label for="hourly-brush-start" class="text-xs font-medium text-[var(--text-muted)]">Hour Range</label>
                      <div class="brush-inputs">
-                        <input type="range" id="hourly-brush-start" min="0" max="23" value="0" class="w-full accent-[#f59e0b]">
-                        <input type="range" id="hourly-brush-end" min="0" max="23" value="23" class="w-full accent-[#f59e0b]">
+                        <input type="range" id="hourly-brush-start" min="0" max="23" value="0" class="premium-range-slider w-full">
+                        <input type="range" id="hourly-brush-end" min="0" max="23" value="23" class="premium-range-slider w-full">
                      </div>
                      <div class="brush-labels">
                         <span id="hourly-brush-start-label">00:00</span>
@@ -267,8 +266,8 @@
              </div>
 
              <div class="hourly-evidence-lane full-width-evidence-lane">
-                <div class="analysis-evidence-frame evidence-panel-tier flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
-                  <div id="hourly-chart" class="hourly-heatmap w-full h-80 bg-[var(--surface-sunken)] rounded-xl border border-[var(--border)]"></div>
+                <div class="analysis-evidence-frame evidence-panel-tier w-full premium-empty-placeholder">
+                  <div id="hourly-chart" class="hourly-heatmap w-full h-80"></div>
                 </div>
                 <div class="supporting-story-tier hourly-anomalies-panel rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
                   <div class="hourly-anomalies text-sm text-[var(--text)]" id="hourly-anomalies"></div>
@@ -278,9 +277,7 @@
         </section>
       </section>
 
-      <div class="flex justify-center pt-8 border-t border-[var(--border)] border-dashed">
-        <p class="text-[var(--text-muted)] text-sm italic">Deeper tools continue below.</p>
-      </div>
+
 
     </div>
   </section>

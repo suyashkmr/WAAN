@@ -10,20 +10,20 @@
     <div class="section-nav-inner"></div>
   </nav>
 
-  <main class="app-shell-layout w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col gap-16">
+  <main class="app-shell-layout w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
     
     <!-- Workspace Stage -->
-    <section class="flex flex-col gap-10 w-full opacity-0 animate-fade-in-up" data-stage="workspace" aria-labelledby="workspace-stage-title" style="animation-delay: 50ms;">
+    <section class="flex flex-col gap-6 w-full opacity-0 animate-fade-in-up" data-stage="workspace" aria-labelledby="workspace-stage-title" style="animation-delay: 50ms;">
       <!-- Stage Header -->
       <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
         <h2 id="workspace-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Workspace</h2>
       </div>
 
-      <section class="workspace-stage flex flex-col gap-4 w-full" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
+      <section class="workspace-stage analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-sm flex flex-col gap-6 w-full p-6 lg:p-8" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace" style="box-shadow: var(--editorial-card-shadow);">
         <div class="workspace-inline-strip">
           <EmptyWorkspaceCallout />
         </div>
-        <div class="workspace-stage-grid workspace-stage-grid--rail workspace-stage-grid--minimal-rail" id="workspace-stage-grid">
+        <div class="workspace-stage-grid workspace-stage-grid--rail workspace-stage-grid--minimal-rail w-full" id="workspace-stage-grid">
           <div class="workspace-rail-lane">
             <WorkspaceSidebar />
           </div>
@@ -37,13 +37,13 @@
     <DeepDiveStage class="opacity-0 animate-fade-in-up" style="animation-delay: 250ms;" />
 
     <!-- Support Stage -->
-    <section class="flex flex-col gap-10 w-full opacity-0 animate-fade-in-up" data-stage="support" aria-labelledby="support-stage-title" style="animation-delay: 350ms;">
+    <section class="flex flex-col gap-6 w-full opacity-0 animate-fade-in-up" data-stage="support" aria-labelledby="support-stage-title" style="animation-delay: 350ms;">
       <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
         <h2 id="support-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Support</h2>
       </div>
 
       <!-- FAQ Card -->
-      <section class="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col w-full" id="faq-card" data-nav-target="faq" data-accent="faq" data-vue-shell-mount="card-shell">
+      <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col w-full" id="faq-card" data-nav-target="faq" data-accent="faq" data-vue-shell-mount="card-shell">
         <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
           <div class="flex items-center gap-3">
             <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
@@ -154,7 +154,7 @@
 
 <script setup>
 import DeepDiveStage from './components/DeepDiveStage.vue';
+import EmptyWorkspaceCallout from './components/EmptyWorkspaceCallout.vue';
 import FindingsStage from './components/FindingsStage.vue';
 import WorkspaceSidebar from './components/WorkspaceSidebar.vue';
-import EmptyWorkspaceCallout from './components/EmptyWorkspaceCallout.vue';
 </script>

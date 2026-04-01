@@ -225,7 +225,6 @@ export function createDataStatusController({ elements, deps }) {
    * @param {{ status?: string, account?: AnyRecord, chatCount?: number, syncingChats?: boolean, lastQr?: string } | null | undefined} status
    */
   function updateHeroRelayStatus(status) {
-    if (!heroStatusBadge || !heroStatusCopy) return;
     if (!status) {
       renderHeroBadge({ text: "Relay offline", state: "offline" });
       renderHeroCopy(UI_COPY.relay.offlineHero);

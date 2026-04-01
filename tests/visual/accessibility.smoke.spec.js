@@ -28,15 +28,27 @@ function commandControlLocator(page, id) {
 }
 
 async function expectLocatorFocused(locator) {
-  await locator.scrollIntoViewIfNeeded();
-  await locator.focus();
-  await expect
-    .poll(async () =>
-      locator.evaluate(element =>
-        element === document.activeElement
-          || element.contains(document.activeElement),
-      ))
-    .toBe(true);
+  const resolveLocator = () => (typeof locator === "function" ? locator() : locator);
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const target = resolveLocator();
+    await expect(target).toBeVisible();
+    try {
+      await target.scrollIntoViewIfNeeded();
+      await target.focus();
+      await expect
+        .poll(async () =>
+          target.evaluate(element =>
+            element === document.activeElement
+              || element.contains(document.activeElement),
+          ))
+        .toBe(true);
+      return;
+    } catch (error) {
+      const detached = String(error).includes("Element is not attached to the DOM");
+      if (!detached || attempt === 2) throw error;
+    }
+  }
 }
 
 test.describe("WAAN Accessibility Smoke", () => {
@@ -109,7 +121,7 @@ test.describe("WAAN Accessibility Smoke", () => {
     for (const controlId of focusSelectors) {
       const target = commandControlLocator(page, controlId);
       await expect(target).toBeVisible();
-      await expectLocatorFocused(target);
+      await expectLocatorFocused(() => commandControlLocator(page, controlId));
     }
   });
 

@@ -8,15 +8,40 @@ export function createRelayControlsBridgeMethods({ documentRef = globalThis.docu
     const reconnectButton = documentRef?.getElementById?.("relay-recovery-reconnect");
     const resyncButton = documentRef?.getElementById?.("relay-recovery-resync");
     const exportButton = documentRef?.getElementById?.("relay-recovery-export");
-    if (!actionsEl || !reconnectButton || !resyncButton || !exportButton) return;
-    if (payload.show) actionsEl.removeAttribute("hidden");
-    else actionsEl.setAttribute("hidden", "");
-    reconnectButton.disabled = Boolean(payload.reconnectDisabled);
-    reconnectButton.title = payload.reconnectTitle || "";
-    resyncButton.disabled = Boolean(payload.resyncDisabled);
-    resyncButton.title = payload.resyncTitle || "";
-    exportButton.disabled = Boolean(payload.exportDisabled);
-    exportButton.title = payload.exportTitle || "";
+
+    if (actionsEl) {
+      if (payload.show) actionsEl.removeAttribute("hidden");
+      else actionsEl.setAttribute("hidden", "");
+    }
+
+    /** @param {HTMLElement | null} el */
+    function setRecoveryVisibility(el) {
+      if (!el) return;
+      if (payload.show) {
+        el.removeAttribute("hidden");
+        el.classList.remove("hidden");
+      } else {
+        el.setAttribute("hidden", "");
+        el.classList.add("hidden");
+      }
+    }
+
+    setRecoveryVisibility(reconnectButton);
+    setRecoveryVisibility(resyncButton);
+    setRecoveryVisibility(exportButton);
+
+    if (reconnectButton) {
+      reconnectButton.disabled = Boolean(payload.reconnectDisabled);
+      reconnectButton.title = payload.reconnectTitle || "";
+    }
+    if (resyncButton) {
+      resyncButton.disabled = Boolean(payload.resyncDisabled);
+      resyncButton.title = payload.resyncTitle || "";
+    }
+    if (exportButton) {
+      exportButton.disabled = Boolean(payload.exportDisabled);
+      exportButton.title = payload.exportTitle || "";
+    }
   }
 
   /** @param {any} payload */

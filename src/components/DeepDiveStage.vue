@@ -1,12 +1,12 @@
 <template>
-  <section class="flex flex-col gap-10 w-full" id="deep-dive-stage" data-stage="deep-dive" aria-labelledby="deep-dive-stage-title">
+  <section class="flex flex-col gap-6 w-full" id="deep-dive-stage" data-stage="deep-dive" aria-labelledby="deep-dive-stage-title">
     
     <!-- Stage Header -->
     <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
       <h2 id="deep-dive-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Deep dive</h2>
     </div>
 
-    <div class="flex flex-col gap-12">
+    <div class="flex flex-col gap-8">
       
       <!-- Pattern Evidence Cluster -->
       <section class="deep-dive-cluster deep-dive-cluster--patterns flex flex-col gap-4" aria-labelledby="deep-dive-patterns-cluster-title">
@@ -32,22 +32,22 @@
                 </button>
               </div>
             </div>
-            <div class="pattern-story-grid p-5 flex flex-col gap-6" id="weekly-trend-content">
+            <div class="pattern-story-flow p-5 flex flex-col gap-6" id="weekly-trend-content">
               <div class="weekly-summary story-summary-tier flex gap-4 md:gap-8 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                 <div class="flex flex-col">
-                  <span class="text-xs uppercase text-[#10b981] font-semibold tracking-wider">Total so far</span>
+                  <span class="premium-kicker text-[#10b981]">Total so far</span>
                   <span class="text-2xl font-display text-[var(--text)]" id="weekly-cumulative">—</span>
                 </div>
                 <div class="flex flex-col border-l border-[var(--border)] pl-4 md:pl-8">
-                  <span class="text-xs uppercase text-[#10b981] font-semibold tracking-wider">Avg last 3 wks</span>
+                  <span class="premium-kicker text-[#10b981]">Avg last 3 wks</span>
                   <span class="text-2xl font-display text-[var(--text)]" id="weekly-rolling">—</span>
                 </div>
                 <div class="flex flex-col border-l border-[var(--border)] pl-4 md:pl-8">
-                  <span class="text-xs uppercase text-[#10b981] font-semibold tracking-wider">Avg per week</span>
+                  <span class="premium-kicker text-[#10b981]">Avg per week</span>
                   <span class="text-2xl font-display text-[var(--text)]" id="weekly-average">—</span>
                 </div>
               </div>
-              <div class="analysis-evidence-frame evidence-panel-tier w-full h-80 border border-[var(--border)] rounded-lg bg-[var(--surface-sunken)] p-2">
+              <div class="analysis-evidence-frame evidence-panel-tier w-full h-80 premium-empty-placeholder">
                 <div id="weekly-chart" class="w-full h-full"></div>
               </div>
             </div>
@@ -73,10 +73,10 @@
             </div>
             <div class="pattern-story-flow p-5 flex flex-col gap-6" id="daily-activity-content">
               <div class="daily-summary story-summary-tier flex items-center gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
-                <span class="text-xs uppercase text-[#06b6d4] font-semibold tracking-wider">Avg per day</span>
+                <span class="premium-kicker text-[#06b6d4]">Avg per day</span>
                 <span class="text-2xl font-display text-[var(--text)]" id="daily-avg-day">—</span>
               </div>
-              <div class="analysis-evidence-frame evidence-panel-tier daily-evidence-frame w-full min-h-[420px] border border-[var(--border)] rounded-lg bg-[var(--surface-sunken)] p-2">
+              <div class="analysis-evidence-frame evidence-panel-tier w-full min-h-[420px] premium-empty-placeholder">
                 <div id="daily-chart" class="w-full h-full"></div>
               </div>
             </div>
@@ -111,17 +111,17 @@
                     </p>
                   </div>
                 </details>
-                <div class="weekday-controls pattern-controls-shell bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
+                <div class="weekday-controls pattern-controls-shell">
                   <div class="weekday-filter-row">
-                      <label class="weekday-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="weekday-toggle-weekdays" checked class="accent-[#8b5cf6] h-4 w-4"> Weekdays</label>
-                      <label class="weekday-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="weekday-toggle-weekends" checked class="accent-[#8b5cf6] h-4 w-4"> Weekends</label>
-                      <label class="weekday-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="weekday-toggle-working" checked class="accent-[#8b5cf6] h-4 w-4"> Work hours (09-17)</label>
-                      <label class="weekday-toggle-chip flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="weekday-toggle-offhours" checked class="accent-[#8b5cf6] h-4 w-4"> Off hours</label>
+                      <button type="button" role="switch" aria-checked="true" id="weekday-toggle-weekdays" class="segmented-pill-button">Weekdays</button>
+                      <button type="button" role="switch" aria-checked="true" id="weekday-toggle-weekends" class="segmented-pill-button">Weekends</button>
+                      <button type="button" role="switch" aria-checked="true" id="weekday-toggle-working" class="segmented-pill-button">Work hours (09-17)</button>
+                      <button type="button" role="switch" aria-checked="true" id="weekday-toggle-offhours" class="segmented-pill-button">Off hours</button>
                   </div>
-                  <div class="text-xs text-[var(--text-muted)]" id="weekday-filter-note"></div>
+                  <div class="text-xs text-[var(--text-muted)] pt-2" id="weekday-filter-note"></div>
                 </div>
               <div class="pattern-evidence-lane full-width-evidence-lane">
-                <div class="analysis-evidence-frame evidence-panel-tier w-full min-h-[250px] border border-[var(--border)] rounded-lg bg-[var(--surface-sunken)] p-2">
+                <div class="analysis-evidence-frame evidence-panel-tier w-full min-h-[250px] premium-empty-placeholder">
                   <div id="weekday-chart" class="w-full h-full"></div>
                 </div>
               </div>
@@ -157,14 +157,14 @@
                     </p>
                   </div>
                 </details>
-                <div class="timeofday-controls pattern-controls-shell bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
+                <div class="timeofday-controls pattern-controls-shell">
                   <div class="timeofday-filter-row">
-                      <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="timeofday-toggle-weekdays" checked class="accent-[#f59e0b] h-4 w-4"> Weekdays</label>
-                      <label class="flex items-center gap-2 text-sm text-[var(--text)] cursor-pointer"><input type="checkbox" id="timeofday-toggle-weekends" checked class="accent-[#f59e0b] h-4 w-4"> Weekends</label>
+                      <button type="button" role="switch" aria-checked="true" id="timeofday-toggle-weekdays" class="segmented-pill-button">Weekdays</button>
+                      <button type="button" role="switch" aria-checked="true" id="timeofday-toggle-weekends" class="segmented-pill-button">Weekends</button>
                   </div>
                 </div>
               <div class="pattern-evidence-lane full-width-evidence-lane">
-                <div class="analysis-evidence-frame evidence-panel-tier w-full h-full border border-[var(--border)] rounded-lg bg-[var(--surface-sunken)] p-4 flex flex-col gap-4">
+                <div class="analysis-evidence-frame evidence-panel-tier w-full premium-empty-placeholder p-4">
                   <div id="timeofday-chart" class="w-full">
                     <div id="timeofday-sparkline" class="w-full h-12"></div>
                     <div id="timeofday-bands" class="w-full mt-4"></div>
@@ -207,11 +207,11 @@
                   </p>
                 </div>
               </details>
-              <div class="sentiment-panel shell-split shell-split--sentiment">
+              <div class="sentiment-panel grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="sentiment-trend flex flex-col gap-2 p-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg">
                   <h3 class="text-sm font-semibold text-[var(--text)] uppercase tracking-wider">Daily mood</h3>
                   <p class="text-xs text-[var(--text-muted)] m-0" id="sentiment-trend-note"></p>
-                  <div class="w-full min-h-[200px] mt-2" id="sentiment-daily-chart"></div>
+                  <div class="w-full min-h-[150px] mt-2" id="sentiment-daily-chart"></div>
                 </div>
                 <div class="sentiment-participants flex flex-col gap-2 p-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg">
                   <h3 class="text-sm font-semibold text-[var(--text)] uppercase tracking-wider">Members</h3>
@@ -273,50 +273,50 @@
                   </p>
                 </div>
               </details>
-              <div class="analysis-evidence-frame evidence-panel-tier message-types-grid grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg text-center">
-                
-                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
+              <div class="analysis-evidence-frame evidence-panel-tier flex flex-col gap-6 p-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg">
+                <div class="message-types-grid grid grid-cols-2 lg:grid-cols-6 gap-4 text-center">
+                  <div class="flex flex-col items-center justify-center gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
+                    <span class="text-2xl font-display text-[var(--text)]" id="avg-chars">0</span>
+                    <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Avg Char / Msg</span>
+                  </div>
+                  
+                  <div class="flex flex-col items-center justify-center gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
+                    <span class="text-2xl font-display text-[var(--text)]" id="avg-words">0</span>
+                    <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Avg Words / Msg</span>
+                  </div>
+
+                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="media-count">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Media</span>
                     <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="media">CSV</button>
                   </div>
                 
-                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
+                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="link-count">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Links</span>
                     <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="links">CSV</button>
                   </div>
 
-                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
+                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="poll-count">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Polls</span>
                     <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="polls">CSV</button>
                   </div>
                 
-                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)]">
+                  <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="join-events">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Joins</span>
                     <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="joins">CSV</button>
                   </div>
+                </div>
 
-                  <div class="flex items-center justify-between p-2 border-b border-[var(--border)] col-span-2 lg:col-span-4 mt-2">
-                    <span class="text-sm text-[var(--text-muted)]">Added: <span id="added-events" class="font-bold text-[var(--text)]">0</span></span>
-                    <span class="text-sm text-[var(--text-muted)]">Left: <span id="left-events" class="font-bold text-[var(--text)]">0</span></span>
-                    <span class="text-sm text-[var(--text-muted)]">Removed: <span id="removed-events" class="font-bold text-[var(--text)]">0</span></span>
-                    <span class="text-sm text-[var(--text-muted)]">Settings: <span id="changed-events" class="font-bold text-[var(--text)]">0</span></span>
-                    <span class="text-sm text-[var(--text-muted)]">Other: <span id="other-system-events" class="font-bold text-[var(--text)]">0</span></span>
-                  </div>
-
-              </div>
-              <div class="supporting-story-tier message-types-lower-strip flex items-center gap-8 justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4 pt-2">
-                   <div class="flex flex-col items-center">
-                     <span class="text-xs text-[var(--text-muted)] uppercase">Avg Char / Msg</span>
-                     <span class="text-xl font-display font-semibold text-[var(--text)]" id="avg-chars">0</span>
-                   </div>
-                   <div class="flex flex-col items-center">
-                     <span class="text-xs text-[var(--text-muted)] uppercase">Avg Words / Msg</span>
-                     <span class="text-xl font-display font-semibold text-[var(--text)]" id="avg-words">0</span>
-                   </div>
+                <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[var(--border)]">
+                  <span class="text-sm text-[var(--text-muted)]">Added: <span id="added-events" class="font-bold text-[var(--text)]">0</span></span>
+                  <span class="text-sm text-[var(--text-muted)]">Left: <span id="left-events" class="font-bold text-[var(--text)]">0</span></span>
+                  <span class="text-sm text-[var(--text-muted)]">Removed: <span id="removed-events" class="font-bold text-[var(--text)]">0</span></span>
+                  <span class="text-sm text-[var(--text-muted)]">Settings: <span id="changed-events" class="font-bold text-[var(--text)]">0</span></span>
+                  <span class="text-sm text-[var(--text-muted)]">Other: <span id="other-system-events" class="font-bold text-[var(--text)]">0</span></span>
+                </div>
               </div>
             </div>
           </section>
@@ -338,18 +338,18 @@
                 </button>
               </div>
             </div>
-            <div class="polls-summary p-5 flex flex-col md:flex-row gap-6" id="polls-content">
-              <div class="story-summary-tier flex flex-col gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4 md:w-1/3 shrink-0">
+            <div class="polls-story-flow p-5 flex flex-col gap-6" id="polls-content">
+              <div class="polls-summary story-summary-tier flex gap-6 md:gap-8 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                 <div class="flex flex-col gap-1">
                   <span class="text-xs uppercase text-[var(--text-muted)] font-semibold tracking-wider">Total polls</span>
                   <span class="text-2xl font-display text-[var(--text)]" id="polls-total">0</span>
                 </div>
-                <div class="flex flex-col gap-1 pt-4 border-t border-[var(--border)]">
+                <div class="flex flex-col gap-1 pl-6 md:pl-8 border-l border-[var(--border)]">
                   <span class="text-xs uppercase text-[var(--text-muted)] font-semibold tracking-wider">Unique creators</span>
                   <span class="text-2xl font-display text-[var(--text)]" id="polls-creators">0</span>
                 </div>
               </div>
-              <div class="analysis-evidence-frame evidence-panel-tier flex-1 border border-[var(--border)] rounded-lg bg-[var(--surface-sunken)] p-4 max-h-[300px] overflow-y-auto">
+              <div class="analysis-evidence-frame evidence-panel-tier w-full border border-[var(--border)] rounded-lg bg-[var(--surface-sunken)] p-4 max-h-[300px] overflow-y-auto">
                 <ol class="flex flex-col gap-2 m-0 p-0 list-none" id="polls-list"></ol>
               </div>
             </div>
@@ -366,7 +366,7 @@
         <div class="deep-dive-tools-grid">
           
           <!-- Search Card -->
-          <section class="search-panel bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="search-panel" data-nav-target="search" data-accent="search" data-vue-shell-mount="card-shell">
+          <section class="search-panel analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col" id="search-panel" data-nav-target="search" data-accent="search" data-vue-shell-mount="card-shell">
             <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
@@ -425,7 +425,7 @@
           </section>
 
           <!-- Saved Views Card -->
-          <section class="saved-views bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="saved-views-card" data-nav-target="saved-views" data-vue-shell-mount="card-shell" data-accent="saved-views">
+          <section class="saved-views analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col" id="saved-views-card" data-nav-target="saved-views" data-vue-shell-mount="card-shell" data-accent="saved-views">
             <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
@@ -465,7 +465,7 @@
                     </div>
                   </div>
 
-                  <div class="saved-view-subsection saved-view-compare compare-controls" id="compare-controls">
+                  <div class="saved-view-subsection saved-view-compare compare-controls grid grid-cols-1 lg:grid-cols-3 gap-4 lg:items-end" id="compare-controls">
                     <span class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Compare</span>
                     <div class="flex flex-col gap-1.5">
                       <label for="compare-view-a" class="text-[var(--text)] text-sm">View A</label>
@@ -484,7 +484,7 @@
                 </div>
               </div>
               <div class="saved-view-results-lane saved-view-panel saved-view-panel--summary flex-1 flex flex-col gap-4 border border-[var(--border)] bg-[var(--surface-sunken)] rounded-lg p-4 h-full min-h-[400px]">
-                <div class="saved-view-gallery flex flex-col gap-4 overflow-y-auto" id="saved-view-gallery" aria-live="polite"></div>
+                <div class="saved-view-gallery grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto" id="saved-view-gallery" aria-live="polite"></div>
                 <div class="compare-summary text-sm text-[var(--text)]" id="compare-summary"></div>
               </div>
             </div>

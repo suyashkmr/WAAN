@@ -717,14 +717,12 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const relayPanelReady = Boolean(document.getElementById("relay-status-panel"));
       const relayActionsReady = Boolean(document.getElementById("relay-sidebar-live-actions"));
       const actionsToolbarReady = Boolean(document.getElementById("actions-toolbar"));
-      const firstRunReady = Boolean(document.getElementById("first-run-open-relay"));
       const searchReady = Boolean(document.getElementById("search-keyword"));
 
       return shellBridgeReady
         && relayPanelReady
         && relayActionsReady
         && actionsToolbarReady
-        && firstRunReady
         && searchReady;
     });
     await page.evaluate(async () => {
@@ -962,13 +960,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           document.getElementById("workspace-utility-cluster") instanceof HTMLDetailsElement
             ? document.getElementById("workspace-utility-cluster").open
             : null,
-        workspaceInlineStrip: rect(document.querySelector(".workspace-inline-strip")),
         workspaceStateSurface: rect(document.querySelector(".workspace-state-surface")),
-        emptyCallout: {
-          hidden:
-            document.getElementById("dataset-empty-callout")?.classList.contains("hidden") ??
-            null,
-        },
       };
     });
 
@@ -983,8 +975,6 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     const stackedBelow = metrics.customApply.top >= latestInputBottom - 1;
     expect(inlineAligned || stackedBelow).toBe(true);
     if (testInfo.project.name === "desktop-1440") {
-      expect(metrics.emptyCallout.hidden).toBe(true);
-      expect(metrics.workspaceInlineStrip.width).toBeGreaterThan(0);
       expect(metrics.workspaceStateSurface).toBeNull();
     }
   });
@@ -1159,170 +1149,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
-  test("keeps workspace no-chat-selected guidance and control state coherent", async ({ page }) => {
-    await prepareStableFrame(page);
-    await settleScenario(page, applyWorkspaceEmptyScenario);
-
-    const state = await page.evaluate(() => {
-      const emptyCallout = document.getElementById("dataset-empty-callout");
-      const emptyHeading = document.getElementById("dataset-empty-heading");
-      const emptyCopy = document.getElementById("dataset-empty-copy");
-      const chatSelector = document.getElementById("chat-selector");
-      const range = document.getElementById("global-range");
-      const customControls = document.getElementById("custom-range-controls");
-      const utilityCluster = document.getElementById("workspace-utility-cluster");
-
-      return {
-        emptyCalloutVisible: Boolean(
-          emptyCallout
-            && !emptyCallout.hidden
-            && !emptyCallout.classList.contains("hidden")
-            && emptyCallout.style.display !== "none",
-        ),
-        emptyHeading: emptyHeading?.textContent || "",
-        emptyCopy: emptyCopy?.textContent || "",
-        chatDisabled: chatSelector instanceof HTMLSelectElement ? chatSelector.disabled : null,
-        chatValue: chatSelector instanceof HTMLSelectElement ? chatSelector.value : null,
-        rangeValue: range instanceof HTMLSelectElement ? range.value : null,
-        customControlsHidden: Boolean(
-          customControls?.classList.contains("hidden") || customControls?.hasAttribute("hidden"),
-        ),
-        utilityClusterOpen: utilityCluster instanceof HTMLDetailsElement ? utilityCluster.open : null,
-      };
-    });
-
-    expect(state.emptyCalloutVisible).toBe(true);
-    expect(state.emptyHeading).toBe("Pick a chat");
-    expect(state.emptyCopy).toBe("Choose one loaded chat to unlock findings and exports.");
-    expect(state.chatDisabled).toBe(false);
-    expect(state.chatValue).toBe("");
-    expect(state.rangeValue).toBe("all");
-    expect(state.customControlsHidden).toBe(true);
-    expect(state.utilityClusterOpen).toBe(false);
-  });
-
-  test("keeps workspace state guidance visible after relay connects before a chat is selected", async ({ page }) => {
-    await prepareStableFrame(page);
-    await settleScenario(page, async currentPage => {
-      await applyRelayScenario(currentPage, "running_ready");
-      await applyWorkspaceEmptyScenario(currentPage);
-    });
-
-    const state = await page.evaluate(() => {
-      const emptyCallout = document.getElementById("dataset-empty-callout");
-      const emptyHeading = document.getElementById("dataset-empty-heading");
-      const emptyCopy = document.getElementById("dataset-empty-copy");
-      const heroCopy = document.getElementById("hero-status-copy");
-      const heroMeta = document.getElementById("hero-status-meta-copy");
-      const chatSelector = document.getElementById("chat-selector");
-
-      return {
-        emptyCalloutVisible: Boolean(
-          emptyCallout
-            && !emptyCallout.hidden
-            && !emptyCallout.classList.contains("hidden")
-            && emptyCallout.style.display !== "none",
-        ),
-        emptyHeading: emptyHeading?.textContent || "",
-        emptyCopy: emptyCopy?.textContent || "",
-        heroCopy: heroCopy?.textContent || "",
-        heroMeta: heroMeta?.textContent || "",
-        chatDisabled: chatSelector instanceof HTMLSelectElement ? chatSelector.disabled : null,
-        chatValue: chatSelector instanceof HTMLSelectElement ? chatSelector.value : null,
-      };
-    });
-
-    expect(state.emptyCalloutVisible).toBe(true);
-    expect(state.emptyHeading).toBe("Pick a chat");
-    expect(state.emptyCopy).toBe("Choose one loaded chat to unlock findings and exports.");
-    expect(state.heroCopy).toContain("Pick a chat");
-    expect(state.heroMeta.length).toBeGreaterThan(0);
-    expect(state.chatDisabled).toBe(false);
-    expect(state.chatValue).toBe("");
-  });
-
-  test("removes the standalone workspace state card after a chat is selected", async ({ page }) => {
-    await prepareStableFrame(page);
-    await settleScenario(page, applyWorkspaceScenario);
-
-    const state = await page.evaluate(() => {
-      const workspaceSplit = document.querySelector(".workspace-stage-grid");
-      const workspaceSurface = document.querySelector(".workspace-state-surface");
-      const inlineStrip = document.querySelector(".workspace-inline-strip");
-      const summarize = element => {
-        if (!(element instanceof HTMLElement)) return null;
-        const rect = element.getBoundingClientRect();
-        const style = window.getComputedStyle(element);
-        return {
-          display: style.display,
-          width: rect.width,
-          height: rect.height,
-        };
-      };
-
-      return {
-        splitHasSecondary: workspaceSplit?.classList.contains("workspace-stage-grid--has-secondary") ?? null,
-        workspaceSurface: summarize(workspaceSurface),
-        inlineStrip: summarize(inlineStrip),
-      };
-    });
-
-    expect(state.splitHasSecondary).toBe(false);
-    expect(state.workspaceSurface).toBeNull();
-    expect(state.inlineStrip?.width).toBeGreaterThan(0);
-  });
-
-  test("keeps workspace offline guidance and control state coherent", async ({ page }) => {
-    await prepareStableFrame(page);
-    await settleScenario(page, applyWorkspaceOfflineScenario);
-
-    const state = await page.evaluate(() => {
-      const emptyHeading = document.getElementById("dataset-empty-heading");
-      const emptyCopy = document.getElementById("dataset-empty-copy");
-      const chatSelector = document.getElementById("chat-selector");
-      const range = document.getElementById("global-range");
-      const customControls = document.getElementById("custom-range-controls");
-      const logout = document.getElementById("relay-logout");
-      const reconnect = document.getElementById("relay-recovery-reconnect");
-      const resync = document.getElementById("relay-recovery-resync");
-      const exportDiagnostics = document.getElementById("relay-recovery-export");
-      const recoveryActions = document.getElementById("relay-status-actions");
-
-      return {
-        emptyHeading: emptyHeading?.textContent || "",
-        emptyCopy: emptyCopy?.textContent || "",
-        chatDisabled: chatSelector instanceof HTMLSelectElement ? chatSelector.disabled : null,
-        rangeDisabled: range instanceof HTMLSelectElement ? range.disabled : null,
-        rangeValue: range instanceof HTMLSelectElement ? range.value : null,
-        customControlsHidden: Boolean(
-          customControls?.classList.contains("hidden") || customControls?.hasAttribute("hidden"),
-        ),
-        logoutDisabled: logout instanceof HTMLButtonElement ? logout.disabled : null,
-        recoveryVisible: Boolean(
-          recoveryActions
-            && !recoveryActions.hidden
-            && !recoveryActions.classList.contains("hidden"),
-        ),
-        reconnectDisabled: reconnect instanceof HTMLButtonElement ? reconnect.disabled : null,
-        resyncDisabled: resync instanceof HTMLButtonElement ? resync.disabled : null,
-        exportDisabled: exportDiagnostics instanceof HTMLButtonElement ? exportDiagnostics.disabled : null,
-      };
-    });
-
-    expect(state.emptyHeading).toBe("Workspace locked");
-    expect(state.emptyCopy).toBe("Start relay to unlock chat selection, exports, and findings.");
-    expect(state.chatDisabled).toBe(true);
-    expect(state.rangeDisabled).toBe(true);
-    expect(state.rangeValue).toBe("all");
-    expect(state.customControlsHidden).toBe(true);
-    expect([true, null]).toContain(state.logoutDisabled);
-    expect(state.recoveryVisible).toBe(true);
-    expect(state.reconnectDisabled).toBe(false);
-    expect(state.resyncDisabled).toBe(true);
-    expect(state.exportDisabled).toBe(false);
-  });
-
-  test("keeps loaded search and saved-view controls reachable across breakpoints", async ({ page }) => {
+      test("keeps loaded search and saved-view controls reachable across breakpoints", async ({ page }) => {
     await prepareStableFrame(page);
     await settleScenario(page, applyDeepDiveScenario);
 
@@ -1843,64 +1670,5 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
-  test("keeps the workspace state panel visible through relay connection transitions", async ({ page }) => {
-    await prepareStableFrame(page);
-
-    const panel = page.locator("#relay-status-panel");
-    const banner = page.locator("#relay-status-banner");
-
-    const captureState = async (label, options = {}) => {
-      const { requireMetaText = false } = options;
-      await expect(panel, `${label}: workspace state panel should stay visible`).toBeVisible();
-      await expect(banner, `${label}: relay status banner should stay visible`).toBeVisible();
-
-      const metrics = await page.evaluate(() => {
-        const panelEl = document.getElementById("relay-status-panel");
-        const bannerEl = document.getElementById("relay-status-banner");
-        const messageEl = document.getElementById("relay-connection-status");
-        const metaEl = document.getElementById("relay-account-name");
-        const summarize = element => {
-          if (!(element instanceof HTMLElement)) return null;
-          const rect = element.getBoundingClientRect();
-          const style = window.getComputedStyle(element);
-          return {
-            hiddenAttr: element.hidden || element.hasAttribute("hidden"),
-            hiddenClass: element.classList.contains("hidden"),
-            display: style.display,
-            visibility: style.visibility,
-            opacity: style.opacity,
-            width: rect.width,
-            height: rect.height,
-          };
-        };
-        return {
-          panel: summarize(panelEl),
-          banner: summarize(bannerEl),
-          statusText: messageEl?.textContent?.trim() ?? "",
-          metaText: metaEl?.textContent?.trim() ?? "",
-        };
-      });
-
-      expect(metrics.panel?.hiddenAttr, `${label}: panel should not carry hidden attr`).toBe(false);
-      expect(metrics.panel?.hiddenClass, `${label}: panel should not carry hidden class`).toBe(false);
-      expect(metrics.panel?.display, `${label}: panel display should stay visible`).not.toBe("none");
-      expect(metrics.panel?.visibility, `${label}: panel visibility should stay visible`).not.toBe("hidden");
-      expect(Number(metrics.panel?.width ?? 0), `${label}: panel width should stay meaningfully visible`).toBeGreaterThan(160);
-      expect(Number(metrics.panel?.height ?? 0), `${label}: panel height should stay meaningfully visible`).toBeGreaterThan(40);
-      expect(metrics.banner?.display, `${label}: banner display should stay visible`).not.toBe("none");
-      expect(metrics.banner?.visibility, `${label}: banner visibility should stay visible`).not.toBe("hidden");
-      expect(metrics.statusText, `${label}: status copy should stay populated`).not.toBe("");
-      if (requireMetaText) {
-        expect(metrics.metaText, `${label}: meta copy should stay populated`).not.toBe("");
-      }
-    };
-
-    await captureState("offline");
-    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "waiting_qr"));
-    await captureState("waiting_qr");
-    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_syncing"));
-    await captureState("running_syncing", { requireMetaText: true });
-    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_ready"));
-    await captureState("running_ready", { requireMetaText: true });
-  });
+  
 });

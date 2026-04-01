@@ -60,7 +60,7 @@
     border-radius: calc(var(--shape-medium) + 6px);
     border: 1px solid color-mix(in srgb, var(--border-subtle) 82%, transparent);
     background: color-mix(in srgb, var(--bg-raised) 90%, transparent);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--editorial-card-shadow);
     backdrop-filter: blur(calc(var(--glass-blur) * 0.75));
 }
 

@@ -191,6 +191,10 @@
     --glass-border: rgba(255, 255, 255, 0.04);
     --glass-blur: 16px;
 
+    --surface: var(--card-bg);
+    --surface-sunken: color-mix(in srgb, var(--muted) 7%, var(--card-bg));
+    --surface-hover: color-mix(in srgb, var(--accent) 10%, var(--card-bg));
+    --focus-ring: color-mix(in srgb, var(--accent) 30%, transparent);
     --bg-canvas: var(--bg);
     --bg-room: var(--card-bg);
     --bg-raised: var(--surface-elevated);
@@ -828,6 +832,10 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --warning: var(--p-app-warning-color, #f4c263);
     --warning-soft: color-mix(in srgb, var(--warning) 24%, transparent);
     --neutral-tone: var(--p-app-neutral-color, #9aa2c4);
+    --surface: var(--card-bg);
+    --surface-sunken: color-mix(in srgb, var(--muted) 7%, var(--card-bg));
+    --surface-hover: color-mix(in srgb, var(--accent) 10%, var(--card-bg));
+    --focus-ring: color-mix(in srgb, var(--accent) 30%, transparent);
     --panel-bg: color-mix(in srgb, var(--surface-elevated-strong) 94%, var(--bg));
     --accent-strong: color-mix(in srgb, var(--accent) 90%, #fff1d4);
     --shell-ridge-primary: color-mix(in srgb, var(--accent) 16%, transparent);
@@ -958,6 +966,10 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --warning: var(--p-app-warning-color, #da9b2e);
     --warning-soft: color-mix(in srgb, var(--warning) 20%, transparent);
     --neutral-tone: var(--p-app-neutral-color, #5c5f66);
+    --surface: var(--card-bg);
+    --surface-sunken: color-mix(in srgb, var(--muted) 5%, var(--card-bg));
+    --surface-hover: color-mix(in srgb, var(--accent) 8%, var(--card-bg));
+    --focus-ring: color-mix(in srgb, var(--accent) 28%, transparent);
 
     --calendar-level-0: rgba(84, 94, 114, 0.12);
     --calendar-level-1: rgba(156, 115, 50, 0.2);

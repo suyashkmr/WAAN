@@ -183,9 +183,13 @@ export function createStatusApplyUiHelpers({
       return;
     }
 
-    if (!relayBannerActions) return;
-    if (show) relayBannerActions.removeAttribute("hidden");
-    else relayBannerActions.setAttribute("hidden", "");
+    if (relayBannerActions) {
+      if (show) relayBannerActions.removeAttribute("hidden");
+      else relayBannerActions.setAttribute("hidden", "");
+    }
+    setElementVisibility(relayRecoveryReconnectButton, show);
+    setElementVisibility(relayRecoveryResyncButton, show);
+    setElementVisibility(relayRecoveryExportButton, show);
     if (relayRecoveryReconnectButton) {
       relayRecoveryReconnectButton.disabled = reconnectDisabled;
       relayRecoveryReconnectButton.title = reconnectTitle;
