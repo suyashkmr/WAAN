@@ -40,13 +40,13 @@
                         </li>
                     </ol>
                     <div class="first-run-actions">
-                        <button type="button" class="ghost-button tiny" id="first-run-open-relay">
+                        <button type="button" class="wa-button wa-button--ghost dense" id="first-run-open-relay">
                             Open relay
                         </button>
-                        <button type="button" class="ghost-button tiny primary" id="first-run-primary-action">
+                        <button type="button" class="wa-button wa-button--primary dense" id="first-run-primary-action">
                             Start relay
                         </button>
-                        <a class="ghost-button tiny" id="first-run-macos-help-link" href="#faq-macos-gatekeeper">
+                        <a class="ghost-button tiny" id="first-run-macos-help-link" href="#faq-macos-gatekeeper" @click.prevent="openMacosLaunchHelp">
                             macOS launch help
                         </a>
                     </div>
@@ -57,4 +57,28 @@
 </template>
 
 <script setup>
+import { useWorkspaceStoreActions } from "../store/useWorkspaceStore.js";
+
+const workspaceStoreActions = useWorkspaceStoreActions();
+
+function openMacosLaunchHelp() {
+  workspaceStoreActions.setActiveStage("support");
+  if (typeof window === "undefined") return;
+  const hash = "#faq-macos-gatekeeper";
+  const scrollToSupportFaq = () => {
+    const target = document.getElementById("faq-macos-gatekeeper");
+    if (!target) return false;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (window.location.hash !== hash) {
+      window.location.hash = hash;
+    }
+    return true;
+  };
+  setTimeout(() => {
+    if (scrollToSupportFaq()) return;
+    setTimeout(() => {
+      scrollToSupportFaq();
+    }, 60);
+  }, 0);
+}
 </script>

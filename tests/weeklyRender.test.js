@@ -27,6 +27,9 @@ describe("weekly renderer", () => {
   it("renders weekly bars via PrimeVue button primitive and dispatches range selection", () => {
     globalThis.PrimeVue = { Button: PrimeButton };
     const container = document.createElement("div");
+    const frame = document.createElement("div");
+    frame.className = "analysis-evidence-frame";
+    frame.appendChild(container);
     const cumulativeEl = document.createElement("span");
     const rollingEl = document.createElement("span");
     const averageEl = document.createElement("span");
@@ -54,7 +57,18 @@ describe("weekly renderer", () => {
 
     const bar = container.querySelector(".weekly-bar");
     expect(bar).toBeTruthy();
+    expect(container.classList.contains("weekly-chart")).toBe(true);
+    expect(container.style.width).toBe("100%");
+    expect(container.style.maxWidth).toBe("100%");
+    expect(container.style.alignSelf).toBe("stretch");
     expect(bar?.getAttribute("data-ui-runtime")).toBe("primevue");
+    expect(container.style.overflowX).toBe("auto");
+    expect(frame.style.overflowX).toBe("auto");
+    expect(frame.style.overflowY).toBe("hidden");
+    expect(frame.style.alignItems).toBe("stretch");
+    expect(frame.style.justifyContent).toBe("flex-start");
+    const weeklyBarsTrack = container.querySelector(".weekly-bars");
+    expect(weeklyBarsTrack?.getAttribute("style")).toContain("min-width");
     bar?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onSelectRange).toHaveBeenCalledTimes(1);
     expect(cumulativeEl.textContent).toBe("12");

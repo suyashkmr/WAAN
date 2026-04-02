@@ -1,4 +1,5 @@
 // @ts-check
+import { syncWorkspaceSelectionState } from "./vueStoreAdapter.js";
 
 /** @typedef {Record<string, any>} AnyRecord */
 
@@ -69,7 +70,6 @@ export function createRangeFiltersController({ elements, deps }) {
         return ts && ts >= startDate && ts <= endDate;
       });
     }
-
     const days = Number(range);
     if (!Number.isFinite(days) || days <= 0) return entries;
 
@@ -78,7 +78,6 @@ export function createRangeFiltersController({ elements, deps }) {
       .filter(Boolean)
       .sort((/** @type {any} */ a, /** @type {any} */ b) => Number(a) - Number(b));
     if (!timestamps.length) return entries;
-
     const end = new Date(timestamps[timestamps.length - 1]);
     end.setHours(23, 59, 59, 999);
     const start = new Date(end);
@@ -103,15 +102,12 @@ export function createRangeFiltersController({ elements, deps }) {
     }
     return `range:${JSON.stringify(range)}`;
   }
-
   /**
    * @param {any} range
    */
   function describeRange(range) {
     if (!range || range === "all") return "entire history";
-    if (typeof range === "object" && range.type === "custom") {
-      return `${formatDisplayDate(range.start)} -> ${formatDisplayDate(range.end)}`;
-    }
+    if (typeof range === "object" && range.type === "custom") return `${formatDisplayDate(range.start)} -> ${formatDisplayDate(range.end)}`;
     const days = Number(range);
     return Number.isFinite(days) ? `last ${days} days` : String(range);
   }
@@ -171,7 +167,6 @@ export function createRangeFiltersController({ elements, deps }) {
       if (customApplyButton) customApplyButton.disabled = true;
       return;
     }
-
     const timestamps = entries
       .map(/** @param {any} entry */ entry => getTimestamp(entry))
       .filter(Boolean)
@@ -187,7 +182,6 @@ export function createRangeFiltersController({ elements, deps }) {
       if (customApplyButton) customApplyButton.disabled = true;
       return;
     }
-
     const start = toISODate(timestamps[0]);
     const end = toISODate(timestamps[timestamps.length - 1]);
     nextPageControlState.customDisabled = false;
@@ -213,7 +207,6 @@ export function createRangeFiltersController({ elements, deps }) {
     }
     const pageControlsHandled = syncPageControlsState(nextPageControlState);
     if (pageControlsHandled || !customStartInput || !customEndInput) return;
-
     customStartInput.min = start;
     customStartInput.max = end;
     customEndInput.min = start;
@@ -239,7 +232,6 @@ export function createRangeFiltersController({ elements, deps }) {
       updateStatus("Load a chat file before picking a range.", "warning");
       return;
     }
-
     const requestToken = nextAnalyticsRequestToken();
     const normalizedRange = normalizeRangeValue(range);
     const rangeKey = buildRangeKey(normalizedRange);
@@ -257,14 +249,11 @@ export function createRangeFiltersController({ elements, deps }) {
       }
       return;
     }
-
     updateStatus("Calculating stats for the selected range...", "info");
-
     const subset = filterEntriesByRange(entries, normalizedRange);
     try {
       const analytics = await computeAnalyticsWithWorker(subset);
       if (!isAnalyticsRequestCurrent(requestToken)) return;
-
       setCachedAnalytics(rangeKey, analytics);
       setDatasetAnalytics(analytics);
       renderDashboard(analytics);
@@ -289,6 +278,7 @@ export function createRangeFiltersController({ elements, deps }) {
   async function handleRangeChange(event) {
     const value = event?.target?.value ?? rangeSelect?.value;
     if (!value) return;
+    syncWorkspaceSelectionState({ activeRange: value });
     const pageControlsHandled = syncPageControlsState({ rangeValue: value });
     if (!pageControlsHandled && rangeSelect && rangeSelect.value !== value) {
       rangeSelect.value = value;
@@ -298,8 +288,11 @@ export function createRangeFiltersController({ elements, deps }) {
       updateStatus("Choose your dates and click Apply.", "info");
       return;
     }
-
     showCustomControls(false);
+    syncWorkspaceSelectionState({
+      activeRange: value,
+      customRange: { start: "", end: "" },
+    });
     setCurrentRange(value);
     setCustomRange(null);
     await applyRangeAndRender(value);
@@ -320,8 +313,11 @@ export function createRangeFiltersController({ elements, deps }) {
       updateStatus("Start date must be on or before the end date.", "error");
       return;
     }
-
     const range = { type: "custom", start, end };
+    syncWorkspaceSelectionState({
+      activeRange: "custom",
+      customRange: { start, end },
+    });
     setCustomRange(range);
     setCurrentRange("custom");
     const pageControlsHandled = syncPageControlsState({

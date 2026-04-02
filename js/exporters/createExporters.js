@@ -24,6 +24,7 @@ export function createExporters({
   generateSlidesHtml,
   getExportThemeConfig,
   getDatasetFingerprint = () => null,
+  emitExportSuccess = () => {},
 }) {
   const exportCache = new Map();
   let cacheFingerprint = null;
@@ -293,6 +294,7 @@ export function createExporters({
     generateMarkdownReport,
     generateSlidesHtml,
     updateStatus,
+    emitExportSuccess,
   });
 
   return {

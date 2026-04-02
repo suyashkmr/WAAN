@@ -6,7 +6,7 @@
       <h2 id="guided-findings-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Findings</h2>
     </div>
 
-    <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-6">
       
       <section class="flex flex-col gap-3" id="workspace-overview" data-nav-target="overview">
         <div class="flex flex-col">
@@ -23,9 +23,9 @@
       <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--signal" aria-labelledby="guided-findings-signal-title">
         <h3 id="guided-findings-signal-title" class="sr-only">Highlights</h3>
 
-        <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell" data-accent="highlights">
+        <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="insight-highlights" data-nav-target="highlights" data-vue-shell-mount="card-shell" data-accent="highlights">
           <!-- Card Header -->
-          <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             <div class="flex items-center gap-3">
               <h2 class="font-display text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                 <span aria-hidden="true" class="text-[var(--accent)] flex">
@@ -34,7 +34,7 @@
                 Highlights
               </h2>
               <div class="relative group">
-                <button type="button" class="text-[var(--text-muted)] hover:text-[var(--text)] focus:outline-none" aria-label="About this section">
+                <button type="button" class="wa-button wa-button--ghost dense" aria-label="About this section">
                   <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current"><path d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2zm1-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg>
                 </button>
                 <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 p-2 text-xs text-white bg-gray-900 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none z-10 text-center shadow-lg">
@@ -47,7 +47,7 @@
             </button>
           </div>
           <!-- Card Content -->
-          <div class="p-5 flex flex-col gap-6" id="insight-highlights-content">
+          <div class="p-4 flex flex-col gap-6" id="insight-highlights-content">
             <details class="story-guide supporting-story-tier highlight-story-intro" id="highlights-guide">
               <summary class="story-guide-summary">How to read</summary>
               <div class="story-guide-body">
@@ -72,9 +72,9 @@
       <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--drivers" aria-labelledby="guided-findings-drivers-title">
         <h3 id="guided-findings-drivers-title" class="sr-only">Participants</h3>
 
-        <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell" data-accent="participants">
+        <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="participants" data-nav-target="participants" data-vue-shell-mount="card-shell" data-accent="participants">
           <!-- Card Header -->
-          <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             <div class="flex items-center gap-3">
               <h2 class="font-display text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                 <span aria-hidden="true" class="text-[#14b8a6] flex">
@@ -84,14 +84,14 @@
               </h2>
             </div>
             <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-              <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors" id="download-participants" title="Download the participants table as CSV">Download CSV</button>
+              <button type="button" class="wa-button wa-button--sunken dense" id="download-participants" title="Download the participants table as CSV">Download CSV</button>
               <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="participants-content">
                 <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </button>
             </div>
           </div>
           <!-- Card Content -->
-          <div class="p-5 flex flex-col gap-6 participants-story-flow" id="participants-content">
+          <div class="p-4 flex flex-col gap-6 participants-story-flow" id="participants-content">
               <details class="story-guide supporting-story-tier participants-story-intro rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
                 <summary class="story-guide-summary">How to read</summary>
                 <div class="story-guide-body">
@@ -139,8 +139,8 @@
                 <div class="participants-quick-filters flex flex-wrap gap-2 items-center justify-start">
                     <span class="premium-kicker">Quick filters</span>
                     <div class="flex flex-wrap gap-2">
-                      <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="top-week" aria-pressed="false">Top 5 this week</button>
-                      <button type="button" class="px-2 py-1 text-xs rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[#14b8a6] transition-colors" data-participants-preset="quiet" aria-pressed="false">Quietest 5</button>
+                      <button type="button" class="wa-button wa-button--sunken dense" data-participants-preset="top-week" aria-pressed="false">Top 5 this week</button>
+                      <button type="button" class="wa-button wa-button--sunken dense" data-participants-preset="quiet" aria-pressed="false">Quietest 5</button>
                     </div>
                 </div>
               </div>
@@ -198,9 +198,9 @@
       <section class="flex flex-col gap-4 guided-findings-cluster guided-findings-cluster--timing" aria-labelledby="guided-findings-timing-title">
         <h3 id="guided-findings-timing-title" class="sr-only">Timing</h3>
 
-        <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
+        <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="hourly-activity" data-nav-target="hourly-activity" data-accent="hourly" data-vue-shell-mount="card-shell">
           <!-- Card Header -->
-          <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
             <div class="flex items-center gap-3">
               <h2 class="font-display text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                 <span aria-hidden="true" class="text-[#f59e0b] flex"> <!-- Amber accent -->
@@ -210,14 +210,14 @@
               </h2>
             </div>
             <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-              <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors" id="download-hourly" title="Download hourly activity as CSV">Download CSV</button>
+              <button type="button" class="wa-button wa-button--sunken dense" id="download-hourly" title="Download hourly activity as CSV">Download CSV</button>
               <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="hourly-activity-content">
                 <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </button>
             </div>
           </div>
           <!-- Card Content -->
-          <div class="p-5 flex flex-col gap-6 hourly-story-flow" id="hourly-activity-content">
+          <div class="p-4 flex flex-col gap-6 hourly-story-flow" id="hourly-activity-content">
              <div class="analysis-summary-strip story-summary-tier hourly-summary-strip flex flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
                <span class="text-xs font-semibold uppercase text-[#f59e0b] tracking-wider">Top Hour</span>
                <span class="text-3xl font-display text-[var(--text)] mt-1" id="hourly-top-hour">—</span>

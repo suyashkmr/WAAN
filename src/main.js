@@ -8,6 +8,7 @@ import DatePicker from 'primevue/datepicker'
 import Dialog from 'primevue/dialog'
 import DataView from 'primevue/dataview'
 import App from './App.vue'
+import { vMagnetic } from './directives/vMagnetic.js'
 
 globalThis.Vue = Vue;
 globalThis.PrimeVue = {
@@ -27,6 +28,7 @@ import '../styles.tailwind.css'
 
 const app = Vue.createApp(App)
 app.use(PrimeVue, { unstyled: true })
+app.directive("magnetic", vMagnetic)
 app.mount('#app')
 
 // Bridge the legacy vanilla JS islands onto the mounted SFC DOM without an extra boot delay.

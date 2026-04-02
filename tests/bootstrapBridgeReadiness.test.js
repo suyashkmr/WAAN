@@ -45,22 +45,28 @@ describe("bootstrap bridge readiness sequencing", () => {
     vi.restoreAllMocks();
   });
 
-  it("fails fast when search bridge contracts are missing", async () => {
+  it("defers bootstrap when search bridge contracts are missing", async () => {
     vi.doMock("../js/vue/bridgeRegistry.js", () => ({
       VUE_BRIDGE_NAMES: { shell: "shell", searchSaved: "searchSaved" },
       resolveVueBridge: vi.fn(() => null),
     }));
 
+    const setTimeoutRef = vi.fn(() => /** @type {any} */ (0));
+    const deps = makeBootstrapDeps();
     const { createBootstrapController } = await import("../js/appShell/bootstrap.js");
     const controller = createBootstrapController({
       elements: { onboardingSkipButton: null, onboardingNextButton: null },
-      deps: makeBootstrapDeps(),
+      deps,
+      setTimeoutRef,
     });
 
-    expect(() => controller.initAppBootstrap()).toThrow("SearchSaved bridge is not ready with required contracts.");
+    expect(() => controller.initAppBootstrap()).not.toThrow();
+    expect(setTimeoutRef).toHaveBeenCalledTimes(1);
+    expect(deps.initEventHandlers).not.toHaveBeenCalled();
+    expect(deps.initRelayControls).not.toHaveBeenCalled();
   });
 
-  it("fails fast when shell bridge dispatch contracts are missing", async () => {
+  it("defers bootstrap when shell bridge dispatch contracts are missing", async () => {
     vi.doMock("../js/vue/bridgeRegistry.js", () => ({
       VUE_BRIDGE_NAMES: { shell: "shell", searchSaved: "searchSaved" },
       resolveVueBridge: vi.fn(name => {
@@ -81,12 +87,18 @@ describe("bootstrap bridge readiness sequencing", () => {
       }),
     }));
 
+    const setTimeoutRef = vi.fn(() => /** @type {any} */ (0));
+    const deps = makeBootstrapDeps();
     const { createBootstrapController } = await import("../js/appShell/bootstrap.js");
     const controller = createBootstrapController({
       elements: { onboardingSkipButton: null, onboardingNextButton: null },
-      deps: makeBootstrapDeps(),
+      deps,
+      setTimeoutRef,
     });
 
-    expect(() => controller.initAppBootstrap()).toThrow("Shell bridge is not ready with required dispatch contracts.");
+    expect(() => controller.initAppBootstrap()).not.toThrow();
+    expect(setTimeoutRef).toHaveBeenCalledTimes(1);
+    expect(deps.initEventHandlers).not.toHaveBeenCalled();
+    expect(deps.initRelayControls).not.toHaveBeenCalled();
   });
 });

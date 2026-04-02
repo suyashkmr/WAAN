@@ -373,6 +373,135 @@ Closeout status as of 2026-03-26:
   - no active evidence remains that workspace utility controls are double-bound through direct listeners and shell-action dispatch
   - the reopened regressions were resolved with recorded validation instead of being silently folded into earlier phase summaries
 
+### Phase 81 Closure Note
+
+Closeout status as of 2026-04-01:
+
+- Phase 81 target is now implemented on the shipped branch with a Vue-owned workspace state model and a runtime bridge adapter, while relay/runtime logic remains in `js/`.
+- stage rendering is now strictly one-stage-at-a-time; the workspace branch no longer co-renders findings/deep-dive/support.
+- section navigation is stage-scoped and dynamically rebuilt from stage-specific nav mappings as active stage changes.
+- stage-change runtime contract is now explicit via `waan:active-stage-changed` and consumed by runtime bootstrap for nav refresh and late-mounted interaction rebinding.
+- runtime interaction reliability is preserved for stage-mounted controls by adding delegated export bindings for late-mounted stage buttons.
+- scoped files touched for this closeout:
+  - `src/App.vue`
+  - `js/appConstants.js`
+  - `js/appShell/sectionNav.js`
+  - `js/appShell/runtimeBootstrap.js`
+  - `js/appShell/eventBindings.js`
+  - `tests/visual/dashboard.visual.spec.js`
+  - `tests/visual/accessibility.smoke.spec.js`
+  - `tests/sectionNavVueRender.test.js`
+  - `tests/appConstants.test.js`
+- validation recorded for closeout:
+  - `npm test` (541/541)
+  - `npm run test:accessibility-smoke` (16/16)
+  - `npm run test:visual:update` (132/132, stage-scoped baseline refresh)
+  - `npm run test:visual` (132/132)
+  - `npm run ci:verify` (green)
+- measured smoothness evidence (stage-switch acceptance):
+  - automated rAF stage-switch sample on local preview (`127.0.0.1:4173`) over repeated workspace/findings/deepdive/support switching reported: `p50 16.7ms`, `p95 33.4ms`, `max 83.3ms` (`169` sampled frames).
+- residual-risk boundary:
+  - none identified within Phase 81 scope after recorded validation; later visual/token polish remains Phase 82 scope.
+
+### Phase 82 Closure Note
+
+Closeout status as of 2026-04-01:
+
+- Phase 82 visual-system polish is now implemented on the shipped branch with premium shadow token standardization, reusable `wa-card`/`wa-glass` utilities, and full non-toggle button migration to semantic `wa-button` variants.
+- premium surface tokens are now explicit and unified via:
+  - `--shadow-premium-rest`
+  - `--shadow-premium-hover`
+  - `--shadow-premium-sunken`
+  - with `--editorial-card-shadow` aliases preserved for backward compatibility.
+- stage and primary story containers now apply `.wa-card` across:
+  - workspace shell (`src/App.vue`)
+  - findings stage cards (`src/components/FindingsStage.vue`)
+  - deep-dive stage cards (`src/components/DeepDiveStage.vue`)
+  - support card (`src/components/SupportStage.vue`)
+- non-toggle button unification completed across:
+  - app shell overlays and onboarding controls
+  - findings/deep-dive/support/action controls
+  - first-run setup callout controls
+  - runtime Vue relay action views (`js/vue/shellRelayActionViews.js`)
+  - while preserving specialized controls (`segmented-pill-button`, `card-toggle`, `info-note-button`).
+- findings/deep-dive spacing rhythm was normalized (card header/content padding and primary stage stack gaps) without changing chart-frame explicit sizing constraints.
+- validation recorded for closeout:
+  - `npm run tailwind:build`
+  - `npm run check:appshell-contracts`
+  - `npm run test:visual:update` (132/132)
+  - `npm run test:visual` (132/132)
+  - `npm run test:accessibility-smoke` (16/16)
+  - `npm run ci:verify` (green)
+- residual-risk boundary:
+  - none identified within Phase 82 scoped implementation after recorded validation; interaction-motion enhancements remain Phase 83 scope.
+
+Reopen note as of 2026-04-01:
+
+- Phase 82 was reopened after post-closeout verification found one unresolved checklist scope gap: non-toggle button standardization was not fully complete because `StageSelector.vue` still used custom stage-selector button styling instead of semantic `.wa-button` variants.
+- until that gap is fixed (or explicitly accepted as a documented exception), Phase 82 must remain open in `docs/tasks.md` and cannot be treated as complete.
+
+Re-close note as of 2026-04-01:
+
+- reopened gap resolved: `StageSelector.vue` stage tabs now use semantic `.wa-button` variants with active/inactive mapping (`wa-button--primary` / `wa-button--sunken`) while preserving `.stage-selector-button`, `data-stage-id`, `role="tab"`, `aria-selected`, and `data-stage-active` contracts.
+- scoped style normalization completed: stage-selector scoped CSS now keeps only container/layout-specific styles and removes duplicate custom button visual treatment replaced by shared design-system classes.
+- validation recorded for re-close:
+  - `npm run tailwind:build`
+  - `npm run check:appshell-contracts`
+  - `npx vitest --run tests/stageSelector.test.js`
+  - `npm run test:visual:update` (132/132)
+  - `npm run test:visual` (132/132)
+  - `npm run test:accessibility-smoke` (16/16)
+  - `npm run ci:verify` (green)
+- Phase 82 is now reclosed with no remaining known scope gaps in its checklist.
+
+### Phase 83 Closure Note
+
+Closeout status as of 2026-04-01:
+
+- Phase 83 interaction/motion scope is now shipped with runtime-safe magnetic interactions, export success glint feedback, liquid sync progress motion, and refined stage-fade easing.
+- implemented interaction contracts:
+  - new Vue directive: `v-magnetic` (`src/directives/vMagnetic.js`) registered globally in `src/main.js`.
+  - shared magnetic runtime engine (`js/ui/magnetic.js`) used by both SFC controls and runtime-mounted relay controls.
+  - runtime `relay-start` now exposes stable magnetic opt-in (`data-magnetic="true"`) and is rebound after stage remounts through `js/vue/runtimeMagneticBindings.js`.
+  - new internal success event contract: `waan:export-success` with `detail.buttonId` for primary exports only.
+- visual/motion behavior changes:
+  - export success glint class playback wired in runtime bootstrap and scoped to primary export buttons.
+  - sync-progress fill now uses liquid animated background-position while preserving width-driven progress updates.
+  - stage transition easing updated to `cubic-bezier(0.4, 0, 0.2, 1)`.
+  - reduced-motion guardrails are enforced for magnetic behavior, glint animation, and liquid sync animation.
+- validation recorded for closeout:
+  - `npm run test:visual:update` (132/132)
+  - `npm run test:visual` (132/132)
+  - `npm run test:accessibility-smoke` (16/16)
+  - `npm run ci:verify` (green; all checks + 544/544 tests passed)
+- measured smoothness evidence (stage-switch acceptance):
+  - automated rAF stage-switch sample on local preview (`127.0.0.1:4173`) over repeated workspace/findings/deepdive/support switching reported: `p50 16.7ms`, `p95 17.3ms`, `max 49.4ms` (`220` sampled frames).
+- residual-risk boundary:
+  - none identified within Phase 83 scoped implementation after recorded validation; final product-wide QA audit remains Phase 84 scope.
+
+### Phase 84 Closure Note
+
+Closeout status as of 2026-04-01:
+
+- Phase 84 reliability-gate scope is now closed as a fix-and-verify pass across all four stages (`workspace`, `findings`, `deepdive`, `support`) with runtime continuity preserved.
+- in-phase fixes completed during this gate:
+  - hardened bootstrap/event-binding timing and bridge-readiness behavior so runtime contracts remain stable while Vue-owned surfaces mount.
+  - fixed stage remount/runtime drift by keeping stage shells mounted and ensuring runtime targets re-resolve live DOM nodes after stage switches.
+  - corrected visual/accessibility harness behavior for utility-cluster open state and stage-visibility contract checks.
+  - updated bridge-readiness unit contracts to assert deferred retry behavior instead of the previous fail-fast throw contract.
+- responsive and behavior verification covered required breakpoints (`1440`, `1024`, `768`, `390`) with stage-switch and relay-state scenarios in Playwright visual and accessibility sweeps.
+- zombie-node audit result:
+  - no IDs/data hooks were proven dead across both runtime and tests in this phase; no contract anchors were removed.
+- validation recorded for closeout:
+  - `npm run test:visual:update` (intentional baseline refresh for stage-visibility/runtime-settlement contract changes)
+  - `npm run test:visual` (132/132)
+  - `npm run test:accessibility-smoke` (16/16)
+  - `npm run ci:verify` (green; all checks, 545/545 tests)
+  - `npm run build`
+  - `npm run preview -- --host 127.0.0.1 --port 4173` + HTTP smoke check (`curl` status `200`)
+- residual-risk boundary:
+  - none identified within Phase 84 scope after recorded validation.
+
 - compress relay state, chat selection, range selection, exports, and diagnostics into one disciplined command band
 - remove oversized empty-state framing and any layout that reserves space for absent content
 - move secondary setup guidance behind contextual disclosure instead of keeping it permanently visible

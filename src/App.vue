@@ -11,86 +11,55 @@
   </nav>
 
   <main class="app-shell-layout w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
-    
-    <!-- Workspace Stage -->
-    <section class="flex flex-col gap-6 w-full opacity-0 animate-fade-in-up" data-stage="workspace" aria-labelledby="workspace-stage-title" style="animation-delay: 50ms;">
-      <!-- Stage Header -->
-      <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
-        <h2 id="workspace-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Workspace</h2>
-      </div>
+    <StageSelector
+      :active-stage="workspaceStore.ui.activeStage"
+      @select-stage="selectStage"
+    />
 
-      <section class="workspace-stage analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-sm flex flex-col gap-6 w-full p-6 lg:p-8" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace" style="box-shadow: var(--editorial-card-shadow);">
-        <div class="workspace-inline-strip">
-          <EmptyWorkspaceCallout />
+    <div class="stage-shell">
+      <section
+        v-show="workspaceStore.ui.activeStage === 'workspace'"
+        :hidden="workspaceStore.ui.activeStage !== 'workspace'"
+        class="flex flex-col gap-6 w-full opacity-0 animate-fade-in-up"
+        data-stage="workspace"
+        aria-labelledby="workspace-stage-title"
+        style="animation-delay: 50ms;"
+      >
+        <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
+          <h2 id="workspace-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Workspace</h2>
         </div>
-        <div class="workspace-stage-grid workspace-stage-grid--rail workspace-stage-grid--minimal-rail w-full" id="workspace-stage-grid">
-          <div class="workspace-rail-lane">
-            <WorkspaceSidebar />
+
+        <section class="workspace-stage analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-sm flex flex-col gap-6 w-full p-6 lg:p-8" id="workspace-stage" aria-label="Workspace" data-nav-target="workspace">
+          <div class="workspace-inline-strip">
+            <EmptyWorkspaceCallout />
           </div>
-        </div>
-        <div id="data-status" class="hidden px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] text-sm rounded-lg" aria-live="polite"></div>
-      </section>
-    </section>
-
-    <FindingsStage class="opacity-0 animate-fade-in-up" style="animation-delay: 150ms;" />
-
-    <DeepDiveStage class="opacity-0 animate-fade-in-up" style="animation-delay: 250ms;" />
-
-    <!-- Support Stage -->
-    <section class="flex flex-col gap-6 w-full opacity-0 animate-fade-in-up" data-stage="support" aria-labelledby="support-stage-title" style="animation-delay: 350ms;">
-      <div class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
-        <h2 id="support-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Support</h2>
-      </div>
-
-      <!-- FAQ Card -->
-      <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col w-full" id="faq-card" data-nav-target="faq" data-accent="faq" data-vue-shell-mount="card-shell">
-        <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
-          <div class="flex items-center gap-3">
-            <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
-              <span aria-hidden="true" class="text-[var(--accent)] flex">
-                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M11 18h2v2h-2zm1-16a9 9 0 0 0-9 9h2a7 7 0 1 1 9.9 6.32l-.9.44V20h2v-1.1a9 9 0 0 0-4-17.9z" /></svg>
-              </span>
-              Recovery help
-            </h2>
+          <div class="workspace-stage-grid workspace-stage-grid--rail workspace-stage-grid--minimal-rail w-full" id="workspace-stage-grid">
+            <div class="workspace-rail-lane">
+              <WorkspaceSidebar />
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-                <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="faq-content" title="Collapse or expand recovery help">
-                  <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-              </div>
-        </div>
-        <div class="p-6 flex flex-col gap-6" id="faq-content">
-          <ul class="flex flex-col gap-6 m-0 p-0 list-none text-[var(--text)] text-sm leading-relaxed" id="faq-list">
-            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
-              <h3 class="font-semibold text-base m-0 text-[var(--text)]">Do I need Chrome or Chromium installed for relay sync?</h3>
-              <p class="m-0 text-[var(--text-muted)]">Yes. Install Chrome or Chromium locally, then relaunch <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">WAAN.app</code> if relay will not start on a fresh Mac.</p>
-            </li>
-            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]" id="faq-macos-gatekeeper">
-              <h3 class="font-semibold text-base m-0 text-[var(--text)]">macOS says the relay app is damaged or from an unidentified developer. What should I do?</h3>
-              <p class="m-0 text-[var(--text-muted)]">Open <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">WAAN.app</code> from Finder, then allow it in System Settings → Privacy & Security with <em class="text-[var(--text)] font-medium">Open Anyway</em>. If it is still blocked, Control-click the app once and choose <em class="text-[var(--text)] font-medium">Open</em>. If no override appears, make sure the app is in <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">/Applications/WAAN.app</code>, then run <code class="bg-[var(--surface)] border border-[var(--border)] px-1.5 py-0.5 rounded text-xs text-[var(--accent)] font-mono">xattr -dr com.apple.quarantine "/Applications/WAAN.app"</code> and reopen it from Finder.</p>
-            </li>
-            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]" id="faq-account-safety">
-              <h3 class="font-semibold text-base m-0 text-[var(--text)]">Can WhatsApp block my account for using WAAN?</h3>
-              <p class="m-0 text-[var(--text-muted)]">Yes, it is possible. WAAN is not an official WhatsApp client, and WhatsApp/Meta can apply temporary or permanent restrictions. Start with a secondary account. Official policies:
-                <a href="https://www.whatsapp.com/legal/terms-of-service" class="text-[#3b82f6] hover:underline transition-colors" target="_blank" rel="noopener noreferrer">WhatsApp Terms of Service</a>,
-                <a href="https://www.whatsapp.com/legal/business-terms" class="text-[#3b82f6] hover:underline transition-colors" target="_blank" rel="noopener noreferrer">WhatsApp Business Terms</a>.
-              </p>
-            </li>
-            <li class="flex flex-col gap-2 pb-4 border-b border-[var(--border)]">
-              <h3 class="font-semibold text-base m-0 text-[var(--text)]">What should I do if syncing looks stuck or the relay drops?</h3>
-              <p class="m-0 text-[var(--text-muted)]">Use <strong class="text-[var(--text)] font-medium">Resync</strong> first. If it still fails, use <strong class="text-[var(--text)] font-medium">Reconnect</strong>, then <strong class="text-[var(--text)] font-medium">Export diagnostics</strong> before reporting the issue.</p>
-            </li>
-            <li class="flex flex-col gap-2">
-              <h3 class="font-semibold text-base m-0 text-[var(--text)]">Where is my data stored, and does WAAN send it anywhere?</h3>
-              <p class="m-0 text-[var(--text-muted)]">WAAN stores mirrored chats locally on your Mac by default. Data leaves your device only when you explicitly export or share it. See:
-                <a href="https://github.com/suyashkmr/WAAN/blob/main/PRIVACY.md" class="text-[#3b82f6] hover:underline transition-colors" target="_blank" rel="noopener noreferrer">PRIVACY.md</a>.
-              </p>
-            </li>
-          </ul>
-        </div>
+          <div id="data-status" class="hidden px-4 py-3 bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text)] text-sm rounded-lg" aria-live="polite"></div>
+        </section>
       </section>
-    </section>
 
+      <FindingsStage
+        v-show="workspaceStore.ui.activeStage === 'findings'"
+        :hidden="workspaceStore.ui.activeStage !== 'findings'"
+        class="opacity-0 animate-fade-in-up"
+        style="animation-delay: 150ms;"
+      />
+      <DeepDiveStage
+        v-show="workspaceStore.ui.activeStage === 'deepdive'"
+        :hidden="workspaceStore.ui.activeStage !== 'deepdive'"
+        class="opacity-0 animate-fade-in-up"
+        style="animation-delay: 250ms;"
+      />
+      <SupportStage
+        v-show="workspaceStore.ui.activeStage === 'support'"
+        :hidden="workspaceStore.ui.activeStage !== 'support'"
+        class="opacity-0 animate-fade-in-up"
+      />
+    </div>
   </main>
 
   <!-- Global Offcanvas Utilities -->
@@ -103,10 +72,10 @@
         <p class="text-xs text-[var(--text-muted)] m-0" id="relay-log-connection">Connecting…</p>
       </div>
       <div class="grid grid-cols-3 gap-2 mt-2">
-        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="relay-log-export" title="Download a diagnostics bundle">Export</button>
-        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="relay-log-report" title="Open issue report">Report</button>
-        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" id="relay-log-clear" title="Clear log entries">Clear</button>
-        <button type="button" class="px-3 py-2 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors col-span-3 mt-2" id="relay-log-close" title="Close diagnostics drawer">Close</button>
+        <button type="button" class="wa-button wa-button--sunken dense" id="relay-log-export" title="Download a diagnostics bundle">Export</button>
+        <button type="button" class="wa-button wa-button--sunken dense" id="relay-log-report" title="Open issue report">Report</button>
+        <button type="button" class="wa-button wa-button--ghost dense" id="relay-log-clear" title="Clear log entries">Clear</button>
+        <button type="button" class="wa-button wa-button--ghost dense col-span-3 mt-2" id="relay-log-close" title="Close diagnostics drawer">Close</button>
       </div>
     </div>
     <div class="p-4 overflow-y-auto flex-1 text-xs font-mono text-[var(--text-muted)] bg-black/40" id="relay-log-list">
@@ -124,8 +93,8 @@
       </div>
       <p class="text-[var(--text-muted)] text-base m-0 leading-relaxed" id="onboarding-copy">Start relay.</p>
       <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-[var(--border)]">
-        <button type="button" class="px-4 py-2 text-sm font-medium rounded-md text-[var(--text-muted)] hover:text-[var(--text)] transition-colors" id="onboarding-skip">Close</button>
-        <button type="button" class="px-5 py-2 text-sm font-medium rounded-md bg-[var(--accent)] text-black hover:bg-opacity-90 transition-colors shadow-lg" id="onboarding-next">Next tip</button>
+        <button type="button" class="wa-button wa-button--ghost" id="onboarding-skip">Close</button>
+        <button type="button" class="wa-button wa-button--primary" id="onboarding-next">Next tip</button>
       </div>
     </div>
   </div>
@@ -153,8 +122,169 @@
 </template>
 
 <script setup>
+import StageSelector from './components/StageSelector.vue';
+import SupportStage from './components/SupportStage.vue';
 import DeepDiveStage from './components/DeepDiveStage.vue';
 import EmptyWorkspaceCallout from './components/EmptyWorkspaceCallout.vue';
 import FindingsStage from './components/FindingsStage.vue';
 import WorkspaceSidebar from './components/WorkspaceSidebar.vue';
+import { onBeforeUnmount, onMounted, watch } from "vue";
+import { ACTIVE_STAGE_CHANGED_EVENT, SECTION_NAV_ITEMS_BY_STAGE } from "../js/appConstants.js";
+import { useWorkspaceStore, useWorkspaceStoreActions } from "./store/useWorkspaceStore.js";
+
+const workspaceStore = useWorkspaceStore();
+const workspaceStoreActions = useWorkspaceStoreActions();
+const stageHashById = {
+  workspace: "workspace-stage",
+  findings: "guided-findings-stage",
+  deepdive: "deep-dive-stage",
+  support: "faq-card",
+};
+
+/** @type {Record<string, string>} */
+const stageByHashId = Object.entries(SECTION_NAV_ITEMS_BY_STAGE).reduce(
+  (acc, [stageId, items]) => {
+    items.forEach(item => {
+      if (!item?.id) return;
+      acc[item.id] = stageId;
+    });
+    return acc;
+  },
+  {
+    "faq-macos-gatekeeper": "support",
+    "faq-account-safety": "support",
+    "weekly-trend": "deepdive",
+    "daily-activity": "deepdive",
+    "weekday-trend": "deepdive",
+    "timeofday-trend": "deepdive",
+    "sentiment-overview": "deepdive",
+  },
+);
+
+function normalizeStageMarker(stageMarker) {
+  if (stageMarker === "deep-dive") return "deepdive";
+  return stageMarker;
+}
+
+/**
+ * @param {string} hash
+ */
+function resolveHashTargetId(hash) {
+  return String(hash || "").replace(/^#/, "");
+}
+
+/**
+ * @param {string} hash
+ */
+function scrollToHashTarget(hash) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  const targetId = resolveHashTargetId(hash);
+  if (!targetId) return;
+  const tryScroll = () => {
+    const target = document.getElementById(targetId);
+    if (!(target instanceof HTMLElement)) return false;
+    target.scrollIntoView({ behavior: "auto", block: "start" });
+    return true;
+  };
+  const raf = window.requestAnimationFrame
+    ? window.requestAnimationFrame.bind(window)
+    : callback => window.setTimeout(callback, 16);
+  raf(() => {
+    if (tryScroll()) return;
+    raf(() => {
+      if (tryScroll()) return;
+      window.setTimeout(() => {
+        tryScroll();
+      }, 60);
+    });
+  });
+}
+
+/**
+ * @param {string} hash
+ * @param {{ allowDomLookup?: boolean }} [options]
+ * @returns {string | null}
+ */
+function resolveStageFromHash(hash, { allowDomLookup = true } = {}) {
+  const id = String(hash || "").replace(/^#/, "");
+  if (!id) return null;
+  const mapped = stageByHashId[id];
+  if (mapped) return mapped;
+  if (!allowDomLookup || typeof document === "undefined") return null;
+  const target = document.getElementById(id);
+  if (!(target instanceof HTMLElement)) return null;
+  const stageHost = target.closest("[data-stage]");
+  const stageMarker = normalizeStageMarker(stageHost?.getAttribute("data-stage"));
+  if (stageMarker === "workspace" || stageMarker === "findings" || stageMarker === "deepdive" || stageMarker === "support") {
+    return stageMarker;
+  }
+  return null;
+}
+
+/**
+ * @param {{ allowDomLookup?: boolean }} [options]
+ */
+function applyStageFromHash({ allowDomLookup = true } = {}) {
+  if (typeof window === "undefined") return;
+  const hash = window.location.hash;
+  const stage = resolveStageFromHash(hash, { allowDomLookup });
+  if (!stage) return;
+  workspaceStoreActions.setActiveStage(stage);
+  scrollToHashTarget(hash);
+}
+
+if (typeof window !== "undefined") {
+  applyStageFromHash({ allowDomLookup: false });
+}
+
+function selectStage(stageId) {
+  workspaceStoreActions.setActiveStage(stageId);
+  if (typeof window === "undefined") return;
+  const targetId = stageHashById[stageId];
+  if (!targetId) return;
+  const targetHash = `#${targetId}`;
+  if (window.location.hash === targetHash) return;
+  window.location.hash = targetHash;
+}
+
+function handleHashChange() {
+  applyStageFromHash({ allowDomLookup: true });
+}
+
+onMounted(() => {
+  handleHashChange();
+  if (typeof window === "undefined") return;
+  window.addEventListener("hashchange", handleHashChange);
+});
+
+onBeforeUnmount(() => {
+  if (typeof window === "undefined") return;
+  window.removeEventListener("hashchange", handleHashChange);
+});
+
+watch(
+  () => workspaceStore.ui.activeStage,
+  stage => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent(ACTIVE_STAGE_CHANGED_EVENT, {
+        detail: { stage },
+      }),
+    );
+  },
+  { immediate: true, flush: "post" },
+);
 </script>
+
+<style>
+.stage-fade-enter-active,
+.stage-fade-leave-active {
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stage-fade-enter-from,
+.stage-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+</style>

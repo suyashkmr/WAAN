@@ -109,6 +109,7 @@ function seedMinimumDom() {
 describe("appShell boundary integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.location.hash = "";
   });
 
   it("invokes extracted wiring boundaries during appShell bootstrap", async () => {
@@ -134,4 +135,15 @@ describe("appShell boundary integration", () => {
     const runtimeArgs = h.bootstrapAppShellRuntime.mock.calls[0][0];
     expect(runtimeArgs.eventBindings.handlers.handleChatSelectionChange).toBe(h.handleChatSelectionChange);
   }, 15_000);
+
+  it("derives initial stage-scoped nav from deep-link hash", async () => {
+    seedMinimumDom();
+    window.location.hash = "#participants";
+    vi.resetModules();
+
+    await expect(import("../js/appShell.js")).resolves.toBeTruthy();
+
+    const runtimeArgs = h.bootstrapAppShellRuntime.mock.calls[0][0];
+    expect(runtimeArgs.sectionNavConfig.initialStage).toBe("findings");
+  });
 });

@@ -220,6 +220,23 @@
         color: var(--accent);
     }
 
+    .wa-card {
+        border-radius: var(--shape-medium);
+        border: 1px solid color-mix(in srgb, var(--editorial-card-border, var(--border)) 90%, transparent);
+        background: color-mix(in srgb, var(--card-bg) 98%, transparent);
+        box-shadow: var(--shadow-premium-rest);
+        transition: box-shadow var(--motion-duration-fast) var(--motion-ease-out), border-color var(--motion-duration-fast) var(--motion-ease-out);
+    }
+
+    .wa-card:hover {
+        box-shadow: var(--shadow-premium-hover);
+        border-color: color-mix(in srgb, var(--accent) 18%, var(--editorial-card-border, var(--border)));
+    }
+
+    .wa-card:focus-within {
+        box-shadow: var(--control-focus-ring), var(--shadow-premium-rest);
+    }
+
     /* Unified Design System Button Component (.wa-button) */
     .wa-button {
         display: inline-flex;
@@ -239,6 +256,16 @@
         color: var(--text-muted);
         text-decoration: none;
         user-select: none;
+    }
+
+    .wa-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+
+    .wa-button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 24%, transparent);
     }
 
     .wa-button.dense {
@@ -281,6 +308,18 @@
 
     .wa-button--outline {
         border-color: var(--border);
+    }
+
+    .wa-button--sunken {
+        border-color: color-mix(in srgb, var(--border) 92%, transparent);
+        background: color-mix(in srgb, var(--surface-sunken) 92%, transparent);
+        color: color-mix(in srgb, var(--text) 84%, var(--muted));
+        box-shadow: var(--shadow-premium-sunken);
+    }
+
+    .wa-button--sunken:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--surface-hover) 86%, transparent);
+        border-color: color-mix(in srgb, var(--accent) 20%, var(--border));
     }
 
     .wa-button--danger {

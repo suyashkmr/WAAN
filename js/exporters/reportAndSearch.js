@@ -12,6 +12,7 @@ export function createReportAndSearchExporters({
   generateMarkdownReport,
   generateSlidesHtml,
   updateStatus,
+  emitExportSuccess = () => {},
 }) {
   function exportSearchResults() {
     const state = getSearchState();
@@ -49,6 +50,7 @@ export function createReportAndSearchExporters({
         "text/markdown;charset=utf-8;",
       );
       updateStatus(`Saved the ${theme.label} text report.`, "success");
+      emitExportSuccess("download-markdown-report");
     } catch (error) {
       console.error(error);
       updateStatus("Couldn't build the text report.", "error");
@@ -70,6 +72,7 @@ export function createReportAndSearchExporters({
         "text/html;charset=utf-8;",
       );
       updateStatus(`Saved the ${theme.label} slide deck.`, "success");
+      emitExportSuccess("download-slides-report");
     } catch (error) {
       console.error(error);
       updateStatus("Couldn't build the slide deck.", "error");

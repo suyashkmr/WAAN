@@ -3,6 +3,7 @@
 import { setAppShellRelayStatus } from "../state.js";
 import { UI_COPY } from "../uiCopy.js";
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
+import { syncWorkspaceRelayStatus } from "../appShell/vueStoreAdapter.js";
 import { createStatusApplyUiHelpers } from "./statusApplyUiHelpers.js";
 
 /**
@@ -122,6 +123,7 @@ export function createRelayStatusApplyController({
    * @param {RelayStatus | null | undefined} status
    */
   function applyRelayStatus(status) {
+    syncWorkspaceRelayStatus(status);
     setAppShellRelayStatus(status);
     const stateKind = status?.status || "offline";
     const previousStateKind = relayUiState.lastAppliedStateKind;
@@ -132,7 +134,6 @@ export function createRelayStatusApplyController({
     updateHeroRelayStatus(status);
     electronAPI?.updateRelayStatus?.(status);
     applyRelayPrimaryAction(status);
-    if (!relayStatusEl) return;
     updateRelayBanner({
       status,
       relayBannerEl,

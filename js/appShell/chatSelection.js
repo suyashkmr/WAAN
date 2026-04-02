@@ -1,4 +1,5 @@
 // @ts-check
+import { syncWorkspaceSelectionState } from "./vueStoreAdapter.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -105,6 +106,7 @@ export function createChatSelectionController({
     const resolvedValue = activeValue && availableValues.includes(activeValue)
       ? activeValue
       : availableValues[0] || "";
+    syncWorkspaceSelectionState({ activeChatId: resolvedValue });
     if (typeof syncPageControls === "function" && syncPageControls({
         chatOptions,
         chatValue: resolvedValue,
@@ -187,6 +189,7 @@ export function createChatSelectionController({
     if (!decoded) return;
     if (!forceReload && selectionValue === getActiveChatId()) return;
     const { source, id } = decoded;
+    syncWorkspaceSelectionState({ activeChatId: selectionValue });
     try {
       if (target) {
         target.disabled = true;

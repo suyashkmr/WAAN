@@ -19,6 +19,7 @@ import { UI_COPY } from "../uiCopy.js";
  *   getRemoteChatsLastFetchedAt?: (() => number) | null,
  *   focusChatSelector?: (() => boolean) | null,
  *   scrollChatSelector?: (() => boolean) | null,
+ *   documentRef?: Document | null,
  * }} [params]
  */
 export function createFirstRunSetupController({
@@ -33,7 +34,47 @@ export function createFirstRunSetupController({
   getRemoteChatsLastFetchedAt = null,
   focusChatSelector = null,
   scrollChatSelector = null,
+  documentRef = typeof document !== "undefined" ? document : null,
 } = {}) {
+  const firstRunSetupId = firstRunSetup?.id || "first-run-setup";
+  const firstRunPrimaryActionButtonId = firstRunPrimaryActionButton?.id || "first-run-primary-action";
+  const relayBannerElId = relayBannerEl?.id || "relay-status-banner";
+  const chatSelectorId = chatSelector?.id || "chat-selector";
+  const relayStartButtonId = relayStartButton?.id || "relay-start";
+  const firstRunStepSelector = '[data-setup-step]';
+
+  /**
+   * @template {HTMLElement} T
+   * @param {T | null | undefined} element
+   * @param {string | null | undefined} id
+   * @returns {T | null}
+   */
+  function resolveLiveElement(element, id) {
+    if (element && element.isConnected) return element;
+    if (!id) return element ?? null;
+    const liveElement = /** @type {T | null} */ (documentRef?.getElementById?.(id) ?? null);
+    if (liveElement) return liveElement;
+    return element ?? null;
+  }
+
+  /**
+   * @returns {HTMLElement[]}
+   */
+  function resolveLiveSetupSteps() {
+    const knownSteps = Array.from(firstRunSetupSteps ?? []).filter(
+      /** @returns {step is HTMLElement} */ step => step instanceof HTMLElement,
+    );
+    const connectedSteps = knownSteps.filter(
+      /** @returns {step is HTMLElement} */ step => step instanceof HTMLElement && step.isConnected,
+    );
+    if (connectedSteps.length) return connectedSteps;
+    const liveSteps = Array.from(documentRef?.querySelectorAll?.(firstRunStepSelector) ?? []).filter(
+      /** @returns {step is HTMLElement} */ step => step instanceof HTMLElement,
+    );
+    if (liveSteps.length) return liveSteps;
+    return knownSteps;
+  }
+
   /**
    * @param {Element | null | undefined} target
    */
@@ -46,19 +87,25 @@ export function createFirstRunSetupController({
    * @param {{ status?: AnyRecord | null, hasData?: boolean }} [params]
    */
   function updateFirstRunSetup({ status, hasData = false } = {}) {
-    if (!firstRunSetup || !firstRunSetupSteps?.length) return;
+    const liveFirstRunSetup = resolveLiveElement(firstRunSetup, firstRunSetupId);
+    const liveFirstRunSetupSteps = resolveLiveSetupSteps();
+    const liveFirstRunPrimaryActionButton = resolveLiveElement(
+      firstRunPrimaryActionButton,
+      firstRunPrimaryActionButtonId,
+    );
+    if (!liveFirstRunSetup || !liveFirstRunSetupSteps.length) return;
     if (hasData) {
-      firstRunSetup.setAttribute("hidden", "");
+      liveFirstRunSetup.setAttribute("hidden", "");
       return;
     }
-    firstRunSetup.removeAttribute("hidden");
+    liveFirstRunSetup.removeAttribute("hidden");
 
     const state = status?.status || "offline";
     const chatCount = Number(status?.chatCount ?? 0);
     const syncingChats = Boolean(status?.syncingChats);
     const hasCompletedRemoteChatFetch = Boolean(getRemoteChatsLastFetchedAt?.());
 
-    firstRunSetupSteps.forEach(/** @param {HTMLElement} step */ step => {
+    liveFirstRunSetupSteps.forEach(/** @param {HTMLElement} step */ step => {
       const stepId = step.dataset.setupStep;
       let value = "pending";
       if (stepId === "connect") {
@@ -75,53 +122,60 @@ export function createFirstRunSetupController({
       step.dataset.state = value;
     });
 
-    if (firstRunPrimaryActionButton) {
-      firstRunPrimaryActionButton.dataset.action = "connect";
-      firstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
+    if (liveFirstRunPrimaryActionButton) {
+      liveFirstRunPrimaryActionButton.dataset.action = "connect";
+      liveFirstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
       if (state === "running" && chatCount > 0) {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.chooseChat;
-        firstRunPrimaryActionButton.dataset.action = "select-chat";
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.chooseChat;
+        liveFirstRunPrimaryActionButton.dataset.action = "select-chat";
       } else if (state === "starting") {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.starting;
-        firstRunPrimaryActionButton.disabled = true;
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.starting;
+        liveFirstRunPrimaryActionButton.disabled = true;
       } else if (state === "waiting_qr") {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.waitingPhone;
-        firstRunPrimaryActionButton.disabled = true;
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.waitingPhone;
+        liveFirstRunPrimaryActionButton.disabled = true;
       } else if (state === "running" && syncingChats) {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;
-        firstRunPrimaryActionButton.disabled = true;
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;
+        liveFirstRunPrimaryActionButton.disabled = true;
       } else if (state === "running" && hasCompletedRemoteChatFetch) {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.noChats;
-        firstRunPrimaryActionButton.disabled = true;
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.noChats;
+        liveFirstRunPrimaryActionButton.disabled = true;
       } else if (state === "running") {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;
-        firstRunPrimaryActionButton.disabled = true;
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.loadingChats;
+        liveFirstRunPrimaryActionButton.disabled = true;
       } else {
-        firstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.startRelay;
-        firstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
+        liveFirstRunPrimaryActionButton.textContent = UI_COPY.relay.firstRun.startRelay;
+        liveFirstRunPrimaryActionButton.disabled = Boolean(getControlsLocked?.());
       }
     }
   }
 
   function handleFirstRunOpenRelay() {
-    scrollToElement(relayBannerEl);
+    const liveRelayBannerEl = resolveLiveElement(relayBannerEl, relayBannerElId);
+    scrollToElement(liveRelayBannerEl);
   }
 
   function handleFirstRunPrimaryAction() {
-    const action = firstRunPrimaryActionButton?.dataset.action || "connect";
+    const liveFirstRunPrimaryActionButton = resolveLiveElement(
+      firstRunPrimaryActionButton,
+      firstRunPrimaryActionButtonId,
+    );
+    const liveChatSelector = resolveLiveElement(chatSelector, chatSelectorId);
+    const liveRelayStartButton = resolveLiveElement(relayStartButton, relayStartButtonId);
+    const action = liveFirstRunPrimaryActionButton?.dataset.action || "connect";
     if (action === "select-chat") {
       const handledScroll = Boolean(scrollChatSelector?.());
       if (!handledScroll) {
-        scrollToElement(chatSelector);
+        scrollToElement(liveChatSelector);
       }
       const handledFocus = Boolean(focusChatSelector?.());
       if (!handledFocus) {
-        chatSelector?.focus();
+        liveChatSelector?.focus();
       }
       return;
     }
-    if (relayStartButton && !relayStartButton.disabled) {
-      relayStartButton.click();
+    if (liveRelayStartButton && !liveRelayStartButton.disabled) {
+      liveRelayStartButton.click();
     }
   }
 

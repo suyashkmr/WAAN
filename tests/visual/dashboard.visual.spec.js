@@ -9,6 +9,14 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     return projectName === "desktop-1440" || projectName === "mobile-390";
   }
 
+  async function selectStage(page, stageId) {
+    const button = page.locator(`.stage-selector-button[data-stage-id="${stageId}"]`).first();
+    await expect(button).toBeVisible();
+    await button.evaluate(node => node.click());
+    await expect(button).toHaveAttribute("data-stage-active", "true");
+    await page.waitForTimeout(120);
+  }
+
   async function applyRelayScenario(page, scenario) {
     await page.evaluate(state => {
       const setHiddenState = (element, isHidden) => {
@@ -717,13 +725,11 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       const relayPanelReady = Boolean(document.getElementById("relay-status-panel"));
       const relayActionsReady = Boolean(document.getElementById("relay-sidebar-live-actions"));
       const actionsToolbarReady = Boolean(document.getElementById("actions-toolbar"));
-      const searchReady = Boolean(document.getElementById("search-keyword"));
 
       return shellBridgeReady
         && relayPanelReady
         && relayActionsReady
-        && actionsToolbarReady
-        && searchReady;
+        && actionsToolbarReady;
     });
     await page.evaluate(async () => {
       if (document.fonts?.ready) {
@@ -927,7 +933,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   test("preserves corrected layout contracts", async ({ page }, testInfo) => {
     await prepareStableFrame(page);
-    await settleScenario(page, applyWorkspaceScenario, applyDeepDiveScenario);
+    await selectStage(page, "workspace");
+    await settleScenario(page, applyWorkspaceScenario);
 
     const metrics = await page.evaluate(() => {
       const customRangeRoot = document.getElementById("custom-range-controls");
@@ -982,6 +989,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches long-form dashboard baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
 
     await expect(page).toHaveScreenshot(`dashboard-longform-${testInfo.project.name}.png`, {
@@ -992,8 +1000,37 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
+  test("renders only the selected stage shell as visible", async ({ page }) => {
+    await prepareStableFrame(page);
+
+    await selectStage(page, "workspace");
+    await expect(page.locator("#workspace-stage")).toBeVisible();
+    await expect(page.locator("#guided-findings-stage")).toBeHidden();
+    await expect(page.locator("#deep-dive-stage")).toBeHidden();
+    await expect(page.locator("#faq-card")).toBeHidden();
+
+    await selectStage(page, "findings");
+    await expect(page.locator("#workspace-stage")).toBeHidden();
+    await expect(page.locator("#guided-findings-stage")).toBeVisible();
+    await expect(page.locator("#deep-dive-stage")).toBeHidden();
+    await expect(page.locator("#faq-card")).toBeHidden();
+
+    await selectStage(page, "deepdive");
+    await expect(page.locator("#workspace-stage")).toBeHidden();
+    await expect(page.locator("#guided-findings-stage")).toBeHidden();
+    await expect(page.locator("#deep-dive-stage")).toBeVisible();
+    await expect(page.locator("#faq-card")).toBeHidden();
+
+    await selectStage(page, "support");
+    await expect(page.locator("#workspace-stage")).toBeHidden();
+    await expect(page.locator("#guided-findings-stage")).toBeHidden();
+    await expect(page.locator("#deep-dive-stage")).toBeHidden();
+    await expect(page.locator("#faq-card")).toBeVisible();
+  });
+
   test("matches interactive states baseline", async ({ page }, testInfo) => {
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await page.addStyleTag({
       content: `.ghost-button.visual-hover-state {
   background: color-mix(in srgb, var(--accent) 15%, transparent) !important;
@@ -1008,15 +1045,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
 
     await page.evaluate(() => {
-      const toggle = document.querySelector('.card-toggle[data-target="participants-content"]');
-      const content = document.getElementById("participants-content");
-      const card = document.getElementById("participants");
       const focusButton = document.getElementById("reduce-motion-toggle");
       const hoverButton = document.getElementById("download-pdf");
       const utilityCluster = document.getElementById("workspace-utility-cluster");
-      if (toggle) toggle.setAttribute("aria-expanded", "false");
-      if (content) content.style.display = "none";
-      if (card) card.classList.add("collapsed");
       if (utilityCluster instanceof HTMLDetailsElement) utilityCluster.open = true;
       focusButton?.classList.add("visual-focus-state");
       hoverButton?.classList.add("visual-hover-state");
@@ -1035,6 +1066,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches highlights section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "findings");
     const section = page.locator("#insight-highlights");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -1048,6 +1080,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches participants section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "findings");
     const section = page.locator("#participants");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -1060,6 +1093,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   test("matches workspace controls baseline", async ({ page }, testInfo) => {
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, applyWorkspaceScenario);
     const section = page.locator("#workspace-stage");
     await section.scrollIntoViewIfNeeded();
@@ -1074,6 +1108,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches workspace offline stage baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, applyWorkspaceOfflineScenario);
     const section = page.locator("#workspace-stage");
     await section.scrollIntoViewIfNeeded();
@@ -1088,6 +1123,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches workspace waiting QR stage baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, async currentPage => {
       await applyRelayScenario(currentPage, "waiting_qr");
       await applyWorkspaceEmptyScenario(currentPage);
@@ -1113,6 +1149,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches workspace syncing stage baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, async currentPage => {
       await applyRelayScenario(currentPage, "running_syncing");
       await applyWorkspaceEmptyScenario(currentPage);
@@ -1138,6 +1175,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches workspace no-chat-selected stage baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, applyWorkspaceEmptyScenario);
     const section = page.locator("#workspace-stage");
     await section.scrollIntoViewIfNeeded();
@@ -1149,8 +1187,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     });
   });
 
-      test("keeps loaded search and saved-view controls reachable across breakpoints", async ({ page }) => {
+  test("keeps loaded search and saved-view controls reachable across breakpoints", async ({ page }) => {
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario);
 
     await page.locator("#search-panel").scrollIntoViewIfNeeded();
@@ -1206,8 +1245,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     }
   });
 
-  test("renders search and saved views after the analytics story and before support", async ({ page }) => {
+  test("renders search and saved views after deep-dive analytics sections", async ({ page }) => {
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
 
     const order = await page.evaluate(() => {
       const ids = [
@@ -1220,7 +1260,6 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
         "polls-card",
         "search-panel",
         "saved-views-card",
-        "faq-card",
       ];
 
       return ids.map(id => {
@@ -1238,15 +1277,15 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     expect(topFor("weekday-trend")).toBeLessThan(topFor("timeofday-trend"));
     expect(topFor("polls-card")).toBeLessThan(topFor("search-panel"));
     expect(topFor("polls-card")).toBeLessThan(topFor("saved-views-card"));
-    expect(topFor("search-panel")).toBeLessThan(topFor("faq-card"));
-    expect(topFor("saved-views-card")).toBeLessThan(topFor("faq-card"));
+    expect(topFor("search-panel")).toBeGreaterThan(topFor("polls-card"));
+    expect(topFor("saved-views-card")).toBeGreaterThanOrEqual(topFor("search-panel"));
   });
 
   test("keeps participants, search results, hourly heatmap, and saved-view gallery locally scroll-bounded", async ({ page }) => {
     await prepareStableFrame(page);
-    await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
+    await selectStage(page, "findings");
 
-    const metrics = await page.evaluate(() => {
+    const findingsMetrics = await page.evaluate(() => {
       const participantsContainer = document.getElementById("participants-table-wrap");
       const participantsBody = document.querySelector("#top-senders tbody");
       if (participantsBody) {
@@ -1260,31 +1299,6 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           </tr>
         `).join("");
         participantsBody.innerHTML = rows;
-      }
-
-      const searchResultsList = document.getElementById("search-results-list");
-      if (searchResultsList) {
-        searchResultsList.innerHTML = Array.from({ length: 60 }, (_, index) => `
-          <article class="search-result">
-            <header class="search-result-header">
-              <span class="search-result-sender">Sender ${index + 1}</span>
-              <time>2026-03-2${index % 9}</time>
-            </header>
-            <p class="search-result-message">Result ${index + 1} with enough copy to keep the cards realistic.</p>
-          </article>
-        `).join("");
-      }
-
-      const savedViewGallery = document.getElementById("saved-view-gallery");
-      if (savedViewGallery) {
-        savedViewGallery.innerHTML = Array.from({ length: 30 }, (_, index) => `
-          <article class="saved-view-card">
-            <div class="saved-view-card-header">
-              <strong>View ${index + 1}</strong>
-            </div>
-            <p class="saved-view-card-summary">Saved view ${index + 1} with enough content to grow the gallery.</p>
-          </article>
-        `).join("");
       }
 
       const hourlyChart = document.getElementById("hourly-chart");
@@ -1314,62 +1328,106 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       };
 
       return {
-        viewportWidth: window.innerWidth,
         participants: measure(participantsContainer),
-        searchResults: measure(searchResultsList),
         hourlyChart: measure(hourlyChart),
+      };
+    });
+
+    await selectStage(page, "deepdive");
+    await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
+    const deepDiveMetrics = await page.evaluate(() => {
+      const searchResultsList = document.getElementById("search-results-list");
+      if (searchResultsList) {
+        searchResultsList.innerHTML = Array.from({ length: 60 }, (_, index) => `
+          <article class="search-result">
+            <header class="search-result-header">
+              <span class="search-result-sender">Sender ${index + 1}</span>
+              <time>2026-03-2${index % 9}</time>
+            </header>
+            <p class="search-result-message">Result ${index + 1} with enough copy to keep the cards realistic.</p>
+          </article>
+        `).join("");
+      }
+      const savedViewGallery = document.getElementById("saved-view-gallery");
+      if (savedViewGallery) {
+        savedViewGallery.innerHTML = Array.from({ length: 30 }, (_, index) => `
+          <article class="saved-view-card">
+            <div class="saved-view-card-header">
+              <strong>View ${index + 1}</strong>
+            </div>
+            <p class="saved-view-card-summary">Saved view ${index + 1} with enough content to grow the gallery.</p>
+          </article>
+        `).join("");
+      }
+      const measure = element => {
+        if (!(element instanceof HTMLElement)) return null;
+        const styles = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const parentRect = element.parentElement?.getBoundingClientRect?.() ?? null;
+        return {
+          clientHeight: element.clientHeight,
+          scrollHeight: element.scrollHeight,
+          overflow: styles.overflow,
+          overflowY: styles.overflowY,
+          width: rect.width,
+          parentWidth: parentRect?.width ?? null,
+        };
+      };
+      return {
+        searchResults: measure(searchResultsList),
         savedViews: measure(savedViewGallery),
       };
     });
 
-    expect(metrics.participants).toBeTruthy();
-    expect(metrics.participants.clientHeight).toBeGreaterThan(0);
-    expect(metrics.participants.scrollHeight).toBeGreaterThan(metrics.participants.clientHeight);
+    expect(findingsMetrics.participants).toBeTruthy();
+    expect(findingsMetrics.participants.clientHeight).toBeGreaterThan(0);
+    expect(findingsMetrics.participants.scrollHeight).toBeGreaterThan(findingsMetrics.participants.clientHeight);
     expect(
-      ["auto", "scroll"].includes(metrics.participants.overflowY)
-      || ["auto", "scroll"].includes(metrics.participants.overflow),
+      ["auto", "scroll"].includes(findingsMetrics.participants.overflowY)
+      || ["auto", "scroll"].includes(findingsMetrics.participants.overflow),
     ).toBe(true);
-    expect(metrics.participants.width).toBeGreaterThan(0);
-    expect(metrics.participants.parentWidth).toBeGreaterThan(0);
-    expect(metrics.participants.width / metrics.participants.parentWidth).toBeGreaterThan(0.35);
+    expect(findingsMetrics.participants.width).toBeGreaterThan(0);
+    expect(findingsMetrics.participants.parentWidth).toBeGreaterThan(0);
+    expect(findingsMetrics.participants.width / findingsMetrics.participants.parentWidth).toBeGreaterThan(0.35);
 
-    expect(metrics.searchResults).toBeTruthy();
-    expect(metrics.searchResults.clientHeight).toBeGreaterThan(0);
-    expect(metrics.searchResults.scrollHeight).toBeGreaterThan(metrics.searchResults.clientHeight);
+    expect(deepDiveMetrics.searchResults).toBeTruthy();
+    expect(deepDiveMetrics.searchResults.clientHeight).toBeGreaterThan(0);
+    expect(deepDiveMetrics.searchResults.scrollHeight).toBeGreaterThan(deepDiveMetrics.searchResults.clientHeight);
     expect(
-      ["auto", "scroll"].includes(metrics.searchResults.overflowY)
-      || ["auto", "scroll"].includes(metrics.searchResults.overflow),
+      ["auto", "scroll"].includes(deepDiveMetrics.searchResults.overflowY)
+      || ["auto", "scroll"].includes(deepDiveMetrics.searchResults.overflow),
     ).toBe(true);
-    expect(metrics.searchResults.width).toBeGreaterThan(0);
-    expect(metrics.searchResults.parentWidth).toBeGreaterThan(0);
-    expect(metrics.searchResults.width / metrics.searchResults.parentWidth).toBeGreaterThan(0.8);
+    expect(deepDiveMetrics.searchResults.width).toBeGreaterThan(0);
+    expect(deepDiveMetrics.searchResults.parentWidth).toBeGreaterThan(0);
+    expect(deepDiveMetrics.searchResults.width / deepDiveMetrics.searchResults.parentWidth).toBeGreaterThan(0.8);
 
-    expect(metrics.hourlyChart).toBeTruthy();
-    expect(metrics.hourlyChart.clientHeight).toBeGreaterThan(0);
-    expect(metrics.hourlyChart.scrollHeight).toBeGreaterThan(metrics.hourlyChart.clientHeight);
+    expect(findingsMetrics.hourlyChart).toBeTruthy();
+    expect(findingsMetrics.hourlyChart.clientHeight).toBeGreaterThan(0);
+    expect(findingsMetrics.hourlyChart.scrollHeight).toBeGreaterThan(findingsMetrics.hourlyChart.clientHeight);
     expect(
-      ["auto", "scroll"].includes(metrics.hourlyChart.overflowY)
-      || ["auto", "scroll"].includes(metrics.hourlyChart.overflow),
+      ["auto", "scroll"].includes(findingsMetrics.hourlyChart.overflowY)
+      || ["auto", "scroll"].includes(findingsMetrics.hourlyChart.overflow),
     ).toBe(true);
-    expect(metrics.hourlyChart.width).toBeGreaterThan(0);
-    expect(metrics.hourlyChart.parentWidth).toBeGreaterThan(0);
-    expect(metrics.hourlyChart.width / metrics.hourlyChart.parentWidth).toBeGreaterThan(0.8);
+    expect(findingsMetrics.hourlyChart.width).toBeGreaterThan(0);
+    expect(findingsMetrics.hourlyChart.parentWidth).toBeGreaterThan(0);
+    expect(findingsMetrics.hourlyChart.width / findingsMetrics.hourlyChart.parentWidth).toBeGreaterThan(0.8);
 
-    expect(metrics.savedViews).toBeTruthy();
-    expect(metrics.savedViews.clientHeight).toBeGreaterThan(0);
-    expect(metrics.savedViews.scrollHeight).toBeGreaterThan(metrics.savedViews.clientHeight);
+    expect(deepDiveMetrics.savedViews).toBeTruthy();
+    expect(deepDiveMetrics.savedViews.clientHeight).toBeGreaterThan(0);
+    expect(deepDiveMetrics.savedViews.scrollHeight).toBeGreaterThan(deepDiveMetrics.savedViews.clientHeight);
     expect(
-      ["auto", "scroll"].includes(metrics.savedViews.overflowY)
-      || ["auto", "scroll"].includes(metrics.savedViews.overflow),
+      ["auto", "scroll"].includes(deepDiveMetrics.savedViews.overflowY)
+      || ["auto", "scroll"].includes(deepDiveMetrics.savedViews.overflow),
     ).toBe(true);
-    expect(metrics.savedViews.width).toBeGreaterThan(0);
-    expect(metrics.savedViews.parentWidth).toBeGreaterThan(0);
-    expect(metrics.savedViews.width / metrics.savedViews.parentWidth).toBeGreaterThan(0.8);
+    expect(deepDiveMetrics.savedViews.width).toBeGreaterThan(0);
+    expect(deepDiveMetrics.savedViews.parentWidth).toBeGreaterThan(0);
+    expect(deepDiveMetrics.savedViews.width / deepDiveMetrics.savedViews.parentWidth).toBeGreaterThan(0.8);
   });
 
   test("matches search panel baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario);
     const section = page.locator("#search-panel");
     await section.scrollIntoViewIfNeeded();
@@ -1383,18 +1441,8 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
 
   test("proves loaded export success paths for daily, weekly, weekday, time-of-day, message types, and sentiment", async ({ page }) => {
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
-    await page.waitForFunction(() => {
-      const buttonIds = [
-        "download-daily",
-        "download-weekly",
-        "download-weekday",
-        "download-timeofday",
-        "download-message-types",
-        "download-sentiment",
-      ];
-      return buttonIds.every(id => document.getElementById(id)?.dataset?.eventBindingsBound === "true");
-    });
 
     const exportResults = await page.evaluate(async () => {
       const entries = [
@@ -1528,6 +1576,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches saved views section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario);
     const section = page.locator("#saved-views-card");
     await section.scrollIntoViewIfNeeded();
@@ -1542,6 +1591,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches time-of-day section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     const section = page.locator("#timeofday-trend");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -1555,6 +1605,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches sentiment section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     const section = page.locator("#sentiment-overview");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -1568,6 +1619,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches message-types section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyLowerLaneScenario);
     const section = page.locator("#message-types");
     await section.scrollIntoViewIfNeeded();
@@ -1582,6 +1634,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches polls section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
     await settleScenario(page, applyLowerLaneScenario);
     const section = page.locator("#polls-card");
     await section.scrollIntoViewIfNeeded();
@@ -1596,6 +1649,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches support section baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "support");
     const section = page.locator("#faq-card");
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
@@ -1622,6 +1676,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay offline state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot(`relay-state-offline-${testInfo.project.name}.png`, {
@@ -1634,6 +1689,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay waiting QR state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, currentPage => applyRelayScenario(currentPage, "waiting_qr"));
     const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
@@ -1647,6 +1703,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay running syncing state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_syncing"));
     const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();
@@ -1660,6 +1717,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   test("matches relay running ready state baseline", async ({ page }, testInfo) => {
     if (!shouldCaptureRelayStateBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
+    await selectStage(page, "workspace");
     await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_ready"));
     const panel = page.locator("#relay-status-panel");
     await expect(panel).toBeVisible();

@@ -1,5 +1,4 @@
 // @ts-check
-
 /**
  * @param {HTMLElement | null | undefined} element
  * @param {{ role?: string }} [params]
@@ -11,10 +10,7 @@ function decorateToolbarRow(element, { role = "" } = {}) {
   return element;
 }
 
-/**
- * @typedef {{ id: string, label: string }} SectionNavItemConfig
- */
-
+/** @typedef {{ id: string, label: string }} SectionNavItemConfig */
 /**
  * @param {{
  *   containerEl: HTMLElement | null | undefined,
@@ -31,6 +27,7 @@ export function createSectionNavController({
   windowRef = typeof window !== "undefined" ? window : null,
   vueRuntime = /** @type {any} */ (globalThis)?.Vue ?? null,
 }) {
+  let currentNavItemsConfig = Array.isArray(navItemsConfig) ? navItemsConfig.slice() : [];
   /** @type {HTMLAnchorElement[]} */
   let sectionNavLinks = [];
   /** @type {Array<{ link: HTMLAnchorElement, target: HTMLElement, id: string }>} */
@@ -49,6 +46,27 @@ export function createSectionNavController({
   let sectionJumpRestoreBehavior = null;
   let hasRevealedInitialActiveLink = false;
   const intersectingSections = new Map();
+
+  function disconnectSectionTracking() {
+    if (sectionNavObserver) {
+      sectionNavObserver.disconnect();
+      sectionNavObserver = null;
+    }
+    if (sectionNavViewportListener && windowRef) {
+      windowRef.removeEventListener("scroll", sectionNavViewportListener);
+      windowRef.removeEventListener("resize", sectionNavViewportListener);
+      sectionNavViewportListener = null;
+    }
+    intersectingSections.clear();
+  }
+
+  function resetSectionNavState() {
+    activeSectionId = null;
+    pendingManualSectionId = null;
+    pendingManualSectionUntil = 0;
+    hasRevealedInitialActiveLink = false;
+    if (containerEl) delete containerEl.dataset.activeSection;
+  }
 
   function prefersReducedMotion() {
     const reduceMotionFlag = documentRef?.body?.dataset?.reduceMotion === "true";
@@ -106,9 +124,7 @@ export function createSectionNavController({
       }
     });
     if (!scrollActiveLink) return;
-    const activeLink = sectionNavLinks.find(
-      link => link.getAttribute("href")?.replace(/^#/, "") === targetId,
-    );
+    const activeLink = sectionNavLinks.find(link => link.getAttribute("href")?.replace(/^#/, "") === targetId);
     activeLink?.scrollIntoView?.({
       inline: "center",
       block: "nearest",
@@ -161,7 +177,7 @@ export function createSectionNavController({
     decorateToolbarRow(containerEl);
     /** @type {Array<SectionNavItemConfig & { target: HTMLElement }>} */
     const resolvedItems = [];
-    navItemsConfig.forEach(item => {
+    currentNavItemsConfig.forEach(item => {
       const target = documentRef?.getElementById(item.id);
       if (!target) return;
       resolvedItems.push({ ...item, target });
@@ -208,11 +224,8 @@ export function createSectionNavController({
   }
 
   function setupSectionNavTracking() {
-    const IntersectionObserverRef =
-      /** @type {any} */ (windowRef)?.IntersectionObserver ?? globalThis.IntersectionObserver;
-    if (!sectionNavItems.length || !windowRef || typeof IntersectionObserverRef !== "function") {
-      return;
-    }
+    const IntersectionObserverRef = /** @type {any} */ (windowRef)?.IntersectionObserver ?? globalThis.IntersectionObserver;
+    if (!sectionNavItems.length || !windowRef || typeof IntersectionObserverRef !== "function") return;
 
     const navItems = sectionNavItems.slice();
     const viewportAnchorY = () => {
@@ -262,9 +275,7 @@ export function createSectionNavController({
         if (visibleAhead.length) return visibleAhead[0].id;
       }
 
-      const nearestToTop = positioned
-        .slice()
-        .sort((a, b) => Math.abs(a.top) - Math.abs(b.top))[0];
+      const nearestToTop = positioned.slice().sort((a, b) => Math.abs(a.top) - Math.abs(b.top))[0];
       if (nearestToTop) return nearestToTop.id;
 
       const upcoming = positioned.sort((a, b) => a.top - b.top);
@@ -281,30 +292,15 @@ export function createSectionNavController({
         setActiveSectionNav(pendingManualSectionId, { scrollActiveLink: false });
         return;
       }
-      if (pendingManualSectionId && Date.now() >= pendingManualSectionUntil) {
-        pendingManualSectionId = null;
-      }
+      if (pendingManualSectionId && Date.now() >= pendingManualSectionUntil) pendingManualSectionId = null;
       if (!nextId) return;
       const shouldRevealActiveLink = !hasRevealedInitialActiveLink;
       setActiveSectionNav(nextId, { scrollActiveLink: shouldRevealActiveLink });
-      if (shouldRevealActiveLink) {
-        hasRevealedInitialActiveLink = true;
-      }
+      if (shouldRevealActiveLink) hasRevealedInitialActiveLink = true;
     };
 
     if (!navItems.length) return;
-
-    if (sectionNavObserver) {
-      sectionNavObserver.disconnect();
-      sectionNavObserver = null;
-    }
-    if (sectionNavViewportListener) {
-      windowRef.removeEventListener("scroll", sectionNavViewportListener);
-      windowRef.removeEventListener("resize", sectionNavViewportListener);
-      sectionNavViewportListener = null;
-    }
-    intersectingSections.clear();
-
+    disconnectSectionTracking();
     sectionNavObserver = new IntersectionObserverRef(
       /** @param {IntersectionObserverEntry[]} observerEntries */ observerEntries => {
         observerEntries.forEach(entry => {
@@ -331,12 +327,22 @@ export function createSectionNavController({
     sectionNavViewportListener = () => syncActiveSection();
     windowRef.addEventListener("scroll", sectionNavViewportListener, { passive: true });
     windowRef.addEventListener("resize", sectionNavViewportListener);
-
     syncActiveSection();
   }
 
-  return {
-    buildSectionNav,
-    setupSectionNavTracking,
-  };
+  /** @param {SectionNavItemConfig[]} items */
+  function setNavItemsConfig(items) {
+    currentNavItemsConfig = Array.isArray(items) ? items.slice() : [];
+  }
+
+  /** @param {SectionNavItemConfig[]} [items] */
+  function rebuildSectionNav(items) {
+    if (items) setNavItemsConfig(items);
+    disconnectSectionTracking();
+    resetSectionNavState();
+    buildSectionNav();
+    setupSectionNavTracking();
+  }
+
+  return { buildSectionNav, setupSectionNavTracking, setNavItemsConfig, rebuildSectionNav };
 }

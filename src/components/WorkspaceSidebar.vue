@@ -7,34 +7,37 @@
         <div class="relay-status-banner flex items-center gap-3" id="relay-status-banner">
           <div class="relay-banner-indicator w-2.5 h-2.5" id="relay-status-dot" aria-hidden="true"></div>
           <div class="flex flex-col">
-            <span class="text-sm font-semibold text-[var(--text)] m-0 leading-tight" id="relay-connection-status">Relay offline.</span>
-            <span class="text-[10px] text-[var(--text-muted)] m-0" id="relay-account-name">Workspace locked until relay starts.</span>
+            <span class="text-sm font-semibold text-[var(--text)] m-0 leading-tight" id="relay-connection-status">{{ relayStatusText }}</span>
+            <span class="text-[10px] text-[var(--text-muted)] m-0" id="relay-account-name">{{ relayAccountText }}</span>
           </div>
         </div>
 
         <!-- Relay QR Code (Hidden by default) -->
-        <div id="relay-qr-container" class="flex flex-col items-center gap-4 py-4 bg-white rounded-lg mt-2 shadow-inner" hidden>
-            <img id="relay-qr-image" class="w-40 h-40" alt="Scan QR code with WhatsApp">
-            <p id="relay-help-text" class="text-[10px] text-gray-900 text-center px-4 font-medium"></p>
+        <div id="relay-qr-container" class="flex flex-col items-center gap-4 py-4 bg-white rounded-lg mt-2 shadow-inner" :hidden="!workspaceStore.qr.showQR">
+            <img id="relay-qr-image" class="w-40 h-40" :src="workspaceStore.qr.qrCodeUrl || undefined" alt="Scan QR code with WhatsApp">
+            <p id="relay-help-text" class="text-[10px] text-gray-900 text-center px-4 font-medium">{{ workspaceStore.qr.qrHelpText }}</p>
         </div>
 
         <!-- Sync Progress (Hidden by default) -->
-        <div id="relay-sync-progress" class="flex flex-col gap-2 mt-2" hidden>
-            <div class="flex items-center justify-between text-[10px] uppercase tracking-wider font-semibold text-[var(--text-muted)]">
-                <span>Sync Progress</span>
-                <span id="relay-sync-chats-meta"></span>
-            </div>
-            <div class="w-full h-1 bg-[var(--surface)] rounded-full overflow-hidden">
-                <div id="relay-sync-messages-meta" class="h-full bg-[var(--accent)] w-0 transition-all duration-500"></div>
-            </div>
-            <div class="flex gap-4">
-                <span data-step="chats" class="text-[9px] text-[var(--text-muted)] font-medium">CHATS</span>
-                <span data-step="messages" class="text-[9px] text-[var(--text-muted)] font-medium">MESSAGES</span>
+        <div v-once id="relay-sync-progress" class="relay-sync-progress mt-2" hidden>
+            <div class="relay-sync-steps">
+                <div class="relay-sync-step" data-step="chats" data-state="pending">
+                    <span class="relay-sync-step-label">Chats</span>
+                    <span id="relay-sync-chats-meta" class="relay-sync-step-meta">Fetching chat list…</span>
+                    <div class="relay-sync-bar"><span></span></div>
+                </div>
+                <div class="relay-sync-step" data-step="messages" data-state="pending">
+                    <span class="relay-sync-step-label">Messages</span>
+                    <span id="relay-sync-messages-meta" class="relay-sync-step-meta">Waiting to mirror messages…</span>
+                    <div class="relay-sync-bar">
+                        <span class="relay-sync-progress-fill"></span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Live relay action buttons (mounted by shellRelayActionViews.js) -->
-        <div class="live-actions flex flex-wrap gap-2 mt-2" id="relay-sidebar-live-actions">
+        <div v-once class="live-actions flex flex-wrap gap-2 mt-2" id="relay-sidebar-live-actions">
            <!-- Buttons are dynamically mounted here by RelayLiveActionsPrimitive -->
         </div>
 
@@ -103,8 +106,8 @@
               <div class="workspace-subpanel-header">
                 <span class="workspace-subpanel-kicker">Essential outputs</span>
               </div>
-              <section class="actions-toolbar workspace-export-grid grid grid-cols-1 gap-2" id="actions-toolbar" aria-label="Dataset actions">
-                <button type="button" class="wa-button wa-button--ghost justify-between w-full group" id="download-pdf">
+              <section v-once class="actions-toolbar workspace-export-grid grid grid-cols-1 gap-2" id="actions-toolbar" aria-label="Dataset actions">
+                <button type="button" class="wa-button wa-button--ghost justify-between w-full group" id="download-pdf" v-magnetic>
                   <span>Export PDF</span>
                   <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 </button>
@@ -171,4 +174,14 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
+import { useWorkspaceStore } from "../store/useWorkspaceStore.js";
+
+const workspaceStore = useWorkspaceStore();
+
+const relayStatusText = computed(() =>
+  workspaceStore.relay.statusText || "Relay offline.",
+);
+
+const relayAccountText = computed(() => workspaceStore.relay.accountText);
 </script>

@@ -60,6 +60,127 @@
     gap: 1rem;
 }
 
+.weekly-chart {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.5rem;
+    scrollbar-gutter: stable both-edges;
+}
+
+.weekly-chart-wrapper {
+    min-width: max-content;
+    width: max-content;
+}
+
+.weekly-bars {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    min-width: max-content;
+    padding: 0.25rem 0.25rem 0.35rem;
+}
+
+#weekly-trend .analysis-evidence-frame {
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.weekly-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.42rem;
+    flex: 0 0 72px;
+    min-width: 72px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    border-radius: var(--shape-medium);
+    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+    padding: 0.55rem 0.45rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.weekly-bar.selected {
+    border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.weekly-bar-value {
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+}
+
+.weekly-bar-fill-wrap {
+    height: 112px;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.weekly-bar-fill {
+    width: 100%;
+    min-height: 4px;
+    border-radius: 999px 999px 0 0;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent) 88%, white 6%) 0%,
+        color-mix(in srgb, var(--accent) 70%, transparent) 100%
+    );
+}
+
+.weekly-bar-week {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.week-label-year {
+    font-size: var(--type-label-compact);
+    color: var(--muted);
+}
+
+.week-label-number {
+    font-size: var(--type-label-sm);
+    font-weight: 700;
+    color: var(--text);
+}
+
+.weekly-bar-delta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+    min-height: 1.6rem;
+    justify-content: center;
+}
+
+.weekly-bar-delta .delta-diff {
+    font-size: var(--type-label-xs);
+    font-weight: 600;
+}
+
+.weekly-bar-delta .delta-pct {
+    font-size: var(--type-label-compact);
+    color: var(--muted);
+}
+
+.weekly-bar-delta.up .delta-diff {
+    color: color-mix(in srgb, #10b981 84%, var(--text));
+}
+
+.weekly-bar-delta.down .delta-diff {
+    color: color-mix(in srgb, #ef4444 82%, var(--text));
+}
+
+.weekly-bar-delta.flat .delta-diff {
+    color: var(--muted);
+}
+
 .timeofday-controls {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

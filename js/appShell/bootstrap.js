@@ -138,7 +138,7 @@ export function createBootstrapController({
     });
   }
 
-  function assertSearchSavedBridgeReady() {
+  function resolveSearchSavedBridge() {
     const searchSavedBridge = resolveVueBridge(VUE_BRIDGE_NAMES.searchSaved);
     const hasSearchContracts = Boolean(
       searchSavedBridge
@@ -147,27 +147,41 @@ export function createBootstrapController({
         && typeof searchSavedBridge.renderSearchInsights === "function"
         && typeof searchSavedBridge.setPanelActionHandlers === "function",
     );
-    if (!hasSearchContracts) {
-      throw new Error("SearchSaved bridge is not ready with required contracts.");
-    }
+    return hasSearchContracts ? searchSavedBridge : null;
   }
 
-  function assertShellBridgeReady() {
+  function resolveShellBridge() {
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
     const hasShellContracts = Boolean(
       shellBridge
         && typeof shellBridge.setShellActionHandlers === "function"
         && typeof shellBridge.dispatchShellAction === "function",
     );
-    if (!hasShellContracts) {
-      throw new Error("Shell bridge is not ready with required dispatch contracts.");
-    }
+    return hasShellContracts ? shellBridge : null;
+  }
+
+  let initCompleted = false;
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  let initRetryTimer = null;
+  let initRetryCount = 0;
+
+  function scheduleInitRetry() {
+    if (initCompleted || initRetryTimer || initRetryCount >= 80) return;
+    initRetryCount += 1;
+    initRetryTimer = setTimeoutRef(() => {
+      initRetryTimer = null;
+      initAppBootstrap();
+    }, 100);
   }
 
   function initAppBootstrap() {
-    assertSearchSavedBridgeReady();
-    assertShellBridgeReady();
-    const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell);
+    if (initCompleted) return;
+    const searchSavedBridge = resolveSearchSavedBridge();
+    const shellBridge = resolveShellBridge();
+    if (!searchSavedBridge || !shellBridge) {
+      scheduleInitRetry();
+      return;
+    }
     shellBridge.setShellActionHandlers({
       "ui.compact.toggle": () => {
         if (typeof toggleCompactMode === "function") toggleCompactMode();
@@ -207,6 +221,7 @@ export function createBootstrapController({
     savedViewsController.setDataAvailability(getDataAvailable());
     refreshChatSelector();
     updateStatus(`Start ${relayServiceName} to unlock the workspace.`, "info");
+    initCompleted = true;
   }
 
   return {

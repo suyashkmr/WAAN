@@ -11,6 +11,12 @@ describe("app shell dom refs", () => {
       <table id="top-senders"><tbody></tbody></table>
       <button data-participants-preset="top"></button>
       <div id="message-types-note"></div>
+      <div id="relay-sync-progress">
+        <div data-step="chats"></div>
+        <div data-step="messages"></div>
+      </div>
+      <div id="relay-sync-chats-meta"></div>
+      <div id="relay-sync-messages-meta"></div>
       <div id="hero-milestones"><div class="hero-milestone"></div></div>
       <div data-setup-step="1"></div>
       <div id="polls-note"></div>
@@ -33,6 +39,11 @@ describe("app shell dom refs", () => {
     expect(refs.participantsNote?.id).toBe("participants-note");
     expect(refs.participantPresetButtons.length).toBe(1);
     expect(refs.messageTypeNoteEl?.id).toBe("message-types-note");
+    expect(refs.relaySyncProgressEl?.id).toBe("relay-sync-progress");
+    expect(refs.relaySyncChatsStep?.dataset.step).toBe("chats");
+    expect(refs.relaySyncMessagesStep?.dataset.step).toBe("messages");
+    expect(refs.relaySyncChatsMeta?.id).toBe("relay-sync-chats-meta");
+    expect(refs.relaySyncMessagesMeta?.id).toBe("relay-sync-messages-meta");
     expect(refs.heroMilestoneSteps.length).toBe(1);
     expect(refs.firstRunSetupSteps.length).toBe(1);
     expect(refs.pollsNote?.id).toBe("polls-note");

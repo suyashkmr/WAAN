@@ -272,6 +272,12 @@ function createWindow() {
       preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
+      additionalArguments: [
+        `--waan-api-base=${DEFAULT_API_BASE}`,
+        `--waan-relay-base=${DEFAULT_RELAY_BASE}`,
+        `--waan-client-url=${DEFAULT_CLIENT_URL}`,
+        `--waan-version=${app.getVersion()}`,
+      ],
     },
   });
   mainWindow.loadURL(DEFAULT_CLIENT_URL);

@@ -6,6 +6,7 @@
  *   getExportThemeConfig: () => { label: string } & Record<string, any>,
  *   generatePdfDocumentHtmlAsync: (analytics: Record<string, any>, theme: Record<string, any>) => Promise<{ content: string }>,
  *   updateStatus: (message: string, tone: string) => void,
+ *   emitExportSuccess?: (buttonId: string) => void,
  *   documentRef?: Document | null,
  *   URLRef?: typeof URL | null,
  *   BlobImpl?: typeof Blob | null,
@@ -19,6 +20,7 @@ export function createPdfPreviewController({
   getExportThemeConfig,
   generatePdfDocumentHtmlAsync,
   updateStatus,
+  emitExportSuccess = () => {},
   documentRef = typeof document !== "undefined" ? document : null,
   URLRef = typeof URL !== "undefined" ? URL : null,
   BlobImpl = typeof Blob !== "undefined" ? Blob : null,
@@ -99,6 +101,7 @@ export function createPdfPreviewController({
       const opened = launchPrintableDocument(content);
       if (opened) {
         updateStatus(`Opened the ${theme.label} PDF preview — use your print dialog to save it.`, "info");
+        emitExportSuccess("download-pdf");
       } else {
         updateStatus("Couldn't prepare the PDF preview.", "error");
       }

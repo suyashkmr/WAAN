@@ -1,12 +1,8 @@
 // @ts-check
-
 import { createHeroViewState, setHeroBadgeState, setHeroMilestones } from "./dataStatusHeroState.js";
 import { UI_COPY } from "../uiCopy.js";
 
-/**
- * @typedef {Record<string, any>} AnyRecord
- */
-
+/** @typedef {Record<string, any>} AnyRecord */
 /**
  * @param {{ elements: AnyRecord, deps: AnyRecord }} params
  */
@@ -32,6 +28,7 @@ export function createDataStatusController({ elements, deps }) {
     clearTimeoutRef = clearTimeout,
     getRemoteChatsLastFetchedAt = () => 0,
     heroStatusRenderer = null,
+    documentRef = typeof document !== "undefined" ? document : null,
   } = deps;
 
   let dataAvailable = false;
@@ -45,19 +42,48 @@ export function createDataStatusController({ elements, deps }) {
   const canSetDashboardSyncState = typeof heroStatusRenderer?.setDashboardSyncState === "function";
   const canRenderBadge = typeof heroStatusRenderer?.renderBadge === "function";
   const canRenderCopy = typeof heroStatusRenderer?.renderCopy === "function";
+  const heroStatusBadgeId = heroStatusBadge?.id || "hero-status-badge";
+  const heroStatusCopyId = heroStatusCopy?.id || "hero-status-copy";
+  const heroStatusMetaCopyId = heroStatusMetaCopy?.id || "hero-status-meta-copy";
+  const heroSyncDotId = heroSyncDot?.id || "hero-sync-dot";
+  const heroMilestonesSelector = "#hero-milestones .hero-milestone";
+
+  /**
+   * @template {HTMLElement} T
+   * @param {T | null | undefined} element
+   * @param {string} id
+   * @returns {T | null}
+   */
+  function resolveLiveElement(element, id) {
+    if (element && element.isConnected) return element;
+    const liveElement = /** @type {T | null} */ (documentRef?.getElementById?.(id) ?? null);
+    if (liveElement) return liveElement;
+    return element ?? null;
+  }
+  /**
+   * @returns {HTMLElement[]}
+   */
+  function resolveHeroMilestoneSteps() {
+    const connectedSteps = Array.from(heroMilestoneSteps ?? []).filter(
+      /** @returns {step is HTMLElement} */ step => step instanceof HTMLElement && step.isConnected,
+    );
+    if (connectedSteps.length) return connectedSteps;
+    return Array.from(documentRef?.querySelectorAll?.(heroMilestonesSelector) ?? []);
+  }
 
   /**
    * @param {{ text: string, state: string, readyCelebrating?: boolean }} params
    */
   function renderHeroBadge({ text, state, readyCelebrating = false }) {
     heroViewState.badgeText = text;
-    setHeroBadgeState(heroViewState, heroStatusBadge, state);
+    const liveHeroStatusBadge = resolveLiveElement(heroStatusBadge, heroStatusBadgeId);
+    setHeroBadgeState(heroViewState, liveHeroStatusBadge, state);
     if (canRenderBadge) {
       heroStatusRenderer.renderBadge({ text, state, readyCelebrating });
       return;
     }
-    if (heroStatusBadge) {
-      heroStatusBadge.textContent = text;
+    if (liveHeroStatusBadge) {
+      liveHeroStatusBadge.textContent = text;
     }
   }
 
@@ -70,8 +96,9 @@ export function createDataStatusController({ elements, deps }) {
       heroStatusRenderer.renderCopy(text);
       return;
     }
-    if (heroStatusCopy) {
-      heroStatusCopy.textContent = text;
+    const liveHeroStatusCopy = resolveLiveElement(heroStatusCopy, heroStatusCopyId);
+    if (liveHeroStatusCopy) {
+      liveHeroStatusCopy.textContent = text;
     }
   }
 
@@ -83,8 +110,9 @@ export function createDataStatusController({ elements, deps }) {
     if (canRenderMilestones) {
       heroStatusRenderer.renderMilestones({ connect, sync, ready, readyCelebrating: heroViewState.readyCelebrating });
     } else {
-      if (!heroMilestoneSteps?.length) return;
-      heroMilestoneSteps.forEach(/** @param {HTMLElement} step */ step => {
+      const liveHeroMilestoneSteps = resolveHeroMilestoneSteps();
+      if (!liveHeroMilestoneSteps.length) return;
+      liveHeroMilestoneSteps.forEach(/** @param {HTMLElement} step */ step => {
         const id = step.dataset.step;
         if (id === "connect") step.dataset.state = connect;
         if (id === "sync") step.dataset.state = sync;
@@ -104,7 +132,6 @@ export function createDataStatusController({ elements, deps }) {
       dashboardRoot.classList.toggle("is-loading", Boolean(isLoading));
     }
   }
-
   /**
    * @param {{ state?: string, message?: string }} [params]
    */
@@ -114,14 +141,16 @@ export function createDataStatusController({ elements, deps }) {
     if (canRenderSyncMeta) {
       heroStatusRenderer.renderSyncMeta({ state, message });
     } else {
-      if (heroSyncDot) {
+      const liveHeroSyncDot = resolveLiveElement(heroSyncDot, heroSyncDotId);
+      const liveHeroStatusMetaCopy = resolveLiveElement(heroStatusMetaCopy, heroStatusMetaCopyId);
+      if (liveHeroSyncDot) {
         const isVisible = state === "syncing" || state === "ready";
-        heroSyncDot.dataset.state = state;
-        heroSyncDot.hidden = !isVisible;
-        heroSyncDot.classList.toggle("hidden", !isVisible);
+        liveHeroSyncDot.dataset.state = state;
+        liveHeroSyncDot.hidden = !isVisible;
+        liveHeroSyncDot.classList.toggle("hidden", !isVisible);
       }
-      if (heroStatusMetaCopy) {
-        heroStatusMetaCopy.textContent = message;
+      if (liveHeroStatusMetaCopy) {
+        liveHeroStatusMetaCopy.textContent = message;
       }
     }
   }
@@ -137,7 +166,6 @@ export function createDataStatusController({ elements, deps }) {
       dashboardRoot.classList.toggle("is-syncing", Boolean(isSyncing));
     }
   }
-
   /**
    * @param {{ rearm?: boolean }} [params]
    */
@@ -163,8 +191,8 @@ export function createDataStatusController({ elements, deps }) {
       });
     }
     if (!canRenderBadge || !canRenderMilestones) {
-      heroStatusBadge?.classList.remove("hero-status-badge-ready");
-      heroMilestoneSteps?.forEach(/** @param {HTMLElement} step */ step => {
+      resolveLiveElement(heroStatusBadge, heroStatusBadgeId)?.classList.remove("hero-status-badge-ready");
+      resolveHeroMilestoneSteps().forEach(/** @param {HTMLElement} step */ step => {
         if (step.dataset.step === "ready") {
           step.classList.remove("is-ready-celebration");
         }
@@ -193,8 +221,8 @@ export function createDataStatusController({ elements, deps }) {
       });
     }
     if (!canRenderBadge || !canRenderMilestones) {
-      heroStatusBadge?.classList.add("hero-status-badge-ready");
-      heroMilestoneSteps?.forEach(/** @param {HTMLElement} step */ step => {
+      resolveLiveElement(heroStatusBadge, heroStatusBadgeId)?.classList.add("hero-status-badge-ready");
+      resolveHeroMilestoneSteps().forEach(/** @param {HTMLElement} step */ step => {
         if (step.dataset.step === "ready") {
           step.classList.add("is-ready-celebration");
         }
@@ -205,25 +233,17 @@ export function createDataStatusController({ elements, deps }) {
     }, 1200);
   }
 
-  /**
-   * @param {boolean} hasData
-   */
+  /** @param {boolean} hasData */
   function setDataAvailabilityState(hasData) {
     dataAvailable = Boolean(hasData);
     datasetEmptyStateManager.setAvailability(dataAvailable);
     if (!dataAvailable) {
-      setDatasetEmptyMessage(
-        UI_COPY.dataset.emptyHeading,
-        UI_COPY.dataset.emptyMessage,
-      );
+      setDatasetEmptyMessage(UI_COPY.dataset.emptyHeading, UI_COPY.dataset.emptyMessage);
     }
     savedViewsController.setDataAvailability(Boolean(hasData));
     savedViewsController.refreshUI();
   }
-
-  /**
-   * @param {{ status?: string, account?: AnyRecord, chatCount?: number, syncingChats?: boolean, lastQr?: string } | null | undefined} status
-   */
+  /** @param {{ status?: string, account?: AnyRecord, chatCount?: number, syncingChats?: boolean, lastQr?: string } | null | undefined} status */
   function updateHeroRelayStatus(status) {
     if (!status) {
       renderHeroBadge({ text: "Relay offline", state: "offline" });

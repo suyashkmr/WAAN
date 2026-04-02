@@ -200,7 +200,7 @@ export function createRelayActionsController({
     return chatCount;
   }
   async function refreshRelayStatus({ silent = false, fromPolling = false } = {}) {
-    if (!relayBase || !relayStatusEl) return null;
+    if (!relayBase) return null;
     if (statusRequestPromise) {
       if (statusRequestMeta) {
         if (!fromPolling) statusRequestMeta.fromPolling = false;

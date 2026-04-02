@@ -6,7 +6,7 @@
       <h2 id="deep-dive-stage-title" class="text-3xl font-display font-semibold text-[var(--text)] m-0">Deep dive</h2>
     </div>
 
-    <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-6">
       
       <!-- Pattern Evidence Cluster -->
       <section class="deep-dive-cluster deep-dive-cluster--patterns flex flex-col gap-4" aria-labelledby="deep-dive-patterns-cluster-title">
@@ -15,8 +15,8 @@
         <div class="deep-dive-pattern-sequence flex flex-col gap-6">
 
           <!-- Weekly Trend -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col col-span-1 xl:col-span-2" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly" data-vue-shell-mount="card-shell">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col col-span-1 xl:col-span-2" id="weekly-trend" data-nav-target="weekly-trend" data-accent="weekly" data-vue-shell-mount="card-shell">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#10b981] flex">
@@ -26,13 +26,13 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-weekly">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-weekly">Download CSV</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="weekly-trend-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
               </div>
             </div>
-            <div class="pattern-story-flow p-5 flex flex-col gap-6" id="weekly-trend-content">
+            <div class="pattern-story-flow p-4 flex flex-col gap-6" id="weekly-trend-content">
               <div class="weekly-summary story-summary-tier flex gap-4 md:gap-8 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                 <div class="flex flex-col">
                   <span class="premium-kicker text-[#10b981]">Total so far</span>
@@ -54,8 +54,8 @@
           </section>
 
           <!-- Daily Activity Frame -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col" id="daily-activity" data-nav-target="daily-activity" data-accent="daily" data-vue-shell-mount="card-shell">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#06b6d4] flex">
@@ -65,13 +65,13 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-daily">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-daily">Download CSV</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="daily-activity-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
               </div>
             </div>
-            <div class="pattern-story-flow p-5 flex flex-col gap-6" id="daily-activity-content">
+            <div class="pattern-story-flow p-4 flex flex-col gap-6" id="daily-activity-content">
               <div class="daily-summary story-summary-tier flex items-center gap-4 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                 <span class="premium-kicker text-[#06b6d4]">Avg per day</span>
                 <span class="text-2xl font-display text-[var(--text)]" id="daily-avg-day">—</span>
@@ -83,8 +83,8 @@
           </section>
 
           <!-- Busiest Days of the Week -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday" data-vue-shell-mount="card-shell">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col" id="weekday-trend" data-nav-target="weekday-trend" data-accent="weekday" data-vue-shell-mount="card-shell">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#8b5cf6] flex">
@@ -94,7 +94,7 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-weekday">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-weekday">Download CSV</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="weekday-trend-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -129,8 +129,8 @@
           </section>
 
           <!-- Time of Day -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday" data-vue-shell-mount="card-shell">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col" id="timeofday-trend" data-nav-target="timeofday-trend" data-accent="timeofday" data-vue-shell-mount="card-shell">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#f59e0b] flex">
@@ -140,7 +140,7 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-timeofday">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-timeofday">Download CSV</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="timeofday-trend-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -176,8 +176,8 @@
           </section>
 
           <!-- Sentiment Overview -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col col-span-1 xl:col-span-2" id="sentiment-overview" data-nav-target="sentiment-overview" data-vue-shell-mount="card-shell" data-accent="sentiment">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card flex flex-col col-span-1 xl:col-span-2" id="sentiment-overview" data-nav-target="sentiment-overview" data-vue-shell-mount="card-shell" data-accent="sentiment">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#ec4899] flex">
@@ -187,13 +187,13 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-sentiment">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-sentiment">Download CSV</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="sentiment-overview-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
               </div>
             </div>
-            <div class="sentiment-story-flow p-5 flex flex-col gap-6" id="sentiment-overview-content">
+            <div class="sentiment-story-flow p-4 flex flex-col gap-6" id="sentiment-overview-content">
               <div class="story-summary-tier rounded-lg border border-[var(--border)] bg-[var(--surface-sunken)] p-4">
                 <div id="sentiment-summary" class="text-sm font-medium text-[var(--text)]"></div>
               </div>
@@ -240,8 +240,8 @@
         <div class="grid grid-cols-1 gap-6">
 
           <!-- Message Mix -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="message-types" data-nav-target="message-types" data-vue-shell-mount="card-shell" data-accent="message-types">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="message-types" data-nav-target="message-types" data-vue-shell-mount="card-shell" data-accent="message-types">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#f43f5e] flex">
@@ -251,8 +251,8 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-message-types">Download CSV</button>
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" id="download-chat-json">Download JSON</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-message-types">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-chat-json">Download JSON</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)]" aria-expanded="true" data-target="message-types-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
@@ -288,25 +288,25 @@
                   <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="media-count">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Media</span>
-                    <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="media">CSV</button>
+                    <button type="button" class="wa-button wa-button--sunken dense mt-2" data-export="media">CSV</button>
                   </div>
                 
                   <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="link-count">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Links</span>
-                    <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="links">CSV</button>
+                    <button type="button" class="wa-button wa-button--sunken dense mt-2" data-export="links">CSV</button>
                   </div>
 
                   <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="poll-count">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Polls</span>
-                    <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="polls">CSV</button>
+                    <button type="button" class="wa-button wa-button--sunken dense mt-2" data-export="polls">CSV</button>
                   </div>
                 
                   <div class="flex flex-col gap-1 p-2 border border-[var(--border)] rounded-md bg-[var(--surface)] col-span-1">
                     <span class="text-2xl font-display text-[var(--text)]" id="join-events">0</span>
                     <span class="text-xs uppercase text-[var(--text-muted)] font-medium">Joins</span>
-                    <button type="button" class="mt-2 px-2 py-1 text-xs rounded hover:bg-[var(--surface-hover)] text-[#f43f5e]" data-export="joins">CSV</button>
+                    <button type="button" class="wa-button wa-button--sunken dense mt-2" data-export="joins">CSV</button>
                   </div>
                 </div>
 
@@ -322,8 +322,8 @@
           </section>
 
           <!-- Polls Card -->
-          <section class="analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="polls-card" data-nav-target="polls" data-accent="polls" data-vue-shell-mount="card-shell">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-card overflow-hidden flex flex-col" id="polls-card" data-nav-target="polls" data-accent="polls" data-vue-shell-mount="card-shell">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#f43f5e] flex">
@@ -338,7 +338,7 @@
                 </button>
               </div>
             </div>
-            <div class="polls-story-flow p-5 flex flex-col gap-6" id="polls-content">
+            <div class="polls-story-flow p-4 flex flex-col gap-6" id="polls-content">
               <div class="polls-summary story-summary-tier flex gap-6 md:gap-8 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-4">
                 <div class="flex flex-col gap-1">
                   <span class="text-xs uppercase text-[var(--text-muted)] font-semibold tracking-wider">Total polls</span>
@@ -353,7 +353,7 @@
                 <ol class="flex flex-col gap-2 m-0 p-0 list-none" id="polls-list"></ol>
               </div>
             </div>
-            <p id="polls-note" class="px-5 pb-5 text-xs text-[var(--text-muted)]"></p>
+            <p id="polls-note" class="px-4 pb-4 text-xs text-[var(--text-muted)]"></p>
           </section>
 
         </div>
@@ -366,8 +366,8 @@
         <div class="deep-dive-tools-grid">
           
           <!-- Search Card -->
-          <section class="search-panel analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col" id="search-panel" data-nav-target="search" data-accent="search" data-vue-shell-mount="card-shell">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="search-panel analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col" id="search-panel" data-nav-target="search" data-accent="search" data-vue-shell-mount="card-shell">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#3b82f6] flex">
@@ -377,13 +377,13 @@
                 </h2>
               </div>
               <div class="flex items-center gap-2 border-l border-[var(--border)] pl-4">
-                <button type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors" id="download-search-results">Download CSV</button>
+                <button type="button" class="wa-button wa-button--sunken dense" id="download-search-results">Download CSV</button>
                 <button type="button" class="card-toggle w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--surface-hover)] text-[var(--text-muted)] transition-colors" aria-expanded="true" data-target="search-panel-content">
                   <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
               </div>
             </div>
-            <div class="card-content search-strip-flow search-panel-layout p-5" id="search-panel-content">
+            <div class="card-content search-strip-flow search-panel-layout p-4" id="search-panel-content">
               <form id="advanced-search-form" class="search-controls grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
                 <div class="search-control flex flex-col gap-1.5 focus-within:text-[var(--text)]">
                   <label for="search-keyword" class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider transition-colors">Keywords</label>
@@ -404,8 +404,8 @@
                   <input type="date" id="search-end" class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
                 </div>
                 <div class="search-panel-actions col-span-1 md:col-span-2 lg:col-span-4 flex justify-end gap-2 pt-2 border-t border-[var(--border)] mt-2">
-                  <button type="button" class="px-4 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors" id="reset-search">Clear filters</button>
-                  <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md bg-[#3b82f6] text-white hover:bg-blue-600 transition-colors shadow-sm" id="run-search">Search</button>
+                  <button type="button" class="wa-button wa-button--ghost" id="reset-search">Clear filters</button>
+                  <button type="submit" class="wa-button wa-button--primary" id="run-search">Search</button>
                 </div>
               </form>
               <div class="search-results-lane analysis-evidence-frame evidence-panel-tier">
@@ -425,8 +425,8 @@
           </section>
 
           <!-- Saved Views Card -->
-          <section class="saved-views analytics-story-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col" id="saved-views-card" data-nav-target="saved-views" data-vue-shell-mount="card-shell" data-accent="saved-views">
-            <div class="flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
+          <section class="saved-views analytics-story-card wa-card bg-[var(--card-bg)] border border-[var(--border)] rounded-xl overflow-hidden flex flex-col" id="saved-views-card" data-nav-target="saved-views" data-vue-shell-mount="card-shell" data-accent="saved-views">
+            <div class="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--surface-sunken)]">
               <div class="flex items-center gap-3">
                 <h2 class="text-[var(--text)] font-semibold flex items-center gap-2 m-0">
                   <span aria-hidden="true" class="text-[#3b82f6] flex">
@@ -441,14 +441,14 @@
                 </button>
               </div>
             </div>
-            <div class="card-content saved-view-layout p-5" id="saved-views-content">
+            <div class="card-content saved-view-layout p-4" id="saved-views-content">
               <div class="saved-view-command-lane">
                 <div class="saved-view-panel saved-view-command-board bg-[var(--surface-sunken)] p-4 rounded-lg border border-[var(--border)]">
                   <div class="saved-view-subsection saved-view-actions">
                     <label for="saved-view-name" class="text-xs font-medium uppercase text-[var(--text-muted)] tracking-wider">Save View</label>
                     <div class="flex items-center gap-2">
                       <input type="text" id="saved-view-name" placeholder="e.g. Last 30 days" class="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]">
-                      <button type="button" class="px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[#3b82f6] whitespace-nowrap transition-colors" id="save-view">Save</button>
+                      <button type="button" class="wa-button wa-button--sunken" id="save-view">Save</button>
                     </div>
                   </div>
 
@@ -460,8 +460,8 @@
                       </select>
                     </label>
                     <div class="flex gap-2">
-                      <button type="button" class="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition-colors" id="apply-saved-view">Load</button>
-                      <button type="button" class="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-red-900/40 hover:bg-red-900/20 text-red-400 transition-colors" id="delete-saved-view">Delete</button>
+                      <button type="button" class="wa-button wa-button--sunken flex-1" id="apply-saved-view">Load</button>
+                      <button type="button" class="wa-button wa-button--danger flex-1" id="delete-saved-view">Delete</button>
                     </div>
                   </div>
 
@@ -479,7 +479,7 @@
                         <option value="">Select view</option>
                       </select>
                     </div>
-                    <button type="button" class="w-full mt-2 px-3 py-2 text-sm font-medium rounded-md bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] text-[var(--text-muted)] transition-colors" id="compare-views">Compare views</button>
+                    <button type="button" class="wa-button wa-button--sunken w-full mt-2" id="compare-views">Compare views</button>
                   </div>
                 </div>
               </div>

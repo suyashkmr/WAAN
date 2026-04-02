@@ -3,6 +3,7 @@
 import { createExporters } from "../exporters.js";
 import { createExportPipeline } from "./exportPipeline.js";
 import { createPdfPreviewController } from "./pdfPreview.js";
+import { EXPORT_SUCCESS_EVENT } from "../appConstants.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -59,6 +60,16 @@ export function createExportRuntime({
   getDatasetFingerprint,
   getExportFilterSummary,
 }) {
+  /** @param {...any} args */
+  const emitExportSuccess = (...args) => {
+    const buttonId = args[0];
+    if (typeof window === "undefined") return;
+    if (typeof buttonId !== "string" || !buttonId) return;
+    window.dispatchEvent(new CustomEvent(EXPORT_SUCCESS_EVENT, {
+      detail: { buttonId },
+    }));
+  };
+
   const {
     generateMarkdownReportAsync,
     generateSlidesHtmlAsync,
@@ -90,6 +101,7 @@ export function createExportRuntime({
     generateSlidesHtml: generateSlidesHtmlAsync,
     getExportThemeConfig,
     getDatasetFingerprint,
+    emitExportSuccess,
   });
 
   const pdfPreviewController = createPdfPreviewController({
@@ -97,6 +109,7 @@ export function createExportRuntime({
     getExportThemeConfig,
     generatePdfDocumentHtmlAsync,
     updateStatus,
+    emitExportSuccess,
   });
 
   return {

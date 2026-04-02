@@ -82,6 +82,9 @@ describe("shell primitive views", () => {
       node => node?.props?.id === "onboarding-start",
     );
     expect(pdfButton).toBeTruthy();
+    expect(pdfButton.props.class).toContain("wa-button");
+    expect(pdfButton.props.class).toContain("wa-button--ghost");
+    expect(pdfButton.props["data-magnetic"]).toBe("true");
     expect(markdownButton).toBeTruthy();
     expect(slidesButton).toBeTruthy();
     expect(onboardingButton).toBeNull();
@@ -108,15 +111,22 @@ describe("shell primitive views", () => {
       tree,
       node => node?.type === "button" && node?.props?.id === "first-run-primary-action",
     );
+    const macosHelpLink = findNode(
+      tree,
+      node => node?.type === "a" && node?.props?.id === "first-run-macos-help-link",
+    );
 
     expect(openRelayButton).toBeTruthy();
     expect(primaryActionButton).toBeTruthy();
+    expect(macosHelpLink).toBeTruthy();
 
     openRelayButton.props.onClick();
     primaryActionButton.props.onClick();
+    macosHelpLink.props.onClick({ preventDefault: vi.fn() });
 
     expect(onAction).toHaveBeenNthCalledWith(1, "relay.firstRunOpenRelay");
     expect(onAction).toHaveBeenNthCalledWith(2, "relay.firstRunPrimaryAction");
+    expect(onAction).toHaveBeenNthCalledWith(3, "ui.support.open-macos-help");
   });
 
   it("renders onboarding root with PrimeVue dialog when available", () => {
@@ -196,6 +206,7 @@ describe("shell primitive views", () => {
     expect(stopButton).toBeTruthy();
     expect(logoutButton).toBeTruthy();
     expect(recoveryExportButton).toBeTruthy();
+    expect(connectButton.props["data-magnetic"]).toBe("true");
     expect(stopButton.props.disabled).toBe(true);
     expect(logoutButton.props.disabled).toBe(true);
     expect(recoveryExportButton.props.disabled).toBe(true);

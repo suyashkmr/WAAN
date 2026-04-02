@@ -100,4 +100,44 @@ describe("sectionNav Vue rendering", () => {
     ]);
     expect(links[1].classList.contains("active")).toBe(true);
   });
+
+  it("rebuilds links when the stage nav item set changes", () => {
+    globalThis.Vue = { h, render, Fragment };
+
+    document.body.innerHTML = `
+      <section id="workspace-stage"></section>
+      <section id="guided-findings-stage"></section>
+      <section id="insight-highlights"></section>
+      <div class="section-nav-inner"></div>
+    `;
+
+    const containerEl = /** @type {HTMLElement} */ (document.querySelector(".section-nav-inner"));
+    const controller = createSectionNavController({
+      containerEl,
+      navItemsConfig: [{ id: "workspace-stage", label: "Workspace" }],
+      documentRef: document,
+      windowRef: /** @type {any} */ ({
+        innerHeight: 900,
+        matchMedia: () => ({ matches: false }),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }),
+      vueRuntime: { h, render, Fragment },
+    });
+
+    controller.buildSectionNav();
+    let links = Array.from(containerEl.querySelectorAll("a[data-section-id]"));
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute("href")).toBe("#workspace-stage");
+
+    controller.rebuildSectionNav([
+      { id: "guided-findings-stage", label: "Findings" },
+      { id: "insight-highlights", label: "Highlights" },
+      { id: "missing", label: "Missing" },
+    ]);
+    links = Array.from(containerEl.querySelectorAll("a[data-section-id]"));
+    expect(links).toHaveLength(2);
+    expect(links[0].getAttribute("href")).toBe("#guided-findings-stage");
+    expect(links[1].getAttribute("href")).toBe("#insight-highlights");
+  });
 });

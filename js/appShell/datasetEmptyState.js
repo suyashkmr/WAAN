@@ -6,11 +6,47 @@
  *   headingEl?: HTMLElement | null,
  *   copyEl?: HTMLElement | null,
  *   buttons?: Array<(HTMLElement & { disabled?: boolean }) | null | undefined>,
+ *   documentRef?: Document | null,
  * }} [params]
  */
-export function createDatasetEmptyStateManager({ calloutEl, headingEl, copyEl, buttons = [] } = {}) {
-  const defaultHeading = headingEl?.textContent || "";
-  const defaultCopy = copyEl?.textContent || "";
+export function createDatasetEmptyStateManager({
+  calloutEl,
+  headingEl,
+  copyEl,
+  buttons = [],
+  documentRef = typeof document !== "undefined" ? document : null,
+} = {}) {
+  const calloutId = calloutEl?.id || "dataset-empty-callout";
+  const headingId = headingEl?.id || "dataset-empty-heading";
+  const copyId = copyEl?.id || "dataset-empty-copy";
+  const buttonIds = buttons.map(button => button?.id).filter(Boolean);
+
+  /**
+   * @template {HTMLElement} T
+   * @param {T | null | undefined} element
+   * @param {string | null | undefined} id
+   * @returns {T | null}
+   */
+  function resolveLiveElement(element, id) {
+    if (element && element.isConnected) return element;
+    if (!id) return element ?? null;
+    const liveElement = /** @type {T | null} */ (documentRef?.getElementById?.(id) ?? null);
+    if (liveElement) return liveElement;
+    return element ?? null;
+  }
+
+  /**
+   * @returns {(HTMLElement & { disabled?: boolean })[]}
+   */
+  function resolveLiveButtons() {
+    return buttons.map((button, index) => {
+      const id = buttonIds[index] || button?.id || null;
+      return resolveLiveElement(button, id);
+    }).filter(/** @returns {button is HTMLElement & { disabled?: boolean }} */ button => Boolean(button));
+  }
+
+  const defaultHeading = resolveLiveElement(headingEl, headingId)?.textContent || "";
+  const defaultCopy = resolveLiveElement(copyEl, copyId)?.textContent || "";
   let available = false;
 
   /**
@@ -18,8 +54,10 @@ export function createDatasetEmptyStateManager({ calloutEl, headingEl, copyEl, b
    * @param {string} [copyText]
    */
   const setMessage = (headingText, copyText) => {
-    if (headingEl && typeof headingText === "string") headingEl.textContent = headingText;
-    if (copyEl && typeof copyText === "string") copyEl.textContent = copyText;
+    const liveHeadingEl = resolveLiveElement(headingEl, headingId);
+    const liveCopyEl = resolveLiveElement(copyEl, copyId);
+    if (liveHeadingEl && typeof headingText === "string") liveHeadingEl.textContent = headingText;
+    if (liveCopyEl && typeof copyText === "string") liveCopyEl.textContent = copyText;
   };
 
   /**
@@ -27,7 +65,7 @@ export function createDatasetEmptyStateManager({ calloutEl, headingEl, copyEl, b
    */
   const setAvailability = hasData => {
     available = Boolean(hasData);
-    buttons.forEach(button => {
+    resolveLiveButtons().forEach(button => {
       if (!button) return;
       if ("disabled" in button) button.disabled = !available;
       if (button.tagName === "BUTTON") {
@@ -35,13 +73,14 @@ export function createDatasetEmptyStateManager({ calloutEl, headingEl, copyEl, b
         else button.removeAttribute("title");
       }
     });
-    if (calloutEl) {
-      calloutEl.classList.toggle("hidden", available);
-      calloutEl.toggleAttribute("hidden", available);
+    const liveCalloutEl = resolveLiveElement(calloutEl, calloutId);
+    if (liveCalloutEl) {
+      liveCalloutEl.classList.toggle("hidden", available);
+      liveCalloutEl.toggleAttribute("hidden", available);
       if (available) {
-        calloutEl.style.display = "none";
+        liveCalloutEl.style.display = "none";
       } else {
-        calloutEl.style.removeProperty("display");
+        liveCalloutEl.style.removeProperty("display");
       }
     }
     if (!available) {

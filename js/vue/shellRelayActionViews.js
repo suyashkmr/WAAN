@@ -53,6 +53,9 @@ export function createRelayLiveActionsRoot(h, onAction) {
               className: "wa-button wa-button--primary flex-[2]",
               id: "relay-start",
               text: "Start relay",
+              attrs: {
+                "data-magnetic": "true",
+              },
               onClick: event => onAction("relay.primaryAction", {
                 currentTarget: event?.currentTarget ?? null,
                 target: event?.target ?? null,
@@ -60,7 +63,7 @@ export function createRelayLiveActionsRoot(h, onAction) {
             }),
             renderActionButton(h, {
               type: "button",
-              className: "wa-button flex-1",
+              className: "wa-button wa-button--sunken flex-1",
               id: "relay-stop",
               text: "Pause",
               disabled: true,
@@ -83,7 +86,7 @@ export function createRelayLiveActionsRoot(h, onAction) {
           h("div", { class: "flex flex-wrap gap-1.5 pt-1 mt-1 relay-utility-toolbar" }, [
             renderActionButton(h, {
               type: "button",
-              className: "wa-button dense flex-1",
+              className: "wa-button wa-button--sunken dense flex-1",
               id: "relay-recovery-reconnect",
               text: "Reconnect",
               disabled: true,
@@ -97,7 +100,7 @@ export function createRelayLiveActionsRoot(h, onAction) {
             }),
             renderActionButton(h, {
               type: "button",
-              className: "wa-button dense flex-1",
+              className: "wa-button wa-button--sunken dense flex-1",
               id: "relay-recovery-resync",
               text: "Resync",
               disabled: true,
@@ -111,14 +114,14 @@ export function createRelayLiveActionsRoot(h, onAction) {
             }),
             renderActionButton(h, {
               type: "button",
-              className: "wa-button dense flex-1",
+              className: "wa-button wa-button--sunken dense flex-1",
               id: "relay-reload-all",
               text: "Reload",
               onClick: event => onAction("relay.reloadAll"),
             }),
             renderActionButton(h, {
               type: "button",
-              className: "wa-button dense flex-1",
+              className: "wa-button wa-button--sunken dense flex-1",
               id: "relay-recovery-export",
               text: "Export diagnostics",
               disabled: true,

@@ -49,6 +49,7 @@ function buildController({
   analytics = buildAnalyticsSample(),
   participantView = analytics.top_senders,
   searchResults = [],
+  emitExportSuccess = vi.fn(),
   computeTimeOfDayDataset = () => ({
     total: 12,
     includeWeekdays: true,
@@ -81,8 +82,9 @@ function buildController({
     generateSlidesHtml: async () => ({ content: "" }),
     getExportThemeConfig: () => ({}),
     getDatasetFingerprint: () => "smoke",
+    emitExportSuccess,
   });
-  return { exporters, updateStatus };
+  return { exporters, updateStatus, emitExportSuccess };
 }
 
 describe("exporters smoke tests", () => {
@@ -136,6 +138,7 @@ describe("exporters smoke tests", () => {
 
   it("silently no-ops export handlers when no dataset is loaded", async () => {
     const updateStatus = vi.fn();
+    const emitExportSuccess = vi.fn();
     const exporters = createExporters({
       getDatasetAnalytics: () => null,
       getDatasetEntries: () => [],
@@ -157,6 +160,7 @@ describe("exporters smoke tests", () => {
       generateSlidesHtml: async () => ({ content: "" }),
       getExportThemeConfig: () => ({ label: "Clean" }),
       getDatasetFingerprint: () => "empty",
+      emitExportSuccess,
     });
 
     exporters.exportParticipants();
@@ -175,5 +179,16 @@ describe("exporters smoke tests", () => {
     expect(urlSpy).not.toHaveBeenCalled();
     expect(revokeSpy).not.toHaveBeenCalled();
     expect(updateStatus).not.toHaveBeenCalled();
+    expect(emitExportSuccess).not.toHaveBeenCalled();
+  });
+
+  it("emits success events for primary report exports", async () => {
+    const { exporters, emitExportSuccess } = buildController();
+
+    await exporters.handleDownloadMarkdownReport();
+    await exporters.handleDownloadSlidesReport();
+
+    expect(emitExportSuccess).toHaveBeenNthCalledWith(1, "download-markdown-report");
+    expect(emitExportSuccess).toHaveBeenNthCalledWith(2, "download-slides-report");
   });
 });

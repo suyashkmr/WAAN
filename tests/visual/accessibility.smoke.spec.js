@@ -5,8 +5,21 @@ async function openUtilityCluster(page) {
   const summary = cluster.locator("summary").first();
   await expect(cluster).toBeVisible();
   await expect(summary).toBeVisible();
-  await summary.click();
-  await expect(cluster).toHaveJSProperty("open", true);
+  const isOpen = await cluster.evaluate(node => Boolean(node?.open));
+  if (!isOpen) {
+    await summary.evaluate(node => node.click());
+  }
+  await expect
+    .poll(async () => cluster.evaluate(node => Boolean(node?.open)))
+    .toBe(true);
+}
+
+async function selectStage(page, stageId) {
+  const button = page.locator(`.stage-selector-button[data-stage-id="${stageId}"]`).first();
+  await expect(button).toBeVisible();
+  await button.evaluate(node => node.click());
+  await expect(button).toHaveAttribute("data-stage-active", "true");
+  await page.waitForTimeout(120);
 }
 
 async function waitForShellUtilityBinding(page, ...ids) {
@@ -63,15 +76,7 @@ test.describe("WAAN Accessibility Smoke", () => {
     await page.waitForFunction(() => {
       const runtime = window.__WAAN_VUE_RUNTIME__;
       return Boolean(runtime?.bridges?.shell)
-        && Boolean(document.getElementById("search-keyword"))
-        && Boolean(
-          document.querySelector(
-            '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant--primevue[role="combobox"], select#search-participant:not(.hidden)',
-          ),
-        )
-        && Boolean(document.getElementById("search-start"))
-        && Boolean(document.getElementById("search-end"))
-        && Boolean(document.getElementById("run-search"))
+        && Boolean(document.querySelector(".stage-selector-button[data-stage-id='workspace']"))
         && Boolean(document.getElementById("actions-toolbar"))
         && Boolean(document.getElementById("relay-status-panel"));
     });
@@ -110,6 +115,19 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("keeps migrated command controls keyboard focusable", async ({ page }) => {
+    await selectStage(page, "deepdive");
+    await page.waitForFunction(() =>
+      Boolean(document.getElementById("search-keyword"))
+      && Boolean(
+        document.querySelector(
+          '[data-bridge-input-id="search-participant"][data-bridge-ready="true"] #search-participant--primevue[role="combobox"], select#search-participant:not(.hidden)',
+        ),
+      )
+      && Boolean(document.getElementById("search-start"))
+      && Boolean(document.getElementById("search-end"))
+      && Boolean(document.getElementById("run-search")),
+    );
+
     const focusSelectors = [
       "search-keyword",
       "search-participant",
@@ -126,6 +144,7 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("keeps dense data-surface metric help controls keyboard focusable", async ({ page }) => {
+    await selectStage(page, "findings");
     const selectors = [
       '[aria-describedby="participants-share-note"]',
       '[aria-describedby="participants-avg-words-note"]',
@@ -146,6 +165,7 @@ test.describe("WAAN Accessibility Smoke", () => {
   });
 
   test("keeps support and diagnostics actions keyboard reachable", async ({ page }) => {
+    await selectStage(page, "workspace");
     await openUtilityCluster(page);
     await waitForShellUtilityBinding(page, "log-drawer-toggle");
     const logDrawerToggle = page.locator("#log-drawer-toggle:visible").first();
@@ -164,7 +184,6 @@ test.describe("WAAN Accessibility Smoke", () => {
       "#relay-log-report",
       "#relay-log-clear",
       "#relay-log-close",
-      '#faq-card .card-toggle[data-target="faq-content"]',
     ];
 
     for (const selector of actionSelectors) {
@@ -173,5 +192,14 @@ test.describe("WAAN Accessibility Smoke", () => {
       await expect(target).toHaveAttribute("title", /.+/);
       await expectLocatorFocused(target);
     }
+
+    await page.evaluate(() => {
+      document.getElementById("relay-log-drawer")?.setAttribute("aria-hidden", "true");
+    });
+    await selectStage(page, "support");
+    const faqToggle = page.locator('#faq-card .card-toggle[data-target="faq-content"]:visible').first();
+    await expect(faqToggle).toBeVisible();
+    await expect(faqToggle).toHaveAttribute("title", /.+/);
+    await expectLocatorFocused(faqToggle);
   });
 });

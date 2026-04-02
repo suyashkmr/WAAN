@@ -9,6 +9,9 @@ import { mountPageControlsPrimitive } from "./shellPageControlsIsland.js";
 import { VUE_BRIDGE_NAMES, registerVueBridge, resolveVueBridge } from "./bridgeRegistry.js";
 import { renderActionButton } from "./primevueRenderPrimitives.js";
 import { mountConfiguredShellPrimitive } from "./shellPrimitiveMounting.js";
+import { ACTIVE_STAGE_CHANGED_EVENT } from "../appConstants.js";
+import { bindRuntimeMagneticTargets } from "./runtimeMagneticBindings.js";
+import { openSupportMacosHelp } from "./supportStageNavigation.js";
 
 /**
  * @param {string} actionId
@@ -16,6 +19,10 @@ import { mountConfiguredShellPrimitive } from "./shellPrimitiveMounting.js";
  * @param {any} [globalScope]
  */
 function dispatchShellAction(actionId, payload = null, globalScope = globalThis) {
+  if (actionId === "ui.support.open-macos-help") {
+    openSupportMacosHelp(globalScope);
+    return true;
+  }
   const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
   if (shellBridge?.dispatchShellAction) {
     const handled = shellBridge.dispatchShellAction(actionId, payload);
@@ -46,6 +53,7 @@ function mountActionsToolbarPrimitive(globalScope = globalThis) {
     createRoot: h => createActionsToolbarRoot(h, (actionId, payload = null) =>
       dispatchShellAction(actionId, payload, globalScope)),
   });
+  bindRuntimeMagneticTargets(globalScope);
 }
 
 function bindStaticWorkspaceUtilityActions(globalScope = globalThis) {
@@ -57,6 +65,7 @@ function bindStaticWorkspaceUtilityActions(globalScope = globalThis) {
     "log-drawer-toggle": "relay.logDrawerOpen",
     "reduce-motion-toggle": "ui.motion.cycle",
     "high-contrast-toggle": "ui.contrast.toggle",
+    "first-run-macos-help-link": "ui.support.open-macos-help",
   };
 
   Object.entries(actionMap).forEach(([id, actionId]) => {
@@ -99,6 +108,7 @@ function mountRelayLiveActionsPrimitive(globalScope = globalThis) {
     createRoot: h => createRelayLiveActionsRoot(h, (actionId, payload = null) =>
       dispatchShellAction(actionId, payload, globalScope)),
   });
+  bindRuntimeMagneticTargets(globalScope);
 }
 
 function mountDashboardCardShellPrimitives(globalScope = globalThis) {
@@ -318,6 +328,12 @@ export function mountShellPrimitivesIsland({ globalScope = globalThis } = {}) {
   mountActionsToolbarPrimitive(globalScope);
   bindStaticWorkspaceUtilityActions(globalScope);
   mountOnboardingDialogPrimitive(globalScope);
+  if (globalScope?.addEventListener && !globalScope.__waanRuntimeMagneticStageBound) {
+    globalScope.__waanRuntimeMagneticStageBound = true;
+    globalScope.addEventListener(ACTIVE_STAGE_CHANGED_EVENT, () => {
+      bindRuntimeMagneticTargets(globalScope);
+    });
+  }
   mountFirstRunActionsPrimitive(globalScope);
   mountDashboardCardShellPrimitives(globalScope);
   mountFeedbackPrimitiveBridge(globalScope);

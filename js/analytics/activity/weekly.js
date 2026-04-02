@@ -61,7 +61,19 @@ export function renderWeeklySection(weeklyData, summary, options = {}, vueRuntim
   }
 
   if (!container) return;
-  container.className = "weekly-chart";
+  const frameEl = /** @type {HTMLElement | null} */ (container.closest?.(".analysis-evidence-frame"));
+  if (frameEl) {
+    frameEl.style.overflowX = "auto";
+    frameEl.style.overflowY = "hidden";
+    frameEl.style.alignItems = "stretch";
+    frameEl.style.justifyContent = "flex-start";
+  }
+  container.classList.add("weekly-chart");
+  container.style.width = "100%";
+  container.style.maxWidth = "100%";
+  container.style.alignSelf = "stretch";
+  container.style.overflowX = "auto";
+  container.style.overflowY = "hidden";
   clearContainerForVueRenderOnce(container);
 
   if (!Array.isArray(weeklyData) || !weeklyData.length) {
@@ -70,12 +82,18 @@ export function renderWeeklySection(weeklyData, summary, options = {}, vueRuntim
   }
 
   const maxCount = Math.max(...weeklyData.map(item => Number(item?.count || 0))) || 1;
+  const barWidthPx = 72;
+  const barGapPx = 12;
+  const trackMinWidthPx = Math.max(weeklyData.length * barWidthPx + (weeklyData.length - 1) * barGapPx, 320);
 
   render(
     h("div", { class: "weekly-chart-wrapper" }, [
       h(
         "div",
-        { class: "weekly-bars" },
+        {
+          class: "weekly-bars",
+          style: { minWidth: `${trackMinWidthPx}px` },
+        },
         weeklyData.map((entry, index) => {
           const isSelected = Boolean(
             selectedRange &&

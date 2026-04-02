@@ -197,6 +197,55 @@ describe("event bindings detailed", () => {
     expect(handlers.handleDownloadSlidesReport).toHaveBeenCalledTimes(1);
   });
 
+  it("handles delegated search export fallback for download-search-results id", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const delegatedSearchButton = document.createElement("button");
+    delegatedSearchButton.id = "download-search-results";
+    document.body.appendChild(delegatedSearchButton);
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        downloadSearchButton: null,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+    delegatedSearchButton.click();
+
+    expect(handlers.exportSearchResults).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips delegated export fallback for shell-primitive mounted toolbar buttons", () => {
+    const handlers = createHandlers();
+    const deps = createDeps();
+    const primitiveMount = document.createElement("div");
+    primitiveMount.dataset.vuePrimitiveMounted = "true";
+    const downloadPdfButton = document.createElement("button");
+    downloadPdfButton.id = "download-pdf";
+    downloadPdfButton.dataset.eventBindingsBound = "true";
+    primitiveMount.appendChild(downloadPdfButton);
+    document.body.appendChild(primitiveMount);
+
+    // Simulate shell-primitive click handling already bound on the mounted button.
+    downloadPdfButton.addEventListener("click", () => handlers.handleDownloadPdfReport());
+
+    const { initEventHandlers } = createEventBindingsController({
+      elements: {
+        downloadPdfButton: null,
+      },
+      handlers,
+      deps,
+    });
+
+    initEventHandlers();
+    downloadPdfButton.click();
+
+    expect(handlers.handleDownloadPdfReport).toHaveBeenCalledTimes(1);
+  });
+
   it("resolves shell and dashboard bridges from injected global scope", () => {
     const handlers = createHandlers();
     const deps = createDeps();

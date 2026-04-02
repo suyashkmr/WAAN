@@ -1,7 +1,9 @@
 import {
   SECTION_NAV_ITEMS,
+  SECTION_NAV_ITEMS_BY_STAGE,
   SEARCH_RESULT_LIMIT,
   ONBOARDING_STEPS,
+  ACTIVE_STAGE_CHANGED_EVENT,
 } from "./appConstants.js";
 import * as appState from "./state.js";
 import {
@@ -26,6 +28,7 @@ import { createAppControllerWiring } from "./appShell/controllerWiring.js";
 import { createAppCompositionAssembly } from "./appShell/compositionAssembly.js";
 import { createAppDomRefGroups } from "./appShell/domRefGroups.js";
 import { createRuntimeBootstrapConfig } from "./appShell/runtimeBootstrapConfig.js";
+import { initVueStoreAdapter } from "./appShell/vueStoreAdapter.js";
 import { buildControllerWiringArgs, buildCompositionAssemblyArgs } from "./appShell/entryConfig.js";
 import {
   createCompositionAssemblyWiring,
@@ -122,6 +125,35 @@ const runtimeDeps = createRuntimeDeps({
   stateStore: appState,
 });
 
+/**
+ * @param {string | null | undefined} stage
+ */
+function normalizeStageId(stage) {
+  if (stage === "deep-dive") return "deepdive";
+  if (stage === "workspace" || stage === "findings" || stage === "deepdive" || stage === "support") {
+    return stage;
+  }
+  return null;
+}
+
+function resolveInitialNavStage() {
+  if (typeof window === "undefined") return "workspace";
+  const hashId = String(window.location?.hash || "").replace(/^#/, "");
+  if (!hashId) return "workspace";
+  if (hashId === "faq-macos-gatekeeper") return "support";
+  for (const [stage, items] of Object.entries(SECTION_NAV_ITEMS_BY_STAGE)) {
+    if (items.some(item => item?.id === hashId)) {
+      return stage;
+    }
+  }
+  const target = document.getElementById(hashId);
+  if (!(target instanceof HTMLElement)) return "workspace";
+  const stageMarker = target.closest("[data-stage]")?.getAttribute("data-stage");
+  return normalizeStageId(stageMarker) || "workspace";
+}
+
+const initialNavStage = resolveInitialNavStage();
+
 installAppTestRuntime({
   globalScope: globalThis,
   stateStore: appState,
@@ -132,6 +164,8 @@ installAppTestRuntime({
     renderSearchResults: () => controllerWiring.searchController?.renderResults?.(),
   },
 });
+
+initVueStoreAdapter({ enabled: true });
 
 bootstrapAppShellRuntime(
   createRuntimeBootstrapConfig({
@@ -154,6 +188,8 @@ bootstrapAppShellRuntime(
     sectionNavConfig: {
       containerEl: sectionNavInner,
       navItemsConfig: SECTION_NAV_ITEMS,
+      navItemsByStage: SECTION_NAV_ITEMS_BY_STAGE,
+      initialStage: initialNavStage,
       documentRef: document,
       windowRef: window,
       vueRuntime: globalThis.Vue,
@@ -188,3 +224,19 @@ bootstrapAppShellRuntime(
     },
   }),
 );
+
+if (typeof window !== "undefined" && window?.addEventListener && !window.__waanStageAnalyticsRefreshBound) {
+  window.__waanStageAnalyticsRefreshBound = true;
+  window.addEventListener(ACTIVE_STAGE_CHANGED_EVENT, () => {
+    const rerenderDashboard = () => {
+      const analytics = appState.getDatasetAnalytics?.();
+      if (!analytics) return;
+      controllerWiring.renderDashboard(analytics);
+    };
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(() => rerenderDashboard());
+      return;
+    }
+    setTimeout(rerenderDashboard, 0);
+  });
+}

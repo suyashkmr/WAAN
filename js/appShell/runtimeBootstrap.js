@@ -7,6 +7,12 @@ import { createSectionNavController } from "./sectionNav.js";
 import { createKeyboardShortcutsController } from "./keyboardShortcuts.js";
 import { setupAppBootstrap } from "./bootstrapApp.js";
 import { initWindowToasts } from "./constants.js";
+import {
+  ACTIVE_STAGE_CHANGED_EVENT,
+  EXPORT_SUCCESS_EVENT,
+  PRIMARY_EXPORT_BUTTON_IDS,
+} from "../appConstants.js";
+import { prefersReducedMotion } from "../ui/magnetic.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -35,6 +41,40 @@ export function bootstrapAppShellRuntime({
   eventBindings,
   bootstrapDeps,
 }) {
+  const glintAllowedButtonIds = new Set(PRIMARY_EXPORT_BUTTON_IDS);
+  if (sectionNavConfig.windowRef && typeof sectionNavConfig.windowRef.addEventListener === "function") {
+    const windowRef = sectionNavConfig.windowRef;
+    if (!windowRef.__waanExportGlintBound) {
+      windowRef.__waanExportGlintBound = true;
+      windowRef.addEventListener(EXPORT_SUCCESS_EVENT, /** @param {CustomEvent<{ buttonId?: string }>} event */ event => {
+        if (prefersReducedMotion(windowRef)) return;
+        const buttonId = event?.detail?.buttonId;
+        if (typeof buttonId !== "string" || !glintAllowedButtonIds.has(buttonId)) return;
+        const button = sectionNavConfig.documentRef?.getElementById?.(buttonId);
+        if (!(button instanceof HTMLElement)) return;
+        button.classList.remove("wa-export-glint");
+        void button.offsetWidth;
+        button.classList.add("wa-export-glint");
+        const clear = () => button.classList.remove("wa-export-glint");
+        button.addEventListener("animationend", clear, { once: true });
+        windowRef.setTimeout(clear, 1000);
+      });
+    }
+  }
+
+  /** @type {Record<string, Array<{ id: string, label: string }>> | null} */
+  const navItemsByStage = sectionNavConfig.navItemsByStage ?? null;
+  const defaultStage = sectionNavConfig.initialStage ?? "workspace";
+  /**
+   * @param {string} stage
+   */
+  const resolveNavItems = stage => {
+    if (navItemsByStage && Array.isArray(navItemsByStage[stage])) {
+      return navItemsByStage[stage];
+    }
+    return sectionNavConfig.navItemsConfig ?? [];
+  };
+
   initWindowToasts();
   const statusUiController = createStatusUiController({
     statusEl: statusConfig.statusEl,
@@ -46,12 +86,20 @@ export function bootstrapAppShellRuntime({
 
   const sectionNavController = createSectionNavController({
     containerEl: sectionNavConfig.containerEl,
-    navItemsConfig: sectionNavConfig.navItemsConfig,
+    navItemsConfig: resolveNavItems(defaultStage),
     documentRef: sectionNavConfig.documentRef,
     windowRef: sectionNavConfig.windowRef,
     vueRuntime: sectionNavConfig.vueRuntime,
   });
-  const { buildSectionNav, setupSectionNavTracking } = sectionNavController;
+  const { buildSectionNav, setupSectionNavTracking, rebuildSectionNav } = sectionNavController;
+
+  if (sectionNavConfig.windowRef && typeof sectionNavConfig.windowRef.addEventListener === "function") {
+    sectionNavConfig.windowRef.addEventListener(ACTIVE_STAGE_CHANGED_EVENT, /** @param {CustomEvent<{ stage?: string }>} event */ event => {
+      const stage = event?.detail?.stage;
+      if (typeof stage !== "string" || !stage) return;
+      rebuildSectionNav(resolveNavItems(stage));
+    });
+  }
 
   const { apply: applyCompactMode, init: initCompactMode, toggleCompactMode } = createCompactModeManager(
     /** @type {any} */ ({
@@ -98,7 +146,7 @@ export function bootstrapAppShellRuntime({
   });
   const { initKeyboardShortcuts } = keyboardShortcutsController;
 
-  setupAppBootstrap({
+  const bootstrapRuntime = setupAppBootstrap({
     status: {
       setStatusCallback: statusConfig.setStatusCallback,
       statusEl: statusConfig.statusEl,
@@ -128,4 +176,10 @@ export function bootstrapAppShellRuntime({
       },
     },
   });
+
+  if (sectionNavConfig.windowRef && typeof sectionNavConfig.windowRef.addEventListener === "function") {
+    sectionNavConfig.windowRef.addEventListener(ACTIVE_STAGE_CHANGED_EVENT, () => {
+      bootstrapRuntime?.initEventHandlers?.();
+    });
+  }
 }

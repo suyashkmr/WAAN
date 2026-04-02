@@ -18,21 +18,22 @@ export function createActionsToolbarRoot(h, onAction) {
         h("div", { class: "toolbar-group primary" }, [
           renderActionButton(h, {
             type: "button",
-            className: "ghost-button",
+            className: "wa-button wa-button--ghost justify-between w-full group",
             id: "download-pdf",
             text: "Export PDF",
+            attrs: { "data-magnetic": "true" },
             onClick: () => onAction("export.pdf"),
           }),
           renderActionButton(h, {
             type: "button",
-            className: "ghost-button",
+            className: "wa-button wa-button--ghost justify-between w-full group",
             id: "download-markdown-report",
             text: "Export text report",
             onClick: () => onAction("export.markdown"),
           }),
           renderActionButton(h, {
             type: "button",
-            className: "ghost-button",
+            className: "wa-button wa-button--ghost justify-between w-full group",
             id: "download-slides-report",
             text: "Export slides",
             onClick: () => onAction("export.slides"),
@@ -109,6 +110,10 @@ export function createFirstRunActionsRoot(h, onAction) {
             class: "ghost-button tiny",
             id: "first-run-macos-help-link",
             href: "#faq-macos-gatekeeper",
+            onClick: /** @param {MouseEvent} event */ event => {
+              event.preventDefault();
+              onAction("ui.support.open-macos-help");
+            },
           },
           "macOS launch help",
         ),

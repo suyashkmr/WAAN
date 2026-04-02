@@ -32,6 +32,7 @@ describe("pdf preview controller", () => {
 
   it("opens printable preview and reports success", async () => {
     const updateStatus = vi.fn();
+    const emitExportSuccess = vi.fn();
     const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:preview");
     const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
@@ -78,6 +79,7 @@ describe("pdf preview controller", () => {
       getExportThemeConfig: () => ({ label: "Clean" }),
       generatePdfDocumentHtmlAsync: vi.fn(async () => ({ content: "<html></html>" })),
       updateStatus,
+      emitExportSuccess,
     });
 
     await controller.handleDownloadPdfReport();
@@ -87,6 +89,7 @@ describe("pdf preview controller", () => {
       "Opened the Clean PDF preview — use your print dialog to save it.",
       "info",
     );
+    expect(emitExportSuccess).toHaveBeenCalledWith("download-pdf");
 
     vi.advanceTimersByTime(200);
     expect(focusSpy).toHaveBeenCalledTimes(1);
@@ -99,6 +102,7 @@ describe("pdf preview controller", () => {
   it("reports errors when preview generation fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const updateStatus = vi.fn();
+    const emitExportSuccess = vi.fn();
     const controller = createPdfPreviewController({
       getDatasetAnalytics: () => ({ total_messages: 2 }),
       getExportThemeConfig: () => ({ label: "Clean" }),
@@ -106,11 +110,13 @@ describe("pdf preview controller", () => {
         throw new Error("worker failed");
       }),
       updateStatus,
+      emitExportSuccess,
     });
 
     await controller.handleDownloadPdfReport();
 
     expect(updateStatus).toHaveBeenCalledWith("Couldn't prepare the PDF preview.", "error");
+    expect(emitExportSuccess).not.toHaveBeenCalled();
     errorSpy.mockRestore();
   });
 });

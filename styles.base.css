@@ -287,8 +287,11 @@
     --editorial-card-contrast-shadow: 0 6px 16px rgb(var(--shadow-ink-rgb) / 0.08);
     --editorial-card-soft-bg: color-mix(in srgb, var(--surface-elevated) 92%, var(--bg));
     --editorial-card-border: color-mix(in srgb, var(--edge-subtle) 88%, transparent);
-    --editorial-card-shadow: 0 6px 14px rgb(var(--shadow-ink-rgb) / 0.08);
-    --editorial-card-shadow-hover: 0 10px 20px rgb(var(--shadow-ink-rgb) / 0.1);
+    --shadow-premium-rest: 0 6px 14px rgb(var(--shadow-ink-rgb) / 0.08);
+    --shadow-premium-hover: 0 10px 20px rgb(var(--shadow-ink-rgb) / 0.1);
+    --shadow-premium-sunken: inset 0 1px 0 color-mix(in srgb, var(--edge-highlight) 12%, transparent);
+    --editorial-card-shadow: var(--shadow-premium-rest);
+    --editorial-card-shadow-hover: var(--shadow-premium-hover);
     --surface-primary-stage-bg: color-mix(in srgb, var(--surface-elevated) 92%, var(--bg));
     --surface-primary-stage-border: color-mix(in srgb, var(--edge-subtle) 86%, transparent);
     --surface-primary-stage-shadow: 0 8px 18px rgb(var(--shadow-ink-rgb) / 0.1);
@@ -514,6 +517,14 @@
     outline-offset: 2px;
 }
 
+.wa-glass {
+    border: 1px solid color-mix(in srgb, var(--glass-border) 88%, transparent);
+    background: color-mix(in srgb, var(--glass-bg) 92%, transparent);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--shadow-premium-rest);
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -716,8 +727,11 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
         --workspace-chip-border: color-mix(in srgb, var(--accent) 18%, transparent);
         --workspace-chip-text: color-mix(in srgb, var(--accent) 64%, var(--text));
         --editorial-card-border: color-mix(in srgb, var(--edge-subtle) 96%, transparent);
-        --editorial-card-shadow: var(--shadow-shell);
-        --editorial-card-shadow-hover: var(--shadow-shell-hover);
+        --shadow-premium-rest: var(--shadow-shell);
+        --shadow-premium-hover: var(--shadow-shell-hover);
+        --shadow-premium-sunken: inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent);
+        --editorial-card-shadow: var(--shadow-premium-rest);
+        --editorial-card-shadow-hover: var(--shadow-premium-hover);
 
         --calendar-level-0: rgba(84, 94, 114, 0.12);
         --calendar-level-1: rgba(156, 115, 50, 0.2);
@@ -851,8 +865,11 @@ body[data-contrast="high"] .hero-sync-dot[data-state="ready"] {
     --workspace-chip-border: color-mix(in srgb, var(--accent) 28%, transparent);
     --workspace-chip-text: color-mix(in srgb, var(--accent) 78%, var(--text));
     --editorial-card-border: color-mix(in srgb, var(--edge-subtle) 90%, transparent);
-    --editorial-card-shadow: var(--shadow-shell);
-    --editorial-card-shadow-hover: var(--shadow-shell-hover);
+    --shadow-premium-rest: var(--shadow-shell);
+    --shadow-premium-hover: var(--shadow-shell-hover);
+    --shadow-premium-sunken: inset 0 1px 0 color-mix(in srgb, #ffffff 8%, transparent);
+    --editorial-card-shadow: var(--shadow-premium-rest);
+    --editorial-card-shadow-hover: var(--shadow-premium-hover);
 
     --calendar-level-0: rgba(145, 156, 189, 0.12);
     --calendar-level-1: rgba(214, 179, 110, 0.2);
@@ -1217,8 +1234,11 @@ body.onboarding-active {
     --workspace-overview-frame-border: color-mix(in srgb, var(--edge-subtle) 60%, transparent);
     --panel-header-divider: color-mix(in srgb, var(--edge-subtle) 42%, transparent);
     --hero-shell-border: color-mix(in srgb, var(--edge-subtle) 40%, transparent);
-    --editorial-card-shadow: 0 5px 14px rgb(var(--shadow-ink-rgb) / 0.06);
-    --editorial-card-shadow-hover: 0 7px 18px rgb(var(--shadow-ink-rgb) / 0.08);
+    --shadow-premium-rest: 0 5px 14px rgb(var(--shadow-ink-rgb) / 0.06);
+    --shadow-premium-hover: 0 7px 18px rgb(var(--shadow-ink-rgb) / 0.08);
+    --shadow-premium-sunken: inset 0 1px 0 color-mix(in srgb, #ffffff 18%, transparent);
+    --editorial-card-shadow: var(--shadow-premium-rest);
+    --editorial-card-shadow-hover: var(--shadow-premium-hover);
     --nav-shell-border: color-mix(in srgb, var(--edge-subtle) 46%, transparent);
     --nav-shell-shadow: 0 4px 14px rgb(var(--shadow-ink-rgb) / 0.08);
     --nav-item-hover-fill: color-mix(in srgb, var(--accent) 6%, transparent);

@@ -1,6 +1,7 @@
 // @ts-check
 import { resolveVueBridge, VUE_BRIDGE_NAMES } from "../vue/bridgeRegistry.js";
 import { mountDashboardPanelsIsland } from "../vue/dashboardPanelsIsland.js";
+import { createDelegatedExportFallbackHandler } from "./delegatedExportFallback.js";
 
 /**
  * @typedef {Record<string, any>} AnyRecord
@@ -61,10 +62,27 @@ export function createEventBindingsController({
     handleDownloadPdfReport,
   } = handlers;
 
-  const {
-    updateStatus,
-    applyCustomRange,
-  } = deps;
+  const { updateStatus, applyCustomRange } = deps;
+  let delegatedExportsBound = false;
+  let dashboardBridgeDeferredLogged = false;
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  let bridgeRetryTimer = null;
+  let bridgeRetryCount = 0;
+
+  function scheduleBridgeRetry() {
+    if (bridgeRetryTimer || bridgeRetryCount >= 40) return;
+    bridgeRetryCount += 1;
+    bridgeRetryTimer = setTimeout(() => {
+      bridgeRetryTimer = null;
+      initEventHandlers();
+    }, 250);
+  }
+
+  function clearBridgeRetry() {
+    if (!bridgeRetryTimer) return;
+    clearTimeout(bridgeRetryTimer);
+    bridgeRetryTimer = null;
+  }
 
   function handleForcedChatSelection() {
     if (!chatSelector?.value) return;
@@ -127,18 +145,56 @@ export function createEventBindingsController({
    */
   function bindExportButton(button, handler) {
     if (!button) return;
+    if (button.dataset.eventBindingsBound === "true") return;
     button.addEventListener("click", handler);
     button.dataset.eventBindingsBound = "true";
   }
 
   function initEventHandlers() {
+    /**
+     * @param {HTMLElement | null | undefined} buttonRef
+     * @param {...string} ids
+     */
+    const resolveButton = (buttonRef, ...ids) => {
+      if (buttonRef) return buttonRef;
+      for (const id of ids) {
+        const resolved = document.getElementById(id);
+        if (resolved) return resolved;
+      }
+      return null;
+    };
+    const resolvedDownloadParticipantsButton = resolveButton(downloadParticipantsButton, "download-participants");
+    const resolvedDownloadHourlyButton = resolveButton(downloadHourlyButton, "download-hourly");
+    const resolvedDownloadDailyButton = resolveButton(downloadDailyButton, "download-daily");
+    const resolvedDownloadWeeklyButton = resolveButton(downloadWeeklyButton, "download-weekly");
+    const resolvedDownloadWeekdayButton = resolveButton(downloadWeekdayButton, "download-weekday");
+    const resolvedDownloadTimeOfDayButton = resolveButton(downloadTimeOfDayButton, "download-timeofday");
+    const resolvedDownloadMessageTypesButton = resolveButton(downloadMessageTypesButton, "download-message-types");
+    const resolvedDownloadChatJsonButton = resolveButton(downloadChatJsonButton, "download-chat-json");
+    const resolvedDownloadSentimentButton = resolveButton(downloadSentimentButton, "download-sentiment");
+    const resolvedDownloadSearchButton = resolveButton(downloadSearchButton, "download-search-results", "download-search");
+    const resolvedDownloadMarkdownButton = resolveButton(
+      downloadMarkdownButton,
+      "download-markdown-report",
+      "download-markdown",
+    );
+    const resolvedDownloadSlidesButton = resolveButton(
+      downloadSlidesButton,
+      "download-slides-report",
+      "download-slides",
+    );
+    const resolvedDownloadPdfButton = resolveButton(downloadPdfButton, "download-pdf");
+
     const shellBridge = resolveVueBridge(VUE_BRIDGE_NAMES.shell, { globalScope });
     const supportsShellActionDispatch =
       typeof shellBridge?.setShellActionHandlers === "function" &&
       typeof shellBridge?.dispatchShellAction === "function";
     if (!supportsShellActionDispatch) {
-      throw new Error("Shell bridge dispatch contracts are required for event bindings.");
+      scheduleBridgeRetry();
+      return;
     }
+    clearBridgeRetry();
+    bridgeRetryCount = 0;
     const readPageControlState = () => shellBridge?.getPageControlState?.() ?? null;
     /** @param {Record<string, any>} nextState */
     const syncBridgePageControls = nextState => Boolean(shellBridge?.syncPageControls?.(nextState));
@@ -196,47 +252,70 @@ export function createEventBindingsController({
 
     const vueOwnsPageControlInteractions = Boolean(shellBridge?.ownsPageControlInteractions);
     if (!vueOwnsPageControlInteractions) {
-      if (chatSelector) {
+      if (chatSelector && chatSelector.dataset.eventBindingsPageControlBound !== "true") {
         chatSelector.addEventListener("change", handleNativeChatSelectionChange);
         chatSelector.addEventListener("dblclick", handleForcedChatSelection);
         chatSelector.addEventListener("keydown", handleChatSelectorKeydown);
         chatSelector.dataset.eventBindingsPageControlBound = "true";
       }
-      if (rangeSelect) {
+      if (rangeSelect && rangeSelect.dataset.eventBindingsPageControlBound !== "true") {
         rangeSelect.addEventListener("change", handleNativeRangeChange);
         rangeSelect.dataset.eventBindingsPageControlBound = "true";
       }
 
-      if (customApplyButton) {
+      if (customApplyButton && customApplyButton.dataset.eventBindingsPageControlBound !== "true") {
         customApplyButton.addEventListener("click", handleCustomApplyClick);
         customApplyButton.dataset.eventBindingsPageControlBound = "true";
       }
     }
 
-    bindExportButton(downloadParticipantsButton, exportParticipants);
-    bindExportButton(downloadHourlyButton, exportHourly);
-    bindExportButton(downloadDailyButton, exportDaily);
-    bindExportButton(downloadWeeklyButton, exportWeekly);
-    bindExportButton(downloadWeekdayButton, exportWeekday);
-    bindExportButton(downloadTimeOfDayButton, exportTimeOfDay);
-    bindExportButton(downloadMessageTypesButton, exportMessageTypes);
-    bindExportButton(downloadChatJsonButton, exportChatJson);
-    bindExportButton(downloadSentimentButton, exportSentiment);
-    bindExportButton(downloadMarkdownButton, handleDownloadMarkdownReport);
-    bindExportButton(downloadSlidesButton, handleDownloadSlidesReport);
-    bindExportButton(downloadPdfButton, handleDownloadPdfReport);
+    bindExportButton(resolvedDownloadParticipantsButton, exportParticipants);
+    bindExportButton(resolvedDownloadHourlyButton, exportHourly);
+    bindExportButton(resolvedDownloadDailyButton, exportDaily);
+    bindExportButton(resolvedDownloadWeeklyButton, exportWeekly);
+    bindExportButton(resolvedDownloadWeekdayButton, exportWeekday);
+    bindExportButton(resolvedDownloadTimeOfDayButton, exportTimeOfDay);
+    bindExportButton(resolvedDownloadMessageTypesButton, exportMessageTypes);
+    bindExportButton(resolvedDownloadChatJsonButton, exportChatJson);
+    bindExportButton(resolvedDownloadSentimentButton, exportSentiment);
+    bindExportButton(resolvedDownloadMarkdownButton, handleDownloadMarkdownReport);
+    bindExportButton(resolvedDownloadSlidesButton, handleDownloadSlidesReport);
+    bindExportButton(resolvedDownloadPdfButton, handleDownloadPdfReport);
 
     if (statDownloadButtons?.length) {
-      statDownloadButtons.forEach(
-        /** @param {Element} button */ function bindStatDownload(button) {
+      statDownloadButtons.forEach(/** @param {Element} button */ function bindStatDownload(button) {
+        if (button instanceof HTMLElement && button.dataset.eventBindingsBound === "true") return;
         button.addEventListener("click", () => handleStatDownloadClick(button));
         if (button instanceof HTMLElement) {
           button.dataset.eventBindingsBound = "true";
         }
       });
     }
+    bindExportButton(resolvedDownloadSearchButton, exportSearchResults);
 
-    bindExportButton(downloadSearchButton, exportSearchResults);
+    if (!delegatedExportsBound) {
+      delegatedExportsBound = true;
+      /** @type {Record<string, (event?: any) => any>} */
+      const delegatedExportHandlers = {
+        "download-participants": exportParticipants,
+        "download-hourly": exportHourly,
+        "download-daily": exportDaily,
+        "download-weekly": exportWeekly,
+        "download-weekday": exportWeekday,
+        "download-timeofday": exportTimeOfDay,
+        "download-message-types": exportMessageTypes,
+        "download-chat-json": exportChatJson,
+        "download-sentiment": exportSentiment,
+        "download-search-results": exportSearchResults,
+        "download-search": exportSearchResults,
+        "download-markdown-report": handleDownloadMarkdownReport,
+        "download-slides-report": handleDownloadSlidesReport,
+        "download-markdown": handleDownloadMarkdownReport,
+        "download-slides": handleDownloadSlidesReport,
+        "download-pdf": handleDownloadPdfReport,
+      };
+      document.addEventListener("click", createDelegatedExportFallbackHandler(delegatedExportHandlers));
+    }
 
     mountDashboardPanelsIsland({ globalScope });
     const dashboardPanelsBridge = resolveVueBridge(VUE_BRIDGE_NAMES.dashboardPanels, { globalScope });
@@ -247,8 +326,15 @@ export function createEventBindingsController({
       Boolean(dashboardPanelsBridge?.ownsActivityFilterInteractions)
       && typeof dashboardPanelsBridge?.setPanelActionHandlers === "function";
     if (!vueOwnsParticipantInteractions || !vueOwnsActivityFilterInteractions) {
-      throw new Error("Dashboard panels bridge interaction ownership is required.");
+      if (!dashboardBridgeDeferredLogged) {
+        dashboardBridgeDeferredLogged = true;
+        console.info("Dashboard panels bridge pending; retrying event binding once stage mounts.");
+      }
+      scheduleBridgeRetry();
+      return;
     }
+    clearBridgeRetry();
+    bridgeRetryCount = 0;
   }
 
   return {

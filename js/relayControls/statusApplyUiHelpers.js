@@ -1,4 +1,5 @@
 // @ts-check
+import { syncWorkspaceRelaySurface } from "../appShell/vueStoreAdapter.js";
 
 /**
  * @param {{
@@ -106,11 +107,12 @@ export function createStatusApplyUiHelpers({
    * @param {{ statusText?: string, accountText?: string, helpText?: string, qrSrc?: string | null }} [payload]
    */
   function renderRelayStatusSurface({ statusText = "", accountText = "", helpText = "", qrSrc = null } = {}) {
+    syncWorkspaceRelaySurface({ statusText, accountText, helpText, qrSrc });
     if (canRenderStatusSurface) {
       relayStatusRenderer.renderStatusSurface({ statusText, accountText, helpText, qrSrc });
       return;
     }
-    relayStatusEl.textContent = statusText;
+    if (relayStatusEl) relayStatusEl.textContent = statusText;
     if (relayAccountEl) relayAccountEl.textContent = accountText;
     if (relayHelpText) relayHelpText.textContent = helpText;
     if (relayQrImage) {

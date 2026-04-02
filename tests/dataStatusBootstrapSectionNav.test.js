@@ -148,6 +148,67 @@ describe("dataStatus controller details", () => {
     expect(() => controller.setDashboardLoadingState(true)).not.toThrow();
   });
 
+  it("re-resolves hero elements after workspace remount", () => {
+    document.body.innerHTML = `
+      <span id="hero-status-badge"></span>
+      <span id="hero-status-copy"></span>
+      <span id="hero-status-meta-copy"></span>
+      <span id="hero-sync-dot"></span>
+      <div id="hero-milestones">
+        <span class="hero-milestone" data-step="connect"></span>
+        <span class="hero-milestone" data-step="sync"></span>
+        <span class="hero-milestone" data-step="ready"></span>
+      </div>
+    `;
+
+    const staleBadge = document.getElementById("hero-status-badge");
+    const staleCopy = document.getElementById("hero-status-copy");
+    const staleMeta = document.getElementById("hero-status-meta-copy");
+    const staleDot = document.getElementById("hero-sync-dot");
+    const staleSteps = Array.from(document.querySelectorAll("#hero-milestones .hero-milestone"));
+    document.body.innerHTML = "";
+
+    const controller = createDataStatusController({
+      elements: {
+        dashboardRoot: document.createElement("main"),
+        heroStatusBadge: staleBadge,
+        heroStatusCopy: staleCopy,
+        heroStatusMetaCopy: staleMeta,
+        heroSyncDot: staleDot,
+        heroMilestoneSteps: staleSteps,
+        datasetEmptyStateManager: { setAvailability: vi.fn() },
+      },
+      deps: {
+        setDatasetEmptyMessage: vi.fn(),
+        savedViewsController: {
+          setDataAvailability: vi.fn(),
+          refreshUI: vi.fn(),
+        },
+        formatRelayAccount: vi.fn(() => "Alice"),
+        formatNumber: vi.fn(value => String(value)),
+        getRemoteChatsLastFetchedAt: vi.fn(() => Date.now()),
+      },
+    });
+
+    document.body.innerHTML = `
+      <span id="hero-status-badge"></span>
+      <span id="hero-status-copy"></span>
+      <span id="hero-status-meta-copy"></span>
+      <span id="hero-sync-dot"></span>
+      <div id="hero-milestones">
+        <span class="hero-milestone" data-step="connect"></span>
+        <span class="hero-milestone" data-step="sync"></span>
+        <span class="hero-milestone" data-step="ready"></span>
+      </div>
+    `;
+
+    controller.updateHeroRelayStatus({ status: "running", account: null, chatCount: 4, syncingChats: false });
+
+    expect(document.getElementById("hero-status-badge")?.textContent).toBe("Relay connected");
+    expect(document.getElementById("hero-status-badge")?.dataset.state).toBe("ready");
+    expect(document.getElementById("hero-status-copy")?.textContent).toContain("ready");
+  });
+
   it("does not re-notify while remaining in ready state after celebration timeout", () => {
     vi.useFakeTimers();
     try {
