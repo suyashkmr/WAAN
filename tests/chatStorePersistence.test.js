@@ -1,11 +1,9 @@
 import os from "os";
 import path from "path";
 import fs from "fs-extra";
-import { createRequire } from "module";
 import { describe, it, expect, vi, afterEach } from "vitest";
 
-const require = createRequire(import.meta.url);
-const { ChatStore } = require("../apps/server/src/store/chatStore.js");
+const { ChatStore } = (await import("../apps/server/src/store/chatStore.js")).default;
 
 function createLogger() {
   return {

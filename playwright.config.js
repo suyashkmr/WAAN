@@ -1,24 +1,27 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const visualPort = Number.parseInt(process.env.PW_VISUAL_PORT ?? "4174", 10);
+const visualDistDir = process.env.PW_VISUAL_DIST_DIR ?? "dist";
+const visualBaseUrl = `http://127.0.0.1:${visualPort}`;
+
 export default defineConfig({
   testDir: "tests/visual",
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}-{projectName}{ext}",
-  fullyParallel: false,
-  workers: 1,
-  timeout: 60000,
+  fullyParallel: true,
+  timeout: 120000,
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: visualBaseUrl,
     trace: "on-first-retry",
     animations: "disabled",
     colorScheme: "dark",
   },
   webServer: {
-    command: "npm start -- --host 127.0.0.1 --port 4173 --strictPort",
-    url: "http://127.0.0.1:4173",
-    timeout: 120000,
-    reuseExistingServer: true,
+    command: `npm run build -- --outDir ${visualDistDir} && npm run preview -- --host 127.0.0.1 --port ${visualPort} --strictPort --outDir ${visualDistDir}`,
+    url: visualBaseUrl,
+    timeout: 180000,
+    reuseExistingServer: false,
   },
   projects: [
     {

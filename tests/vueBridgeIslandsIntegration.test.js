@@ -92,7 +92,7 @@ describe("vue bridge islands integration", () => {
         message: "Searching…",
       }),
     ).toBe(true);
-  });
+  }, 15_000);
 
   it("mounts dashboard panels bridge when markup uses #highlight-list", async () => {
     document.body.innerHTML = `

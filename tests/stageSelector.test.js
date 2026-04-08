@@ -41,6 +41,10 @@ describe("StageSelector", () => {
 
     expect(selectedStages).toEqual(["deepdive"]);
     expect(store.ui.activeStage).toBe("deepdive");
+    expect(buttons[2].getAttribute("aria-selected")).toBe("true");
+    expect(buttons[2].getAttribute("data-stage-active")).toBe("true");
+    expect(buttons[2].classList.contains("wa-button--primary")).toBe(true);
+    expect(buttons[0].classList.contains("wa-button--sunken")).toBe(true);
 
     syncWorkspaceRelayStatus({ status: "running", account: "Alice", syncingChats: false });
     expect(store.ui.activeStage).toBe("deepdive");

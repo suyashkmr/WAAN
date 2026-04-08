@@ -1,8 +1,6 @@
-import { createRequire } from "module";
 import { describe, it, expect, vi } from "vitest";
 
-const require = createRequire(import.meta.url);
-const { buildChatMetaUpdate } = require("../apps/server/src/relay/relayData.js");
+const { buildChatMetaUpdate } = (await import("../apps/server/src/relay/relayData.js")).default;
 
 describe("relayData buildChatMetaUpdate", () => {
   it("skips unchanged metadata updates without fetching participants", async () => {

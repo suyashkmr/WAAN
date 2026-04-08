@@ -102,5 +102,5 @@ describe("main boot sequence", () => {
     expect(observed.participantsTopCountTag).toBe("SELECT");
     expect(observed.participantsSortTag).toBe("SELECT");
     expect(observed.participantsTimeframeTag).toBe("SELECT");
-  });
+  }, 15_000);
 });

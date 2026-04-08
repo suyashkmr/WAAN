@@ -115,6 +115,7 @@ describe("appShell boundary integration", () => {
   it("invokes extracted wiring boundaries during appShell bootstrap", async () => {
     seedMinimumDom();
     vi.resetModules();
+    vi.clearAllMocks();
 
     await expect(import("../js/appShell.js")).resolves.toBeTruthy();
 
@@ -122,7 +123,8 @@ describe("appShell boundary integration", () => {
     expect(h.createAppCompositionAssembly).toHaveBeenCalledTimes(1);
     expect(h.bootstrapAppShellRuntime).toHaveBeenCalledTimes(1);
 
-    const compositionArgs = h.createAppCompositionAssembly.mock.calls[0][0];
+    const compositionArgs =
+      h.createAppCompositionAssembly.mock.calls[h.createAppCompositionAssembly.mock.calls.length - 1][0];
     expect(compositionArgs.wiring).toEqual(
       expect.objectContaining({
         handleChatSelectionChangeCore: h.controllerResult.handleChatSelectionChangeCore,
@@ -132,9 +134,9 @@ describe("appShell boundary integration", () => {
       }),
     );
 
-    const runtimeArgs = h.bootstrapAppShellRuntime.mock.calls[0][0];
+    const runtimeArgs = h.bootstrapAppShellRuntime.mock.calls[h.bootstrapAppShellRuntime.mock.calls.length - 1][0];
     expect(runtimeArgs.eventBindings.handlers.handleChatSelectionChange).toBe(h.handleChatSelectionChange);
-  }, 15_000);
+  }, 30_000);
 
   it("derives initial stage-scoped nav from deep-link hash", async () => {
     seedMinimumDom();

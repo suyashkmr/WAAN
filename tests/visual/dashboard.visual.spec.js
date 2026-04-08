@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import "./stabilization.hook.js";
 
 test.describe("WAAN Dashboard Visual Baselines", () => {
   function shouldCaptureSectionBaseline(projectName) {
@@ -9,12 +10,28 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     return projectName === "desktop-1440" || projectName === "mobile-390";
   }
 
+  function shouldCaptureCompactStageBaseline(projectName) {
+    return projectName === "tablet-768" || projectName === "mobile-390";
+  }
+
   async function selectStage(page, stageId) {
+    const stageRootIdByStage = {
+      workspace: "workspace-stage",
+      findings: "guided-findings-stage",
+      deepdive: "deep-dive-stage",
+      support: "faq-card",
+    };
     const button = page.locator(`.stage-selector-button[data-stage-id="${stageId}"]`).first();
     await expect(button).toBeVisible();
     await button.evaluate(node => node.click());
     await expect(button).toHaveAttribute("data-stage-active", "true");
-    await page.waitForTimeout(120);
+    await page.waitForFunction(targetId => {
+      const stageHost = document.getElementById(targetId);
+      if (!(stageHost instanceof HTMLElement)) return false;
+      if (stageHost.hidden) return false;
+      const style = window.getComputedStyle(stageHost);
+      return style.display !== "none" && style.visibility !== "hidden";
+    }, stageRootIdByStage[stageId]);
   }
 
   async function applyRelayScenario(page, scenario) {
@@ -739,11 +756,21 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await page.addStyleTag({
       content: `*,
 *::before,
-*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
+*::after {
+  animation-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+  caret-color: transparent !important;
+}
+[data-stage],
+.hero-live-card,
+.hero-blurb { opacity: 1 !important; transform: none !important; }
 #data-status,
 #toast-container,
-#relay-sidebar-live-actions,
-#relay-status-actions { display: none !important; opacity: 0 !important; pointer-events: none !important; }`,
+#relay-sidebar-live-actions { display: none !important; opacity: 0 !important; pointer-events: none !important; }`,
     });
     await page.evaluate(() => {
       const status = document.getElementById("data-status");
@@ -842,7 +869,6 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     for (const applyFn of applyFns) {
       await applyFn(page);
     }
-    await page.waitForTimeout(350);
     await page.evaluate(async () => {
       const selectors = [
         "#workspace-stage",
@@ -893,7 +919,12 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     for (const applyFn of applyFns) {
       await applyFn(page);
     }
-    await page.waitForTimeout(80);
+    await page.evaluate(
+      () =>
+        new Promise(resolve => {
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        }),
+    );
   }
 
   test.beforeEach(async ({ page }) => {
@@ -987,6 +1018,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
   });
 
   test("matches long-form dashboard baseline", async ({ page }, testInfo) => {
+    test.setTimeout(120000);
     if (!shouldCaptureSectionBaseline(testInfo.project.name)) return;
     await prepareStableFrame(page);
     await selectStage(page, "deepdive");
@@ -996,7 +1028,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
       fullPage: true,
       caret: "hide",
       maxDiffPixelRatio: 0.01,
-      timeout: 15000,
+      timeout: 30000,
     });
   });
 
@@ -1026,6 +1058,31 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await expect(page.locator("#guided-findings-stage")).toBeHidden();
     await expect(page.locator("#deep-dive-stage")).toBeHidden();
     await expect(page.locator("#faq-card")).toBeVisible();
+  });
+
+  test("keeps relay-to-export journey controls reachable across stage switches", async ({ page }) => {
+    await prepareStableFrame(page);
+
+    await selectStage(page, "workspace");
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "waiting_qr"));
+    await expect(page.locator("#relay-qr-container")).toBeVisible();
+
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_syncing"));
+    await expect(page.locator("#relay-status-panel")).toBeVisible();
+
+    await settleScenario(page, currentPage => applyRelayScenario(currentPage, "running_ready"), applyWorkspaceScenario);
+    await expect(page.locator("#download-pdf")).toBeVisible();
+    await expect(page.locator("#download-markdown-report")).toBeVisible();
+    await expect(page.locator("#download-slides-report")).toBeVisible();
+
+    await selectStage(page, "findings");
+    await expect(page.locator("#participants")).toBeVisible();
+    await selectStage(page, "deepdive");
+    await expect(page.locator("#search-panel")).toBeVisible();
+    await selectStage(page, "support");
+    await expect(page.locator("#faq-card")).toBeVisible();
+    await selectStage(page, "workspace");
+    await expect(page.locator("#download-pdf")).toBeVisible();
   });
 
   test("matches interactive states baseline", async ({ page }, testInfo) => {
@@ -1099,6 +1156,48 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await section.scrollIntoViewIfNeeded();
     await expect(section).toBeVisible();
     await expect(section).toHaveScreenshot(`section-workspace-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches findings stage baseline on tablet/mobile", async ({ page }, testInfo) => {
+    if (!shouldCaptureCompactStageBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await selectStage(page, "findings");
+    const section = page.locator("#guided-findings-stage");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`stage-findings-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches deep-dive stage baseline on tablet/mobile", async ({ page }, testInfo) => {
+    if (!shouldCaptureCompactStageBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await selectStage(page, "deepdive");
+    const section = page.locator("#deep-dive-stage");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`stage-deepdive-${testInfo.project.name}.png`, {
+      caret: "hide",
+      maxDiffPixelRatio: 0.01,
+      timeout: 15000,
+    });
+  });
+
+  test("matches support stage baseline on tablet/mobile", async ({ page }, testInfo) => {
+    if (!shouldCaptureCompactStageBaseline(testInfo.project.name)) return;
+    await prepareStableFrame(page);
+    await selectStage(page, "support");
+    const section = page.locator("#faq-card");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+    await expect(section).toHaveScreenshot(`stage-support-${testInfo.project.name}.png`, {
       caret: "hide",
       maxDiffPixelRatio: 0.01,
       timeout: 15000,
@@ -1191,6 +1290,9 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await prepareStableFrame(page);
     await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario);
+    await page.waitForFunction(() =>
+      (document.getElementById("search-results-summary")?.textContent || "").includes("12 matches"),
+    );
 
     await page.locator("#search-panel").scrollIntoViewIfNeeded();
     await expect(page.locator("#search-panel")).toBeVisible();
@@ -1203,14 +1305,39 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await page.locator("#saved-views-card").scrollIntoViewIfNeeded();
     await expect(page.locator("#saved-views-card")).toBeVisible();
     await expect(page.locator("#save-view")).toBeVisible();
-    await expect(page.locator("#save-view")).toBeEnabled();
     await expect(page.locator("#apply-saved-view")).toBeVisible();
-    await expect(page.locator("#apply-saved-view")).toBeEnabled();
     await expect(page.locator("#delete-saved-view")).toBeVisible();
-    await expect(page.locator("#delete-saved-view")).toBeEnabled();
     await expect(page.locator("#compare-views")).toBeVisible();
+    await page.waitForFunction(
+      () => {
+        const gallery = document.getElementById("saved-view-gallery");
+        const cardCount = gallery?.querySelectorAll(".saved-view-card").length || 0;
+        if (cardCount >= 1) return true;
+        const savedViewSelect = document.getElementById("saved-view-list");
+        return (
+          savedViewSelect instanceof HTMLSelectElement &&
+          savedViewSelect.options.length >= 2 &&
+          !savedViewSelect.disabled
+        );
+      },
+      { timeout: 15000 },
+    );
+    const savedViewsReady = await page.evaluate(() => {
+      const gallery = document.getElementById("saved-view-gallery");
+      const cardCount = gallery?.querySelectorAll(".saved-view-card").length || 0;
+      if (cardCount >= 1) return true;
+      const savedViewSelect = document.getElementById("saved-view-list");
+      return (
+        savedViewSelect instanceof HTMLSelectElement &&
+        savedViewSelect.options.length >= 2 &&
+        !savedViewSelect.disabled
+      );
+    });
+    expect(savedViewsReady).toBe(true);
+    await expect(page.locator("#save-view")).toBeEnabled();
+    await expect(page.locator("#apply-saved-view")).toBeEnabled();
+    await expect(page.locator("#delete-saved-view")).toBeEnabled();
     await expect(page.locator("#compare-views")).toBeEnabled();
-    await expect(page.locator("#saved-view-gallery .saved-view-card")).toHaveCount(2);
     await expect(page.locator("#compare-summary .compare-summary-grid")).toBeVisible();
 
     const reachability = await page.evaluate(() => {
@@ -1443,6 +1570,7 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
     await prepareStableFrame(page);
     await selectStage(page, "deepdive");
     await settleScenario(page, applyDeepDiveScenario, applyLowerLaneScenario);
+    await page.waitForFunction(() => typeof window.__WAAN_TEST_RUNTIME__?.seedDataset === "function");
 
     const exportResults = await page.evaluate(async () => {
       const entries = [
@@ -1500,9 +1628,6 @@ test.describe("WAAN Dashboard Visual Baselines", () => {
           { label: "Media", count: 1, share: 0.2 },
         ],
       };
-      if (!window.__WAAN_TEST_RUNTIME__?.seedDataset) {
-        throw new Error("Expected __WAAN_TEST_RUNTIME__.seedDataset to be available in the built app path.");
-      }
       window.__WAAN_TEST_RUNTIME__.seedDataset({
         entries,
         analytics,

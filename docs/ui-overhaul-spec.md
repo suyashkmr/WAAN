@@ -1032,3 +1032,59 @@ Vue 3 + PrimeVue-backed islands provide behavior primitives; app provides visual
 - Filters are completely migrated to generic segment pills using `<button role="switch">` elements with explicit layout and `[aria-checked]` transitions. Keyboard accessibility was fully verified along with interactive visual regression state checks.
 - Closeout Result:
   - The Workspace and Filter Unification (Bucket 7) sweep is entirely completed. The 128-test Visual and Keyboard Accessibility traces have successfully validated the logic binding. The "Calm Premium" UX overhaul program is 100% closed without any remaining disjointed components.
+
+## 2026-04-02 Phase 85 Post-Modernization Audit & Coverage Closeout
+
+- Phase 85 is closed.
+- Scope completed in this closeout:
+  - coverage gating hardened in `vitest.config.js` and `package.json` (`check:coverage` with `--retry=2` and enforced threshold `functions >= 65`)
+  - coverage instrumentation expanded to include `apps/server/src/**/*.js` and `src/**/*.js` alongside existing `js/**/*.js` and `src/**/*.vue`
+  - explicit coverage exclusions documented for integration-only server entry/relay wiring modules that cannot be unit-instrumented in this harness (while keeping testable server logic in scope)
+  - SFC behavior tests expanded: `App.vue` hash/stage routing, `StageSelector.vue` semantic button/aria contracts, and new `FindingsStage.vue` structural/anchor coverage
+  - store/adapter contract depth expanded in `tests/workspaceStore.test.js` and `tests/vueStoreAdapter.test.js` (normalization, malformed payloads, disabled adapter gate)
+  - server utility coverage added (`tests/serverUtils.test.js`) and CJS relay/store tests switched to instrumented imports so coverage is counted
+  - visual matrix expanded with `mobile-375` and stage baselines for findings/deep-dive/support across tablet/mobile projects
+  - journey proof added in visual suite for Relay -> Sync -> Analyze -> Export continuity
+- Validation evidence:
+  - `npm run check:coverage`
+    - `569/569` tests passed
+    - global functions: `79.17%`
+    - server functions (`apps/server/src`): `80.00%`
+    - `src/store/useWorkspaceStore.js`: `100%` statements/functions/lines (branches `86.84%`)
+  - `npm run test:visual:update` -> `185/185` passed (new 375 + stage snapshots)
+  - `npm run test:visual` -> `185/185` passed
+  - `npm run test:accessibility-smoke` -> `20/20` passed
+  - `npm run ci:verify` -> full gate green
+- Zombie anchor audit:
+  - no obsolete runtime/test anchors were found safe to remove in this phase; no anchor deletions were made.
+- Residual risk:
+  - none for Phase 85 scope.
+
+## 2026-04-02 Phase 86 Test Infrastructure & Developer Efficiency Closeout
+
+- Phase 86 is closed.
+- Implemented test-infrastructure scope:
+  - Playwright config runs with `fullyParallel: true` and auto worker behavior.
+  - Web server contract hardened to production-like static hosting for visual/a11y runs:
+    - `npm run build && npm run preview -- --host 127.0.0.1 --port 4174 --strictPort`
+    - `reuseExistingServer: false`
+  - Added shared visual stabilization hook at `tests/visual/stabilization.hook.js` and imported it in visual/accessibility suites.
+  - Stabilization contract: disable transitions/animations, hide carets, hide scrollbars.
+  - Removed `mobile-375` from active Playwright project matrix and removed stale `mobile-375` snapshots.
+  - Replaced remaining timeout-based waits in visual smoke coverage with deterministic readiness waits.
+  - Added shard-capable scripts in `package.json`:
+    - `test:visual:shard:desktop`
+    - `test:visual:shard:mobile`
+    - `test:visual:sharded`
+    - `test:visual:ci` (env-driven shard selection)
+    - `test:visual:ui`
+- Runtime/time evidence:
+  - Final full-matrix visual run (`time npm run test:visual`) completed in `2:23.01` (`148/148` passing).
+  - Runtime target `<180s` is met; snapshot sharding was intentionally not activated for default validation flow.
+- Validation evidence:
+  - `npm run test:visual` -> `148/148` passed on the preview-backed configuration.
+  - `npm run test:accessibility-smoke` -> `16/16` passed.
+  - `npm run ci:verify` -> green.
+  - Burn-in gate completed: `npm run ci:verify` passed `3/3` consecutive runs.
+- Residual risks:
+  - none for Phase 86 scope.

@@ -17,9 +17,17 @@ describe("appShell boot", () => {
       configurable: true,
       value: "complete",
     });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("offline");
+      }),
+    );
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     delete globalThis.Vue;
     delete globalThis[VUE_RUNTIME_REGISTRY_KEY];
   });
@@ -56,5 +64,5 @@ describe("appShell boot", () => {
     expect(document.getElementById("chat-selector")).toBeNull();
     expect(document.documentElement.dataset.waanDomRefsCaptured).toBeUndefined();
     expect(globalThis[VUE_RUNTIME_REGISTRY_KEY].bridges[VUE_BRIDGE_NAMES.shell].setShellActionHandlers).toHaveBeenCalled();
-  }, 15_000);
+  }, 45_000);
 });

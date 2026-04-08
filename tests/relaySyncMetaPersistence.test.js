@@ -1,8 +1,6 @@
-import { createRequire } from "module";
 import { describe, it, expect, vi } from "vitest";
 
-const require = createRequire(import.meta.url);
-const { persistSyncedChatMeta } = require("../apps/server/src/relay/relaySync.js");
+const { persistSyncedChatMeta } = (await import("../apps/server/src/relay/relaySync.js")).default;
 
 describe("relaySync metadata persistence", () => {
   it("caps metadata enrichment concurrency for bulk persistence", async () => {

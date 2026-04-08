@@ -65,14 +65,14 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
 
 ## Active Snapshot
 
-- In progress: Phase 85 planning / pending implementation
+- In progress: Phase 87 planning / pending implementation
 - Open implementation phases: 1
 - Open repair buckets: 0
 - Historical unchecked boxes below are not active backlog unless they are explicitly carried into the latest audit/source-of-truth phase.
 - Closed relay/setup cleanup phases 47-49 remain recorded below for audit history
 - Phase 58-62 remain historical; Phase 63 is the accepted audit/source-of-truth phase that drove the final reset and reclose
 - Current baseline state: top-half/workspace shell, relay states, and the prior desktop truth pass remain reclosed
-- Current open work now lives in Phases 81-84 below; earlier lower-half repair buckets are complete and retained only for audit history
+- Current open work now lives in Phase 87 below; earlier phases are complete and retained only for audit history
 
 ## Current Open Backlog
 
@@ -188,23 +188,103 @@ Active open items are the unchecked engineering tasks only. Standing workflow ru
     - [x] `npm run ci:verify` — 100% Green.
     - [x] Deployment Build Check: `npm run build && npm run preview`.
 
-- [ ] Phase 85: Post-Modernization Audit & Coverage Fix.
-  - [ ] Scope and ownership
-    - [ ] Re-conduct the full Vitest & Playwright coverage audit (Unit, Integration, E2E).
-    - [ ] Resolve Function coverage threshold failure (achieve >65.0% global target).
-    - [ ] Implement **Type Safety & Contract Testing**:
-      - [ ] Achieve 100% `tsc --noEmit` pass for all new `src/` and `js/` modules.
-      - [ ] Implement Type Contract tests for `useWorkspaceStore` and `vueStoreAdapter`.
-    - [ ] Implement 100% unit test coverage for `src/store/useWorkspaceStore.js`.
-    - [ ] Implement native Vue unit tests for all major SFCs (`FindingsStage.vue`, `App.vue`, `StageSelector.vue`).
-    - [ ] Verify the "Bridge Adapter Contract" (Integration tests for `js/appShell/vueStoreAdapter.js`).
-    - [ ] Map and verify E2E coverage for all primary User Journeys (Relay -> Sync -> Analyze -> Export).
-    - [ ] Expand Visual Regression to include Mobile (375px) and Tablet (768px) for all 4 stages.
-    - [ ] Achieve >60% coverage for server-side logic in `apps/server/src`.
-    - [ ] Formally decommission tests related to obsolete legacy DOM anchors.
+- [x] Phase 85: Post-Modernization Audit & Coverage Fix.
+  - [x] Scope and ownership
+    - [x] Re-conduct the full Vitest & Playwright coverage audit (Unit, Integration, E2E).
+    - [x] Resolve Function coverage threshold failure (achieve >65.0% global target).
+    - [x] Implement **Type Safety & Contract Testing**:
+      - [x] Achieve 100% `tsc --noEmit` pass for all new `src/` and `js/` modules.
+      - [x] Implement Type Contract tests for `useWorkspaceStore` and `vueStoreAdapter`.
+    - [x] Implement 100% unit test coverage for `src/store/useWorkspaceStore.js`.
+    - [x] Implement native Vue unit tests for all major SFCs (`FindingsStage.vue`, `App.vue`, `StageSelector.vue`).
+    - [x] Verify the "Bridge Adapter Contract" (Integration tests for `js/appShell/vueStoreAdapter.js`).
+    - [x] Map and verify E2E coverage for all primary User Journeys (Relay -> Sync -> Analyze -> Export).
+    - [x] Expand Visual Regression to include Mobile (375px) and Tablet (768px) for all 4 stages.
+    - [x] Achieve >60% coverage for server-side logic in `apps/server/src`.
+    - [x] Formally decommission tests related to obsolete legacy DOM anchors.
+      - [x] Result: Anchor audit found no obsolete test anchors safe for removal; contracts remain current and intentionally retained.
+  - [x] Validation
+    - [x] `npm run check:coverage` (569/569 tests, global funcs 79.17%, server funcs 80.00%, store file 100% statements/functions/lines).
+    - [x] `npm run test:visual:update` (185/185) and `npm run test:visual` (185/185).
+    - [x] `npm run test:accessibility-smoke` (20/20 across desktop/laptop/tablet/mobile-390/mobile-375).
+    - [x] `npm run ci:verify` — inclusive of expanded coverage, type checks, and all quality gates.
+
+- [x] Phase 86: Test Infrastructure & Developer Efficiency.
+  - [x] **Playwright Performance & Parallelism**
+    - [x] Set `fullyParallel: true` and `workers: auto` behavior (`playwright.config.js` now relies on Playwright auto workers).
+    - [x] Implement global visual stabilization in a shared `beforeEach` hook:
+      - [x] Inject CSS to disable transitions/animations across the app.
+      - [x] Hide text carets and scrollbars to prevent flakiness.
+    - [x] Retire redundant `mobile-375` viewport; rely on `mobile-390` / `tablet-768` for mobile layout coverage.
+    - [x] Target visual regression cycle time `<180s` on full matrix run.
+  - [x] **CI/CD Hardening**
+    - [x] Replace all remaining `page.waitForTimeout` with deterministic waits in visual/accessibility suites.
+    - [x] Implement snapshot sharding hooks (`test:visual:shard:desktop`, `test:visual:shard:mobile`, `test:visual:ci`).
+  - [x] **Developer Experience (DX)**
+    - [x] Keep `ci:verify` green with optimized Playwright config paths and updated visual scripts.
+    - [x] Add explicit UI-mode entrypoint (`npm run test:visual:ui`) and verify UI mode process starts in local environment.
+  - [x] **Final Reliability Validation**
+    - [x] Perform a "Burn-in" run (`npm run ci:verify` x3 consecutively) to prove no race regressions.
+  - [x] Validation
+    - [x] `npm run ci:verify` — green on current tree after Phase 86 changes.
+    - [x] Recorded visual regression time audit with stable `<180s` proof or finalized shard-only policy acceptance.
+
+- [ ] Phase 87: Final Modernization Audit & Polish.
+  - [ ] **Global Navigation & Structural Integrity**
+    - [ ] **Persistent Stage Selector**: Fix the visibility of the stage switcher across Findings/DeepDive views (restore global shell persistence).
+    - [ ] Align Findings & Deep Dive stages to the same horizontal anchors as the Workspace stage.
+  - [ ] **Legacy Component Cleanup**
+    - [ ] Sweep and replace legacy `ghost-button tiny` in Setup Strip with modernized `wa-button--ghost tiny`.
+    - [ ] Eradicate remaining `#advanced-search-form` legacy markers and hardcoded hex border colors in shell layouts.
+  - [ ] **Psychological Delight Restoration**
+    - [ ] **Success Glint**: Re-inject CSS-based shimmer animations and apply to primary actions.
+    - [ ] **Magnetic Tilt**: Consistently apply `v-magnetic` to Purge, Reset, and Export buttons.
+    - [ ] Refine `stage-fade` timing to ensure no layout jumps during navigation.
+  - [ ] **UX, Resilience & DX**
+    - [ ] **Silent Relay Polling**: Debounce/Silence console `ERR_CONNECTION_REFUSED` spam when relay is offline.
+    - [ ] Implement modernized "Empty States" for Findings and Deep Dive stages (integrated placeholders vs. blank cards).
+  - [ ] **Final Compliance Check**
+    - [ ] Validate 100% color-contrast compliance on all new button variants.
+    - [ ] Final performance audit for transitions ($p_{50}$ < 16.7ms).
   - [ ] Validation
-    - [ ] `npm run ci:verify` — inclusive of all expanded coverage and type checks.
-    - [ ] 100% clean test suite with zero "Zombie" test regressions.
+    - [ ] `npm run ci:verify` — inclusive of all Phase 87 polish.
+    - [ ] Final manual sweep of the `5173` dev and `4174` production preview.
+
+- [ ] Phase 88: Individual Card Layout & Storytelling.
+  - [ ] **Environmental Audit Logic**
+    - [ ] Implement `?demo=true` mode for the Workspace Store using test-mock fixtures.
+    - [ ] Export Mock Data from `dashboard.visual.spec.js` to `src/dev/demoData.js`.
+  - [ ] **Individual Card Standardization**
+    - [ ] Reconcile `wa-card` internal padding by enforcing strict CSS tokens (e.g. `var(--card-padding-x)`) universally.
+    - [ ] Refactor bulky `<details>` "How to read" guides into lightweight, premium typography lockups or tooltips.
+    - [ ] Standardize Heading Hierarchy (Kickers vs. Primary Titles).
+  - [ ] **Visual Hierarchy & Spacing**
+    - [ ] Fix horizontal stage drift (Align outer Findings/Deep Dive containers to Workspace).
+    - [ ] Enforce 32px vertical rhythm between independent data sections.
+  - [ ] **Validation & Verification**
+    - [ ] Conduct "Populated Audit" using `?demo=true` flag.
+    - [ ] `npm run ci:verify` — inclusive of Phase 88 structural polish.
+
+- [ ] Phase 89: End-to-End Copy & Content Audit.
+  - [ ] **Tone & Error Friction Repair**
+    - [ ] Resolve conflicting Workspace offline copy ("Workspace locked" competing with "Pick a chat").
+    - [ ] Gracefully handle offline states for actions like Logout to eliminate blunt/confusing error messages.
+  - [ ] **Refinement & Editorial Voice**
+    - [ ] Establish a unified, editorial-quality voice across Findings, Insights, and Utility language.
+    - [ ] Standardize capitalization rules (Sentence case for UI actions vs. Title Case for headings).
+  - [ ] **Validation**
+    - [ ] Run full test matrix (`npm run ci:verify`) to ensure terminology updates don't break text-based DOM assertions in integration tests.
+
+- [ ] Phase 90: Design Token Standardization (Geometry & Elevation).
+  - [ ] **Border Radii Uniformity**
+    - [ ] Introduce semantic CSS tokens: `var(--radius-card)`, `var(--radius-panel)`, `var(--radius-button)`.
+    - [ ] Strip errant Tailwind `rounded-*` utilities and implement the tokens for perfect geometric nesting.
+  - [ ] **Elevation / Shadow Uniformity**
+    - [ ] Consolidate the 7 scattered shadow utilities (`shadow-sm`, `shadow-2xl`, etc.) into strict semantic elevations (e.g., `var(--shadow-level-1)`).
+  - [ ] **Component Consolidation**
+    - [ ] Migrate legacy `.ghost-button.tiny` and `.info-note-button` elements to the `.wa-button` system.
+  - [ ] **Validation**
+    - [ ] Verify globally that surface framing feels anchored and systematic rather than arbitrary.
 
 - [x] Phase 80: Range Slider Styling & Raw Element Cleanup.
   - [x] Scope and ownership
